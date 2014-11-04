@@ -4,8 +4,6 @@ Part III project proposals
 Graph library for Agda
 ----------------------
 
-Agda is a purely functional dependently-typed programming language, based on Martin-Löf type theory, *cum* theorem proving environment. In Agda, theorems are expressed as types and proofs as terms inhabiting those types.
-
 The Agda standard library currently lacks a graph module. The purpose of this project is to implement and prove correct a number of standard graph algorithms like Dijkstra's. This will require me to:
 
 - Find a reasonably efficient purely functional representation for graphs. It should encode invariants as types so proofs can leverage Agda's type system to reason about graphs and graph algorithms;
