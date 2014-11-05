@@ -16,8 +16,10 @@ Open questions:
 
 - Is this intended to be used primarily for programming (like fgl but with verified algorithms) or as a library of proofs (Isabelle- or Coq-style)?
 - Should the proofs be done for a specific data type (for example an fgl-like representation) or against an abstract record (like a type class in Haskell)?
-  * Pro data structure: potentially more straightforward (one fewer layer of abstraction); faster execution and type checking
-  * Pro record: would require explicit assumptions; could have multiple representations implement the same "type class" and prove them correct in one go
+
+  - Pro data structure: potentially more straightforward (one fewer layer of abstraction); faster execution and type checking
+  - Pro record: would require explicit assumptions; could have multiple representations implement the same "type class" and prove them correct in one go
+
 - Which representation to use (if this is going to be a programming library)?
 
 Generalised shortest path algorithms in Agda
