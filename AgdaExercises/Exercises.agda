@@ -23,7 +23,8 @@ module Exercises where
 
   -- Elimination rule for logical disjunction:
   ⊎-elim : {A B C : Set} → (A ⊎ B) → (A → C) → (B → C) → C
-  ⊎-elim union left right = {!!}
+  ⊎-elim (inl x) left right = left x
+  ⊎-elim (inr x) left right = right x
 
   -- Non-dependent Cartesian product type, or logical conjunction
   data _×_ (A B : Set) : Set where
@@ -31,10 +32,10 @@ module Exercises where
 
   -- Two elimination rules for conjunction:
   ×-elim₁ : {A B : Set} → A × B → A
-  ×-elim₁ prod = {!!}
+  ×-elim₁ (a , b) = a
 
   ×-elim₂ : {A B : Set} → A × B → B
-  ×-elim₂ prod = {!!}
+  ×-elim₂ (a , b) = b
 
   -- The identity (equality) type
   data _≡_ {A : Set} (a : A) : A → Set where
@@ -42,15 +43,15 @@ module Exercises where
 
   -- Symmetry of equality:
   sym : {A : Set} → {a b : A} → a ≡ b → b ≡ a
-  sym = {!!}
+  sym refl = refl
 
   -- Transitivity of equality:
   trans : {A : Set} → {a b c : A} → a ≡ b → b ≡ c → a ≡ c
-  trans = {!!}
+  trans refl refl = refl
 
   -- Congruence, which allows us to transport an equality under a function symbol
   cong : {A B : Set} → {a b : A} → (f : A → B) → a ≡ b → f a ≡ f b
-  cong = {!!}
+  cong f refl = refl
 
   -- The type of natural numbers:
   data ℕ : Set where
@@ -59,13 +60,30 @@ module Exercises where
 
   -- constructors are injective in Agda, but you must do the proof by hand:
   succ-injective : (m n : ℕ) → succ m ≡ succ n → m ≡ n
-  succ-injective = {!!}
+  succ-injective zero     (succ n)  ()
+  succ-injective (succ m) zero      ()
+  succ-injective zero     zero      refl = refl
+  succ-injective (succ m) (succ .m) refl = refl
 
   -- addition:
   _+_ : ℕ → ℕ → ℕ
-  m + n = {!!}
+  zero + n = n
+  succ m + n = succ (m + n)
 
   -- show: addition is commutative, associative and zero is a right identity for addition below
+  +-right-id : (m : ℕ) → (m + zero) ≡ m
+  +-right-id zero     = refl
+  +-right-id (succ x) = cong succ (+-right-id x)
 
-  
-  
+  +-comm : (m n : ℕ) → (m + n) ≡ (n + m)
+  +-comm zero     zero     = refl
+  +-comm zero     (succ n) = cong succ (sym (+-right-id n))
+  +-comm (succ m) zero     = cong succ (+-right-id m)
+  +-comm (succ m) (succ n) = cong succ (trans (lemma m n) (+-comm (succ m) n)) where
+    lemma : (p q : ℕ) → (p + succ q) ≡ succ (p + q)
+    lemma zero q = refl
+    lemma (succ p) q = cong succ (trans (lemma p q) refl)
+
+  +-assoc : (m n p : ℕ) → ((m + n) + p) ≡ (m + (n + p))
+  +-assoc zero     n p = refl
+  +-assoc (succ m) n p = cong succ (+-assoc m n p)
