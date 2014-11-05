@@ -1,1 +1,16 @@
+# Agda
 *.agdai
+
+# LaTeX, BibLaTex, latexmk
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.tex.blg
