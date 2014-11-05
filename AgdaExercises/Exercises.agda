@@ -132,7 +132,7 @@ module Exercises where
 
     -- Show again:
     ×′-elim₁ : {A B : Set} → A ×′ B → A
-    ×′-elim₁ = {!!}
+    ×′-elim₁ (proj₁ , proj₂) = proj₁
 
     -- Define lists:
 
@@ -142,40 +142,50 @@ module Exercises where
 
     -- Show the following (trivial) fact :
     exists-subcomponent : {A : Set} → (y : A) → (xs ys : List A) → xs ≡ (y ∷ ys) → Σ A (λ x → xs ≡ (x ∷ ys))
-    exists-subcomponent = {!!}
+    exists-subcomponent = λ {A} y xs ys → _,_ y
 
     -- Define length:
     length : {A : Set} → List A → ℕ
-    length = {!!}
+    length [] = zero
+    length (x ∷ xs) = succ (length xs)
 
     -- Define map:
     map : {A B : Set} → (f : A → B) → List A → List B
-    map f xs = {!!}
+    map f []       = []
+    map f (x ∷ xs) = f x ∷ map f xs
 
     -- Define append:
     _⊕_ : {A : Set} → List A → List A → List A
-    xs ⊕ ys = {!!}
+    []       ⊕ ys = ys
+    (x ∷ xs) ⊕ ys = x ∷ (xs ⊕ ys)
 
     -- Define reverse using append:
     reverse : {A : Set} → List A → List A
-    reverse = {!!}
+    reverse []       = []
+    reverse (x ∷ xs) = reverse xs ⊕ (x ∷ [])
 
     -- Show the following facts (may need additional lemmas, or perhaps reordering):
 
     []-⊕ : {A : Set} → (xs : List A) → (xs ⊕ []) ≡ xs
-    []-⊕ = {!!}
+    []-⊕ []      = refl
+    []-⊕ (x ∷ p) = {!!}
 
     reverse-reverse : {A : Set} → (xs : List A) → reverse (reverse xs) ≡ xs
     reverse-reverse = {!!}
+
+    length-cons : {A : Set} → (x : A) → (xs : List A) → length (x ∷ xs) ≡ succ (length xs)
+    length-cons = λ {A} x xs → refl
 
     length-reverse : {A : Set} → (xs : List A) → length (reverse xs) ≡ length xs
     length-reverse = {!!}
 
     length-⊕ : {A : Set} → (xs ys : List A) → length (xs ⊕ ys) ≡ (length xs + length ys)
-    length-⊕ = {!!}
+    length-⊕ []       ys = refl
+    length-⊕ (x ∷ xs) ys = cong succ (length-⊕ xs ys)
 
     length-map : {A B : Set} → (f : A → B) → (xs : List A) → length (map f xs) ≡ length xs
-    length-map = {!!}
+    length-map f []       = refl
+    length-map f (x ∷ xs) = cong succ (length-map f xs)
 
     -- Note how []-⊕ and +-right-id are similar.  [] is the equivalent of zero and _⊕_ is
     -- the equivalent of _+_, with the two lemmas both showing the `zero' element is a
