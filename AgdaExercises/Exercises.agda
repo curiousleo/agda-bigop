@@ -146,7 +146,7 @@ module Exercises where
 
     -- Define length:
     length : {A : Set} → List A → ℕ
-    length [] = zero
+    length []       = zero
     length (x ∷ xs) = succ (length xs)
 
     -- Define map:
@@ -168,20 +168,44 @@ module Exercises where
 
     []-⊕ : {A : Set} → (xs : List A) → (xs ⊕ []) ≡ xs
     []-⊕ []      = refl
-    []-⊕ (x ∷ p) = {!!}
+    []-⊕ (x ∷ p) = cong (_∷_ x) ([]-⊕ p)
+
+    reverse-singleton : {A : Set} → (x : A) → reverse (x ∷ []) ≡ (x ∷ [])
+    reverse-singleton x = refl
+
+    reverse-append₀ : {A : Set} → (x : A) → (xs ys : List A) → reverse ((x ∷ xs) ⊕ ys) ≡ ((reverse (xs ⊕ ys)) ⊕ (x ∷ []))
+    reverse-append₀ x xs ys = refl
+
+    reverse-⊕-reverse : {A : Set} → (xs : List A) → (ys : List A) → ((reverse xs) ⊕ (reverse ys)) ≡ reverse (ys ⊕ xs)
+    reverse-⊕-reverse []       ys       = cong reverse (sym ([]-⊕ ys))
+    reverse-⊕-reverse (x ∷ xs) []       = []-⊕ (reverse xs ⊕ (x ∷ []))
+    reverse-⊕-reverse (x ∷ xs) (y ∷ ys) = sym {!!}
 
     reverse-reverse : {A : Set} → (xs : List A) → reverse (reverse xs) ≡ xs
-    reverse-reverse = {!!}
+    reverse-reverse []       = refl
+    reverse-reverse (x ∷ xs) = trans lemma₀ (trans lemma₁ {!!})
+      where
+        lemma₀ : reverse (reverse (x ∷ xs)) ≡ reverse((reverse xs) ⊕ (x ∷ []))
+        lemma₀ = refl
+        lemma₁ : reverse ((reverse xs) ⊕ (x ∷ [])) ≡ reverse (x ∷ (reverse xs))
+        lemma₁ = {!!}
+        lemma₂ : reverse (x ∷ (reverse xs)) ≡ ((reverse (reverse xs)) ⊕ (x ∷ []))
+        lemma₂ = refl
 
     length-cons : {A : Set} → (x : A) → (xs : List A) → length (x ∷ xs) ≡ succ (length xs)
-    length-cons = λ {A} x xs → refl
-
-    length-reverse : {A : Set} → (xs : List A) → length (reverse xs) ≡ length xs
-    length-reverse = {!!}
+    length-cons x xs = refl
 
     length-⊕ : {A : Set} → (xs ys : List A) → length (xs ⊕ ys) ≡ (length xs + length ys)
     length-⊕ []       ys = refl
     length-⊕ (x ∷ xs) ys = cong succ (length-⊕ xs ys)
+    
+    length-reverse : {A : Set} → (xs : List A) → length (reverse xs) ≡ length xs
+    length-reverse [] = refl
+    length-reverse (x ∷ xs) = trans lemma₀ (trans lemma₁ lemma₂)
+      where
+        lemma₀ = length-⊕ (reverse xs) (x ∷ [])
+        lemma₁ = +-comm (length (reverse xs)) (succ zero)
+        lemma₂ = cong succ (length-reverse xs)
 
     length-map : {A B : Set} → (f : A → B) → (xs : List A) → length (map f xs) ≡ length xs
     length-map f []       = refl
@@ -195,14 +219,18 @@ module Exercises where
     IsRightNeutral : {A : Set} → (ε : A) → (_⊕_ : A → A → A) → Set
     IsRightNeutral {A} ε _⊕_ = (xs : A) → (xs ⊕ ε) ≡ xs
 
+    IsLeftNeutral : {A : Set} → (ε : A) → (_⊕_ : A → A → A) → Set
+    IsLeftNeutral {A} ε _⊕_ = (xs : A) → (ε ⊕ xs) ≡ xs
+
     -- Now use IsRightNeutral to reformulate both +-right-id and []-⊕:
 
     +-right-id′ : IsRightNeutral zero _+_
-    +-right-id′ = {!!}
+    +-right-id′ m = +-comm m zero
 
     -- Remove the `{A : Set} →' to see what happens below.  Why does that happen?
     []-⊕′ : {A : Set} → IsRightNeutral {A = List A} [] _⊕_
-    []-⊕′ = {!!}
+    []-⊕′ [] = refl
+    []-⊕′ (x ∷ xs) = cong (_∷_ x) ([]-⊕′ xs)
 
     -- In fact both the naturals and lists are monoids:
 
@@ -210,6 +238,7 @@ module Exercises where
     record IsMonoid {A : Set} (_⋆_ : A → A → A) (ε : A) : Set where
       field
         right-neutral : IsRightNeutral ε _⋆_
+        left-neutral : IsLeftNeutral ε _⋆_
         -- fill in left neutral field here, you will need to define another
         -- type level function to capture what it means to be a left neutral
 
@@ -229,14 +258,29 @@ module Exercises where
 
     -- show that ℕ and lists are monoids:
 
+    ℕ-is-monoid : IsMonoid _+_ zero
+    ℕ-is-monoid = record {
+      right-neutral = +-right-id′ ;
+      left-neutral = λ m → refl }
+
     ℕ-monoid : Monoid
-    ℕ-monoid = {!!}
+    ℕ-monoid = record {
+      Carrier = ℕ ;
+      _⋆_ = _+_ ;
+      ε = zero ;
+      is-monoid = ℕ-is-monoid }
+
+    List-is-monoid : IsMonoid _⊕_ []
+    List-is-monoid = record {
+      right-neutral = []-⊕′ ;
+      left-neutral = λ xs → refl }
 
     List-monoid : Monoid
-    List-monoid = {!!}
+    List-monoid = record { Carrier = {!!} ; _⋆_ = _⊕_ ; ε = [] ; is-monoid = List-is-monoid }
 
     -- Now we can write some generic functions over monoids.  The obvious
     -- one is a monoidal fold.  Try to fill this in:
 
     fold : (m : Monoid) → List (Monoid.Carrier m) → Monoid.Carrier m
-    fold = {!!}
+    fold m []       = Monoid.ε m
+    fold m (x ∷ xs) = (Monoid._⋆_ m) x (fold m xs)
