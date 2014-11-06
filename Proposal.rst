@@ -22,19 +22,18 @@ Open questions:
 
 - Which representation to use (if this is going to be a programming library)?
 
-Generalised shortest path algorithms in Agda
---------------------------------------------
+Generalised "big operators" in Agda
+-----------------------------------
 
-Current research into routing protocols seeks to formalise the assumptions made by routing algorithms in terms of the underlying algebraic structures, most notably variations and combinations of semirings.
+The goal of this project is to create an Agda library that describes "iterated big operators" uniformly, in the spirit of the ``bigops`` module in Coq's ``ssreflect`` library.
 
-This has lead to some surprising results -- for example, Dijkstra's algorithm requires much less structure from the underlying algebraic entity than previously thought.
+One application of such a module would be in reasoning about matrices, where big operator notation is commonly used.
 
-The purpose of this project would be to prove one or more variants of the distributed Bellman-Ford algorithm or the Dijkstra algorithm correct while taking care to make as few assumptions as possible about the underlying algebraic structure. This will require me to:
+Workplan:
 
-- Translate the algebraic structures used in the analysis of routing protocols into Agda types and data structures. Some standard entities from abstract algebra already exist in Agda's standard library, others would have to be newly implemented;
-- Find minimal sets of assumptions that make the routing algorithms correct; and
-- Prove the correctness of the routing algorithms based on these assumptions in Agda.
-
-Comments:
-
-- I think that porting rie-1.0.v (to algebra-based correctness proof for Dijkstra in Coq) to Agda would make for a great two to three month project. But I don't see an obvious way of extending that into a part III dissertation.
+- Get really good at Agda programming;
+- Understand the mathematics behind big operators (what are the minimum assumptions, what do extra assumptions allow us to do?);
+- Review previous work (``bigops``, ``explore``, ...);
+- Design and build the library;
+- Write the dissertation;
+- Maybe publish the results.
