@@ -12,5 +12,6 @@
 *.log
 *.out
 *.pdf
+*.ptb
 *.run.xml
 *.tex.blg
