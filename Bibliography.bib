@@ -25,7 +25,7 @@
 @inproceedings{sobrinho_routing_2010,
 	title = {Routing in Equilibrium},
 	abstract = {Abstract — Some path problems cannot be modeled using semirings because the associated algebraic structure is not distributive. Rather than attempting to compute globally optimal paths with such structures, it may be sufficient in some cases to find locally optimal paths—paths that represent a stable local equilibrium. For example, this is the type of routing system that has evolved to connect Internet Service Providers ({ISPs}) where link weights implement bilateral commercial relationships between them. Previous work has shown that routing equilibria can be computed for some non-distributive algebras using algorithms in the Bellman-Ford family. However, no polynomial time bound was known for such algorithms. In this paper, we show that routing equilibria can be computed using Dijkstra’s algorithm for one class of non-distributive structures. This provides the first polynomial time algorithm for computing locally optimal solutions to path problems. We discuss possible applications to Internet routing. I. {GLOBAL} {VS}. {LOCAL} {OPTIMA} A great deal of research has followed from the observation—first made about 40 years ago—that the linear algebra structure (R, +, ×, 0, 1) and many of its associated algorithms can be generalized to a very large class of algebraic structures called semirings (see [6], [1] for modern surveys of this area). These structures have the form (S, ⊕, ⊗, 0, 1), where the crucial property is distributivity of ⊗ over ⊕. A particularly interesting sub-case occurs when the operation ⊕ is selective, as this relates to the kinds of problems one encounters in routing in communications networks. For instance, the structure (R∪\{∞\}, min, +, ∞, 0) is associated with distances and shortest-paths in graphs. A communication network G = (V, E, a) is represented by an adjacency matrix A where A[i, j]  = a(i, j) is the weight of link (i, j)  ∈ E: A[i, j]  = 0 if there is no link from i to j. The matrix A ∗ of optimal weights is defined as A ∗ [i, j] = a(P), (1)},
-	booktitle = {In Mathematical Theory of Networks and System},
+	booktitle = {Proceedings of the 19th International Symposium on Mathematical Theory of Networks and Systems},
 	author = {Sobrinho, João Luís and Griffin, Timothy G.},
 	date = {2010},
 	file = {Citeseer - Full Text PDF:/home/leo/.mozilla/firefox/dlbwkpok.default/zotero/storage/WFKJVJPW/Sobrinho and Griffin - 2010 - Routing in Equilibrium.pdf:application/pdf;Citeseer - Snapshot:/home/leo/.mozilla/firefox/dlbwkpok.default/zotero/storage/IWWKV3F7/summary.html:text/html}
@@ -195,4 +195,20 @@
 	author = {Abbott, Michael and Altenkirch, Thorsten and {McBride}, Conor and Ghani, Neil},
 	urldate = {2014-11-02},
 	date = {2004-08}
+}
+
+@article{griffin_stable_2002,
+	title = {The Stable Paths Problem and Interdomain Routing},
+	volume = {10},
+	issn = {1063-6692},
+	url = {http://dl.acm.org/citation.cfm?id=508325.508332},
+	abstract = {Dynamic routing protocols such as {RIP} and {OSPF} essentially implement distributed algorithms for solving the shortest paths problem. The border gateway protocol ({BGP}) is currently the only interdomain routing protocol deployed in the Internet. {BGP} does not solve a shortest paths problem since any interdomain protocol is required to allow policy-based metrics to override distance-based metrics and enable autonomous systems to independently define their routing policies with little or no global coordination. It is then natural to ask if {BGP} can be viewed as a distributed algorithm for solving some fundamental problem. We introduce the stable paths problem and show that {BGP} can be viewed as a distributed algorithm for solving this problem. Unlike a shortest path tree, such a solution does not represent a global optimum, but rather an equilibrium point in which each node is assigned its local optimum.We study the stable paths problem using a derived structure called a dispute wheel, representing conflicting routing policies at various nodes. We show that if no dispute wheel can be constructed, then there exists a unique solution for the stable paths problem. We define the simple path-vector protocol ({SPVP}), a distributed algorithm for solving the stable paths problem. {SPVP} is intended to capture the dynamic behavior of {BGP} at an abstract level. If {SPVP} converges, then the resulting state corresponds to a stable paths solution. If there is no solution, then {SPVP} always diverges. In fact, {SPVP} can even diverge when a solution exists. We show that {SPVP} will converge to the unique solution of an instance of the stable paths problem if no dispute wheel exists.},
+	pages = {232--243},
+	number = {2},
+	journaltitle = {{IEEE}/{ACM} Trans. Netw.},
+	author = {Griffin, Timothy G. and Shepherd, F. Bruce and Wilfong, Gordon},
+	urldate = {2014-11-07},
+	date = {2002-04},
+	keywords = {{BGP}, Border Gateway Protocol, interdomain routing, internet routing, path vector protocols, stable routing},
+	file = {ACM Full Text PDF:/home/leo/.mozilla/firefox/dlbwkpok.default/zotero/storage/B4S7FU99/Griffin et al. - 2002 - The Stable Paths Problem and Interdomain Routing.pdf:application/pdf}
 }
