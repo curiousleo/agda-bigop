@@ -33,15 +33,15 @@
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 }{}
 \hypersetup{%
-  pdftitle={Generalised big operators in Agda},
+  pdftitle={Routing with composure},
 }
 
 % KOMA-script styles
-\addtokomafont{disposition}{\rmfamily}
+%\addtokomafont{disposition}{\rmfamily}
 
 %%% Title Data
 \title{\phantomsection%
-  Generalised big operators in Agda%
+  Routing with composure%
   \label{generalised-big-operators-in-agda}}
 \author{}
 \date{}
@@ -50,58 +50,27 @@
 \begin{document}
 \maketitle
 
+% Current research into routing protocols seeks to formalise the assumptions made by routing algorithms in terms of the underlying algebraic structures, most notably variations and combinations of semirings.
+% 
+% This has lead to some surprising results -- for example, Dijkstra's algorithm requires much less structure from the underlying algebraic entity than previously thought.
+% 
+% The purpose of this project would be to prove one or more variants of the distributed Bellman-Ford algorithm or the Dijkstra algorithm correct while taking care to make as few assumptions as possible about the underlying algebraic structure. This will require me to:
+% 
+% - Translate the algebraic structures used in the analysis of routing protocols into Agda types and data structures. Some standard entities from abstract algebra already exist in Agda's standard library, others would have to be newly implemented;
+% - Find minimal sets of assumptions that make the routing algorithms correct; and
+% - Prove the correctness of the routing algorithms based on these assumptions in Agda.
+
 
 \begin{abstract}
-\enquote{Big operator} notation is common in algebraic reasoning. It is a useful tool to express formulae in a succinct and abstract way, and reveals hidden symmetries that can immediately be exploited. In informal mathematics, the switch from small to big operators is often made without giving much thought to the implicit assumptions thereby made about the underlying algebra. In this project, I will implement a library for reasoning uniformly about big operators in the dependently typed programming language \emph{cum} theorem proving environment, Agda. To demonstrate its usefulness, I will prove some standard results about properties of structures from abstract algebra.
+\dots
 \end{abstract}
 
 \section{Introduction%
   \label{introduction}%
 }
 
-In many areas of mathematics, \enquote{big operators} are a commonly used and versatile tool, and they provide a natural way to express an operation iterated over some set. Making big operators available in a formal theorem proving environment like Agda therefore allows for a natural style of algebraic reasoning.
-
-Combining the proposed library with the existing Agda library for equational reasoning, a proof for associativity of matrix multiplication may look similar to this piece of code:
-
-XXX Show some pseudocode that gives an idea of what this might look like.
-
-\begin{code}
-𝕄-mult-assoc : (p q r s : ℕ) →
-               (𝕄 p q × 𝕄 q r) × 𝕄 r s ≡ 𝕄 p q × (𝕄 q r × 𝕄 r s)
-𝕄-mult-assoc = {!!}
-    where a = bigop b
-\end{code}
-
-Agda is a dependently typed programming language, so propositions are encoded as types and terms represent proofs. Its flexible syntax allows libraries to define constructs like the one used in the example of equational reasoning. Unicode symbols can be used as function or type names, a feature which, used with caution, can enhance readability and make Agda code look more like mathematics.
-
-\section{Approach%
-  \label{approach}%
-}
-
-
-
-\section{Outcomes%
-  \label{outcomes}%
-}
-
-\section{Related work%
-  \label{related-work}%
-}
-
-An implementation of a big operator library exists for the theorem prover Coq {[}ref{]}. It relies on a number of ways to define structures and syntax the are specific to Coq and do not translate directly into Agda.
-
-Along similar lines, an implementation of \enquote{explorations} in Agda exists which examines the relationship between foldable data structures and big operators {[}ref{]}. However, this work differs in several ways from what is proposed here. The library does not preserve the underlying algebraic structure of the operator and its carrier, instead relying on parametricity and free theorems to recover some laws based on type. It is not tailored specifically towards simplifying proofs using big operators.
-
 \section{Workplan%
   \label{workplan}%
 }
-
-In order to design and implement the proposed library in Agda, I will have to become proficient in reading and writing Agda code. This includes learning how program with dependent types and put them to good use, and how code is structured and written idiomatically in Agda. I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda. From the end of Michaelmas until Christmas, I will keep reading and writing Agda code and learn more about its type system, the module system and common idioms.
-
-I will also have to acquire a good understanding of the mathematics of big operators. This involves finding answers to questions such as, \enquote{what are the minimum requirements for a small operator and a carrier set so a big operator can automatically be derived from it?}, and exploring what additional rules governing the big operator can be derived from properties of the underlying algebra. I have already begun to review previous work on the mathematics and implementation of big operators. During the last weeks of Michaelmas term I will find and read more literature about the relationship between big operators and abstract algebra. The time between the end of term and Christmas will be allocated to exploring this relationship further, and to find ways of encoding them in Agda (in addition to learning Agda).
-
-Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed library will probably be an iterative process. My aim is to design and implement the first iteration of the big operators library during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind. I will use the Easter vacation and the beginning of Easter term to implement the second iteration of the library. The remaining time will be devoted to building up a collection of lemmas about big operators in Agda, and demonstrating its use by formalising some standard results (XXX). If time permits, I will attempt to prove some theorems in the area of shortest path problems.
-
-In the spirit of Simon Peyton-Jones' slogan \enquote{writing a paper guides your research}, I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better. The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
 
 \end{document}
