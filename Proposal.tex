@@ -14,6 +14,10 @@
 \usepackage{cleveref}
 \usepackage{csquotes}
 \usepackage{fancyvrb}
+\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
+            dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[bookmarks,hidelinks]{hyperref}
+
 \setcounter{secnumdepth}{0}
 
 %%% Custom LaTeX preamble
@@ -28,16 +32,17 @@
    {} % options
 
 % hyperlinks
-\ifthenelse{\isundefined{\hypersetup}}{%
-  \usepackage[bookmarks,hidelinks]{hyperref}
-  \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-}{}
+\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 \hypersetup{%
   pdftitle={Routing with composure},
+  pdfauthor={Leonhard Markert (lm510), Emmanuel College}
 }
 
 % KOMA-script styles
 %\addtokomafont{disposition}{\rmfamily}
+
+% bibliography
+\addbibresource{Bibliography.bib}
 
 %%% Title Data
 \title{\phantomsection%
@@ -72,5 +77,7 @@ Dijkstra's algorithm in its most common form computes globally optimal paths wit
 \section{Workplan%
   \label{workplan}%
 }
+
+\printbibliography
 
 \end{document}
