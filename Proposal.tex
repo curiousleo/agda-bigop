@@ -67,7 +67,7 @@
 
 
 \begin{abstract}
-Dijkstra's algorithm in its most common form computes globally optimal paths with respect to some metric, which must satisfy certain laws. Recently, it has been shown that Dijkstra's algorithm computes \emph{locally} optimal paths even when the underlying metric is not distributive. A proof of correctness not assuming distributivity has been formalised in the theorem prover Coq, but it is complex and hard to understand for someone not intimately familiar with Coq. I will reconstruct this proof in Agda, a dependent type theory, aiming to simplify it and make it easier to read. This will require me to develop several libraries for the proof to build upon. These libraries may be of interest for the wider Agda community, so they will be designed with reusability in mind.
+Dijkstra's algorithm in its most common form computes globally optimal paths with respect to some metric, which must satisfy certain laws. Recently, it has been shown that Dijkstra's algorithm computes \emph{locally} optimal paths even when the underlying metric is not distributive \autocite{sobrinho_routing_2010}. A proof of correctness not assuming distributivity has been formalised in the theorem prover Coq, but it is complex and hard to understand for someone not intimately familiar with Coq. I will reconstruct this proof in Agda, a dependent type theory, aiming to simplify it and make it easier to read. This will require me to develop several libraries for the proof to build upon. These libraries may be of interest for the wider Agda community, so they will be designed with reusability in mind.
 \end{abstract}
 
 \section{Introduction%
