@@ -275,8 +275,8 @@ module Exercises where
       right-neutral = []-⊕′ ;
       left-neutral = λ xs → refl }
 
-    List-monoid : Monoid
-    List-monoid = record { Carrier = {!!} ; _⋆_ = _⊕_ ; ε = [] ; is-monoid = List-is-monoid }
+    List-monoid : (A : Set) → Monoid
+    List-monoid A = record { Carrier = List A ; _⋆_ = _⊕_ ; ε = [] ; is-monoid = List-is-monoid }
 
     -- Now we can write some generic functions over monoids.  The obvious
     -- one is a monoidal fold.  Try to fill this in:
