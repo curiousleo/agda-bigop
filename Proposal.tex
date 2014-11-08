@@ -3,7 +3,6 @@
 \usepackage{xltxtra} 		% loads fixltx2e, metalogo, xunicode, fontspec
 \usepackage{microtype}      	% typography pedantry
 \usepackage[british]{babel}
-% \defaultfontfeatures{Scale=MatchLowercase}
 \usepackage{ifthen}
 \usepackage{color}
 \usepackage{amsthm}
@@ -13,8 +12,7 @@
 \usepackage{cleveref}
 \usepackage{csquotes}
 \usepackage{fancyvrb}
-\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
-            dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
 \usepackage[bookmarks,hidelinks]{hyperref}
 
 \setcounter{secnumdepth}{0}
@@ -54,22 +52,13 @@
 \begin{document}
 \maketitle
 
-% Current research into routing protocols seeks to formalise the assumptions made by routing algorithms in terms of the underlying algebraic structures, most notably variations and combinations of semirings.
-% 
-% This has lead to some surprising results -- for example, Dijkstra's algorithm requires much less structure from the underlying algebraic entity than previously thought.
-% 
-% The purpose of this project would be to prove one or more variants of the distributed Bellman-Ford algorithm or the Dijkstra algorithm correct while taking care to make as few assumptions as possible about the underlying algebraic structure. This will require me to:
-% 
-% - Translate the algebraic structures used in the analysis of routing protocols into Agda types and data structures. Some standard entities from abstract algebra already exist in Agda's standard library, others would have to be newly implemented;
-% - Find minimal sets of assumptions that make the routing algorithms correct; and
-% - Prove the correctness of the routing algorithms based on these assumptions in Agda.
-
 
 \begin{abstract}
 Dijkstra's algorithm in its usual form computes globally optimal paths with respect to some metric, which must satisfy certain laws. Recently, Dijkstra's algorithm has been shown to compute \emph{locally} optimal paths even when the underlying metric is not distributive. A proof of correctness that does not assume distributivity has been formalised in the theorem prover Coq, but it is complex and hard to understand for someone not intimately familiar with Coq.
 
 I propose to reconstruct this proof in Agda, a dependent type theory, aiming to simplify it and make it easier to read. This will require me to develop several libraries for the proof to build upon. These libraries may be of interest to the wider Agda community, so they will be designed with reusability in mind.
 \end{abstract}
+
 
 \section{Introduction%
   \label{introduction}%
@@ -93,6 +82,7 @@ Time permitting, I will use the definitions developed for the correctness proof 
 
 In summary, I propose to reconstruct a proof of correctness of Dijkstra's algorithm over non-distributive metrics in the dependently typed programming language cum theorem prover Agda, along with the accompanying libraries of useful definitions and lemmas which are currently missing from the Agda ecosystem.
 
+
 \section{Workplan%
   \label{workplan}%
 }
@@ -104,6 +94,7 @@ I also have to become proficient in writing good Agda code. This includes learni
 %Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed components will be an iterative process. My aim is to design and implement the first iteration of the accompanying libraries during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind. I will use the Easter vacation and the beginning of Easter term to implement the second iteration. The remaining time will be devoted to building up a collection of lemmas about big operators in Agda, and demonstrating its use by formalising some standard results (XXX). If time permits, I will attempt to prove some theorems in the area of shortest path problems.
 
 In the spirit of Simon Peyton-Jones' slogan \enquote{writing a paper guides your research}, I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better. The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
+
 
 \printbibliography
 
