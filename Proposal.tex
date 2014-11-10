@@ -1,103 +1,126 @@
-\RequirePackage[l2tabu, orthodox]{nag}
-\documentclass[a4paper]{scrartcl}
-\usepackage{xltxtra} 		% loads fixltx2e, metalogo, xunicode, fontspec
+% \RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[a4paper]{article}
+%\usepackage{xltxtra} 		% loads fixltx2e, metalogo, xunicode, fontspec
 \usepackage{microtype}      	% typography pedantry
 \usepackage[british]{babel}
-\usepackage{ifthen}
-\usepackage{color}
+%\usepackage{ifthen}
+%\usepackage{color}
 \usepackage{amsthm}
-\usepackage{thmtools}
-\usepackage{paralist}
-\usepackage{nameref}
-\usepackage{cleveref}
-\usepackage{csquotes}
-\usepackage{fancyvrb}
-\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
-\usepackage[bookmarks,hidelinks]{hyperref}
+%\usepackage{thmtools}
+%\usepackage{paralist}
+%\usepackage{nameref}
+%\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{fancyvrb}
+%\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[colorlinks]{hyperref}
 
-\setcounter{secnumdepth}{0}
+%\setcounter{secnumdepth}{0}
 
 %%% Custom LaTeX preamble
 % Linux Libertine (free, wide coverage, not only for Linux)
-\setmainfont{Linux Libertine O}
-\setsansfont{Linux Biolinum O}
-\setmonofont[HyphenChar=None,Scale=MatchLowercase]{DejaVu Sans Mono}
+%\setmainfont{Linux Libertine O}
+%\setsansfont{Linux Biolinum O}
+%\setmonofont[HyphenChar=None,Scale=MatchLowercase]{DejaVu Sans Mono}
 
 %%% User specified packages and stylesheets
-\DefineVerbatimEnvironment%
-   {code}{Verbatim}
-   {} % options
+%\DefineVerbatimEnvironment%
+%   {code}{Verbatim}
+%   {} % options
 
 % hyperlinks
-\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-\hypersetup{%
-  pdftitle={Routing with composure},
-  pdfauthor={Leonhard Markert (lm510), Emmanuel College}
-}
+%\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
+%\hypersetup{%
+%  pdftitle={Routing with composure},
+%  pdfauthor={Leonhard Markert (lm510), Emmanuel College}
+%}
 
 % KOMA-script styles
 %\addtokomafont{disposition}{\rmfamily}
 
 % bibliography
-\addbibresource{Bibliography.bib}
+% \addbibresource{Bibliography.bib}
 
 %%% Title Data
-\title{\phantomsection%
-  Routing with composure%
-  \label{generalised-big-operators-in-agda}}
-\author{}
-\date{}
+\title{Routing with composure}
+\author{Leonhard Markert}
+\date{Proposed Supervisors:\\Timothy Griffin and Dominic Mulligan}
+
+\bibliographystyle{alpha}
 
 %%% Body
 \begin{document}
+
 \maketitle
 
-
 \begin{abstract}
-Dijkstra's algorithm in its usual form computes globally optimal paths with respect to some metric, which must satisfy certain laws. Recently, Dijkstra's algorithm has been shown to compute \emph{locally} optimal paths even when the underlying metric is not distributive. A proof of correctness that does not assume distributivity has been formalised in the theorem prover Coq, but it is complex and hard to understand for someone not intimately familiar with Coq.
+Dijkstra's algorithm computes globally optimal paths with respect to some metric satisfying certain laws, amongst them distributivity. Recently, a generalised Dijkstra's algorithm has been shown to compute \emph{locally} optimal paths even when the underlying metric is not distributive. A proof of correctness that does not assume distributivity has been formalised in Coq, an implementation of dependent type theory, but it is complex and hard to understand for someone not intimately familiar with the Coq system.
 
-I propose to reconstruct this proof in Agda, a dependent type theory, aiming to simplify it and make it easier to read. This will require me to develop several libraries for the proof to build upon. These libraries may be of interest to the wider Agda community, so they will be designed with reusability in mind.
+I propose to reconstruct this proof in Agda, another implementation of dependent type theory, aiming to simplify it and make it easier to read. This will necessitate the development of several utility libraries missing from the Agda Standard Library in order to complete the proof. These libraries may be of interest to the wider Agda community, so they will be designed with reusability in mind.
 \end{abstract}
 
+\section{Project idea}
+\label{introduction}
 
-\section{Introduction%
-  \label{introduction}%
-}
+\subsection{Background}
 
-At the core of most routing protocols lies some variant of either the Bellman-Ford algorithm or Dijkstra's algorithm. Both compute globally optimal paths with respect to some metric, given that the metric satisfies a set of laws.
+At the core of most routing protocols lies some variant of either the Bellman-Ford or Dijkstra's algorithm.
+Both compute globally optimal paths with respect to some metric, given that the metric satisfies a set of laws.
 
-Metrics and the rules that describe how they compose can be modelled as algebraic structures. In this framework, the model for the usual set of assumptions for a metric used in Dijkstra's algorithm is a semiring. This structure contains two operators, usually written \(\oplus\) and \(\otimes\), with the rule that \(\otimes\) is left- and right-distributive over \(\oplus\). Standard correctness proofs rely on this distributivity property.\footnote{See, for example, the correctness proof in in \enquote{Introduction to Algorithms} \autocite[XXX]{cormen_introduction_2009} -- XXX verify this.} Sobrinho and Griffin showed that when the metric is non-distributive, Dijkstra's algorithm still computes locally optimal paths, which are defined as the solutions to fixed-point equations over the graph's adjacency matrix \autocite{sobrinho_routing_2010}. They provided a formal proof of this result written in \emph{Coq}, an interactive theorem prover.\footnote{The formalisation in Coq of the correctness proof for Dijkstra's algorithm can be found here: \url{http://www.cl.cam.ac.uk/~tgg22/metarouting/rie-1.0.v}. Coq can be obtained from its website, \url{http://coq.inria.fr}}
+Metrics and the rules that describe how they compose can be modelled as algebraic structures.
+In this framework, the model for the usual set of assumptions for a metric used in Dijkstra's algorithm is an algebraic structure called a \emph{semiring}.
+Semirings fix two binary operators---usually written $\oplus$ and $\otimes$---along with an associated law that $\otimes$ is left- and right-distributive over $\oplus$.
+Standard correctness proofs for Dijkstra's algorithm rely on this distributivity property.\footnote{See, for example, the correctness proof in \emph{Introduction to Algorithms}~\cite[XXX]{cormen_introduction_2009} -- XXX verify this.}
+Sobrinho and Griffin showed that when the metric is non-distributive, Dijkstra's algorithm still computes locally optimal paths through a graph, which are defined as the solutions to fixed-point equations over the graph's adjacency matrix~\cite{sobrinho_routing_2010}.
+They provided a formal proof of this result written in \emph{Coq}, an interactive theorem prover based on dependent type theory.\footnote{The formalisation in Coq of the correctness proof for Dijkstra's algorithm can be found here: \url{http://www.cl.cam.ac.uk/~tgg22/metarouting/rie-1.0.v}.
+Coq can be obtained from its website, \url{http://coq.inria.fr}}
 
-This proof makes heavy use of proof-constructing metaprogramming facilities called \emph{tactics}. Whilst convenient for writing proofs, tactics make the proof file harder to read: in many places, instead of the actual proof of a lemma or theorem, it contains a call to a metaroutine that constructs the proof (the result of which the reader of the file never gets to see). The overall proof is of course still correct, but it is hard to see \emph{why} this is the case just by reading it.
+Sobrinho and Griffin's Coq proof makes heavy use of proof-constructing metaprogramming facilities called \emph{tactics}.
+Tactics make proofs easier to write at the expense of hiding the `real' proof of a statement from the user, which remains hidden from view.
+Whilst the underlying proof constructed by the tactic-metaprogram is of course still correct, as guaranteed by Coq's typechecker, it is hard to see \emph{why} this is the case just by reading a proof script.
 
-\emph{Agda}, like Coq, is both a dependently typed programming language and a higher-order type theory.\footnote{Agda: \url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
+\emph{Agda}, like Coq, is an implementation of dependent type theory.\footnote{Agda: \url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
 %\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} whereas Agda's is based on Luo's \enquote{unifying theory of dependent types}.}
-Agda does not support tactics but allows flexible dependent pattern matching. Proofs in Agda are generally considered easier to read for non-experts than their Coq equivalents. The goal of this project is to port the correctness proof described above from Coq to Agda. In doing so, I will try to find ways to simplify the proof and improve its readability.
+Agda does not support tactics, and therefore proof terms must be provided by the user via a process of refinement, with Agda's flexible implementation of dependent pattern matching making this process relatively pain-free. Proofs in Agda are generally considered easier to read for non-experts than their Coq equivalents as there is no obfuscating metaprogramming layer sitting between the user and the `real' proof.
 
-Users of Coq can draw on a large set of libraries of proofs and tactics. The existing correctness proof for Dijkstra's algorithm over non-distributive metrics builds on Ssreflect,\footnote{\url{http://ssr.msr-inria.inria.fr/}} a Coq library that formalises, amongst other things, the notion of \enquote{big operators} \autocite{bertot_canonical_2008}. This module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over. For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+\subsection{Project goal}
 
-The younger Agda project has not yet caught up with other theorem provers in terms of the size of its standard library and the number of third-party components available. At this time, no equivalent of Coq's big operator library exists for Agda, although steps in this direction have been made \autocite{gustafsson_foldable_2014}. A general purpose formalisation of matrix algebra and basic linear algebra is currently also missing. Since the proof that is to be ported to Agda depends on these and other notions, I will have to develop their representation in Agda as part of this project. Matrices and big operators are commonly used concepts, so it is reasonable to expect that libraries formalising them will be of general interest to the wider Agda community. I will therefore design any auxiliary libraries with reusability in mind, aiming to write idiomatic code that could be included in the Agda standard library.
+The goal of this project is to port Sobrinho and Griffin's correctness proof for a generalised Dijkstra's algorithm, as described above, from Coq to Agda.
+In doing so, I will try to find ways to simplify the proof and improve its readability.
+
+Users of Coq can draw on a large set of libraries of proofs and tactics.
+For instance, the existing correctness proof for Dijkstra's algorithm over non-distributive metrics builds on \emph{Ssreflect},\footnote{\url{http://ssr.msr-inria.inria.fr/}} a Coq library that formalises, amongst other things, the notion of `big operators'~\cite{bertot_canonical_2008}. This module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over. For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+
+The younger Agda project has not yet caught up with other theorem provers in terms of the size of its standard library and the number of third-party components available. At this time, no equivalent of Coq's big operator library exists for Agda, although steps in this direction have been made~\cite{gustafsson_foldable_2014}, nor is there currently any Agda implementation of matrices and their associated algebra.  Since the proof that is to be ported to Agda depends on these and various other notions, I will have to develop their representation in Agda as part of this project. Matrices and big operators are commonly used concepts, so it is reasonable to expect that libraries formalising them will be of general interest to the wider Agda community. I will therefore design any auxiliary libraries with reusability in mind, aiming to write idiomatic code that could be included in the Agda standard library.
 
 Time permitting, I will use the definitions developed for the correctness proof to explore further topics in algebraic path finding in Agda.
 
 In summary, I propose to reconstruct a proof of correctness of Dijkstra's algorithm over non-distributive metrics in the dependently typed programming language and theorem prover Agda, along with the accompanying libraries of useful definitions and lemmas which are currently missing from the Agda ecosystem.
 
+\section{Workplan}
+\label{workplan}
 
-\section{Workplan%
-  \label{workplan}%
-}
+In order to recreate the Dijkstra correctness proof, I must first understand it. This requires learning the basics of Coq and Ssreflect, a significant extension of Coq that the proof makes significant use of. Regarding the mathematics of the proof, I already have a basic understanding of abstract algebra from Timothy Griffin's course on algebraic path problems, but some further reading will be necessary to follow the proof in detail.\footnote{Gondran and Minoux' book \emph{Graphs, Dioids and Semirings} will provide much of the required background~\cite{gondran_graphs_2008}.}
+I will work through the original proof in a theorem proving environment and add annotations for future reference. I will begin doing so as soon as Michaelmas term finishes, and aim to read and annotate the entire proof in about two weeks.
 
-In order to recreate the Dijkstra correctness proof, I must understand it first. This requires learning the basics of Coq and Ssreflect, a significant extension of Coq that the proof makes heavy use of. Regarding the mathematics of the proof, I already have a basic understanding of abstract algebra from Timothy Griffin's course on algebraic path problems, but some further reading will be necessary to follow the proof in detail.\footnote{Gondran and Minoux' book \enquote{Graphs, Dioids and Semirings} will provide much of the required background \autocite{gondran_graphs_2008}.} I will work through the original proof in a theorem proving environment and add annotations for future reference. I will begin doing so as soon as Michaelmas term finishes, and aim to read and annotate the entire proof in about two weeks.
+I must also become proficient in writing idiomatic Agda code.
+This includes learning how to program with dependent types and put them to good use, and understanding how code is structured and commonly written in Agda.
+I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda.
+From the end of Michaelmas until Christmas (that is, in parallel with annotating the original proof in Coq), I will keep reading and writing Agda code and learn about its type system, the module system and common idioms.
 
-I also have to become proficient in writing good Agda code. This includes learning how to program with dependent types and put them to good use, and understanding how code is structured and written idiomatically in Agda. I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda. From the end of Michaelmas until Christmas (that is, in parallel with annotating the original proof in Coq), I will keep reading and writing Agda code and learn about its type system, the module system and common idioms.
+Having understood the original proof, and possessing enough knowledge of dependently-typed programming, I will be able outline the construction of the proof in Agda and look for any existing Agda libraries that could be of use.
+This will give me a list of components that are still missing.
+I aim to have written the outline and done the survey of Agda packages by the time Lent term begins.
 
-Having understood the original proof and knowing Agda to a sufficient degree, I will be able outline the construction of the proof in Agda and look for any existing Agda libraries that could be of use. This will give me a list of components that are still missing. I aim to have written the outline and done the survey of Agda packages by the time Lent term begins.
+Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed components will be an iterative process.
+My aim is to design and implement the first iteration of the accompanying libraries during Lent term.
+At the end of Lent term, I will critique my first attempt thoroughly and design the second iteration, which will be implemented during the Easter vacation.
+The first two weeks of Easter term are reserved for contingencies.
+Time permitting, I will use the definitions developed for the correctness proof to explore further topics in algebraic path finding in Agda.
 
-Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed components will be an iterative process. My aim is to design and implement the first iteration of the accompanying libraries during Lent term. At the end of Lent term, I will critique my first attempt thoroughly and design the second iteration, which will be implemented during the Easter vacation. The first two weeks of Easter term are reserved for contingencies. Time permitting, I will use the definitions developed for the correctness proof to explore further topics in algebraic path finding in Agda.
+In the spirit of Simon Peyton-Jones' sloga `writing a paper guides your research', I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better.
+The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
 
-In the spirit of Simon Peyton-Jones' slogan \enquote{writing a paper guides your research}, I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better. The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
-
-
-\printbibliography
+\bibliography{Bibliography}
 
 \end{document}
