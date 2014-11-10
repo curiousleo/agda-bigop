@@ -176,21 +176,21 @@ module Exercises where
     reverse-append₀ : {A : Set} → (x : A) → (xs ys : List A) → reverse ((x ∷ xs) ⊕ ys) ≡ ((reverse (xs ⊕ ys)) ⊕ (x ∷ []))
     reverse-append₀ x xs ys = refl
 
+    reverse-reverse-singleton : {A : Set} → (x : A) → (ys : List A) → (reverse (ys ⊕ (x ∷ []))) ≡ (x ∷ (reverse ys))
+    reverse-reverse-singleton x [] = refl
+    reverse-reverse-singleton x (y ∷ ys) = {!!}
+
     reverse-⊕-reverse : {A : Set} → (xs : List A) → (ys : List A) → ((reverse xs) ⊕ (reverse ys)) ≡ reverse (ys ⊕ xs)
     reverse-⊕-reverse []       ys       = cong reverse (sym ([]-⊕ ys))
     reverse-⊕-reverse (x ∷ xs) []       = []-⊕ (reverse xs ⊕ (x ∷ []))
-    reverse-⊕-reverse (x ∷ xs) (y ∷ ys) = sym {!!}
+    reverse-⊕-reverse (x ∷ xs) ys = {!!}
 
     reverse-reverse : {A : Set} → (xs : List A) → reverse (reverse xs) ≡ xs
     reverse-reverse []       = refl
-    reverse-reverse (x ∷ xs) = trans lemma₀ (trans lemma₁ {!!})
+    reverse-reverse (x ∷ xs) = trans lemma₀ {!!}
       where
-        lemma₀ : reverse (reverse (x ∷ xs)) ≡ reverse((reverse xs) ⊕ (x ∷ []))
+        lemma₀ : reverse (reverse (x ∷ xs)) ≡ reverse ((reverse xs) ⊕ (x ∷ []))
         lemma₀ = refl
-        lemma₁ : reverse ((reverse xs) ⊕ (x ∷ [])) ≡ reverse (x ∷ (reverse xs))
-        lemma₁ = {!!}
-        lemma₂ : reverse (x ∷ (reverse xs)) ≡ ((reverse (reverse xs)) ⊕ (x ∷ []))
-        lemma₂ = refl
 
     length-cons : {A : Set} → (x : A) → (xs : List A) → length (x ∷ xs) ≡ succ (length xs)
     length-cons x xs = refl
