@@ -41,19 +41,24 @@ module Exercises where
 
   ⊕-associative : ∀ {A} → (xs ys zs : List A) → xs ⊕ (ys ⊕ zs) ≡ (xs ⊕ ys) ⊕ zs
   ⊕-associative []       ys zs = refl
-  ⊕-associative (x ∷ xs) ys zs = {!!}
+  ⊕-associative (x ∷ xs) ys zs
+    rewrite
+      ⊕-associative xs ys zs = refl
 
   map-⊕ : ∀ {A B} → (f : A → B) → ∀ xs ys → map f (xs ⊕ ys) ≡ map f xs ⊕ map f ys
   map-⊕ f []       ys = refl
-  map-⊕ f (x ∷ xs) ys = {!!}
+  map-⊕ f (x ∷ xs) ys
+    rewrite
+      map-⊕ f xs ys = refl
 
-  reverse-⊕ : ∀ {A} → (xs ys : List A) → reverse (xs ⊕ ys) ≡ reverse ys ⊕ reverse xs
-  reverse-⊕ []       ys = {!!}
-  reverse-⊕ (x ∷ xs) ys = {!!}
+  reverse-⊕ : ∀ {A} → (xs ys : List A) → reverse (xs ⊕ ys) ≡ (reverse ys) ⊕ (reverse xs)
+  reverse-⊕ []       ys = sym (⊕-[] (reverse ys))
+  reverse-⊕ (x ∷ xs) ys
+    rewrite reverse-⊕ xs ys = sym (⊕-associative (reverse ys) (reverse xs) (x ∷ []))
 
   reverse-reverse : ∀ {A} → (xs : List A) → reverse (reverse xs) ≡ xs
   reverse-reverse []       = refl
-  reverse-reverse (x ∷ xs) = {!!}
+  reverse-reverse (x ∷ xs) = trans (reverse-⊕ (reverse xs) (x ∷ [])) {!!} -- rewrite??
 
   module Vectors where
 
@@ -71,12 +76,19 @@ module Exercises where
     -- lengths like we needed to do with lists:
 
     _⊕′_ : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
-    []       ⊕′ ys = {!!}
-    (x ∷ xs) ⊕′ ys = {!!}
+    []       ⊕′ ys = ys
+    (x ∷ xs) ⊕′ ys = x ∷ (xs ⊕′ ys)
 
     map′ : ∀ {A B m} → (f : A → B) → Vec A m → Vec B m
-    map′ f []       = {!!}
-    map′ f (x ∷ xs) = {!!}
+    map′ f []       = []
+    map′ f (x ∷ xs) = f x ∷ map′ f xs
+
+    suc₀ : (m : ℕ) → m + suc 0 ≡ suc m
+    suc₀ zero = refl
+    suc₀ (suc m) = cong suc (suc₀ m)
 
     reverse′ : ∀ {A m} → Vec A m → Vec A m
-    reverse′ xs = {!!}
+    reverse′ [] = []
+--    reverse′ (x ∷ xs) = (reverse′ xs) ⊕′ (x ∷ [])
+    reverse′ {m = suc n} (x ∷ xs)
+      rewrite sym (suc₀ n) = (reverse′ xs) ⊕′ (x ∷ [])
