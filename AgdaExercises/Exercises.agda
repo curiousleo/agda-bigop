@@ -55,4 +55,28 @@ module Exercises where
   reverse-reverse []       = refl
   reverse-reverse (x ∷ xs) = {!!}
 
-  
+  module Vectors where
+
+    -- A in the data type below is a parameter, whereas : ℕ → Set states that there
+    -- is a single natural number index for the data type.  Parameters stay constant
+    -- during pattern matching, whereas indices vary, and provide information for the
+    -- type checker to use.  They're used to express invariants in inductive data types,
+    -- like the following type of length-indexed lists, or vectors:
+    data Vec (A : Set) : ℕ → Set where
+      []  : Vec A 0
+      _∷_ : ∀ {m} → A → Vec A m → Vec A (suc m)
+
+    -- Fill in the following.  Note the types provide more information, and
+    -- dispense with the need to prove properties about the preservation of
+    -- lengths like we needed to do with lists:
+
+    _⊕′_ : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
+    []       ⊕′ ys = {!!}
+    (x ∷ xs) ⊕′ ys = {!!}
+
+    map′ : ∀ {A B m} → (f : A → B) → Vec A m → Vec B m
+    map′ f []       = {!!}
+    map′ f (x ∷ xs) = {!!}
+
+    reverse′ : ∀ {A m} → Vec A m → Vec A m
+    reverse′ xs = {!!}
