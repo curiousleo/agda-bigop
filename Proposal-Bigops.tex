@@ -1,0 +1,103 @@
+\RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[a4paper]{scrartcl}
+\usepackage{xltxtra} 		% loads fixltx2e, metalogo, xunicode, fontspec
+\usepackage{microtype}      	% typography pedantry
+\usepackage[british]{babel}
+\usepackage{ifthen}
+\usepackage{color}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{paralist}
+\usepackage{nameref}
+\usepackage{cleveref}
+\usepackage{csquotes}
+\usepackage{fancyvrb}
+\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[bookmarks,colorlinks]{hyperref}
+
+\setcounter{secnumdepth}{0}
+
+%%% Custom LaTeX preamble
+% Linux Libertine (free, wide coverage, not only for Linux)
+\setmainfont{Linux Libertine O}
+\setsansfont{Linux Biolinum O}
+\setmonofont[HyphenChar=None,Scale=MatchLowercase]{DejaVu Sans Mono}
+
+%%% User specified packages and stylesheets
+\DefineVerbatimEnvironment%
+   {code}{Verbatim}
+   {} % options
+
+% hyperlinks
+\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
+\hypersetup{%
+  pdftitle={Big operators in Agda},
+  pdfauthor={Leonhard Markert (lm510), Emmanuel College}
+}
+
+% KOMA-script styles
+%\addtokomafont{disposition}{\rmfamily}
+
+% bibliography
+\addbibresource{Bibliography.bib}
+
+%%% Title Data
+\title{Big operators in Agda}
+\author{Leonhard Markert}
+\date{Proposed Supervisors:\\Timothy Griffin and Dominic Mulligan}
+
+%\bibliographystyle{alpha}
+
+%%% Body
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\enquote{Big operator} notation is common in algebraic reasoning.
+It is a useful tool to express formulae in a succinct and abstract way.
+In informal mathematics, the switch to big operators is easily made.
+A formal treatment must ensure that when an operator is lifted into a big operator, it satisfies a set of laws.
+Big operators have been implemented as part of an extension of Coq, a dependent type theory.
+
+I propose to implement a library for reasoning uniformly about big operators in Agda, another dependent type theory.
+To demonstrate its usefulness, I will prove some standard results taken from abstract algebra.
+\end{abstract}
+
+\section{Project idea}
+\label{project-idea}
+
+In many areas of mathematics, \enquote{big operators} are a commonly used and versatile tool which provides a natural way to express an operation iterated over some set. Making big operators available in a formal theorem proving environment like Agda therefore allows for a natural style of algebraic reasoning.
+
+\subsection{Background}
+
+Users of Coq can draw on a large set of libraries of proofs and tactics.\footnote{\url{http://coq.inria.fr}}
+One is \emph{Ssreflect},\footnote{\url{http://ssr.msr-inria.inria.fr/}} a Coq library that formalises, amongst other things, the notion of \enquote{big operators} \autocite{bertot_canonical_2008}.
+This module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over.
+For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+
+\emph{Agda}, like Coq, is an implementation of dependent type theory.\footnote{\url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
+%\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} whereas Agda's is based on Luo's \enquote{unifying theory of dependent types}.}
+
+The younger Agda project has not yet caught up with other theorem provers in terms of the size of its standard library and the number of third-party components available. At this time, no equivalent of Coq's big operator library exists for Agda, although steps in this direction have been made \autocite{gustafsson_foldable_2014}, nor is there currently any Agda implementation of matrices and their associated algebra.
+
+\subsection{Project goal}
+
+Matrices and big operators are commonly used concepts, so it is reasonable to expect that libraries formalising them will be of general interest to the wider Agda community. I will aim to write idiomatic code that could be included in the Agda standard library.
+
+Time permitting, I will use the definitions developed for the correctness proof to explore topics in algebraic path finding in Agda.
+
+\section{Workplan}
+\label{workplan}
+
+In order to design and implement the proposed library in Agda, I will have to become proficient in reading and writing Agda code. This includes learning how program with dependent types and put them to good use, and how code is structured and written idiomatically in Agda. I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda. From the end of Michaelmas until Christmas, I will keep reading and writing Agda code and learn more about its type system, the module system and common idioms.
+
+I will also have to acquire a good understanding of the mathematics of big operators. This involves finding answers to questions such as, \enquote{what are the minimum requirements for a small operator and a carrier set so a big operator can automatically be derived from it?}, and exploring what additional rules governing big operator can be derived from properties of the underlying algebra. I have already begun to review previous work on the mathematics and implementation of big operators. During the last weeks of Michaelmas term I will find and read more literature about the relationship between big operators and abstract algebra. The time between the end of term and Christmas will be allocated to exploring this relationship further, and to find ways of encoding them in Agda (in addition to learning Agda).
+
+Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed library will probably be an iterative process. My aim is to design and implement the first iteration of the big operators library during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind. I will use the Easter vacation and the beginning of Easter term to implement the second iteration of the library. The remaining time will be devoted to building up a collection of lemmas about big operators in Agda, and demonstrating its use by formalising some standard results (XXX). If time permits, I will attempt to prove some theorems in the area of shortest path problems.
+
+In the spirit of Simon Peyton-Jones' slogan \enquote{writing a paper guides your research}, I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better. The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
+
+\printbibliography
+
+\end{document}
