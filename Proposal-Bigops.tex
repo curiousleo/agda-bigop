@@ -76,6 +76,8 @@ One is \emph{Ssreflect},\footnote{\url{http://ssr.msr-inria.inria.fr/}} a Coq li
 This module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over.
 For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
 
+XXX bigops: written for ssreflect, since version 1.5 separated out into Mathematical Components library. Uses canonical structures, tactics; extends Coq's syntax---these things don't translate directly into Agda. Big operators were formalised for this library in the "Canonical Big Operators" paper.
+
 \emph{Agda}, like Coq, is an implementation of dependent type theory.\footnote{\url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
 %\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} whereas Agda's is based on Luo's \enquote{unifying theory of dependent types}.}
 
@@ -83,7 +85,7 @@ The younger Agda project has not yet caught up with other theorem provers in ter
 
 \subsection{Project goal}
 
-Matrices and big operators are commonly used concepts, so it is reasonable to expect that libraries formalising them will be of general interest to the wider Agda community. I will aim to write idiomatic code that could be included in the Agda standard library.
+Big operators are commonly used, so it is reasonable to expect that a library formalising them will be of general interest to the wider Agda community. I will aim to write idiomatic code that could be included in the Agda standard library.
 
 Time permitting, I will use the definitions developed for the correctness proof to explore topics in algebraic path finding in Agda.
 
