@@ -270,7 +270,7 @@ module Exercises where
       ε = zero ;
       is-monoid = ℕ-is-monoid }
 
-    List-is-monoid : IsMonoid _⊕_ []
+    List-is-monoid : {A : Set} → IsMonoid _⊕_ []
     List-is-monoid = record {
       right-neutral = []-⊕′ ;
       left-neutral = λ xs → refl }
