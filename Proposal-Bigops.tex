@@ -5,6 +5,7 @@
 \usepackage[british]{babel}
 \usepackage{ifthen}
 \usepackage{color}
+\usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{thmtools}
 \usepackage{paralist}
@@ -61,42 +62,77 @@ A formal treatment must ensure that when an operator is lifted into a big operat
 Big operators have been implemented as part of an extension of Coq, a dependent type theory.
 
 I propose to implement a library for reasoning uniformly about big operators in Agda, another dependent type theory.
-To demonstrate its usefulness, I will prove some standard results taken from abstract algebra.
+As a demonstration, I will prove the theorem \enquote{square matrices over semiring are themselves semirings} using this library.
 \end{abstract}
 
 \section{Project idea}
-\label{project-idea}
 
 In many areas of mathematics, \enquote{big operators} are a commonly used and versatile tool which provides a natural way to express an operation iterated over some set. Making big operators available in a formal theorem proving environment like Agda therefore allows for a natural style of algebraic reasoning.
 
+\subsection{Motivation}
+
+The question of how to formalise generalised shortest-path problems in Agda provided the initial motivation for this project.
+Some work has been done in this area using \emph{Coq}, an interactive theorem prover.\footnote{A formalisation in Coq of the correctness proof for a generalised version of Dijkstra's algorithm presented in \autocite{sobrinho_routing_2010} can be found here: \url{http://www.cl.cam.ac.uk/~tgg22/metarouting/rie-1.0.v}. Coq can be obtained from its website, \url{http://coq.inria.fr}}
+
+\emph{Agda}, like Coq, is both a dependently typed programming language and a higher-order type theory.\footnote{Agda can be obtained from \url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
+%\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} whereas Agda's is based on Luo's \enquote{unifying theory of dependent types}.}
+Proofs in Agda are generally considered easier to read for non-experts than their Coq equivalents.
+
+It soon became clear that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda.
+One critical dependency of the aforementioned proof is a module that formalises the notion of big operators in Coq---no such library currently exists in Agda.\footnote{The \texttt{bigop} module was originally part of Ssreflect, an extension of Coq. In version 1.5 it was moved to the Mathematical Components library. Both are available at \url{http://ssr.msr-inria.inria.fr/}. \autocite{bertot_canonical_2008} describes the design of this module.}
+
 \subsection{Background}
 
-Users of Coq can draw on a large set of libraries of proofs and tactics.\footnote{\url{http://coq.inria.fr}}
-One is \emph{Ssreflect},\footnote{\url{http://ssr.msr-inria.inria.fr/}} a Coq library that formalises, amongst other things, the notion of \enquote{big operators} \autocite{bertot_canonical_2008}.
-This module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over.
-For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+Big operators are pervasive in many areas of mathematics. As a concrete example, consider a few steps from a proof that matrix multiplication is associative:
 
-XXX bigops: written for ssreflect, since version 1.5 separated out into Mathematical Components library. Uses canonical structures, tactics; extends Coq's syntax---these things don't translate directly into Agda. Big operators were formalised for this library in the "Canonical Big Operators" paper.
+\begin{align*}
+&\left(A \left(B C\right)\right)_{i,j} \\
+&= \dots \\
+&= \bigoplus_k \bigoplus_l  A_{i,k} \otimes \left( B_{k,l} \otimes C_{l,j} \right)
+  && \text{by left-distributivity of \(\otimes\) over \(\oplus\)} \\
+&= \bigoplus_l \bigoplus_k  A_{i,k} \otimes \left( B_{k,l} \otimes C_{l,j} \right)
+  && \text{by commutativity and associativity of \(\oplus\)} \\
+&= \bigoplus_l \bigoplus_k \left( A_{i,k} \otimes B_{k,l} \right) \otimes C_{l,j}
+  && \text{by associativity of \(\otimes\)} \\
+&= \bigoplus_l \left( \bigoplus_k A_{i,k} \otimes B_{k,l} \right) \otimes C_{l,j}
+  && \text{by right-distributivity of \(\otimes\) over \(\oplus\)} \\
+&= \dots \\
+&= \left( \left( A  B \right) C\right)_{i,j}
+\end{align*}
 
-\emph{Agda}, like Coq, is an implementation of dependent type theory.\footnote{\url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.
-%\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} whereas Agda's is based on Luo's \enquote{unifying theory of dependent types}.}
+This example proof relies on being able able to swap the order of big operators, and moving factors into or out of a big operator expression. Such lemmas, along with their necessary conditions, need to be formalised in order to be able to reason with big operators in a theorem prover.
 
-The younger Agda project has not yet caught up with other theorem provers in terms of the size of its standard library and the number of third-party components available. At this time, no equivalent of Coq's big operator library exists for Agda, although steps in this direction have been made \autocite{gustafsson_foldable_2014}, nor is there currently any Agda implementation of matrices and their associated algebra.
+Coq's big operator module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over. For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+
+This assumes the existence of a notion of \enquote{collection} that can be iterated over. One way to formalise such collections is as an enumerable finite set.
 
 \subsection{Project goal}
 
-Big operators are commonly used, so it is reasonable to expect that a library formalising them will be of general interest to the wider Agda community. I will aim to write idiomatic code that could be included in the Agda standard library.
+The goal of this project is to build up a set of \emph{reusable} libraries that allow proving the theorem \enquote{square matrices over semiring are themselves semirings} in Agda in a way that reads naturally even to someone not used to formalising mathematics in a theorem prover.
 
-Time permitting, I will use the definitions developed for the correctness proof to explore topics in algebraic path finding in Agda.
+This will depend on a implementation of big operators in Agda, which in turn depends on a notion of enumerable finite sets. A library formalising basic linear algebra will be required as well. To my best knowledge, neither exists at this time.
+
+Finite sets, linear algebra and big operators are useful in many contexts, so it is reasonable to expect that libraries formalising them will be of general interest to the wider Agda community. I will therefore design any auxiliary libraries with reusability in mind, aiming to write idiomatic code that could be included in the Agda standard library.
 
 \section{Workplan}
 \label{workplan}
+
+\subsection{Michaelmaes term until Christmas}
 
 In order to design and implement the proposed library in Agda, I will have to become proficient in reading and writing Agda code. This includes learning how program with dependent types and put them to good use, and how code is structured and written idiomatically in Agda. I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda. From the end of Michaelmas until Christmas, I will keep reading and writing Agda code and learn more about its type system, the module system and common idioms.
 
 I will also have to acquire a good understanding of the mathematics of big operators. This involves finding answers to questions such as, \enquote{what are the minimum requirements for a small operator and a carrier set so a big operator can automatically be derived from it?}, and exploring what additional rules governing big operator can be derived from properties of the underlying algebra. I have already begun to review previous work on the mathematics and implementation of big operators. During the last weeks of Michaelmas term I will find and read more literature about the relationship between big operators and abstract algebra. The time between the end of term and Christmas will be allocated to exploring this relationship further, and to find ways of encoding them in Agda (in addition to learning Agda).
 
-Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed library will probably be an iterative process. My aim is to design and implement the first iteration of the big operators library during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind. I will use the Easter vacation and the beginning of Easter term to implement the second iteration of the library. The remaining time will be devoted to building up a collection of lemmas about big operators in Agda, and demonstrating its use by formalising some standard results (XXX). If time permits, I will attempt to prove some theorems in the area of shortest path problems.
+\subsection{Lent term}
+
+Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed libraries will probably be an iterative process.
+Starting from a mock-up of what the proof of the matrix semiring theorem could look like in Agda with the proposed libraries, I will aim to design and implement the first iteration of finite sets, basic linear algebra and big operators during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind.
+
+\subsection{Easter vacation and Easter term}
+
+I will use the Easter vacation and the beginning of Easter term to implement the second iteration of the libraries. If time permits, I will attempt to prove some theorems in the area of shortest path problems.
+
+\subsection{Dissertation}
 
 In the spirit of Simon Peyton-Jones' slogan \enquote{writing a paper guides your research}, I aim to write my dissertation as the project proceeds in the hope that writing about what I am doing will help me understand it better. The last four weeks before the dissertation is due will be reserved for polishing up the dissertation and the code.
 
