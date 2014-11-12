@@ -100,9 +100,9 @@ Big operators are pervasive in many areas of mathematics. As a concrete example,
 &= \left( \left( A  B \right) C\right)_{i,j}
 \end{align*}
 
-This example proof relies on being able able to swap the order of big operators, and moving factors into or out of a big operator expression. Such lemmas, along with their necessary conditions, need to be formalised in order to be able to reason with big operators in a theorem prover.
+This example proof relies on being able able to swap the order of big operators, and moving factors into or out of a big operator expression. Such lemmas, along with their necessary conditions, need to be formalised before one can reason with big operators in a theorem prover.
 
-Coq's big operator module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over. For example, \(\sum_{i=1}^n f(i)\) can be constructed from the small operator \(+\) and the finite list of natural numbers \([1, \dots, n]\).
+Coq's big operator module allows proof authors to derive a big operator from a small operator together with a collection of objects to iterate over. For example, \(\sum_{x \in X} f(x)\) can be constructed from the small operator \(+\) and some collection \(X\).
 
 This assumes the existence of a notion of \enquote{collection} that can be iterated over. One way to formalise such collections is as an enumerable finite set.
 
@@ -121,11 +121,11 @@ Finite sets, linear algebra and big operators are useful in many contexts, so it
 
 In order to design and implement the proposed library in Agda, I will have to become proficient in reading and writing Agda code. This includes learning how program with dependent types and put them to good use, and how code is structured and written idiomatically in Agda. I will set aside some time during the last weeks of Michaelmas term to write simple programs and proofs in Agda. From the end of Michaelmas until Christmas, I will keep reading and writing Agda code and learn more about its type system, the module system and common idioms.
 
-I will also have to acquire a good understanding of the mathematics of big operators. This involves finding answers to questions such as, \enquote{what are the minimum requirements for a small operator and a carrier set so a big operator can automatically be derived from it?}, and exploring what additional rules governing big operator can be derived from properties of the underlying algebra. I have already begun to review previous work on the mathematics and implementation of big operators. During the last weeks of Michaelmas term I will find and read more literature about the relationship between big operators and abstract algebra. The time between the end of term and Christmas will be allocated to exploring this relationship further, and to find ways of encoding them in Agda (in addition to learning Agda).
+I will also have to acquire a good understanding of the mathematics of big operators. This involves finding answers to questions such as, \enquote{what are the minimum requirements for a small operator and a carrier set so a big operator can automatically be derived from it?}, and exploring what additional rules governing big operator can be derived from properties of the underlying algebra. I have already begun to review previous work on the mathematics and implementation of big operators. During the last weeks of Michaelmas term I will find and read more literature about the relationship between big operators and abstract algebra. The time between the end of term and Christmas will be allocated to exploring this relationship further, and to find ways of encoding them in Agda.
 
 \subsection{Lent term}
 
-Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed libraries will probably be an iterative process.
+Given my limited exposure to Agda and its module system so far, the design and implementation of the proposed libraries will be an iterative process.
 Starting from a mock-up of what the proof of the matrix semiring theorem could look like in Agda with the proposed libraries, I will aim to design and implement the first iteration of finite sets, basic linear algebra and big operators during Lent term, leaving some time at the end to critique my first attempt thoroughly and design the second iteration with the lessons learned from the first one in mind.
 
 \subsection{Easter vacation and Easter term}
