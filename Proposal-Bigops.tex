@@ -88,7 +88,7 @@ Some work has been done in this area using \emph{Coq}, an interactive theorem pr
 Proofs in Agda are generally considered easier to read for non-experts than their Coq equivalents.
 
 It soon became clear that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda.
-One critical dependency of the aforementioned proof is a module that formalises the notion of big operators in Coq---no such library currently exists in Agda.\footnote{The \texttt{bigop} module was originally part of Ssreflect, an extension of Coq. In version 1.5 it was moved to the Mathematical Components library. Both are available at \url{http://ssr.msr-inria.inria.fr/}. \autocite{bertot_canonical_2008} describes the design of this module.}
+One critical dependency of the aforementioned proof is a module that formalises the notion of big operators in Coq---no such library currently exists in Agda, even though it would be very useful in a large range of contexts.\footnote{The \texttt{bigop} module was originally part of Ssreflect, an extension of Coq. In version 1.5 it was moved to the Mathematical Components library. Both are available at \url{http://ssr.msr-inria.inria.fr/}. \autocite{bertot_canonical_2008} describes the design of this module.}
 
 \subsection{Background}
 
@@ -97,8 +97,7 @@ Big operators are pervasive in many areas of mathematics. As a concrete example,
 \begin{align*}
 &\left(A \left(B C\right)\right)_{i,j} \\
 &= \dots \\
-&= \sum_k \sum_l  A_{i,k} \cdot \left( B_{k,l} \cdot C_{l,j} \right)
-  && \text{by left-distributivity of \(\cdot\) over \(+\)} \\
+&= \sum_k \sum_l  A_{i,k} \cdot \left( B_{k,l} \cdot C_{l,j} \right) \\
 &= \sum_l \sum_k  A_{i,k} \cdot \left( B_{k,l} \cdot C_{l,j} \right)
   && \text{by commutativity and associativity of \(+\)} \\
 &= \sum_l \sum_k \left( A_{i,k} \cdot B_{k,l} \right) \cdot C_{l,j}
