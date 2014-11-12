@@ -13,16 +13,23 @@
 \usepackage{cleveref}
 \usepackage{csquotes}
 \usepackage{fancyvrb}
+\usepackage{unicode-math}
 \usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
-\usepackage[bookmarks,colorlinks]{hyperref}
+\usepackage[bookmarks,hidelinks]{hyperref}
 
 \setcounter{secnumdepth}{0}
 
 %%% Custom LaTeX preamble
 % Linux Libertine (free, wide coverage, not only for Linux)
-\setmainfont{Linux Libertine O}
+\setmainfont{Kp}
 \setsansfont{Linux Biolinum O}
+%\setsansfont[
+   %BoldFont={Myriad Pro Bold},
+   %ItalicFont={Myriad Pro Italic},
+   %BoldItalicFont={Myriad Pro Bold Italic}
+   %]{Myriad Pro}
 \setmonofont[HyphenChar=None,Scale=MatchLowercase]{DejaVu Sans Mono}
+\setmathfont{latinmodern-math.otf}
 
 %%% User specified packages and stylesheets
 \DefineVerbatimEnvironment%
