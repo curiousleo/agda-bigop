@@ -316,7 +316,7 @@ module Exercises where
       magma : Magma {ℓ} {ℓ′}
       magma = record { Carrier = Carrier ; _·_ = _·_ }
 
-    -- FOR YOU: capture commutative (Abelian) and idempotent monoids using two news
+    -- EXERCISE: capture commutative (Abelian) and idempotent monoids using two news
     -- sets of records below:
 
     -- XXX
@@ -361,10 +361,85 @@ module Exercises where
       pow-+ base (ℕ.suc m) n
         rewrite pow-+ base m n = is-associative base (pow base m) (pow base n)
 
-      -- Try to prove the following: ∀base. pow base 1 ≡ base
+      -- EXERCISE: Try to prove the following: ∀base. pow base 1 ≡ base
 
-  -- Exercise: you insert a parameterised module here that `fixes' a commutative monoid,
+  -- EXERCISE: you insert a parameterised module here that `fixes' a commutative monoid,
   -- as you defined earlier.  Define an ordering using that monoid, where
   --     x ≤ y     if and only if      ∃z. x · z ≡ y
   -- Show that the ordering is reflexive and transitive (that is, the ordering is a quasi-
   -- order, or pre-order).
+
+  module YetMoreExercises where
+
+    open import Level
+
+    open import Function
+
+    -- We rename to avoid clashes with names we have introduced ourselves in the file
+    -- above:
+    open import Data.Empty
+    open import Data.List renaming (List to List′; _∷_ to _∷′_)
+    open import Data.Product
+    open import Data.Unit renaming (⊤ to ⊤″)
+
+    open import Relation.Binary.PropositionalEquality
+    open import Relation.Binary
+    open import Relation.Nullary
+
+    -- We work in a module that `fixes' both a type, `A', and a proof that equality at that
+    -- type is decidable.  By `decidable', we mean that for any two elements of `A' we can
+    -- case split on whether `x ≡ y' or `x ≢ y' via pattern matching.
+    module AssumingDecidableEquality {ℓ} {A : Set ℓ} (≡-decidable : Decidable (_≡_ {ℓ} {A})) where
+
+      -- Utility function for below.  In Agda, all constructors are injective and Agda's
+      -- unification algorithm knows this fact.  In some cases, however, we cannot rely on
+      -- unification to solve a goal but must use an explicit lemma restating the injectivity
+      -- of various constructors.  I'm sure this is somewhere in the standard library, but it
+      -- is so simple to prove there's no point wasting time trying to find it:
+      ∷-injective : ∀ {ℓ} → {A : Set ℓ} → {x y : A} → {xs ys : List′ A} → x ∷′ xs ≡ y ∷′ ys → x ≡ y × xs ≡ ys
+      ∷-injective refl = refl , refl
+
+      -- Lists inherit decidable equality if there elements enjoy the same property.
+      -- We demonstrate this fact by case analysis on the two lists, like so:
+      ≡-List-decidable : Decidable (_≡_ {ℓ} {List′ A})
+      -- If the two elements are equal we use the `yes' constructor of the Dec data
+      -- type.  yes expects a proof that [] ≡ [] (i.e. xs ≡ ys in this case).  This is
+      -- simply refl:
+      ≡-List-decidable []        []        = yes refl
+      -- If the two elements are not equal, we use the `no' constructor of the Dec data
+      -- type.  no expects a proof that [] ≢ y ∷ ys, i.e. that [] ≡ y ∷ ys → ⊥.  Note
+      -- that this is a function type, so inhabited by a λ-abstraction that takes a
+      -- term of type [] ≡ y ∷ ys to a term of type ⊥.  [] ≡ y ∷ ys is absurd as Agda knows
+      -- that there is no way to inhabit this type, so we can discharge our proof obligation
+      -- with an absurd pattern ().
+      ≡-List-decidable []        (y ∷′ ys) = no (λ ())
+      -- The same:
+      ≡-List-decidable (x ∷′ xs) []        = no (λ ())
+      -- This is the interesting case.  We must do two things: check the heads of the
+      -- lists are equal and check the tails of the lists are equal to be able to decide
+      -- whether both lists are identical.  In the first case, we pattern match on the
+      -- result of ≡-decidable x y and in the second case we pattern match on the recursive
+      -- call to ≡-List-decidable xs ys.  The `with' syntax is how we pattern match, with
+      -- the | stating we are performing more than one analysis at once.  In the first
+      -- case below, prf₁ will have type x ≡ y and prf₁′ will have xs ≡ ys, whereas in
+      -- the third case below, prf₃ will have x ≢ y (i.e. x ≡ y → ⊥) and prf₃′ will have
+      -- type xs ≢ ys.  In all cases, we use these proofs to help construct the required
+      -- element of the Dec data type:
+      ≡-List-decidable (x ∷′ xs) (y ∷′ ys) with ≡-decidable x y | ≡-List-decidable xs ys
+      ... | yes prf₁ | yes prf₁′
+        rewrite prf₁ | prf₁′ = yes refl
+      ... | yes prf₂ | no  prf₂′ = no (λ p → prf₂′ ∘ proj₂ ∘ ∷-injective $ p)
+      ... | no  prf₃ | no  prf₃′ = no (λ p → prf₃′ ∘ proj₂ ∘ ∷-injective $ p)
+      ... | no  prf₄ | yes prf₄′ = no (λ p → prf₄ ∘ proj₁ ∘ ∷-injective $ p)
+
+      -- You may want to comment some of the parts of the function above out, replace them
+      -- with metavariables, and look at the types to understand what is going on in
+      -- ≡-List-decidable.
+
+      -- The unit type has a trivial decidable equality:
+      ≡-⊤-decidable : Decidable (_≡_ {A = ⊤″})
+      ≡-⊤-decidable tt tt = yes refl
+
+      -- EXERCISE: show that the natural numbers, ℕ, have a decidable equality:
+      ≡-ℕ-decidable : _
+      ≡-ℕ-decidable = {!!}
