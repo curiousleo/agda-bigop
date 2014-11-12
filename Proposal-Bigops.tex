@@ -62,7 +62,7 @@ A formal treatment must ensure that when an operator is lifted into a big operat
 Big operators have been implemented as part of an extension of Coq, a dependent type theory.
 
 I propose to implement a library for reasoning uniformly about big operators in Agda, another dependent type theory.
-As a demonstration, I will prove the theorem \enquote{square matrices over semiring are themselves semirings} using this library.
+As a demonstration, I will prove the theorem \enquote{any square matrix over a semiring is a semiring} using this library.
 \end{abstract}
 
 \section{Project idea}
@@ -108,7 +108,7 @@ This assumes the existence of a notion of \enquote{collection} that can be itera
 
 \subsection{Project goal}
 
-The goal of this project is to build up a set of \emph{reusable} libraries that allow proving the theorem \enquote{square matrices over semiring are themselves semirings} in Agda in a way that reads naturally even to someone not used to formalising mathematics in a theorem prover.
+The goal of this project is to build up a set of \emph{reusable} libraries that allow proving the theorem \enquote{any square matrix over a semiring is a semiring} in Agda in a way that reads naturally even to someone not used to formalising mathematics in a theorem prover.
 
 This will depend on a implementation of big operators in Agda, which in turn depends on a notion of enumerable finite sets. A library formalising basic linear algebra will be required as well. To my best knowledge, neither exists at this time.
 
