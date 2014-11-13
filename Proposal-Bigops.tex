@@ -65,42 +65,22 @@
 
 \begin{abstract}
 \enquote{Big operator} notation is common in algebraic reasoning.
-It is a useful tool to express formulae in a succinct and abstract way.
-%In informal mathematics, the switch to big operators is easily made.
-A formal treatment must ensure that when an operator is lifted into a big operator, it satisfies a set of laws.
+%It is a useful tool to express formulae in a succinct and abstract way.
+A formal treatment must ensure that an operator that is lifted into a big operator satisfies a set of laws.
 Big operators have been implemented as part of an extension of Coq, a dependent type theory.
-Agda, a more recent dependent type theory, currently lacks a big operators library.
+Agda, a more recent dependent type theory, currently lacks such a library.
 
 I propose to implement a library for reasoning uniformly about big operators in Agda.
-Since Agda and Coq differ in idioms, language constructs and syntax, I will consult the existing big operators library for high-level ideas, but the proposed library will be designed from scratch.
-%As a demonstration, I will prove the theorem \enquote{any square matrix over a semiring is a semiring} using this library.
+Since Agda and Coq differ in idioms, constructs and syntax, I will consult the existing big operators library for high-level ideas, but the proposed library will be designed from scratch.
 \end{abstract}
 
 \section{Project idea}
 
 In many areas of mathematics, \enquote{big operators} are a commonly used and versatile tool which provides a natural way to express an operation iterated over some set. Making big operators available in a formal theorem proving environment like Agda therefore allows for a natural style of algebraic reasoning.
 
-\subsection{Motivation}
-
-The question of how to formalise generalised shortest-path problems in Agda provided the initial motivation for this project.
-Some work has been done in this area using \emph{Coq}, an interactive theorem prover.\footnote{A formalisation in Coq of the correctness proof for a generalised version of Dijkstra's algorithm presented in \autocite{sobrinho_routing_2010} can be found here: \url{http://www.cl.cam.ac.uk/~tgg22/metarouting/rie-1.0.v}. Coq can be obtained from its website, \url{http://coq.inria.fr}. For an introduction to Coq, see \autocite{bertot_interactive_2004}.}
-
-Fundamentally, \emph{Agda} is both a dependently typed programming language and a higher-order type theory, as is Coq.\footnote{Agda can be obtained from \url{http://wiki.portal.chalmers.se/agda/pmwiki.php}} Both represent propositions as types and proofs as terms in line with the Curry-Howard correspondence.\footnote{More specifically, Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions} (see \textcite{bertot_interactive_2004} for an overview) whereas Agda's is based on Luo's \enquote{unifying theory of dependent types} \autocite{luo_computation_1994}. A good introduction to the relationship between propositions and types, proofs and programs is \textcite{sorensen_lectures_2006}.}
-However, the concrete implementations of the two proof assistants differ in many ways.
-%Proofs in Agda are generally considered easier to read for non-experts than their Coq equivalents.
-
-One important difference is the use of proof-constructing metaprogramming facilities called \emph{tactics} in idiomatic Coq code.
-Tactics make proofs easier to write at the expense of hiding the \enquote{real} proof of a statement from the user.
-Whilst the underlying proof constructed by the tactic-metaprogram is of course still correct, as guaranteed by Coq's typechecker, it is hard to see \emph{why} this is the case just by reading a proof script.
-
-Agda does not support tactics, and therefore proof terms must be provided by the user via a process of refinement, which is aided by Agda's flexible implementation of dependent pattern matching. There is no obfuscating metaprogramming layer sitting between the user and the \enquote{real} proof, making it easier to follow.
-
-It soon became clear that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda.
-One critical dependency of the aforementioned proof is a module that formalises the notion of big operators in Coq---no such library currently exists in Agda, even though it would be useful in a large range of contexts.\footnote{The \texttt{bigop} module was originally part of Ssreflect, an extension of Coq \autocite{gonthier_introduction_2010}. In version 1.5 it was moved to the Mathematical Components library. Both are available at \url{http://ssr.msr-inria.inria.fr/}. \textcite{bertot_canonical_2008} describes the design of this module.}
-
 \subsection{Background}
 
-Big operators are pervasive in many areas of mathematics.
+%Big operators are pervasive in many areas of mathematics.
 A big operator is constructed from a small operator, a collection of objects to iterate over, and an expression containing a free variable that can be bound to objects from the collection. For example, \(\sum_{x \in X} e(x)\) can be constructed from the small operator \(+\) along with some collection \(X\) and an expression \(e\).
 
 This assumes the existence of a notion of \enquote{collection} that can be iterated over. One way to formalise such collections is as an enumerable finite set.
@@ -122,6 +102,23 @@ As a concrete example for how a big operators library can be used, consider a fe
 \end{align*}
 
 This example proof requires swapping the order of big operators and moving factors into or out of a big operator expression. Such lemmas, along with their necessary conditions, need to be formalised before one can reason with big operators in a theorem prover.
+
+\subsection{Motivation}
+
+The question of how to formalise generalised shortest-path problems in Agda provided the initial motivation for this project.
+Some work has been done in this area using \emph{Coq}, an interactive theorem prover.\footnote{A formalisation in Coq of the correctness proof for a generalised version of Dijkstra's algorithm presented in \autocite{sobrinho_routing_2010} can be found here: \url{http://www.cl.cam.ac.uk/~tgg22/metarouting/rie-1.0.v}. Coq can be obtained from its website, \url{http://coq.inria.fr}. For an introduction to Coq, see \autocite{bertot_interactive_2004}.}
+
+Fundamentally, \emph{Agda} is both a dependently typed programming language and a higher-order type theory, as is Coq.\footnote{Both represent propositions as types and proofs as terms. However, the underlying type theories as well as the concrete implementations of the two proof assistants differ in many ways. Coq's type system is based on Coquand and Huet's \enquote{calculus of inductive constructions}---see \textcite{bertot_interactive_2004} for an overview---whereas Agda's is based on Luo's \enquote{unifying theory of dependent types} \autocite{luo_computation_1994}. A good introduction to the relationship between propositions and types, proofs and programs is \textcite{sorensen_lectures_2006}. Agda can be obtained from \url{http://wiki.portal.chalmers.se/agda/pmwiki.php}.}
+
+
+One important difference between Agda and Coq is the use of proof-constructing metaprogramming facilities called \emph{tactics} in idiomatic Coq code.
+Tactics make proofs easier to write at the expense of hiding the \enquote{real} proof of a statement from the user.
+%Whilst the underlying proof constructed by the tactic-metaprogram is of course still correct, as guaranteed by Coq's typechecker, it is hard to see \emph{why} this is the case just by reading a proof script.
+Agda does not support tactics, and therefore proof terms must be provided by the user via a process of refinement. This is aided by Agda's flexible implementation of dependent pattern matching.
+%There is no obfuscating metaprogramming layer sitting between the user and the \enquote{real} proof, making it easier to follow.
+
+It soon became clear that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda.
+One critical dependency of the aforementioned proof is a module that formalises the notion of big operators in Coq---no such library currently exists in Agda, even though it would be useful in a large range of contexts.\footnote{The \texttt{bigop} module was originally part of Ssreflect, an extension of Coq \autocite{gonthier_introduction_2010}. In version 1.5 it was moved to the Mathematical Components library. Both are available at \url{http://ssr.msr-inria.inria.fr/}. \textcite{bertot_canonical_2008} describes the design of this module.}
 
 \subsection{Project goal}
 
