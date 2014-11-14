@@ -74,7 +74,10 @@ module Exercises where
   -- It disappears, as reverse [ x ] is =β [ x ] (i.e. the two are definitionally equal).
   reverse-reverse : ∀ {A} → (xs : List A) → reverse (reverse xs) ≡ xs
   reverse-reverse []       = refl
-  reverse-reverse (x ∷ xs) = {!!} -- rewrite??
+  reverse-reverse (x ∷ xs)
+    rewrite
+      reverse-⊕ (reverse xs) [ x ]
+    | reverse-reverse xs = refl
 
   module Vectors where
 
