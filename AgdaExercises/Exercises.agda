@@ -409,6 +409,8 @@ module Exercises where
         rewrite pow-+ base m n = is-associative base (pow base m) (pow base n)
 
       -- EXERCISE: Try to prove the following: ∀base. pow base 1 ≡ base
+      pow-1 : ∀ base → pow base 1 ≡ base
+      pow-1 = is-right-identity
 
   -- EXERCISE: you insert a parameterised module here that `fixes' a commutative monoid,
   -- as you defined earlier.  Define an ordering using that monoid, where
