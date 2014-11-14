@@ -319,10 +319,54 @@ module Exercises where
       magma : Magma {ℓ} {ℓ′}
       magma = record { Carrier = Carrier ; _·_ = _·_ }
 
-    -- EXERCISE: capture commutative (Abelian) and idempotent monoids using two news
+    -- EXERCISE: capture commutative (Abelian) and idempotent monoids using two new
     -- sets of records below:
 
-    -- XXX
+    IsCommutative : ∀ {ℓ} → {A : Set ℓ} → BinaryOperation A → Set ℓ
+    IsCommutative _·_ = ∀ x y → (x · y) ≡ (y · x)
+
+    record IsCommutativeMonoid {ℓ} {Carrier : Set ℓ} (ε : Carrier) (_·_ : BinaryOperation Carrier) : Set (Level.suc ℓ) where
+      field
+        is-monoid      : IsMonoid ε _·_
+        is-commutative : IsCommutative _·_
+
+      open IsMonoid is-monoid public
+
+    record CommutativeMonoid {ℓ ℓ′} : Set (Level.suc (ℓ Level.⊔ ℓ′)) where
+      field
+        Carrier               : Set ℓ
+        ε                     : Carrier
+        _·_                   : BinaryOperation Carrier
+
+        is-commutative-monoid : IsCommutativeMonoid ε _·_
+
+      open IsCommutativeMonoid is-commutative-monoid public
+
+      monoid : Monoid {ℓ} {ℓ′}
+      monoid = record { Carrier = Carrier ; _·_ = _·_ ; is-monoid = is-monoid }
+
+    IsIdempotent : ∀ {ℓ} → {A : Set ℓ} → BinaryOperation A → Set ℓ
+    IsIdempotent _·_ = ∀ x → (x · x) ≡ x
+
+    record IsIdempotentMonoid {ℓ} {Carrier : Set ℓ} (ε : Carrier) (_·_ : BinaryOperation Carrier) : Set (Level.suc ℓ) where
+      field
+        is-monoid     : IsMonoid ε _·_
+        is-idempotent : IsIdempotent _·_
+
+      open IsMonoid is-monoid public
+
+    record IdempotentMonoid {ℓ ℓ′} : Set (Level.suc (ℓ Level.⊔ ℓ′)) where
+      field
+        Carrier : Set ℓ
+        ε : Carrier
+        _·_ : BinaryOperation Carrier
+
+        is-idempotent-monoid : IsIdempotentMonoid ε _·_
+
+      open IsIdempotentMonoid is-idempotent-monoid public
+
+      monoid : Monoid {ℓ} {ℓ′}
+      monoid = record { Carrier = Carrier ; _·_ = _·_ ; is-monoid = is-monoid }
 
     -- Note how Agda can have parameterised modules.  The effect is to `fix' a monoid
     -- in the body of the module below.  When we try to open DerivedMonoidalProperties
