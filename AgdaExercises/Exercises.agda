@@ -418,6 +418,25 @@ module Exercises where
   -- Show that the ordering is reflexive and transitive (that is, the ordering is a quasi-
   -- order, or pre-order).
 
+    module DerivedCommutativeMonoidalProperties {ℓ ℓ′} (m : CommutativeMonoid {ℓ} {ℓ′}) where
+
+      open CommutativeMonoid m
+
+      _≤″_ : Carrier → Carrier → Set ℓ
+      x ≤″ y = Σ[ z ∈ Carrier ] x · z ≡ y
+      -- what's wrong with these two?
+      -- x ≤″ y = ∃ Carrier (λ z → x · y ≡ z)
+      -- x ≤″ y = (Carrier , λ z → x · y ≡ z)
+
+      ≤″-reflexive : (x : Carrier) → x ≤″ x
+      ≤″-reflexive x = (ε , is-right-identity x)
+
+      ≤″-transitive : (x y z : Carrier) → x ≤″ y → y ≤″ z → x ≤″ z
+      ≤″-transitive x y z (w₁ , x·w₁≡y) (w₂ , y·w₂≡z) = (w₁ · w₂) , prf
+        where
+          prf : x · (w₁ · w₂) ≡ z
+          prf rewrite is-associative x w₁ w₂ | x·w₁≡y | y·w₂≡z = refl
+
   module YetMoreExercises where
 
     open import Level
