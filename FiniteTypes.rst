@@ -6,7 +6,7 @@ In the SSreflect library, a finite type is represented as a list (more specifica
 
 .. code:: coq
 
-    Definition axiom e := ∀ x : T, count_mem x e = 1.
+    Definition axiom e := \forall x : T, count_mem x e = 1.
 
 As an example (taken from [gonthier_introduction_2010]), *booleans* form a finite type by listing all possible values of the type and showing that no value occurs twice:
 
