@@ -467,7 +467,7 @@ module Exercises where
       ∷-injective : ∀ {ℓ} → {A : Set ℓ} → {x y : A} → {xs ys : List′ A} → x ∷′ xs ≡ y ∷′ ys → x ≡ y × xs ≡ ys
       ∷-injective refl = refl , refl
 
-      -- Lists inherit decidable equality if there elements enjoy the same property.
+      -- Lists inherit decidable equality if their elements enjoy the same property.
       -- We demonstrate this fact by case analysis on the two lists, like so:
       ≡-List-decidable : Decidable (_≡_ {ℓ} {List′ A})
       -- If the two elements are equal we use the `yes' constructor of the Dec data
@@ -509,5 +509,15 @@ module Exercises where
       ≡-⊤-decidable tt tt = yes refl
 
       -- EXERCISE: show that the natural numbers, ℕ, have a decidable equality:
-      ≡-ℕ-decidable : _
-      ≡-ℕ-decidable = {!!}
+      -- ∷-injective : ∀ {ℓ} → {A : Set ℓ} → {x y : A} → {xs ys : List′ A} → x ∷′ xs ≡ y ∷′ ys → x ≡ y × xs ≡ ys
+      suc-injective : {m n : ℕ} → ℕ.suc m ≡ ℕ.suc n → m ≡ n
+      suc-injective refl = refl
+
+      ≡-ℕ-decidable : Decidable (_≡_ {A = ℕ})
+      ≡-ℕ-decidable ℕ.zero    ℕ.zero    = yes refl
+      ≡-ℕ-decidable ℕ.zero    (ℕ.suc n) = no (λ ())
+      ≡-ℕ-decidable (ℕ.suc m) ℕ.zero    = no (λ ())
+      ≡-ℕ-decidable (ℕ.suc m) (ℕ.suc n) with ≡-ℕ-decidable m n
+      ... | yes prf₁
+        rewrite prf₁ = yes refl
+      ... | no prf₂ = no (λ p → prf₂ ∘ suc-injective $ p)
