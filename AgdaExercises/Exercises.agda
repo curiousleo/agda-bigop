@@ -28,6 +28,16 @@ module Exercises where
       ∨-is-associative : Associative ∨
       is-absorptive    : Absorptive ∧ ∨
 
+  -- XXX: take a look at the type of Commutative, Associative and so on.
+  -- Note how both are parameterised by an underlying equality, and do not
+  -- necessarily use Agda's propositional equality _≡_, instead allowing the
+  -- user to use these definitions with any arbitrary equivalence relation (or
+  -- `Setoid'), _≈_.  As a result, they are kept in a parameterised module,
+  -- FunctionProperties, that needs to be opened with the equality you intend
+  -- to use before they are available to you (most convenient), or used with
+  -- two arguments, like so: Commutative _≈_ ∧ (less convenient).
+
+
   -- why doesn't this work?
   -- record IsLattice {ℓ} {A : Set ℓ}
   --                  (∧ ∨ : Op₂ A) : Set (Level.suc ℓ) where
@@ -84,24 +94,16 @@ module Exercises where
       where
         open ≡-Reasoning
 
-  module EqReasoningExample where
-
-    open import Function
-
-    open import Data.Nat
-    open import Data.Nat.Properties.Simple
-
-    open import Algebra.FunctionProperties
-
-    +-commutative : Commutative _≡_ _+_
-    +-commutative zero    n = sym ∘ +-right-identity $ n
-    +-commutative (suc m) n =
-      begin
-        suc (m + n)
-          ≡⟨ cong suc (+-commutative m n) ⟩
-        suc (n + m)
-          ≡⟨ sym (+-suc n m) ⟩
-        n + suc m
-      ∎
-      where
-        open ≡-Reasoning
+  -- Excellent.  Above we have given an algebraic presentation of lattices.
+  -- However, lattices can also be presented in an order-theoretic manner.
+  -- Formally, a lattice (L, ≤) where ≤ is a binary relation over L, is
+  -- a structure satisfying the following laws:
+  --
+  -- * ≤ is a partial order (reflexive, transitive and anti-symmetric)
+  -- * for every two elements of L there exists a least-upper bound and
+  --   greatest-lower bound.
+  --
+  -- Capture this order-theoretic definition and show that, given an
+  -- arbitrary order-theoretic lattice one can construct an algebraic lattice,
+  -- and vice-versa.  Use whatever definitions from the Standard Library
+  -- you like.
