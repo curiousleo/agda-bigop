@@ -1,6 +1,9 @@
-===================
-Finite Types in Coq
-===================
+============
+Finite types
+============
+
+Finite types in SSreflect
+-------------------------
 
 In the `SSreflect library <http://ssr.msr-inria.inria.fr/doc/ssreflect-1.5/>`_, a finite type is represented as a list (more specifically, a sequence from SSreflect's ``seq`` library) together with a proof that it contains no duplicates. This condition is expressed in Coq as:
 
@@ -22,4 +25,19 @@ Finite types can be combined to give new finite types by the following construct
 - an option (or ``Maybe``) type parameterised over a finite type is a finite type;
 - the *product* of two finite types is a finite type;
 - the *sum* of two finite types is a finite type;
-- the type of all *functions* with a finite type as their domain is a finite type as it is completely characterised by a list of ``(x, f x)`` pairs---see the `finfun module <http://ssr.msr-inria.inria.fr/doc/mathcomp-1.5/MathComp.finfun.html>`_ which is now part of the Mathematical Components library.
+- *functions* with a finite type as their domain are completely characterised by a list of ``(x, f x)`` pairs and therefore finite in a sense---see the `finfun module <http://ssr.msr-inria.inria.fr/doc/mathcomp-1.5/MathComp.finfun.html>`_ which is now part of the Mathematical Components library.
+
+Constructions of finite types *not* included in the ``SSreflect`` library:
+
+- the functions from a finite domain into a finite codomain form a finite type;
+- the powerset of a finite type is a finite type (Q: does it reside "one level up" in the type hierarchy?)
+
+Ideas
+-----
+
+When each finite type is tagged with its cardinality, we can track the cardinality of finite types through finite type constructions (Example: type ``M`` has cardinality ``|M|`` and type ``N`` has cardinality ``|N|``. Then ``M + N`` has cardinality ``|M| + |N|``, and ``M × N`` has cardinality ``|M| |N|``.)
+
+Other possible representations include:
+
+- efficient set data structures like AVL trees---unfortunately these tend to require and ordering, and we would like to allow the construction of finite sets for as many types as possible;
+- as lists where the elements are unique by construction using Agda's induction-recursion facilities.
