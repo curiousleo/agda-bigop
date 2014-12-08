@@ -14,6 +14,7 @@ module Exercises where
   open FunctionProperties using (Op₂)
   
   import Level
+  open import Data.Product
   open import Relation.Binary
   open import Relation.Binary.PropositionalEquality
 
@@ -107,3 +108,36 @@ module Exercises where
   -- arbitrary order-theoretic lattice one can construct an algebraic lattice,
   -- and vice-versa.  Use whatever definitions from the Standard Library
   -- you like.
+
+  IsUpperBound : ∀ {a ℓ} {A : Set a} → Rel A ℓ → A → A → A → Set _
+  IsUpperBound _≤_ x y ub = x ≤ ub × y ≤ ub
+
+  IsLowerBound : ∀ {a ℓ} {A : Set a} → Rel A ℓ → A → A → A → Set _
+  IsLowerBound _≤_ x y lb = lb ≤ x × lb ≤ y
+
+  IsLub : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → A → A → A → Set _
+  IsLub _≈_ _≤_ x y lub = upper × lowest
+    where
+      upper = IsUpperBound _≤_ x y lub
+      lowest = ∀ {z} → IsUpperBound _≤_ x y z → lub ≈ z
+
+  IsGlb : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → A → A → A → Set _
+  IsGlb _≈_ _≤_ x y glb = lower × greatest
+    where
+      lower = IsLowerBound _≤_ x y glb
+      greatest = ∀ {z} → IsLowerBound _≤_ x y z → glb ≈ z
+
+  HasLubs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
+  HasLubs _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ {!A!} ] IsLub _≈_ _≤_ x y z
+
+  HasGlbs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
+  HasGlbs _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ {!A!} ] IsGlb _≈_ _≤_ x y z
+
+  record IsOrderLattice {a ℓ₁ ℓ₂} {A : Set a}
+                        (_≈_ : Rel A ℓ₁) (_≤_ : Rel A ℓ₂) :
+                        Set (a Level.⊔ ℓ₁ Level.⊔ ℓ₂) where
+    open FunctionProperties _≈_
+    field
+      isPartialOrder : IsPartialOrder _≈_ _≤_
+      hasLubs        : HasLubs _≈_ _≤_
+      hasGlbs        : HasGlbs _≈_ _≤_
