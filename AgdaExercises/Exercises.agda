@@ -141,3 +141,30 @@ module Exercises where
       isPartialOrder : IsPartialOrder _≈_ _≤_
       hasLubs        : HasLubs _≈_ _≤_
       hasGlbs        : HasGlbs _≈_ _≤_
+
+  record OrderLattice {ℓ ℓ′} : Set (Level.suc (ℓ Level.⊔ ℓ′)) where
+    field
+      Carrier    : Set ℓ
+      _≈_        : Rel Carrier ℓ
+      _≤_        : Rel Carrier ℓ
+      is-order-lattice : IsOrderLattice _≈_ _≤_
+
+    open IsOrderLattice is-order-lattice public
+
+  fromOrderLattice : OrderLattice → Lattice
+  fromOrderLattice ol = record { Carrier = Carrier ; _∧_ = _∧_ ; _∨_ = _∨_ ; is-lattice = is-lattice }
+    where
+      open OrderLattice ol
+
+      _∧_ : Op₂ Carrier
+      x ∧ y = {!!}
+
+      _∨_ : Op₂ Carrier
+      x ∨ y = {!!}
+      
+      is-lattice = {!!}
+
+  toOrderLattice : Lattice → OrderLattice
+  toOrderLattice l = record { Carrier = Carrier ; _≈_ = ? ; _≤_ = ? ; is-order-lattice = ? }
+    where
+      open Lattice l
