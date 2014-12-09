@@ -128,10 +128,10 @@ module Exercises where
       greatest = ∀ {z} → IsLowerBound _≤_ x y z → glb ≈ z
 
   HasLubs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
-  HasLubs _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ {!A!} ] IsLub _≈_ _≤_ x y z
+  HasLubs {A = A} _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsLub _≈_ _≤_ x y z
 
   HasGlbs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
-  HasGlbs _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ {!A!} ] IsGlb _≈_ _≤_ x y z
+  HasGlbs {A = A}_≈_ _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsGlb _≈_ _≤_ x y z
 
   record IsOrderLattice {a ℓ₁ ℓ₂} {A : Set a}
                         (_≈_ : Rel A ℓ₁) (_≤_ : Rel A ℓ₂) :
