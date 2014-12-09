@@ -133,6 +133,12 @@ module Exercises where
   HasGlbs : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Set _
   HasGlbs {A = A} _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsGlb _≤_ x y z
 
+  lub : ∀ {a ℓ} {A : Set a} {_≤_ : Rel A ℓ} → HasLubs _≤_ → A
+  lub hasLubs = proj₁ hasLubs
+
+  glb : ∀ {a ℓ} {A : Set a} {_≤_ : Rel A ℓ} → HasGlbs _≤_ → A
+  glb hasGlbs = proj₁ hasGlbs
+
   record IsOrderLattice {a ℓ₁ ℓ₂} {A : Set a}
                         (_≈_ : Rel A ℓ₁) (_≤_ : Rel A ℓ₂) :
                         Set (a Level.⊔ ℓ₁ Level.⊔ ℓ₂) where
@@ -157,10 +163,10 @@ module Exercises where
       open OrderLattice ol
 
       _∧_ : Op₂ Carrier
-      x ∧ y = {!!}
+      x ∧ y = lub {!!}
 
       _∨_ : Op₂ Carrier
-      x ∨ y = {!!}
+      x ∨ y = glb {!!}
       
       is-lattice = {!!}
 
