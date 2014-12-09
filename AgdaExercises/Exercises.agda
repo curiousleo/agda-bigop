@@ -171,6 +171,6 @@ module Exercises where
       is-lattice = {!!}
 
   toOrderLattice : Lattice → OrderLattice
-  toOrderLattice l = record { Carrier = Carrier ; _≈_ = ? ; _≤_ = ? ; is-order-lattice = ? }
+  toOrderLattice l = record { Carrier = Carrier ; _≈_ = {!!} ; _≤_ = {!!} ; is-order-lattice = {!!} }
     where
       open Lattice l
