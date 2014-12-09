@@ -115,23 +115,23 @@ module Exercises where
   IsLowerBound : ∀ {a ℓ} {A : Set a} → Rel A ℓ → A → A → A → Set _
   IsLowerBound _≤_ x y lb = lb ≤ x × lb ≤ y
 
-  IsLub : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → A → A → A → Set _
-  IsLub _≈_ _≤_ x y lub = upper × lowest
+  IsLub : ∀ {a ℓ} {A : Set a} → Rel A ℓ → A → A → A → Set _
+  IsLub _≤_ x y lub = upper × lowest
     where
       upper = IsUpperBound _≤_ x y lub
-      lowest = ∀ {z} → IsUpperBound _≤_ x y z → lub ≈ z
+      lowest = ∀ {z} → IsUpperBound _≤_ x y z → lub ≤ z
 
-  IsGlb : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → A → A → A → Set _
-  IsGlb _≈_ _≤_ x y glb = lower × greatest
+  IsGlb : ∀ {a ℓ} {A : Set a} → Rel A ℓ → A → A → A → Set _
+  IsGlb _≤_ x y glb = lower × greatest
     where
       lower = IsLowerBound _≤_ x y glb
-      greatest = ∀ {z} → IsLowerBound _≤_ x y z → glb ≈ z
+      greatest = ∀ {z} → IsLowerBound _≤_ x y z → z ≤ glb
 
-  HasLubs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
-  HasLubs {A = A} _≈_ _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsLub _≈_ _≤_ x y z
+  HasLubs : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Set _
+  HasLubs {A = A} _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsLub _≤_ x y z
 
-  HasGlbs : ∀ {a ℓ₁ ℓ₂} {A : Set a} → Rel A ℓ₁ → Rel A ℓ₂ → Set _
-  HasGlbs {A = A}_≈_ _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsGlb _≈_ _≤_ x y z
+  HasGlbs : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Set _
+  HasGlbs {A = A} _≤_ = ∀ {x y} → Σ[ z ∈ A ] IsGlb _≤_ x y z
 
   record IsOrderLattice {a ℓ₁ ℓ₂} {A : Set a}
                         (_≈_ : Rel A ℓ₁) (_≤_ : Rel A ℓ₂) :
@@ -139,8 +139,8 @@ module Exercises where
     open FunctionProperties _≈_
     field
       isPartialOrder : IsPartialOrder _≈_ _≤_
-      hasLubs        : HasLubs _≈_ _≤_
-      hasGlbs        : HasGlbs _≈_ _≤_
+      hasLubs        : HasLubs _≤_
+      hasGlbs        : HasGlbs _≤_
 
   record OrderLattice {ℓ ℓ′} : Set (Level.suc (ℓ Level.⊔ ℓ′)) where
     field
