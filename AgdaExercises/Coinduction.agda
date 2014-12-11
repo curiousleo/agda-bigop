@@ -89,9 +89,6 @@ module AgdaExercises.Coinduction where
 
   open import Data.Nat
 
-  length : Stream → ℕ
-  length (x ∷ xs) = {!!}
-
   -- Above, you can write something that looks like it should work (i.e. all the type
   -- are correct), but Agda complains about what you have written by colouring in
   -- the corecursive call with a salmon colour, the colour used to mark non-terminating
@@ -107,16 +104,18 @@ module AgdaExercises.Coinduction where
   -- EXERCISE: try to define the following functions on Streams:
 
   zipWith : (Bit → Bit → Bit) → Stream → Stream → Stream
-  zipWith f xs ys = {!!}
+  zipWith f (x ∷ xs) (y ∷ ys) = f x y ∷ ♯ zipWith f (♭ xs) (♭ ys)
 
   drop : ℕ → Stream → Stream
-  drop cnt xs = {!!}
+  drop zero      xs = xs
+  drop (suc cnt) xs = drop cnt xs
 
   open import Data.Vec
-    hiding (take)
+    hiding (head ; tail ; take)
 
   take : (m : ℕ) → Stream → Vec Bit m
-  take cnt xs = {!!}
+  take zero      xs       = []
+  take (suc cnt) (x ∷ xs) = x ∷ (take cnt (♭ xs))
 
   -- Some definitions are more naturally expressed as a relation, captured by an indexed
   -- data type.  For instance:
@@ -134,8 +133,12 @@ module AgdaExercises.Coinduction where
   -- can of course use _≡_ to establish the equality of _data_ in the definition
   -- below:
 
+  open import Relation.Binary.PropositionalEquality
+  -- Propositional equality _≡_ is defined as
+  -- data _≡_ {a} {A : Set a} (x : A) : A → Set a where
+  --   refl : x ≡ x
   data _≈_ : Stream → Stream → Set where
-    -- XXX: fill me in
+    refl : ∀ {xs ys} → (head xs) ≡ (head ys) → (tail xs) ≈ (tail ys)
 
   -- As you can see, working with musical notation is not particularly hard, and if you
   -- maintain the mental model of ♭ being `force' and ♯ being `suspend' for infinite
@@ -189,10 +192,62 @@ module AgdaExercises.Coinduction where
   -- EXERCISE: you try to define the following:
   
   drop′ : ℕ → Stream′ → Stream′
-  drop′ = {!!}
+  head′ (drop′ zero      xs) = head′ xs
+  head′ (drop′ (suc cnt) xs) = head′ (drop′ cnt (tail′ xs))
+  tail′ (drop′ zero      xs) = tail′ xs
+  tail′ (drop′ (suc cnt) xs) = tail′ (drop′ cnt (tail′ xs))
 
   take′ : (m : ℕ) → Stream′ → Vec Bit m
-  take′ = {!!}
+  take′ zero      xs = []
+  take′ (suc cnt) xs = head′ xs ∷ take′ cnt (tail′ xs)
 
-  nats : Stream′
-  nats = {!!} -- An infinite stream of naturals: 0 ∷ 1 ∷ 2 ∷ …
+  -- QUESTION: How do I do this with explicit levels?
+  record Stream″ A : Set _ where
+    coinductive
+    field
+      head″ : A
+      tail″ : Stream″ A
+      
+  open Stream″
+
+  map″ : ∀ {A B} → (A → B) → Stream″ A → Stream″ B
+  head″ (map″ f xs) = f (head″ xs)
+  tail″ (map″ f xs) = map″ f (tail″ xs)
+
+  drop″ : ∀ {A} → ℕ → Stream″ A → Stream″ A
+  head″ (drop″ zero xs) = head″ xs
+  head″ (drop″ (suc n) xs) = head″ (drop″ n (tail″ xs))
+  tail″ (drop″ zero xs) = xs
+  tail″ (drop″ (suc n) xs) = tail″ (drop″ n (tail″ xs))
+
+  count : (from : ℕ) → Stream″ ℕ
+  head″ (count from) = from
+  tail″ (count from) = count (suc from)
+
+  nats : Stream″ ℕ
+  nats = count zero
+
+  -- QUESTION: What's an appropriate notion of equality for streams defined in this way?
+
+  spec : ∀ {n : ℕ} → head″ (drop″ n nats) ≡ n
+  spec {zero}  = refl
+  spec {suc n} =
+    begin
+      head″ (drop″ n (tail″ nats))
+        ≡⟨ cong head″ (cong (drop″ n) lemma₀) ⟩
+      head″ (drop″ n (map″ suc nats))
+        ≡⟨ cong head″ lemma₁ ⟩
+      head″ (map″ suc (drop″ n nats))
+        ≡⟨ refl ⟩
+      suc (head″ (drop″ n nats))
+        ≡⟨ cong suc spec ⟩
+      suc n
+    ∎
+    where
+      open ≡-Reasoning
+
+      lemma₀ : tail″ nats ≡ map″ suc nats
+      lemma₀ = {!!}
+
+      lemma₁ : ∀ {A B} {f : A → B} {xs : Stream″ A} → drop″ n (map″ f xs) ≡ map″ f (drop″ n xs)
+      lemma₁ {f = f} {xs = xs} = {!!}
