@@ -172,7 +172,11 @@ module AgdaExercises.Coinduction where
   head′ (repeat′ x) = x
   tail′ (repeat′ x) = repeat′ x
 
-  -- Notice the difference between a pattern and a copattern?  Some more examples:
+  -- Notice the difference between a pattern and a copattern?  It should be obvious
+  -- what is going on: functions are defined using copatterns by stating how they
+  -- commute with head′ and tail′.  You can read more about copatterns in this
+  -- paper, if you are interested: http://www.cs.mcgill.ca/~bpientka/papers/icfp13.pdf.
+  -- Some more examples:
 
   map′ : (Bit → Bit) → Stream′ → Stream′
   head′ (map′ f xs) = f (head′ xs)
