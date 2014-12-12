@@ -260,6 +260,14 @@ module AgdaExercises.Coinduction where
 
   open _≈″_
 
+  record _≈‴_ {ℓ ℓ′} {A : Set ℓ} (xs ys : Stream″ {ℓ} {ℓ′} A) : Set (ℓ ⊔ℓ ℓ′) where
+    coinductive
+    field
+      ≈‴-head : head″ xs ≡ head″ ys
+      ≈‴-tail : tail″ xs ≈‴ tail″ ys
+
+  open _≈‴_
+
   ≈″-refl : ∀ xs → xs ≈″ xs
   ≈-head (≈″-refl xs) = refl
   ≈-tail (≈″-refl xs) = ≈″-refl (tail′ xs)
