@@ -290,6 +290,9 @@ module AgdaExercises.Coinduction where
   -- What else do we need to know to establish that _≈″_ is an equality?  Can you show these
   -- properties?
 
+  ≈″-equiv : IsEquivalence _≈″_
+  ≈″-equiv = record { refl = ≈″-refl ; sym = ≈″-sym ; trans = ≈″-trans }
+  
   spec : ∀ {n : ℕ} → head″ (drop″ n nats) ≡ n
   spec {zero}  = refl
   spec {suc n} =
