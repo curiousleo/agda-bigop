@@ -268,6 +268,10 @@ module AgdaExercises.Coinduction where
 
   open _≈‴_
 
+  toStream″ : ∀ {ℓ′} → Stream′ → Stream″ {zeroℓ} {ℓ′} Bit
+  head″ (toStream″ xs) = head′ xs
+  tail″ (toStream″ xs) = toStream″ (tail′ xs)
+
   ≈″-refl : ∀ xs → xs ≈″ xs
   ≈-head (≈″-refl xs) = refl
   ≈-tail (≈″-refl xs) = ≈″-refl (tail′ xs)
