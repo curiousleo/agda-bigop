@@ -134,11 +134,14 @@ module AgdaExercises.Coinduction where
   -- below:
 
   open import Relation.Binary.PropositionalEquality
-  -- Propositional equality _≡_ is defined as
-  -- data _≡_ {a} {A : Set a} (x : A) : A → Set a where
-  --   refl : x ≡ x
+ 
+  -- XXX: This works, but I think it can be more naturally expressed as in _≈′_ below:
+
   data _≈_ : Stream → Stream → Set where
     refl : ∀ {xs ys} → (head xs) ≡ (head ys) → (tail xs) ≈ (tail ys)
+
+  data _≈′_ : Stream → Stream → Set where
+    refl : ∀ {x y xs ys} → x ≡ y → (♭ xs) ≈′ (♭ ys) → (x ∷ xs) ≈′ (y ∷ ys)
 
   -- As you can see, working with musical notation is not particularly hard, and if you
   -- maintain the mental model of ♭ being `force' and ♯ being `suspend' for infinite
@@ -201,24 +204,41 @@ module AgdaExercises.Coinduction where
   take′ zero      xs = []
   take′ (suc cnt) xs = head′ xs ∷ take′ cnt (tail′ xs)
 
+  open import Level
+    renaming (zero to zeroℓ; suc to sucℓ; _⊔_ to _⊔ℓ_)
+
   -- QUESTION: How do I do this with explicit levels?
-  record Stream″ A : Set _ where
+  -- XXX: like this:
+  -- Remember any type (such as A below) has to be given a type itself!
+  record Stream″ {ℓ ℓ′} (A : Set ℓ) : Set (ℓ ⊔ℓ ℓ′) where
     coinductive
     field
       head″ : A
-      tail″ : Stream″ A
+      -- Agda gets confused here trying to infer the correct levels, and so
+      -- you need to help it out by passing in the correct levels as explicit
+      -- parameters:
+      tail″ : Stream″ {ℓ} {ℓ′} A
       
   open Stream″
 
   map″ : ∀ {A B} → (A → B) → Stream″ A → Stream″ B
   head″ (map″ f xs) = f (head″ xs)
   tail″ (map″ f xs) = map″ f (tail″ xs)
-
+ 
+  -- XXX: this can also be written like drop‴ below:
   drop″ : ∀ {A} → ℕ → Stream″ A → Stream″ A
   head″ (drop″ zero xs) = head″ xs
   head″ (drop″ (suc n) xs) = head″ (drop″ n (tail″ xs))
   tail″ (drop″ zero xs) = xs
   tail″ (drop″ (suc n) xs) = tail″ (drop″ n (tail″ xs))
+
+  -- Remember, here ℕ is data, and so you can do recursive calls on the first
+  -- argument, but Stream″ is codata.  Essentially drop is a recursive function
+  -- that just happens to take a codata argument.  Data and codata can be
+  -- mixed freely in all functions!
+  drop‴ : ∀ {ℓ ℓ′ A} → ℕ → Stream″ {ℓ} {ℓ′} A → Stream″ {ℓ} {ℓ′} A
+  drop‴ zero      xs = xs
+  drop‴ (suc cnt) xs = drop‴ cnt (tail″ xs)
 
   count : (from : ℕ) → Stream″ ℕ
   head″ (count from) = from
@@ -228,6 +248,33 @@ module AgdaExercises.Coinduction where
   nats = count zero
 
   -- QUESTION: What's an appropriate notion of equality for streams defined in this way?
+
+  -- XXX: something like this should work.  Two streams are equal if they are observably
+  -- equal at their heads and observably equal at their tails:
+
+  record _≈″_ (xs ys : Stream′) : Set where
+    coinductive
+    field
+      ≈-head : head′ xs ≡  head′ ys
+      ≈-tail : tail′ xs ≈″ tail′ ys
+
+  open _≈″_
+
+  ≈″-refl : ∀ xs → xs ≈″ xs
+  ≈-head (≈″-refl xs) = refl
+  ≈-tail (≈″-refl xs) = ≈″-refl (tail′ xs)
+
+  ≈″-sym  : ∀ xs ys → xs ≈″ ys → ys ≈″ xs
+  ≈-head (≈″-sym xs ys prf) = sym (≈-head prf)
+  ≈-tail (≈″-sym xs ys prf) = ≈″-sym (tail′ xs) (tail′ ys) (≈-tail prf)
+
+  -- EXERCISE: you complete the following:
+  ≈″-trans : ∀ xs ys zs → xs ≈″ ys → ys ≈″ zs → xs ≈″ zs
+  ≈″-trans = {!!}
+
+  -- EXERCISE: the above properties establish _≈″_ is a Setoid, i.e. an equivalence relation.
+  -- What else do we need to know to establish that _≈″_ is an equality?  Can you show these
+  -- properties?
 
   spec : ∀ {n : ℕ} → head″ (drop″ n nats) ≡ n
   spec {zero}  = refl
