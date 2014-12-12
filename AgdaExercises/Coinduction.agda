@@ -272,17 +272,19 @@ module AgdaExercises.Coinduction where
   head″ (toStream″ xs) = head′ xs
   tail″ (toStream″ xs) = toStream″ (tail′ xs)
 
-  ≈″-refl : ∀ xs → xs ≈″ xs
-  ≈-head (≈″-refl xs) = refl
-  ≈-tail (≈″-refl xs) = ≈″-refl (tail′ xs)
+  open import Relation.Binary
 
-  ≈″-sym  : ∀ xs ys → xs ≈″ ys → ys ≈″ xs
-  ≈-head (≈″-sym xs ys prf) = sym (≈-head prf)
-  ≈-tail (≈″-sym xs ys prf) = ≈″-sym (tail′ xs) (tail′ ys) (≈-tail prf)
+  ≈″-refl : Reflexive _≈″_
+  ≈-head ≈″-refl = refl
+  ≈-tail (≈″-refl {xs}) = ≈″-refl {tail′ xs}
 
-  ≈″-trans : ∀ xs ys zs → xs ≈″ ys → ys ≈″ zs → xs ≈″ zs
-  ≈-head (≈″-trans xs ys zs xs≈″ys ys≈″zs) = trans (≈-head xs≈″ys) (≈-head ys≈″zs)
-  ≈-tail (≈″-trans xs ys zs xs≈″ys ys≈″zs) = ≈″-trans (tail′ xs) (tail′ ys) (tail′ zs) (≈-tail xs≈″ys) (≈-tail ys≈″zs)
+  ≈″-sym  : Symmetric _≈″_
+  ≈-head (≈″-sym {xs} prf) = sym (≈-head prf)
+  ≈-tail (≈″-sym {xs} {ys} prf) = ≈″-sym {tail′ xs} {tail′ ys} (≈-tail prf)
+
+  ≈″-trans : Transitive _≈″_
+  ≈-head (≈″-trans {xs} {ys} {zs} xs≈″ys ys≈″zs) = trans (≈-head xs≈″ys) (≈-head ys≈″zs)
+  ≈-tail (≈″-trans {xs} {ys} {zs} xs≈″ys ys≈″zs) = ≈″-trans {tail′ xs} {tail′ ys} {tail′ zs} (≈-tail xs≈″ys) (≈-tail ys≈″zs)
 
   -- EXERCISE: the above properties establish _≈″_ is a Setoid, i.e. an equivalence relation.
   -- What else do we need to know to establish that _≈″_ is an equality?  Can you show these
