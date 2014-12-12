@@ -221,12 +221,12 @@ module AgdaExercises.Coinduction where
       
   open Stream″
 
-  map″ : ∀ {A B} → (A → B) → Stream″ A → Stream″ B
+  map″ : ∀ {ℓ ℓ′} {A : Set ℓ} {B : Set ℓ′} → (A → B) → Stream″ {ℓ} {ℓ′} A → Stream″ {ℓ′} {ℓ} B
   head″ (map″ f xs) = f (head″ xs)
   tail″ (map″ f xs) = map″ f (tail″ xs)
  
   -- XXX: this can also be written like drop‴ below:
-  drop″ : ∀ {A} → ℕ → Stream″ A → Stream″ A
+  drop″ : ∀ {ℓ ℓ′} {A : Set ℓ} → ℕ → Stream″ {ℓ} {ℓ′} A → Stream″ A
   head″ (drop″ zero xs) = head″ xs
   head″ (drop″ (suc n) xs) = head″ (drop″ n (tail″ xs))
   tail″ (drop″ zero xs) = xs
@@ -240,11 +240,11 @@ module AgdaExercises.Coinduction where
   drop‴ zero      xs = xs
   drop‴ (suc cnt) xs = drop‴ cnt (tail″ xs)
 
-  count : (from : ℕ) → Stream″ ℕ
+  count : ∀ {ℓ′} (from : ℕ) → Stream″ {zeroℓ} {ℓ′} ℕ
   head″ (count from) = from
   tail″ (count from) = count (suc from)
 
-  nats : Stream″ ℕ
+  nats : ∀ {ℓ′} → Stream″ {zeroℓ} {ℓ′} ℕ
   nats = count zero
 
   -- QUESTION: What's an appropriate notion of equality for streams defined in this way?
