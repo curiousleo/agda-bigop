@@ -279,11 +279,11 @@ module AgdaExercises.Coinduction where
   ≈-tail (≈″-refl {xs}) = ≈″-refl {tail′ xs}
 
   ≈″-sym  : Symmetric _≈″_
-  ≈-head (≈″-sym {xs} prf) = sym (≈-head prf)
+  ≈-head (≈″-sym prf) = sym (≈-head prf)
   ≈-tail (≈″-sym {xs} {ys} prf) = ≈″-sym {tail′ xs} {tail′ ys} (≈-tail prf)
 
   ≈″-trans : Transitive _≈″_
-  ≈-head (≈″-trans {xs} {ys} {zs} xs≈″ys ys≈″zs) = trans (≈-head xs≈″ys) (≈-head ys≈″zs)
+  ≈-head (≈″-trans xs≈″ys ys≈″zs) = trans (≈-head xs≈″ys) (≈-head ys≈″zs)
   ≈-tail (≈″-trans {xs} {ys} {zs} xs≈″ys ys≈″zs) = ≈″-trans {tail′ xs} {tail′ ys} {tail′ zs} (≈-tail xs≈″ys) (≈-tail ys≈″zs)
 
   -- EXERCISE: the above properties establish _≈″_ is a Setoid, i.e. an equivalence relation.
