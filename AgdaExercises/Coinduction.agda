@@ -280,9 +280,9 @@ module AgdaExercises.Coinduction where
   ≈-head (≈″-sym xs ys prf) = sym (≈-head prf)
   ≈-tail (≈″-sym xs ys prf) = ≈″-sym (tail′ xs) (tail′ ys) (≈-tail prf)
 
-  -- EXERCISE: you complete the following:
   ≈″-trans : ∀ xs ys zs → xs ≈″ ys → ys ≈″ zs → xs ≈″ zs
-  ≈″-trans = {!!}
+  ≈-head (≈″-trans xs ys zs xs≈″ys ys≈″zs) = trans (≈-head xs≈″ys) (≈-head ys≈″zs)
+  ≈-tail (≈″-trans xs ys zs xs≈″ys ys≈″zs) = ≈″-trans (tail′ xs) (tail′ ys) (tail′ zs) (≈-tail xs≈″ys) (≈-tail ys≈″zs)
 
   -- EXERCISE: the above properties establish _≈″_ is a Setoid, i.e. an equivalence relation.
   -- What else do we need to know to establish that _≈″_ is an equality?  Can you show these
