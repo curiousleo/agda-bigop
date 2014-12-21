@@ -7,6 +7,7 @@ module Prototypes.BigopRecord where
   open import Algebra.Structures
   open import Relation.Binary.PropositionalEquality
   open import Data.Nat
+  open import Data.Vec
 
   open import Level
     renaming (zero to zeroℓ; suc to sucℓ; _⊔_ to _⊔ℓ_)
@@ -17,20 +18,35 @@ module Prototypes.BigopRecord where
 --      _⊕_  : B → A → B
 --      ε    : B
 
-  record Bigop′ {c ℓ} : Set (sucℓ (c ⊔ℓ ℓ)) where
+--  data UVec {a} (A : Set a) : ℕ → Set a where
+--    []     : UVec A zero
+--    _∷_[_] : {n : ℕ} → (a : A) → (as : UVec A n) → a ♯ as → UVec A (suc n)
+
+--  _♯_ : UVec A n → A → Set
+--  a ♯ as = ?
+
+  IsEnumerable : ∀ {c} → (Carrier : Set c) → (n : ℕ) → Set c
+  IsEnumerable = {!!}
+
+  record FinType {c} {n : ℕ} : Set (sucℓ c) where
+    field
+      Carrier      : Set c
+      isEnumerable : IsEnumerable Carrier n
+
+  record Bigop′ {c ℓ} {n : ℕ} : Set (sucℓ (c ⊔ℓ ℓ)) where
     constructor  _⦇_,_⦈_
     infixl 7 _∙_
     field
-      Carrier     : Set c
+      Carrier     : FinType {c} {n}
       -- need more restrictions on Carrier. must be "enumerable", finite, ...
-      ε           : Carrier
-      _∙_         : Op₂ Carrier
+      ε           : FinType.Carrier Carrier
+      _∙_         : Op₂ (FinType.Carrier Carrier)
       isMonoid    : IsMonoid _≡_ _∙_ ε
 
     open IsMonoid isMonoid public
 
-  ∑ : Bigop′ {zeroℓ} {zeroℓ}
-  ∑ = ℕ ⦇ zero , _+_ ⦈ isMonoid
+  ∑ : Bigop′
+  ∑ = {!!} ⦇ zero , _+_ ⦈ isMonoid
     where
       isMonoid : IsMonoid _≡_ _+_ zero
       isMonoid = {!!}
@@ -39,7 +55,7 @@ module Prototypes.BigopRecord where
 --         → (b : Carrier ⦇ ε , _∙_ ⦈ isMonoid) → (I → Bool) → (I → c)
 --  eval x y = ?
 
-  eval : ∀ {c i ℓ} {I : Set i} → (b : Bigop′ {c} {ℓ}) → (I → Bool) → (I → Bigop′.Carrier b) → Bigop′.Carrier b
+  eval : ∀ {c i ℓ} {I : Set i} → (b : Bigop′ {c} {ℓ}) → (I → Bool) → (I → FinType.Carrier(Bigop′.Carrier b)) → FinType.Carrier (Bigop′.Carrier b)
   eval b p f = {!!}
     where
       open Bigop′ b
