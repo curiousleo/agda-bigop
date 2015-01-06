@@ -18,20 +18,21 @@ module Prototypes.BigopRecord where
 --      _⊕_  : B → A → B
 --      ε    : B
 
---  data UVec {a} (A : Set a) : ℕ → Set a where
---    []     : UVec A zero
---    _∷_[_] : {n : ℕ} → (a : A) → (as : UVec A n) → a ♯ as → UVec A (suc n)
+  mutual
+    data UVec {a} (A : Set a) : ℕ → Set a where
+      []     : UVec A zero
+      _∷_[_] : {n : ℕ} → (a : A) → (as : UVec A n) → a ♯ as → UVec A (suc n)
 
---  _♯_ : UVec A n → A → Set
---  a ♯ as = ?
+    _♯_ : ∀ {a} → {n : ℕ} → {A : Set a} → A → UVec A n → Set
+    a ♯ as = {!!}
 
-  IsEnumerable : ∀ {c} → (Carrier : Set c) → (n : ℕ) → Set c
+  IsEnumerable : ∀ {c} → (Carrier : Set c) → (n : ℕ) → UVec {c} Carrier n
   IsEnumerable = {!!}
 
-  record FinType {c} {n : ℕ} : Set (sucℓ c) where
+  record FinType {c ℓ} {n : ℕ} : Set (c ⊔ℓ ℓ) where
     field
       Carrier      : Set c
-      isEnumerable : IsEnumerable Carrier n
+      isEnumerable : IsEnumerable {c} Carrier n
 
   record Bigop′ {c ℓ} {n : ℕ} : Set (sucℓ (c ⊔ℓ ℓ)) where
     constructor  _⦇_,_⦈_
@@ -49,7 +50,7 @@ module Prototypes.BigopRecord where
   ∑ = {!!} ⦇ zero , _+_ ⦈ isMonoid
     where
       isMonoid : IsMonoid _≡_ _+_ zero
-      isMonoid = {!!}
+      isMonoid = record { isSemigroup = record { isEquivalence = {!!} ; assoc = {!!} ; ∙-cong = {!!} } ; identity = {!!} }
 
 --  eval : ∀ {c i ℓ} {Carrier : Set c} {ε : Carrier} {_∙_ : Op₂ Carrier} {I : Set i} {isMonoid : IsMonoid _≡_ _∙_ ε}
 --         → (b : Carrier ⦇ ε , _∙_ ⦈ isMonoid) → (I → Bool) → (I → c)
