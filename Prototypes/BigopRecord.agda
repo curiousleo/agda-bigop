@@ -18,18 +18,20 @@ module Prototypes.BigopRecord where
 --      _⊕_  : B → A → B
 --      ε    : B
 
-  mutual
-    data UVec {a} (A : Set a) : ℕ → Set a where
-      []     : UVec A zero
-      _∷_[_] : {n : ℕ} → (a : A) → (as : UVec A n) → a ♯ as → UVec A (suc n)
+  
+  data UVec {a} (A : Set a) : ℕ → Set a
+  _♯_ : ∀ {a} → {n : ℕ} → {A : Set a} → A → UVec {a} A n → Set
 
-    _♯_ : ∀ {a} → {n : ℕ} → {A : Set a} → A → UVec A n → Set
-    a ♯ as = {!!}
+  data UVec {a} A where
+    []     : UVec A zero
+    _∷_[_] : {n : ℕ} → (x : A) → (xs : UVec {a} A n) → x ♯ xs → UVec A (suc n)
+
+  a ♯ as = {!!}
 
   IsEnumerable : ∀ {c} → (Carrier : Set c) → (n : ℕ) → UVec {c} Carrier n
   IsEnumerable = {!!}
 
-  record FinType {c ℓ} {n : ℕ} : Set (c ⊔ℓ ℓ) where
+  record FinType {c ℓ} {n : ℕ} : Set (sucℓ (c ⊔ℓ ℓ)) where
     field
       Carrier      : Set c
       isEnumerable : IsEnumerable {c} Carrier n
