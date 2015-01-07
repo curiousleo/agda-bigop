@@ -73,3 +73,8 @@ module Prototypes.BigopInjection where
     where
       open Bigop bigop
       open BigopExpr expr
+
+  -- Ideas
+  --
+  -- * use P.→-to-⟶ or P.→-setoid
+  -- * consider Bijective and TypeIsomorphism
