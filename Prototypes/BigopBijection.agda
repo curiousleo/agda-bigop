@@ -34,25 +34,35 @@ module Prototypes.BigopBijection where
       enumFrom Bool.true  = zero
       enumFrom Bool.false = suc zero
       
-      Fin⟶Bool = record { _⟨$⟩_ = enumTo ; cong = λ x → {!!} }
-
-      bijective = record { injective = λ {x} {y} → injective x y ; surjective = record { from = record { _⟨$⟩_ = {!enumFrom!} ; cong = {!!} } ; right-inverse-of = {!!} } }
+      Fin⟶Bool = record { _⟨$⟩_ = enumTo ; cong = cong }
         where
-          surjective : (x : Fin 2) → (y : Fin 2) → x ≡ y → (enumTo x) ≡ (enumTo y)
-          surjective zero           zero           x≡y = P.refl
-          surjective zero           (suc y)        ()
-          surjective (suc x)        zero           ()
-          surjective (suc zero)     (suc zero)     x≡y = P.refl
-          surjective (suc zero)     (suc (suc ())) ()
-          surjective (suc (suc ())) (suc y)
+          cong : {x y : Fin 2} → x ≡ y → enumTo x ≡ enumTo y
+          cong {zero}  P.refl = P.refl
+          cong {suc x} P.refl = P.refl
 
-          injective : (x : Fin 2) → (y : Fin 2) → (enumTo x) ≡ (enumTo y) → x ≡ y
-          injective zero           zero           enumx≡enumy = P.refl
-          injective zero           (suc y)        ()
-          injective (suc x)        zero           ()
-          injective (suc zero)     (suc zero)     enumx≡enumy = P.refl
-          injective (suc zero)     (suc (suc ()))
-          injective (suc (suc ())) (suc y)        enumx≡enumy
+      bijective = record { injective = injective ; surjective = surjective }
+        where
+          injective : {x y : Fin 2} → (enumTo x) ≡ (enumTo y) → x ≡ y
+          injective {zero}         {zero}         enumx≡enumy = P.refl
+          injective {zero}         {suc y}        ()
+          injective {suc x}        {zero}         ()
+          injective {suc zero}     {suc zero}     enumx≡enumy = P.refl
+          injective {suc zero}     {suc (suc ())} enumx≡enumy
+          injective {suc (suc ())} {suc y}        enumx≡enumy
+
+          surjective = record { from = Bool⟶Fin ; right-inverse-of = right-inv }
+            where
+              Bool⟶Fin = record { _⟨$⟩_ = enumFrom ; cong = cong }
+                where
+                  cong : {x y : Bool.Bool} → x ≡ y → enumFrom x ≡ enumFrom y
+                  cong {Bool.true}  P.refl = P.refl
+                  cong {Bool.false} P.refl = P.refl
+
+              open import Function.LeftInverse
+              right-inv : Bool⟶Fin RightInverseOf Fin⟶Bool
+              right-inv Bool.true  = P.refl
+              right-inv Bool.false = P.refl
+
 
   FinEnum : ∀ {n : Nat.ℕ} → Enum {n} (P.setoid (Fin n))
   FinEnum = record { to = Fin⟶Nat ; bijective = bijective }
