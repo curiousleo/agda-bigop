@@ -11,6 +11,7 @@ module Prototypes.BigopBijection where
   open import Relation.Binary.Core using (_≡_)
   import Function as Fun
   import Data.Bool as Bool
+  open import Data.Vec
 
   Enum : ∀ {n : Nat.ℕ} {a ℓ} → (A : Setoid a ℓ) → Set _
   Enum {n = n} A = Bijection (P.setoid (Fin n)) A
@@ -22,6 +23,11 @@ module Prototypes.BigopBijection where
       Result       : Set r
       ε            : Result
       enum         : Enum {size} Index
+
+  enum : ∀ {n : Nat.ℕ} {a ℓ} {A : Setoid a ℓ} → Enum {n} A → Vec (Setoid.Carrier A) n
+  enum enumA = tabulate (_⟨$⟩_ (Bijection.to enumA))
+    where
+      open import Function.Equality using (_⟨$⟩_)
 
   BoolEnum : Enum (P.setoid Bool.Bool)
   BoolEnum = record { to = Fin⟶Bool ; bijective = bijective }
