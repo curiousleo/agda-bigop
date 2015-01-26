@@ -12,24 +12,51 @@ module Prototypes.BigopBijection where
   import Function as Fun
   import Data.Bool as Bool
   open import Data.Vec
+  open import Data.Sum
+  open import Relation.Nullary using (¬_)
 
-  Enum : ∀ {n : Nat.ℕ} {a ℓ} → (A : Setoid a ℓ) → Set _
-  Enum {n = n} A = Bijection (P.setoid (Fin n)) A
+  Enum : ∀ {n : Nat.ℕ} {a} → (A : Set a) → Set _
+  Enum {n = n} A = Bijection (P.setoid (Fin n)) (P.setoid A)
 
-  record Bigop {i r ℓ} : Set (L.suc (i L.⊔ r L.⊔ ℓ)) where
+  record Bigop {i r} : Set (L.suc (i L.⊔ r)) where
     field
       size         : Nat.ℕ
-      Index        : Setoid i ℓ
+      Index        : Set i
       Result       : Set r
       ε            : Result
       enum         : Enum {size} Index
 
-  enum : ∀ {n : Nat.ℕ} {a ℓ} {A : Setoid a ℓ} → Enum {n} A → Vec (Setoid.Carrier A) n
+  enum : ∀ {n : Nat.ℕ} {a} {A : Set a} → Enum {n} A → Vec A n
   enum enumA = tabulate (_⟨$⟩_ (Bijection.to enumA))
     where
       open import Function.Equality using (_⟨$⟩_)
 
-  BoolEnum : Enum (P.setoid Bool.Bool)
+  ¬sucm≤n→n≥m : ∀ {m n} → ¬ Nat.suc m Nat.≤ n → n Nat.≥ m
+  ¬sucm≤n→n≥m x = {!!}
+
+  SumEnum : ∀ {a b} {m n : Nat.ℕ} {A : Set a} {B : Set b} → Enum {m} A → Enum {n} B → Enum {m Nat.+ n} (A ⊎ B)
+  SumEnum {m = m} {n = n} {A = A} {B = B} enumA enumB = bijection
+    where
+      bijection = record { to = P.→-to-⟶ toA⊎B ; bijective = bijective }
+        where
+          open import Function.Equality using (_⟨$⟩_)
+          open import Relation.Nullary using (yes ; no)
+          open import Relation.Nullary.Decidable using (toWitness)
+
+          toA = Bijection.to enumA
+          toB = Bijection.to enumB
+
+          toA⊎B : Fin (m Nat.+ n) → A ⊎ B
+          toA⊎B i with Nat.suc (toℕ i) Nat.≤? m | Nat.suc (toℕ i Nat.∸ m) Nat.≤? n
+          ... | yes suci≤m | _ =         inj₁ (toA ⟨$⟩ fromℕ≤ {toℕ i} suci≤m)
+          ... | no  suci≰m | yes i-m≤n = inj₂ (toB ⟨$⟩ fromℕ≤ {toℕ i Nat.∸ m} i-m≤n)
+          ... | no  suci≰m | no  i-m≰n = {!!}
+            where
+              m≥i = ¬sucm≤n→n≥m {!!}
+
+          bijective = {!!}
+
+  BoolEnum : Enum Bool.Bool
   BoolEnum = record { to = Fin⟶Bool ; bijective = bijective }
     where
       enumTo : Fin 2 → Bool.Bool
@@ -39,12 +66,9 @@ module Prototypes.BigopBijection where
       enumFrom : Bool.Bool → Fin 2
       enumFrom Bool.true  = zero
       enumFrom Bool.false = suc zero
-      
-      Fin⟶Bool = record { _⟨$⟩_ = enumTo ; cong = cong }
-        where
-          cong : {x y : Fin 2} → x ≡ y → enumTo x ≡ enumTo y
-          cong {zero}  P.refl = P.refl
-          cong {suc x} P.refl = P.refl
+
+      Fin⟶Bool = P.→-to-⟶ enumTo
+      Bool⟶Fin = P.→-to-⟶ enumFrom
 
       bijective = record { injective = injective ; surjective = surjective }
         where
@@ -58,19 +82,13 @@ module Prototypes.BigopBijection where
 
           surjective = record { from = Bool⟶Fin ; right-inverse-of = right-inv }
             where
-              Bool⟶Fin = record { _⟨$⟩_ = enumFrom ; cong = cong }
-                where
-                  cong : {x y : Bool.Bool} → x ≡ y → enumFrom x ≡ enumFrom y
-                  cong {Bool.true}  P.refl = P.refl
-                  cong {Bool.false} P.refl = P.refl
-
               open import Function.LeftInverse
               right-inv : Bool⟶Fin RightInverseOf Fin⟶Bool
               right-inv Bool.true  = P.refl
               right-inv Bool.false = P.refl
 
 
-  FinEnum : ∀ {n : Nat.ℕ} → Enum {n} (P.setoid (Fin n))
+  FinEnum : ∀ {n : Nat.ℕ} → Enum {n} (Fin n)
   FinEnum = record { to = Fin⟶Nat ; bijective = bijective }
     where
       Fin⟶Nat = record { _⟨$⟩_ = Fun.id ; cong = Fun.id }
@@ -81,7 +99,7 @@ module Prototypes.BigopBijection where
               right-inv = λ x → P.refl
 
   finSumBigop : (n : Nat.ℕ) → Bigop
-  finSumBigop n = record { size = size ; Index = P.setoid (Fin size) ;
+  finSumBigop n = record { size = size ; Index = Fin size ;
                            Result = Nat.ℕ ; enum = FinEnum ; ε = Nat.zero}
     where
       size = Nat.suc n
