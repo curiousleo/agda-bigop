@@ -103,4 +103,38 @@ module Prototypes.BigopBijection where
                            Result = Nat.ℕ ; enum = FinEnum ; ε = Nat.zero}
     where
       size = Nat.suc n
+
+-- EXPERIMENT
+
+  data Colour : Set where
+    red green blue : Colour
+
+  record NotRed : Set where
+    constructor _,_
+    field
+      colour : Colour
+      colour-isn't-red : ¬ (colour ≡ red)
+
+  f : Fin 2 → NotRed
+  f zero       = green , (λ ())
+  f (suc zero) = blue , (λ ())
+  f (suc (suc ()))
+
+  g : NotRed → Fin 2
+  g (red   , n) = zero
+  g (green , n) = zero
+  g (blue  , n) = suc zero
+
+  open import Function.Injection
+  finj : Injection (P.setoid (Fin 2)) (P.setoid NotRed)
+  finj = record { to = Fin⟶NotRed ; injective = injective }
+    where
+      Fin⟶NotRed = P.→-to-⟶ f
           
+      injective : Injective Fin⟶NotRed
+      injective {zero}         {zero}         fx≡fy = P.refl
+      injective {zero}         {suc zero} ()
+      injective { _ }          {suc (suc ())} fx≡fy
+      injective {suc zero}     {zero} ()
+      injective {suc zero}     {suc zero} fx≡fy = P.refl
+      injective {suc (suc ())}            fx≡fy
