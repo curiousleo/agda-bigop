@@ -2,7 +2,7 @@ module Prototypes.FinSum where
 
   open import Data.Fin
   open import Data.Nat
-    renaming (_+_ to _N+_ ; _≤?_ to _N≤?_)
+    renaming (_+_ to _N+_ ; _≤?_ to _N≤?_ ; _≤_ to _N≤_ ; _>_ to _N>_)
   open import Data.Sum
 
   open import Function.Bijection
@@ -10,7 +10,9 @@ module Prototypes.FinSum where
 
   open import Relation.Binary.Core using (_≡_)
   open import Relation.Binary.PropositionalEquality
-    using (refl ; cong ; sym ; setoid ; →-to-⟶)
+    using (refl ; cong ; sym ; trans ; setoid ; →-to-⟶)
+
+  open import Relation.Nullary.Core using (¬_)
 
   suc-injective : ∀ {n} {p q : Fin n} → Fin.suc p ≡ suc q → p ≡ q
   suc-injective refl = refl
