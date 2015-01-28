@@ -49,6 +49,18 @@ module Prototypes.FinSum where
       open Relation.Binary.PropositionalEquality.≡-Reasoning
       open import Data.Fin.Properties
 
+  theorem₀ : ∀ {n m} {j : Fin n} → ¬ m ≰ toℕ (raise m j)
+  theorem₀ nleq = lemma₁ (lemma₀ nleq)
+    where
+      open import Data.Fin.Properties
+      open import Data.Nat.Properties
+
+      lemma₀ : ∀ {n m} {j : Fin n} → m ≰ toℕ (raise m j) → m N> m N+ toℕ j
+      lemma₀ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
+
+      lemma₁ : ∀ {m n} → ¬ m N> m N+ n
+      lemma₁ (s≤s gt) = lemma₁ gt
+
   m⊎n↔m+n : ∀ {m n} →
             Bijection (setoid (Fin m ⊎ Fin n)) (setoid (Fin (m N+ n)))
   m⊎n↔m+n {m} {n} = record { to = to⟶ ; bijective = bijective }
