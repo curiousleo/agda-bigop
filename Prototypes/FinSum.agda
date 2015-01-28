@@ -12,7 +12,7 @@ module Prototypes.FinSum where
   open import Relation.Binary.PropositionalEquality
     using (refl ; cong ; setoid ; →-to-⟶)
 
-  suc-injective : ∀ {n} {p q : Fin n} → Data.Fin.suc p ≡ Data.Fin.suc q → p ≡ q
+  suc-injective : ∀ {n} {p q : Fin n} → Fin.suc p ≡ suc q → p ≡ q
   suc-injective refl = refl
 
   inject+k-injective : ∀ {n k} → (i : Fin n) → (j : Fin n) →
@@ -67,14 +67,14 @@ module Prototypes.FinSum where
       to⟶ = →-to-⟶ to→
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
-      injective {inj₁ i′} {inj₁ j′} to→≡ = {!!}
-      injective {inj₁ i′} {inj₂ j′} to→≡ = {!!}
-      injective {inj₂ i′} {j} to→≡ = {!!}
---    injective {i⊎} {j⊎} tom≡ton with i⊎ | j⊎
---    ... | inj₁ i′ | inj₁ j′ = cong inj₁ (inject+k-injective {m} i′ j′ tom≡ton)
---    ... | inj₁ i′ | inj₂ j′ = {!inject+-raise-injective!}
---    ... | inj₂ i′ | inj₁ j′ = {!!}
---    ... | inj₂ i′ | inj₂ j′ = cong inj₂ (raisek-injective m i′ j′ tom≡ton)
+--    injective {inj₁ i′} {inj₁ j′} to→≡ = {!!}
+--    injective {inj₁ i′} {inj₂ j′} to→≡ = {!!}
+--    injective {inj₂ i′} {j} to→≡ = {!!}
+      injective {i⊎} {j⊎} tom≡ton with i⊎ | j⊎
+      ... | inj₁ i′ | inj₁ j′ = cong inj₁ (inject+k-injective {m} i′ j′ tom≡ton)
+      ... | inj₁ i′ | inj₂ j′ = {!inject+-raise-injective!}
+      ... | inj₂ i′ | inj₁ j′ = {!!}
+      ... | inj₂ i′ | inj₂ j′ = cong inj₂ (raisek-injective m i′ j′ tom≡ton)
 
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
