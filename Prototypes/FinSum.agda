@@ -69,6 +69,7 @@ module Prototypes.FinSum where
       open import Data.Fin.Properties
       open import Data.Nat.Properties
       open import Function.LeftInverse using (_RightInverseOf_)
+      open import Data.Empty
       
       from→ : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
       from→ {m} {n} i with m N≤? toℕ i
@@ -82,11 +83,17 @@ module Prototypes.FinSum where
       to⟶ = →-to-⟶ to→
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
-      injective {i⊎} {j⊎} eq with i⊎ | j⊎
-      ... | inj₁ i′ | inj₁ j′ = cong inj₁ (inject+k-injective {m} i′ j′ eq)
-      ... | inj₁ i′ | inj₂ j′ = {!inject+-raise-injective!}
-      ... | inj₂ i′ | inj₁ j′ = {!!}
-      ... | inj₂ i′ | inj₂ j′ = cong inj₂ (raisek-injective m i′ j′ eq)
+      injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
+      injective {inj₁ i} {inj₁ j} eq | yes m≤i | yes m≤j = cong inj₁ (inject+k-injective i j eq)
+      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = {!!}
+      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = {!!}
+      injective {inj₂ i} {inj₂ j} eq | yes m≤i | yes m≤j = cong inj₂ (raisek-injective m i j eq)
+      ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
+      ... | no ¬m≤i | yes m≤j rewrite eq = ⊥-elim (¬m≤i m≤j)
+      injective {inj₁ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = cong inj₁ (inject+k-injective i j eq)
+      injective {inj₁ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤j)
+      injective {inj₂ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤i)
+      injective {inj₂ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = cong inj₂ (raisek-injective m i j eq)
 
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
