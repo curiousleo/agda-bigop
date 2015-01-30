@@ -84,16 +84,14 @@ module Prototypes.FinSum where
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
-      injective {inj₁ i} {inj₁ j} eq | yes m≤i | yes m≤j = cong inj₁ (inject+k-injective i j eq)
+      injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ (inject+k-injective i j eq)
+      injective {inj₂ i} {inj₂ j} eq | _ | _ = cong inj₂ (raisek-injective m i j eq)
       injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = {!!}
       injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = {!!}
-      injective {inj₂ i} {inj₂ j} eq | yes m≤i | yes m≤j = cong inj₂ (raisek-injective m i j eq)
-      ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
-      ... | no ¬m≤i | yes m≤j rewrite eq = ⊥-elim (¬m≤i m≤j)
-      injective {inj₁ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = cong inj₁ (inject+k-injective i j eq)
       injective {inj₁ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤j)
       injective {inj₂ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤i)
-      injective {inj₂ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = cong inj₂ (raisek-injective m i j eq)
+      ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
+      ... | no ¬m≤i | yes m≤j rewrite eq = ⊥-elim (¬m≤i m≤j)
 
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
