@@ -86,12 +86,30 @@ module Prototypes.FinSum where
       from⟶ = →-to-⟶ from→
       to⟶ = →-to-⟶ to→
 
+      theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} → ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
+      theorem₁ = {!!}
+
+      theorem₂ : ∀ {m n} {j⊎ : Fin m ⊎ Fin n} → ∃ (λ j → inj₂ j ≡ j⊎) → m N≤ toℕ (to→ j⊎)
+      theorem₂ = {!!}
+
+      theorem₃ : ∀ {m n} → m N≤ n → n N< m → ⊥
+      theorem₃ {m} {n} m≤n m>n with compare m n
+      theorem₃ m≤n m>n | tri<  m<n ¬m≡n ¬n<m = ¬n<m m>n
+      theorem₃ m≤n m>n | tri≈ ¬m<n  m≡n ¬n<m = ¬n<m m>n
+      theorem₃ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = {!!}
+        where
+          lemma₀ : m N≤ n → m ≡ n ⊎ m N< n
+          lemma₀ m≤n with compare m n
+          lemma₀ m≤n₁ | tri< a ¬b ¬c = inj₂ a
+          lemma₀ m≤n₁ | tri≈ ¬a b ¬c = inj₁ b
+          lemma₀ m≤n₁ | tri> ¬m<n ¬m≡n n<m = {!!}
+
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
       injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ (inject+k-injective i j eq)
       injective {inj₂ i} {inj₂ j} eq | _ | _ = cong inj₂ (raisek-injective m i j eq)
-      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = {!!}
-      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = {!!}
+      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₃ m≤i (theorem₁ {m} (i , refl)))
+      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₃ m≤j (theorem₁ {m} (j , refl)))
       injective {inj₁ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤j)
       injective {inj₂ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤i)
       ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
