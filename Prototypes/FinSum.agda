@@ -55,10 +55,7 @@ module Prototypes.FinSum where
 
       theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} → ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
       theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq) rewrite eq | sym (inject+-lemma n i) = bounded i
-      theorem₁ {i⊎ = inj₂ j} (i , eq) = ⊥-elim (lemma eq)
-        where
-          lemma : ∀ {a b} {A : Set a} {B : Set b} {x : A} {y : B} → ¬ inj₁ x ≡ inj₂ y
-          lemma eq = {!!}
+      theorem₁ {i⊎ = inj₂ j} (i , ())
 
       theorem₂ : ∀ {m n} → m N≤ n → n N< m → ⊥
       theorem₂ {m} {n} m≤n m>n with compare m n
