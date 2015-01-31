@@ -50,18 +50,6 @@ module Prototypes.FinSum where
       open Relation.Binary.PropositionalEquality.≡-Reasoning
       open import Data.Fin.Properties
 
-  theorem₀ : ∀ {n m} {j : Fin n} → ¬ m ≰ toℕ (raise m j)
-  theorem₀ nleq = lemma₁ (lemma₀ nleq)
-    where
-      open import Data.Fin.Properties
-      open import Data.Nat.Properties
-
-      lemma₀ : ∀ {n m} {j : Fin n} → m ≰ toℕ (raise m j) → m N> m N+ toℕ j
-      lemma₀ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
-
-      lemma₁ : ∀ {m n} → ¬ m N> m N+ n
-      lemma₁ (s≤s gt) = lemma₁ gt
-
   m⊎n↔m+n : ∀ {m n} →
             Bijection (setoid (Fin m ⊎ Fin n)) (setoid (Fin (m N+ n)))
   m⊎n↔m+n {m} {n} = record { to = to⟶ ; bijective = bijective }
@@ -86,6 +74,18 @@ module Prototypes.FinSum where
       from⟶ = →-to-⟶ from→
       to⟶ = →-to-⟶ to→
 
+      theorem₀ : ∀ {n m} {j : Fin n} → ¬ m ≰ toℕ (raise m j)
+      theorem₀ nleq = lemma₀ (lemma₁ nleq)
+        where
+          open import Data.Fin.Properties
+          open import Data.Nat.Properties
+
+          lemma₁ : ∀ {n m} {j : Fin n} → m ≰ toℕ (raise m j) → m N> m N+ toℕ j
+          lemma₁ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
+
+          lemma₀ : ∀ {m n} → ¬ m N> m N+ n
+          lemma₀ (s≤s gt) = lemma₀ gt
+
       theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} → ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
       theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq) rewrite eq | sym (inject+-lemma n i) = bounded i
       theorem₁ {i⊎ = inj₂ j} (i , eq) = ⊥-elim (lemma eq)
@@ -93,39 +93,32 @@ module Prototypes.FinSum where
           lemma : ∀ {a b} {A : Set a} {B : Set b} {x : A} {y : B} → ¬ inj₁ x ≡ inj₂ y
           lemma eq = {!!}
 
-      theorem₃ : ∀ {m n} → m N≤ n → n N< m → ⊥
-      theorem₃ {m} {n} m≤n m>n with compare m n
-      theorem₃ m≤n m>n | tri<  m<n ¬m≡n ¬n<m = ¬n<m m>n
-      theorem₃ m≤n m>n | tri≈ ¬m<n  m≡n ¬n<m = ¬n<m m>n
-      theorem₃ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = ⊥-elim ([ ¬m≡n , ¬m<n ]′ (lemma₀ m≤n))
+      theorem₂ : ∀ {m n} → m N≤ n → n N< m → ⊥
+      theorem₂ {m} {n} m≤n m>n with compare m n
+      theorem₂ m≤n m>n | tri<  m<n ¬m≡n ¬n<m = ¬n<m m>n
+      theorem₂ m≤n m>n | tri≈ ¬m<n  m≡n ¬n<m = ¬n<m m>n
+      theorem₂ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = ⊥-elim ([ ¬m≡n , ¬m<n ]′ (lemma m≤n))
         where
           open import Function using (_∘_)
 
-          lemma₀ : ∀ {m n} → m N≤ n → m ≡ n ⊎ m N< n
-          lemma₀ {zero}  {zero}  z≤n = inj₁ refl
-          lemma₀ {zero}  {suc _} z≤n = inj₂ (s≤s z≤n)
-          lemma₀ {suc _} {zero}  ()
-          lemma₀ {suc m} {suc n} (s≤s m≤n) = [ inj₁ ∘ suc-surjective , inj₂ ∘ s≤s ]′ (lemma₀ m≤n)
+          lemma : ∀ {m n} → m N≤ n → m ≡ n ⊎ m N< n
+          lemma {zero}  {zero}  z≤n = inj₁ refl
+          lemma {zero}  {suc _} z≤n = inj₂ (s≤s z≤n)
+          lemma {suc _} {zero}  ()
+          lemma {suc m} {suc n} (s≤s m≤n) = [ inj₁ ∘ suc-surjective , inj₂ ∘ s≤s ]′ (lemma m≤n)
             where
               suc-surjective : ∀ {m n} → m ≡ n → Data.Nat.suc m ≡ suc n
               suc-surjective {zero} {zero} refl = refl
               suc-surjective {zero} {suc _} ()
               suc-surjective {suc _} {zero} ()
               suc-surjective {suc _} {suc _} eq = cong suc eq
-{-
-          lemma₀ : m N≤ n → m ≡ n ⊎ m N< n
-          lemma₀ m≤n with compare m n
-          lemma₀ m≤n₁ | tri< a ¬b ¬c = inj₂ a
-          lemma₀ m≤n₁ | tri≈ ¬a b ¬c = inj₁ b
-          lemma₀ m≤n₁ | tri> ¬m<n ¬m≡n n<m = ⊥-elim {!< ? , ? >!}
--}
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
       injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ (inject+k-injective i j eq)
       injective {inj₂ i} {inj₂ j} eq | _ | _ = cong inj₂ (raisek-injective m i j eq)
-      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₃ m≤i (theorem₁ {m} (i , refl)))
-      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₃ m≤j (theorem₁ {m} (j , refl)))
+      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₂ m≤i (theorem₁ {m} (i , refl)))
+      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₂ m≤j (theorem₁ {m} (j , refl)))
       injective {inj₁ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤j)
       injective {inj₂ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤i)
       ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
