@@ -30,26 +30,6 @@ module Prototypes.FinSum where
   raisek-injective zero i .i refl = refl
   raisek-injective (suc k) i j r≡r = raisek-injective k i j (suc-injective r≡r)
 
-  m+n↔n+m : ∀ {m n} →
-            Bijection (setoid (Fin (m N+ n))) (setoid (Fin (n N+ m)))
-  m+n↔n+m {m} {n} = {!!}
-
-  inject+-raise-injective : (m n : ℕ) → (i : Fin n) → (j : Fin m) →
-                            inject+ m i ≡ raise n j → toℕ i ≡ n N+ toℕ j
-  inject+-raise-injective m n i j inj≡ =
-    begin
-      toℕ i
-        ≡⟨ inject+-lemma m i ⟩
-      toℕ (inject+ m i)
-        ≡⟨ cong toℕ inj≡ ⟩
-      toℕ (raise n j)
-        ≡⟨ toℕ-raise n j ⟩
-      n N+ toℕ j
-    ∎
-    where
-      open Relation.Binary.PropositionalEquality.≡-Reasoning
-      open import Data.Fin.Properties
-
   m⊎n↔m+n : ∀ {m n} →
             Bijection (setoid (Fin m ⊎ Fin n)) (setoid (Fin (m N+ n)))
   m⊎n↔m+n {m} {n} = record { to = to⟶ ; bijective = bijective }
