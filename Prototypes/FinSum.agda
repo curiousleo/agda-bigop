@@ -6,8 +6,8 @@ module Prototypes.FinSum where
   open import Data.Sum
   open import Data.Product
 
-  open import Function.Bijection
-  open import Function.Surjection
+  open import Function.Bijection hiding (_∘_)
+  open import Function.Surjection hiding (_∘_)
 
   open import Relation.Binary.Core using (_≡_)
   open import Relation.Binary.PropositionalEquality
@@ -87,22 +87,38 @@ module Prototypes.FinSum where
       to⟶ = →-to-⟶ to→
 
       theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} → ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
-      theorem₁ = {!!}
-
-      theorem₂ : ∀ {m n} {j⊎ : Fin m ⊎ Fin n} → ∃ (λ j → inj₂ j ≡ j⊎) → m N≤ toℕ (to→ j⊎)
-      theorem₂ = {!!}
+      theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq) rewrite eq | sym (inject+-lemma n i) = bounded i
+      theorem₁ {i⊎ = inj₂ j} (i , eq) = ⊥-elim (lemma eq)
+        where
+          lemma : ∀ {a b} {A : Set a} {B : Set b} {x : A} {y : B} → ¬ inj₁ x ≡ inj₂ y
+          lemma eq = {!!}
 
       theorem₃ : ∀ {m n} → m N≤ n → n N< m → ⊥
       theorem₃ {m} {n} m≤n m>n with compare m n
       theorem₃ m≤n m>n | tri<  m<n ¬m≡n ¬n<m = ¬n<m m>n
       theorem₃ m≤n m>n | tri≈ ¬m<n  m≡n ¬n<m = ¬n<m m>n
-      theorem₃ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = {!!}
+      theorem₃ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = ⊥-elim ([ ¬m≡n , ¬m<n ]′ (lemma₀ m≤n))
         where
+          open import Function using (_∘_)
+
+          lemma₀ : ∀ {m n} → m N≤ n → m ≡ n ⊎ m N< n
+          lemma₀ {zero}  {zero}  z≤n = inj₁ refl
+          lemma₀ {zero}  {suc _} z≤n = inj₂ (s≤s z≤n)
+          lemma₀ {suc _} {zero}  ()
+          lemma₀ {suc m} {suc n} (s≤s m≤n) = [ inj₁ ∘ suc-surjective , inj₂ ∘ s≤s ]′ (lemma₀ m≤n)
+            where
+              suc-surjective : ∀ {m n} → m ≡ n → Data.Nat.suc m ≡ suc n
+              suc-surjective {zero} {zero} refl = refl
+              suc-surjective {zero} {suc _} ()
+              suc-surjective {suc _} {zero} ()
+              suc-surjective {suc _} {suc _} eq = cong suc eq
+{-
           lemma₀ : m N≤ n → m ≡ n ⊎ m N< n
           lemma₀ m≤n with compare m n
           lemma₀ m≤n₁ | tri< a ¬b ¬c = inj₂ a
           lemma₀ m≤n₁ | tri≈ ¬a b ¬c = inj₁ b
-          lemma₀ m≤n₁ | tri> ¬m<n ¬m≡n n<m = {!!}
+          lemma₀ m≤n₁ | tri> ¬m<n ¬m≡n n<m = ⊥-elim {!< ? , ? >!}
+-}
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
