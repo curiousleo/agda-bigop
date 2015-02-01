@@ -110,18 +110,15 @@ module Prototypes.FinSum where
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
         where
           right-inv : ∀ (k : Fin (m N+ n)) → to→ {m} {n} (from→ k) ≡ k
-          right-inv k with from→ {m} {n} k | m N≤? toℕ k
-          right-inv k | inj₁ i | yes m≤k = ⊥-elim contradiction
-            where
-              contradiction = >⇒≰ {!!} m≤k
-          right-inv k | inj₂ j | yes m≤k = toℕ-injective (trans lemma₀ lemma₁)
+          right-inv k with m N≤? toℕ k
+          right-inv k | yes m≤k = toℕ-injective (trans lemma₀ lemma₁)
             where
               lemma₀ : toℕ (raise m (reduce≥ k m≤k)) ≡ m N+ toℕ (reduce≥ k m≤k)
               lemma₀ = toℕ-raise m (reduce≥ k m≤k)
 
               lemma₁ : m N+ toℕ (reduce≥ k m≤k) ≡ toℕ k
               lemma₁ = reduce≥-lemma k m≤k
-          right-inv k | inj₁ i | no ¬m≤k = toℕ-injective (trans lemma₀ lemma₁)
+          right-inv k | no ¬m≤k = toℕ-injective (trans lemma₀ lemma₁)
             where
               m>k : m N> toℕ k
               m>k = ≰⇒> ¬m≤k
@@ -131,9 +128,6 @@ module Prototypes.FinSum where
 
               lemma₁ : toℕ (fromℕ≤ m>k) ≡ toℕ k
               lemma₁ = to-from≤ m>k
-          right-inv k | inj₂ j | no ¬m≤k = ⊥-elim contradiction
-            where
-              contradiction = ¬m≤k {!!}
 
 
       bijective : Bijective to⟶
