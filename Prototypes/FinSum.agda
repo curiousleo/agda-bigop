@@ -108,19 +108,44 @@ module Prototypes.FinSum where
       >⇒≰ : _N>_ ⇒ _≰_
       >⇒≰ (s≤s x) (s≤s y) = >⇒≰ x y
 
+      reduce≥-lemma : ∀ {m n} → (i : Fin (m N+ n)) (m≤i : m N≤ toℕ i) →
+                      m N+ toℕ (reduce≥ i m≤i) ≡ toℕ i
+      reduce≥-lemma {zero} i m≤i = refl
+      reduce≥-lemma {suc m} zero ()
+      reduce≥-lemma {suc m} (suc i) (s≤s m≤i) = cong suc (reduce≥-lemma i m≤i)
+
+      to-from≤ : ∀ {m k} → (m>k : m N> k) → toℕ (fromℕ≤ {k} {m} m>k) ≡ k
+      to-from≤ (s≤s z≤n) = refl
+      to-from≤ (s≤s (s≤s m>k)) = cong suc (to-from≤ (s≤s m>k))
+
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
         where
-          right-inv : ∀ (k : Fin (m N+ n)) → to→ {m} {n} (from→ k) ≡ k -- from⟶ RightInverseOf to⟶
-{-        right-inv k with from→ {m} {n} k
-          right-inv k | inj₁ i = toℕ-injective (trans (sym (inject+-lemma n i)) {!!})
-          right-inv k | inj₂ j = toℕ-injective (trans (toℕ-raise m j) {!!})
--}
+          right-inv : ∀ (k : Fin (m N+ n)) → to→ {m} {n} (from→ k) ≡ k
           right-inv k with from→ {m} {n} k | m N≤? toℕ k
-          right-inv k | inj₁ i | yes m≤k = ⊥-elim (>⇒≰ (theorem₆ {m} {n} {k} {i}  {!!}) m≤k)
-          right-inv k | inj₂ j | yes m≤k = toℕ-injective (trans (toℕ-raise m (reduce≥ k m≤k)) (theorem₃ m≤k {!!}))
-          right-inv k | inj₁ i | no ¬m≤k = {!!} -- toℕ-injective (trans (sym (inject+-lemma n i)) (theorem₄ (≰⇒> ¬m≤k) {!refl!}))
-          right-inv k | inj₂ j | no ¬m≤k = ⊥-elim (¬m≤k (theorem₅ {m} {n} {k} {j} {!!}))
+          right-inv k | inj₁ i | yes m≤k = ⊥-elim contradiction
+            where
+              contradiction = (>⇒≰ (theorem₆ {m} {n} {k} {i}  {!!}) m≤k)
+          right-inv k | inj₂ j | yes m≤k = toℕ-injective (trans lemma₀ lemma₁)
+            where
+              lemma₀ : toℕ (raise m (reduce≥ k m≤k)) ≡ m N+ toℕ (reduce≥ k m≤k)
+              lemma₀ = toℕ-raise m (reduce≥ k m≤k)
+
+              lemma₁ : m N+ toℕ (reduce≥ k m≤k) ≡ toℕ k
+              lemma₁ = reduce≥-lemma k m≤k
+          right-inv k | inj₁ i | no ¬m≤k = toℕ-injective (trans lemma₀ lemma₁)
+            where
+              m>k : m N> toℕ k
+              m>k = ≰⇒> ¬m≤k
+
+              lemma₀ : toℕ (inject+ n (fromℕ≤ m>k)) ≡ toℕ (fromℕ≤ m>k)
+              lemma₀ = sym (inject+-lemma n (fromℕ≤ m>k))
+
+              lemma₁ : toℕ (fromℕ≤ m>k) ≡ toℕ k
+              lemma₁ = to-from≤ m>k
+          right-inv k | inj₂ j | no ¬m≤k = ⊥-elim contradiction
+            where
+              contradiction = ¬m≤k (theorem₅ {m} {n} {k} {j} {!!})
 
 
       bijective : Bijective to⟶
