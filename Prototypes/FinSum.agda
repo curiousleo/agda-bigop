@@ -41,11 +41,11 @@ module Prototypes.FinSum where
           open import Data.Fin.Properties
           open import Data.Nat.Properties
 
-          lemma₁ : ∀ {n m} {j : Fin n} → m ≰ toℕ (raise m j) → m N> m N+ toℕ j
-          lemma₁ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
-
           lemma₀ : ∀ {m n} → ¬ m N> m N+ n
           lemma₀ (s≤s gt) = lemma₀ gt
+
+          lemma₁ : ∀ {n m} {j : Fin n} → m ≰ toℕ (raise m j) → m N> m N+ toℕ j
+          lemma₁ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
 
       theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} →
                  ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
@@ -77,10 +77,20 @@ module Prototypes.FinSum where
 
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
-      injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ (inject+k-injective i j eq)
-      injective {inj₂ i} {inj₂ j} eq | _ | _ = cong inj₂ (raisek-injective m i j eq)
-      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₂ m≤i (theorem₁ {m} (i , refl)))
-      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = ⊥-elim (theorem₂ m≤j (theorem₁ {m} (j , refl)))
+      injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ lemma
+        where
+          lemma : i ≡ j
+          lemma = inject+k-injective i j eq
+      injective {inj₂ i} {inj₂ j} eq | _ | _ = cong inj₂ lemma
+        where
+          lemma : i ≡ j
+          lemma = raisek-injective m i j eq
+      injective {inj₁ i} {inj₂ j} eq | yes m≤i | yes m≤j = ⊥-elim contradiction
+        where
+          contradiction = theorem₂ m≤i (theorem₁ {m} (i , refl))
+      injective {inj₂ i} {inj₁ j} eq | yes m≤i | yes m≤j = ⊥-elim contradiction
+        where
+          contradiction = theorem₂ m≤j (theorem₁ {m} (j , refl))
       injective {inj₁ i} {inj₂ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤j)
       injective {inj₂ i} {inj₁ j} eq | no ¬m≤i | no ¬m≤j = ⊥-elim (theorem₀ ¬m≤i)
       ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
