@@ -28,17 +28,11 @@ module Prototypes.FinSum where
       open import Data.Empty
 
       open import Relation.Binary
-      open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder)
-      
-      from→ : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
-      from→ {m} {n} i with m N≤? toℕ i
-      ... | yes m≤i = inj₂ (reduce≥ i m≤i)
-      ... | no ¬m≤i = inj₁ (fromℕ≤ {toℕ i} (≰⇒> ¬m≤i))
+      open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder) using (compare)
 
       to→ : ∀ {m n} → Fin m ⊎ Fin n → Fin (m N+ n)
       to→ {m} {n} = [ inject+ n , raise m ]′
 
-      from⟶ = →-to-⟶ from→
       to⟶ = →-to-⟶ to→
 
       theorem₀ : ∀ {n m} {j : Fin n} → ¬ m ≰ toℕ (raise m j)
@@ -53,15 +47,17 @@ module Prototypes.FinSum where
           lemma₀ : ∀ {m n} → ¬ m N> m N+ n
           lemma₀ (s≤s gt) = lemma₀ gt
 
-      theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} → ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
-      theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq) rewrite eq | sym (inject+-lemma n i) = bounded i
+      theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} →
+                 ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
+      theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq)
+        rewrite eq | sym (inject+-lemma n i) = bounded i
       theorem₁ {i⊎ = inj₂ j} (i , ())
 
       theorem₂ : ∀ {m n} → m N≤ n → n N< m → ⊥
       theorem₂ {m} {n} m≤n m>n with compare m n
       theorem₂ m≤n m>n | tri<  m<n ¬m≡n ¬n<m = ¬n<m m>n
       theorem₂ m≤n m>n | tri≈ ¬m<n  m≡n ¬n<m = ¬n<m m>n
-      theorem₂ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = ⊥-elim ([ ¬m≡n , ¬m<n ]′ (lemma m≤n))
+      theorem₂ {m} {n} m≤n m>n | tri> ¬m<n ¬m≡n  n<m = ⊥-elim contradiction
         where
           open import Function using (_∘_)
 
@@ -77,6 +73,8 @@ module Prototypes.FinSum where
               suc-surjective {suc _} {zero} ()
               suc-surjective {suc _} {suc _} eq = cong suc eq
 
+          contradiction = ([ ¬m≡n , ¬m<n ]′ (lemma m≤n))
+
       injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
       injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
       injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ (inject+k-injective i j eq)
@@ -88,13 +86,42 @@ module Prototypes.FinSum where
       ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
       ... | no ¬m≤i | yes m≤j rewrite eq = ⊥-elim (¬m≤i m≤j)
 
+      from→ : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
+      from→ {m} {n} i with m N≤? toℕ i
+      ... | yes m≤i = inj₂ (reduce≥ i m≤i)
+      ... | no ¬m≤i = inj₁ (fromℕ≤ {toℕ i} (≰⇒> ¬m≤i))
+
+      from⟶ = →-to-⟶ from→
+
+      theorem₃ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin n} → m N≤ toℕ k+ → from→ {m} {n} k+ ≡ (inj₂ k) → m N+ toℕ k ≡ toℕ k+
+      theorem₃ = {!!}
+
+      theorem₅ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin n} → from→ {m} {n} k+ ≡ (inj₂ k) → m N≤ toℕ k+
+      theorem₅ = {!!}
+
+      theorem₄ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin m} → m N> toℕ k+ → from→ {m} {n} k+ ≡ (inj₁ k) → toℕ k ≡ toℕ k+
+      theorem₄ = {!!}
+
+      theorem₆ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin m} → from→ {m} {n} k+ ≡ (inj₁ k) → m N> toℕ k+
+      theorem₆ = {!!}
+
+      >⇒≰ : _N>_ ⇒ _≰_
+      >⇒≰ (s≤s x) (s≤s y) = >⇒≰ x y
+
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
         where
           right-inv : ∀ (k : Fin (m N+ n)) → to→ {m} {n} (from→ k) ≡ k -- from⟶ RightInverseOf to⟶
-          right-inv k with m N≤? toℕ k | from→ {m} {n} k
-          ... | m≤i | inj₁ k′  = toℕ-injective (sym {!!})
-          ... | m≤i | inj₂ m-k = {!!}
+{-        right-inv k with from→ {m} {n} k
+          right-inv k | inj₁ i = toℕ-injective (trans (sym (inject+-lemma n i)) {!!})
+          right-inv k | inj₂ j = toℕ-injective (trans (toℕ-raise m j) {!!})
+-}
+          right-inv k with from→ {m} {n} k | m N≤? toℕ k
+          right-inv k | inj₁ i | yes m≤k = ⊥-elim (>⇒≰ (theorem₆ {m} {n} {k} {i}  {!!}) m≤k)
+          right-inv k | inj₂ j | yes m≤k = toℕ-injective (trans (toℕ-raise m (reduce≥ k m≤k)) (theorem₃ m≤k {!!}))
+          right-inv k | inj₁ i | no ¬m≤k = {!!} -- toℕ-injective (trans (sym (inject+-lemma n i)) (theorem₄ (≰⇒> ¬m≤k) {!refl!}))
+          right-inv k | inj₂ j | no ¬m≤k = ⊥-elim (¬m≤k (theorem₅ {m} {n} {k} {j} {!!}))
+
 
       bijective : Bijective to⟶
       bijective = record { injective = injective ; surjective = surjective }
