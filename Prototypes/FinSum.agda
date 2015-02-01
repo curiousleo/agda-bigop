@@ -93,18 +93,6 @@ module Prototypes.FinSum where
 
       from⟶ = →-to-⟶ from→
 
-      theorem₃ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin n} → m N≤ toℕ k+ → from→ {m} {n} k+ ≡ (inj₂ k) → m N+ toℕ k ≡ toℕ k+
-      theorem₃ = {!!}
-
-      theorem₅ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin n} → from→ {m} {n} k+ ≡ (inj₂ k) → m N≤ toℕ k+
-      theorem₅ = {!!}
-
-      theorem₄ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin m} → m N> toℕ k+ → from→ {m} {n} k+ ≡ (inj₁ k) → toℕ k ≡ toℕ k+
-      theorem₄ = {!!}
-
-      theorem₆ : ∀ {m n} {k+ : Fin (m N+ n)} {k : Fin m} → from→ {m} {n} k+ ≡ (inj₁ k) → m N> toℕ k+
-      theorem₆ = {!!}
-
       >⇒≰ : _N>_ ⇒ _≰_
       >⇒≰ (s≤s x) (s≤s y) = >⇒≰ x y
 
@@ -125,7 +113,7 @@ module Prototypes.FinSum where
           right-inv k with from→ {m} {n} k | m N≤? toℕ k
           right-inv k | inj₁ i | yes m≤k = ⊥-elim contradiction
             where
-              contradiction = (>⇒≰ (theorem₆ {m} {n} {k} {i}  {!!}) m≤k)
+              contradiction = >⇒≰ {!!} m≤k
           right-inv k | inj₂ j | yes m≤k = toℕ-injective (trans lemma₀ lemma₁)
             where
               lemma₀ : toℕ (raise m (reduce≥ k m≤k)) ≡ m N+ toℕ (reduce≥ k m≤k)
@@ -145,7 +133,7 @@ module Prototypes.FinSum where
               lemma₁ = to-from≤ m>k
           right-inv k | inj₂ j | no ¬m≤k = ⊥-elim contradiction
             where
-              contradiction = ¬m≤k (theorem₅ {m} {n} {k} {j} {!!})
+              contradiction = ¬m≤k {!!}
 
 
       bijective : Bijective to⟶
