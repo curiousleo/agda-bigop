@@ -17,9 +17,9 @@ module Prototypes.FinProduct where
 
   open import Prototypes.Injectivity
 
-  m×n↔m+n : ∀ {m n} →
+  m×n↔m*n : ∀ {m n} →
             Bijection (setoid (Fin m × Fin n)) (setoid (Fin (m * n)))
-  m×n↔m+n {m} {n} = record { to = to⟶ ; bijective = bijective }
+  m×n↔m*n {m} {n} = record { to = to⟶ ; bijective = bijective }
     where
       open import Relation.Nullary
       open import Data.Fin.Properties hiding (strictTotalOrder)
@@ -31,22 +31,22 @@ module Prototypes.FinProduct where
       open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder)
       
       from→ : ∀ {m n} → Fin (m * n) → Fin m × Fin n
-      from→ {m} {n} i = ?
+      from→ {m} {n} i = {!!}
 
       to→ : ∀ {m n} → Fin m × Fin n → Fin (m * n)
-      to→ {m} {n} (i , j) = ?
+      to→ {m} {n} (i , j) = {!!}
 
       from⟶ = →-to-⟶ from→
       to⟶ = →-to-⟶ to→
 
       injective : ∀ {i j : Fin m × Fin n} → to→ i ≡ to→ j → i ≡ j
-      injective {i⊎} {j⊎} eq = ?
+      injective {i⊎} {j⊎} eq = {!!}
 
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
         where
           right-inv : ∀ (k : Fin (m * n)) → to→ {m} {n} (from→ k) ≡ k -- from⟶ RightInverseOf to⟶
-          right-inv k = ?
+          right-inv k = {!!}
 
       bijective : Bijective to⟶
       bijective = record { injective = injective ; surjective = surjective }
