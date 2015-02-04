@@ -17,8 +17,8 @@ module Prototypes.BigopBijection where
   open import Relation.Nullary using (¬_)
   open import Function.Equality using (_⟨$⟩_)
 
-  Enum : ∀ {n : ℕ} {a} → (A : Set a) → Set _
-  Enum {n = n} A = Bijection (P.setoid (Fin n)) (P.setoid A)
+  FinType : ∀ {n : ℕ} {a} → (A : Set a) → Set _
+  FinType {n = n} A = Bijection (P.setoid (Fin n)) (P.setoid A)
 
   record Bigop {i r} : Set (L.suc (i L.⊔ r)) where
     field
@@ -26,9 +26,9 @@ module Prototypes.BigopBijection where
       Index        : Set i
       Result       : Set r
       ε            : Result
-      enum         : Enum {size} Index
+      enum         : FinType {size} Index
 
-  enum : ∀ {n : ℕ} {a} {A : Set a} → Enum {n} A → Vec A n
+  enum : ∀ {n : ℕ} {a} {A : Set a} → FinType {n} A → Vec A n
   enum enumA = tabulate (_⟨$⟩_ to)
     where
       open import Function.Equality using (_⟨$⟩_)
@@ -37,8 +37,8 @@ module Prototypes.BigopBijection where
   ¬sucm≤n→n≥m : ∀ {m n} → ¬ suc m N≤ n → n N≥ m
   ¬sucm≤n→n≥m x = {!!}
 
-  SumEnum : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} → Enum {m} A → Enum {n} B → Enum {m N+ n} (A ⊎ B)
-  SumEnum {m = m} {n = n} {A = A} {B = B} enumA enumB = bijection
+  SumFinType : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} → FinType {m} A → FinType {n} B → FinType {m N+ n} (A ⊎ B)
+  SumFinType {m = m} {n = n} {A = A} {B = B} enumA enumB = bijection
     where
       bijection = record { to = Fin⟶A⊎B ; bijective = bijective }
         where
@@ -72,8 +72,8 @@ module Prototypes.BigopBijection where
                   right-inv : A⊎B⟶Fin RightInverseOf Fin⟶A⊎B
                   right-inv x = {!!}
 
-  BoolEnum : Enum Bool.Bool
-  BoolEnum = record { to = Fin⟶Bool ; bijective = bijective }
+  BoolFinType : FinType Bool.Bool
+  BoolFinType = record { to = Fin⟶Bool ; bijective = bijective }
     where
       enumTo : Fin 2 → Bool.Bool
       enumTo zero    = Bool.true
@@ -104,8 +104,8 @@ module Prototypes.BigopBijection where
               right-inv Bool.false = P.refl
 
 
-  FinEnum : ∀ {n : ℕ} → Enum {n} (Fin n)
-  FinEnum = record { to = Fin⟶Nat ; bijective = bijective }
+  FinFinType : ∀ {n : ℕ} → FinType {n} (Fin n)
+  FinFinType = record { to = Fin⟶Nat ; bijective = bijective }
     where
       Fin⟶Nat = record { _⟨$⟩_ = Fun.id ; cong = Fun.id }
       bijective = record { injective = Fun.id ; surjective = surjective }
@@ -116,7 +116,7 @@ module Prototypes.BigopBijection where
 
   finSumBigop : (n : ℕ) → Bigop
   finSumBigop n = record { size = size ; Index = Fin size ;
-                           Result = ℕ ; enum = FinEnum ; ε = zero}
+                           Result = ℕ ; enum = FinFinType ; ε = zero}
     where
       size = suc n
 
@@ -165,7 +165,7 @@ module Prototypes.BigopBijection where
       open Monoid m
 
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
-                 Enum {m} A → Enum {n} B → Enum {m N+ n} (A ⊎ B)
+                 FinType {m} A → FinType {n} B → FinType {m N+ n} (A ⊎ B)
   dist-enums-⊎ {m = m} {n = n} {A = A} {B = B} enumA enumB = enumA⊎B
     where
       open Bijection enumA renaming (to to toA ; bijective to bijectiveA)
@@ -194,36 +194,5 @@ module Prototypes.BigopBijection where
       bijectiveA⊎B : Bijective Fin⟶A⊎B
       bijectiveA⊎B = record { injective = injectiveA⊎B ; surjective = surjectiveA⊎B }
 
-      enumA⊎B : Enum {m N+ n} (A ⊎ B)
+      enumA⊎B : FinType {m N+ n} (A ⊎ B)
       enumA⊎B = record { to = Fin⟶A⊎B ; bijective = bijectiveA⊎B }
-
-  m+n↔m⊎n : ∀ {m n} →
-            Bijection (P.setoid (Fin (m N+ n))) (P.setoid (Fin m ⊎ Fin n))
-  m+n↔m⊎n = record { to = to⟶ ; bijective = bijective }
-    where
-      open import Relation.Nullary
-      open import Data.Nat.Properties
-      open import Function.LeftInverse using (_RightInverseOf_)
-      
-      to→ : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
-      to→ {m} {n} i with m N≤? toℕ i
-      ... | yes m≤i = inj₂ (reduce≥ i m≤i)
-      ... | no ¬m≤i = inj₁ (fromℕ≤ {toℕ i} (≰⇒> ¬m≤i))
-
-      from→ : ∀ {m n} → Fin m ⊎ Fin n → Fin (m N+ n)
-      from→ {m} {n} = [ inject+ n , raise m ]′
-
-      to⟶ = P.→-to-⟶ to→
-      from⟶ = P.→-to-⟶ from→
-
-      injective : ∀ {m n} → to→ m ≡ to→ n → m ≡ n
-      injective {m} {n} tom≡ton = {!!}
-
-      surjective : Surjective to⟶
-      surjective = record { from = from⟶ ; right-inverse-of = right-inv }
-        where
-          right-inv : ∀ m → to→ (from→ m) ≡ m -- from⟶ RightInverseOf to⟶
-          right-inv m = {!!}
-
-      bijective : Bijective to⟶
-      bijective = record { injective = injective ; surjective = surjective }
