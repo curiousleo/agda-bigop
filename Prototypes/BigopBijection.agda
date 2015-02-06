@@ -2,8 +2,8 @@ module Prototypes.BigopBijection where
 
 --  open import Primitive hiding (suc)
 
-  open import Function.Bijection hiding (_∘_)
-  open import Function.Surjection
+  open import Function.Bijection renaming (_∘_ to _∘B_)
+  open import Function.Surjection hiding (_∘_)
   open import Data.Nat renaming (_+_ to _N+_ ; _≤_ to _N≤_ ; _≥_ to _N≥_ ; _≤?_ to _N≤?_)
   import Level as L
   open import Data.Fin
@@ -33,7 +33,7 @@ module Prototypes.BigopBijection where
     where
       open import Function.Equality using (_⟨$⟩_)
       open Bijection enumA
-
+{-
   ¬sucm≤n→n≥m : ∀ {m n} → ¬ suc m N≤ n → n N≥ m
   ¬sucm≤n→n≥m x = {!!}
 
@@ -71,7 +71,7 @@ module Prototypes.BigopBijection where
                   open import Function.LeftInverse
                   right-inv : A⊎B⟶Fin RightInverseOf Fin⟶A⊎B
                   right-inv x = {!!}
-
+-}
   BoolFinType : FinType Bool.Bool
   BoolFinType = record { to = Fin⟶Bool ; bijective = bijective }
     where
@@ -129,6 +129,7 @@ module Prototypes.BigopBijection where
     where
       open Monoid m
 
+{-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
                  FinType {m} A → FinType {n} B → FinType {m N+ n} (A ⊎ B)
   dist-enums-⊎ {m = m} {n = n} {A = A} {B = B} enumA enumB = enumA⊎B
@@ -140,9 +141,10 @@ module Prototypes.BigopBijection where
       open Surjective (Bijective.surjective bijectiveB) renaming (from to fromB)
 
       open import Data.Sum
+      open import Prototypes.FinSum
 
       toA⊎B : Fin (m N+ n) → A ⊎ B
-      toA⊎B x = {!!}
+      toA⊎B = [ ? , ? ]′ ∘ m+n→m⊎n
 
       fromA⊎B : A ⊎ B → Fin (m N+ n)
       fromA⊎B = [ (inject+ n Fun.∘ _⟨$⟩_ fromA) , (raise m Fun.∘ _⟨$⟩_ fromB) ]′
@@ -161,3 +163,4 @@ module Prototypes.BigopBijection where
 
       enumA⊎B : FinType {m N+ n} (A ⊎ B)
       enumA⊎B = record { to = Fin⟶A⊎B ; bijective = bijectiveA⊎B }
+-}
