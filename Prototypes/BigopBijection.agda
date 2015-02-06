@@ -13,9 +13,11 @@ module Prototypes.BigopBijection where
   import Function as Fun
   import Data.Bool as Bool
   open import Data.Vec
-  open import Data.Sum
+  open import Data.Sum hiding (map)
   open import Relation.Nullary using (¬_)
   open import Function.Equality using (_⟨$⟩_)
+  open import Algebra.FunctionProperties using (Op₂)
+  open import Algebra.Structures
 
   FinType : ∀ {n : ℕ} {a} → (A : Set a) → Set _
   FinType {n = n} A = Bijection (P.setoid (Fin n)) (P.setoid A)
@@ -26,7 +28,9 @@ module Prototypes.BigopBijection where
       Index        : Set i
       Result       : Set r
       ε            : Result
-      enum         : FinType {size} Index
+      index        : FinType {size} Index
+      _·_          : Op₂ Result
+      comm         : IsCommutativeMonoid _≡_ _·_ ε
 
   enum : ∀ {n : ℕ} {a} {A : Set a} → FinType {n} A → Vec A n
   enum enumA = tabulate (_⟨$⟩_ to)
@@ -115,19 +119,32 @@ module Prototypes.BigopBijection where
               right-inv = λ x → P.refl
 
   finSumBigop : (n : ℕ) → Bigop
-  finSumBigop n = record { size = size ; Index = Fin size ;
-                           Result = ℕ ; enum = FinFinType ; ε = zero}
+  finSumBigop n = record
+    { size = size ; Index = Fin size ; Result = ℕ
+    ; index = FinFinType ; ε = zero ; _·_ = _N+_ ; comm = comm
+    }
     where
       size = suc n
 
-  open import Algebra
+      open import Data.Nat.Properties.Simple
+      comm : IsCommutativeMonoid _≡_ _N+_ zero
+      comm = record
+        { isSemigroup = record
+          { isEquivalence = P.isEquivalence
+          ; assoc = +-assoc
+          ; ∙-cong = P.cong₂ _N+_
+          }
+        ; identityˡ = λ x → P.refl
+        ; comm = +-comm
+        }
 
-  fold∙ : ∀ {n c ℓ} → (m : Monoid c ℓ) →
-          Vec (Monoid.Carrier m) n →
-          Monoid.Carrier m
-  fold∙ m = foldr (λ _ → Carrier) _∙_ ε
+  _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
+  _⟦_⟧ {i} {r} o f = fold· (map f (enum index))
     where
-      open Monoid m
+      open Bigop o
+
+      fold· : Vec Result size → Result
+      fold· results = foldr (λ x → Result) _·_ ε results
 
 {-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
