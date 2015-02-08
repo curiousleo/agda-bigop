@@ -138,9 +138,6 @@ module Prototypes.BigopBijection where
         ; comm = +-comm
         }
 
-  foldr′ : ∀ {a} {A : Set a} {m} → Op₂ A → A → Vec A m → A
-  foldr′ {a} {A} op = foldr {a} {a} {A} (λ _ → A) op
-
   module BigopLemmas {i r} (bigop : Bigop {i} {r}) where
     open Bigop bigop
     import Algebra.FunctionProperties as FP
@@ -163,6 +160,9 @@ module Prototypes.BigopBijection where
 
     idʳ : RightIdentity ε _·_
     idʳ = proj₂ identity
+
+    fold· : ∀ {m : ℕ} → Vec Result m → Result
+    fold· = foldr (λ _ → Result) _·_ ε
 
     initLast-∷ʳ : ∀ {m} {a} {A : Set a} (xs : Vec A m) (x : A) →
                      initLast (xs ∷ʳ x) ≡ (xs , x , refl)
@@ -188,9 +188,7 @@ module Prototypes.BigopBijection where
   _⟦_⟧ {i} {r} o f = fold· (map f (enum index))
     where
       open Bigop o
-
-      fold· : Vec Result size → Result
-      fold· results = foldr′ _·_ ε results
+      open BigopLemmas o
 
 {-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
