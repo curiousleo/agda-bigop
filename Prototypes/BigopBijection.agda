@@ -138,13 +138,59 @@ module Prototypes.BigopBijection where
         ; comm = +-comm
         }
 
+  foldr′ : ∀ {a} {A : Set a} {m} → Op₂ A → A → Vec A m → A
+  foldr′ {a} {A} op = foldr {a} {a} {A} (λ _ → A) op
+
+  module BigopLemmas {i r} (bigop : Bigop {i} {r}) where
+    open Bigop bigop
+    import Algebra.FunctionProperties as FP
+    open FP {A = Result} _≡_ hiding (Op₂)
+    open import Data.Nat
+    open import Data.Nat.Properties.Simple
+    open import Data.Product
+    open import Relation.Binary.PropositionalEquality
+    open import Algebra
+    import Relation.Binary.Vec.Pointwise as PW
+
+    assoc : Associative _·_
+    assoc = IsSemigroup.assoc (IsCommutativeMonoid.isSemigroup comm)
+
+    identity : Identity ε _·_
+    identity = IsMonoid.identity (IsCommutativeMonoid.isMonoid comm)
+
+    idˡ : LeftIdentity ε _·_
+    idˡ = proj₁ identity
+
+    idʳ : RightIdentity ε _·_
+    idʳ = proj₂ identity
+
+    initLast-∷ʳ : ∀ {m} {a} {A : Set a} (xs : Vec A m) (x : A) →
+                     initLast (xs ∷ʳ x) ≡ (xs , x , refl)
+    initLast-∷ʳ {zero}  []        _  = refl
+    initLast-∷ʳ {suc m} (x₁ ∷ xs) x¹ rewrite initLast-∷ʳ {m} xs x¹ = refl
+
+    foldr′-lemmaˡ : ∀ {m : ℕ} {v : Vec Result (suc m)} →
+                    foldr′ _·_ ε v ≡ head v · foldr′ _·_ ε (tail v)
+    foldr′-lemmaˡ {zero}  {x ∷ []} rewrite idʳ x                 = refl
+    foldr′-lemmaˡ {suc m} {x ∷ v}  rewrite foldr′-lemmaˡ {m} {v} = refl
+
+    foldr′-lemmaʳ : ∀ {m : ℕ} {v : Vec Result (suc m)} →
+                    foldr′ _·_ ε v ≡ foldr′ _·_ ε (init v) · last v
+    foldr′-lemmaʳ {zero}  {x ∷ []} rewrite idˡ x | idʳ x = refl
+    foldr′-lemmaʳ {suc m} {x₁ ∷ v} with initLast v
+    foldr′-lemmaʳ {suc m} {x₁ ∷ .(v′ ∷ʳ x¹)} | v′ , x¹ , refl
+      rewrite
+        assoc x₁ (foldr′ _·_ ε v′) x¹
+      | foldr′-lemmaʳ {m} {v′ ∷ʳ x¹}
+      | initLast-∷ʳ v′ x¹ = refl
+
   _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
   _⟦_⟧ {i} {r} o f = fold· (map f (enum index))
     where
       open Bigop o
 
       fold· : Vec Result size → Result
-      fold· results = foldr (λ x → Result) _·_ ε results
+      fold· results = foldr′ _·_ ε results
 
 {-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
