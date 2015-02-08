@@ -144,7 +144,7 @@ module Prototypes.BigopBijection where
     open FP {A = Result} _≡_ hiding (Op₂)
     open import Data.Nat
     open import Data.Nat.Properties.Simple
-    open import Data.Product
+    open import Data.Product hiding (map)
     open import Relation.Binary.PropositionalEquality
     open import Algebra
     import Relation.Binary.Vec.Pointwise as PW
@@ -165,24 +165,58 @@ module Prototypes.BigopBijection where
     fold· = foldr (λ _ → Result) _·_ ε
 
     initLast-∷ʳ : ∀ {m} {a} {A : Set a} (xs : Vec A m) (x : A) →
-                     initLast (xs ∷ʳ x) ≡ (xs , x , refl)
+                  initLast (xs ∷ʳ x) ≡ (xs , x , refl)
     initLast-∷ʳ {zero}  []        _  = refl
     initLast-∷ʳ {suc m} (x₁ ∷ xs) x¹ rewrite initLast-∷ʳ {m} xs x¹ = refl
 
-    foldr′-lemmaˡ : ∀ {m : ℕ} {v : Vec Result (suc m)} →
-                    foldr′ _·_ ε v ≡ head v · foldr′ _·_ ε (tail v)
-    foldr′-lemmaˡ {zero}  {x ∷ []} rewrite idʳ x                 = refl
-    foldr′-lemmaˡ {suc m} {x ∷ v}  rewrite foldr′-lemmaˡ {m} {v} = refl
+    fold·-lemmaˡ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
+                   fold· v ≡ head v · fold· (tail v)
+    fold·-lemmaˡ {zero}  (x ∷ []) rewrite idʳ x              = refl
+    fold·-lemmaˡ {suc m} (x ∷ v)  rewrite fold·-lemmaˡ {m} v = refl
 
-    foldr′-lemmaʳ : ∀ {m : ℕ} {v : Vec Result (suc m)} →
-                    foldr′ _·_ ε v ≡ foldr′ _·_ ε (init v) · last v
-    foldr′-lemmaʳ {zero}  {x ∷ []} rewrite idˡ x | idʳ x = refl
-    foldr′-lemmaʳ {suc m} {x₁ ∷ v} with initLast v
-    foldr′-lemmaʳ {suc m} {x₁ ∷ .(v′ ∷ʳ x¹)} | v′ , x¹ , refl
+    fold·-lemmaʳ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
+                   fold· v ≡ fold· (init v) · last v
+    fold·-lemmaʳ {zero}  (x ∷ []) rewrite idˡ x | idʳ x = refl
+    fold·-lemmaʳ {suc m} (x ∷ v) with initLast v
+    fold·-lemmaʳ {suc m} (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
       rewrite
-        assoc x₁ (foldr′ _·_ ε v′) x¹
-      | foldr′-lemmaʳ {m} {v′ ∷ʳ x¹}
-      | initLast-∷ʳ v′ x¹ = refl
+        assoc x (fold· v′) x′
+      | fold·-lemmaʳ {m} (v′ ∷ʳ x′)
+      | initLast-∷ʳ v′ x′ = refl
+
+    head-map : ∀ {m} {v : Vec Index (suc m)} (f : Index → Result) →
+               head (f ∷ replicate f ⊛ v) ≡ f (head v)
+    head-map {zero}  {_ ∷ []} f = refl
+    head-map {suc m} {x ∷ v}  f = refl
+
+    last-lemma : ∀ {a} {A : Set a} {m} (y : A) (ys : Vec A (suc m)) →
+                 last (y ∷ ys) ≡ last ys
+    last-lemma y ys with initLast ys
+    last-lemma y .(v′ ∷ʳ x′) | v′ , x′ , refl = refl
+
+    last-map : ∀ {m} {v : Vec Index (suc m)} (f : Index → Result) →
+               last (f ∷ replicate f ⊛ v) ≡ f (last v)
+    last-map {zero}  {_ ∷ []} f = refl
+    last-map {suc m} {x ∷ v}  f with initLast v
+    last-map {suc m} {x ∷ .(v′ ∷ʳ x′)} f | v′ , x′ , refl
+      rewrite
+        last-lemma {m = m} (f x) (f ∷ replicate f ⊛ v′ ∷ʳ x′)
+      | last-map {m} {v′ ∷ʳ x′} f
+      | initLast-∷ʳ v′ x′ = refl
+
+    fold·-map-lemmaˡ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
+                       fold· (map f v) ≡ f (head v) · fold· (tail (map f v))
+    fold·-map-lemmaˡ {m} v f
+      rewrite
+        fold·-lemmaˡ (map f v)
+      | head-map {v = v} f = refl
+
+    fold·-map-lemmaʳ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
+                       fold· (map f v) ≡ fold· (init (map f v)) · f (last v)
+    fold·-map-lemmaʳ {m} v f
+      rewrite
+        fold·-lemmaʳ (map f v)
+      | last-map {v = v} f = refl
 
   _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
   _⟦_⟧ {i} {r} o f = fold· (map f (enum index))
