@@ -32,7 +32,7 @@ module Prototypes.BigopBijection where
       _·_          : Op₂ Result
       comm         : IsCommutativeMonoid _≡_ _·_ ε
 
-  enum : ∀ {n : ℕ} {a} {A : Set a} → FinType {n} A → Vec A n
+  enum : ∀ {n} {a} {A : Set a} → FinType {n} A → Vec A n
   enum enumA = tabulate (_⟨$⟩_ to)
     where
       open import Function.Equality using (_⟨$⟩_)
