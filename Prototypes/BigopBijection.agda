@@ -82,12 +82,10 @@ module Prototypes.BigopBijection where
 
   finSumBigop : (n : ℕ) → Bigop
   finSumBigop n = record
-    { size = size ; Index = Fin size ; Result = ℕ
+    { size = n ; Index = Fin n ; Result = ℕ
     ; index = FinFinType ; ε = zero ; _·_ = _N+_ ; comm = comm
     }
     where
-      size = suc n
-
       open import Data.Nat.Properties.Simple
       comm : IsCommutativeMonoid _≡_ _N+_ zero
       comm = record
