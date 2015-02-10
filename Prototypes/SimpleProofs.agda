@@ -39,24 +39,34 @@ module Prototypes.SimpleProofs where
         open ≡-Reasoning
         open import Data.Vec
         open import Function using (_∘_)
-        open BigopLemmas (bigop n)
+        open import Data.Product hiding (map)
 
-        lemma₀ : ∀ {i} → expr (suc i) ≡ suc i + expr i
-        lemma₀ {zero} = refl
-        lemma₀ {suc j} with expr (suc j)
-        ... | e = cong suc (cong suc {!!})
-          where
-            cℕ : _ → Set
-            cℕ x = ℕ
+        m : ℕ
+        m = suc n
 
-            rℕ = replicate toℕ
+        open Bigop (bigop (suc m))
+        open BigopLemmas (bigop (suc m))
 
-            ss : ∀ {n} → Fin n → Fin (suc (suc n))
-            ss x = suc (suc x)
+        results : Vec Index (suc m)
+        results = enum index
 
-            lem₀ : foldr cℕ _+_ 0 (rℕ ⊛ tabulate {suc j} ss)
-                   ≡ suc j + foldr cℕ _+_ 0 (rℕ ⊛ tabulate {{!j!}} ss)
-            lem₀ = {!!}
+        fold·-map : fold· (map toℕ results) ≡
+                    fold· (init (map toℕ results)) · toℕ (last results)
+        fold·-map = fold·-map-lemmaʳ {m} results toℕ
+
+        init-map : expr m ≡ fold· (init (map toℕ results))
+        init-map = {!!}
+{-
+        init-map rewrite fold·-map with initLast results
+        init-map | zero ∷ proj₁ , x′ , proj₃ = {!!}
+        init-map | suc _ ∷ _ , _ , ()
+-}
+
+        lemma₀ : expr (suc m) ≡ expr m + m
+        lemma₀ rewrite fold·-map = {!!}
+     --   rewrite
+     --     fold·-map-lemmaʳ {n} (enum (Bigop.index (bigop n))) toℕ
+     --     = {!!}
 
         lemma₁ : ∀ {i j} → i + j div 2 ≡ (i + i + j) div 2
         lemma₁ {i} {j} = {!!}
@@ -64,7 +74,7 @@ module Prototypes.SimpleProofs where
             lem₀ : i ≡ (i + i) div 2
             lem₀ = {!!}
 
-        lemma₂ : suc n + suc n + (n * suc n) ≡ suc n * suc (suc n)
+        lemma₂ : (suc n) + (suc n) + (n * suc n) ≡ (suc n) * suc (suc n)
         lemma₂ = {!!}
 
         divBy : (divisor : ℕ) {≢0 : False (divisor ≟ 0)} (dividend : ℕ) → ℕ
