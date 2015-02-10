@@ -9,7 +9,7 @@ module Prototypes.SimpleProofs where
   open import Data.Unit.Base
 
   open import Relation.Binary.PropositionalEquality
-  open import Relation.Nullary.Decidable
+  open import Relation.Nullary.Decidable hiding (map)
 
   module Proof1 where
 
@@ -19,19 +19,21 @@ module Prototypes.SimpleProofs where
     expr : ℕ → ℕ
     expr n = (bigop n) ⟦ toℕ ⟧
 
-    proof : (n : ℕ) → expr n ≡ (n * (suc n)) div 2
+    proof : (n : ℕ) → expr (suc n) ≡ (n * (suc n)) div 2
     proof zero = refl
     proof (suc n) =
       begin
-        expr (suc n)
-          ≡⟨ lemma₀ {n} ⟩
-        suc n + expr n
+        expr (suc (suc n))
+          ≡⟨ lemma₀ ⟩
+        expr (suc n) + (suc n)
+          ≡⟨ +-comm (expr (suc n)) (suc n) ⟩
+        (suc n) + expr (suc n)
           ≡⟨ cong (_+_ (suc n)) (proof n) ⟩
-        suc n + (n * suc n) div 2
+        (suc n) + (n * suc n) div 2
           ≡⟨ lemma₁ {suc n} {n * suc n} ⟩
-        (suc n + suc n + (n * suc n)) div 2
+        ((suc n) + (suc n) + (n * suc n)) div 2
           ≡⟨ cong (divBy 2 {tt}) lemma₂ ⟩
-        (suc n * suc (suc n)) div 2
+        ((suc n) * suc (suc n)) div 2
       ∎
       where
         open ≡-Reasoning
