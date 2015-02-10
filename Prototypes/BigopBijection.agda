@@ -37,45 +37,7 @@ module Prototypes.BigopBijection where
     where
       open import Function.Equality using (_⟨$⟩_)
       open Bijection enumA
-{-
-  ¬sucm≤n→n≥m : ∀ {m n} → ¬ suc m N≤ n → n N≥ m
-  ¬sucm≤n→n≥m x = {!!}
 
-  SumFinType : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} → FinType {m} A → FinType {n} B → FinType {m N+ n} (A ⊎ B)
-  SumFinType {m = m} {n = n} {A = A} {B = B} enumA enumB = bijection
-    where
-      bijection = record { to = Fin⟶A⊎B ; bijective = bijective }
-        where
-          open import Function.Equality using (_⟨$⟩_)
-          open import Relation.Nullary using (yes ; no)
-          open import Relation.Nullary.Decidable using (toWitness)
-
-          toA = Bijection.to enumA
-          toB = Bijection.to enumB
-
-          toA⊎B : Fin (m N+ n) → A ⊎ B
-          toA⊎B i with suc (toℕ i) N≤? m | suc (toℕ i ∸ m) N≤? n
-          ... | yes suci≤m | _ =         inj₁ (toA ⟨$⟩ fromℕ≤ {toℕ i} suci≤m)
-          ... | no  suci≰m | yes i-m≤n = inj₂ (toB ⟨$⟩ fromℕ≤ {toℕ i ∸ m} i-m≤n)
-          ... | no  suci≰m | no  i-m≰n = {!!}
-            where
-              m≥i = ¬sucm≤n→n≥m {!!}
-
-          fromA⊎B : A ⊎ B → Fin (m N+ n)
-          fromA⊎B = {!!}
-
-          Fin⟶A⊎B = P.→-to-⟶ toA⊎B
-          A⊎B⟶Fin = P.→-to-⟶ fromA⊎B
-
-          bijective = record { injective = injective {!!} ; surjective = surjective }
-            where
-              injective = {!!}
-              surjective = record { from = A⊎B⟶Fin ; right-inverse-of = right-inv }
-                where
-                  open import Function.LeftInverse
-                  right-inv : A⊎B⟶Fin RightInverseOf Fin⟶A⊎B
-                  right-inv x = {!!}
--}
   BoolFinType : FinType Bool.Bool
   BoolFinType = record { to = Fin⟶Bool ; bijective = bijective }
     where
