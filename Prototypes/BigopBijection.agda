@@ -30,7 +30,7 @@ module Prototypes.BigopBijection where
       ε            : Result
       index        : FinType {size} Index
       _·_          : Op₂ Result
-      comm         : IsCommutativeMonoid _≡_ _·_ ε
+      cmon         : IsCommutativeMonoid _≡_ _·_ ε
 
   enum : ∀ {n} {a} {A : Set a} → FinType {n} A → Vec A n
   enum enumA = tabulate (_⟨$⟩_ to)
@@ -70,7 +70,7 @@ module Prototypes.BigopBijection where
               right-inv Bool.false = P.refl
 
 
-  FinFinType : ∀ {n : ℕ} → FinType {n} (Fin n)
+  FinFinType : {n : ℕ} → FinType {n} (Fin n)
   FinFinType = record { to = Fin⟶Nat ; bijective = bijective }
     where
       Fin⟶Nat = record { _⟨$⟩_ = Fun.id ; cong = Fun.id }
@@ -83,12 +83,12 @@ module Prototypes.BigopBijection where
   finSumBigop : (n : ℕ) → Bigop
   finSumBigop n = record
     { size = n ; Index = Fin n ; Result = ℕ
-    ; index = FinFinType ; ε = zero ; _·_ = _N+_ ; comm = comm
+    ; index = FinFinType ; ε = zero ; _·_ = _N+_ ; cmon = cmon
     }
     where
       open import Data.Nat.Properties.Simple
-      comm : IsCommutativeMonoid _≡_ _N+_ zero
-      comm = record
+      cmon : IsCommutativeMonoid _≡_ _N+_ zero
+      cmon = record
         { isSemigroup = record
           { isEquivalence = P.isEquivalence
           ; assoc = +-assoc
@@ -110,10 +110,10 @@ module Prototypes.BigopBijection where
     import Relation.Binary.Vec.Pointwise as PW
 
     assoc : Associative _·_
-    assoc = IsSemigroup.assoc (IsCommutativeMonoid.isSemigroup comm)
+    assoc = IsSemigroup.assoc (IsCommutativeMonoid.isSemigroup cmon)
 
     identity : Identity ε _·_
-    identity = IsMonoid.identity (IsCommutativeMonoid.isMonoid comm)
+    identity = IsMonoid.identity (IsCommutativeMonoid.isMonoid cmon)
 
     idˡ : LeftIdentity ε _·_
     idˡ = proj₁ identity
@@ -121,26 +121,64 @@ module Prototypes.BigopBijection where
     idʳ : RightIdentity ε _·_
     idʳ = proj₂ identity
 
-    fold· : ∀ {m : ℕ} → Vec Result m → Result
-    fold· = foldr (λ _ → Result) _·_ ε
+    comm : Commutative _·_
+    comm = IsCommutativeMonoid.comm cmon
+
+    fold· : ∀ {m : ℕ} → Result → Vec Result m → Result
+    fold· = foldr (λ _ → Result) _·_
+
+    foldl-left-distr : ∀ {m} (x y : Result) (ys : Vec Result m) →
+                       x · foldl (λ _ → Result) _·_ y ys ≡
+                       foldl (λ _ → Result) _·_ (x · y) ys
+    foldl-left-distr x y [] = refl
+    foldl-left-distr x y (y′ ∷ ys)
+      rewrite
+        assoc x y y′ = foldl-left-distr x (y · y′) ys
+
+    foldl-pickˡ : ∀ {m} (x y : Result) (ys : Vec Result m) →
+          x · foldl (λ _ → Result) _·_ y ys ≡
+          foldl (λ _ → Result) _·_ y (x ∷ ys)
+    foldl-pickˡ x y [] = comm x y
+    foldl-pickˡ x y (y′ ∷ ys)
+      rewrite
+        assoc y x y′ | comm x y′ | sym (assoc y y′ x) | comm (y · y′) x
+        = foldl-left-distr x (y · y′) ys
+
+    foldl-pickʳ : ∀ {m} (x y : Result) (ys : Vec Result m) →
+          x · foldl (λ _ → Result) _·_ y ys ≡
+          foldl (λ _ → Result) _·_ y (ys ∷ʳ x)
+    foldl-pickʳ x y [] = comm x y
+    foldl-pickʳ x y (y′ ∷ ys)
+      rewrite
+        foldl-pickʳ x (y · y′) ys = refl
+
+    foldl-foldr : ∀ {m} → (xs : Vec Result m) →
+                  fold· ε xs ≡ foldl (λ _ → Result) _·_ ε xs
+    foldl-foldr [] = refl
+    foldl-foldr (x ∷ xs)
+      rewrite
+        comm ε x
+      | foldl-foldr xs = foldl-left-distr x ε xs
 
     initLast-∷ʳ : ∀ {m} {a} {A : Set a} (xs : Vec A m) (x : A) →
                   initLast (xs ∷ʳ x) ≡ (xs , x , refl)
     initLast-∷ʳ {zero}  []        _  = refl
-    initLast-∷ʳ {suc m} (x₁ ∷ xs) x¹ rewrite initLast-∷ʳ {m} xs x¹ = refl
+    initLast-∷ʳ {suc m} (x₁ ∷ xs) x¹
+      rewrite
+        initLast-∷ʳ {m} xs x¹ = refl
 
-    fold·-lemmaˡ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
-                   fold· v ≡ head v · fold· (tail v)
-    fold·-lemmaˡ {zero}  (x ∷ []) rewrite idʳ x              = refl
-    fold·-lemmaˡ {suc m} (x ∷ v)  rewrite fold·-lemmaˡ {m} v = refl
+    fold·-lemmaˡ : ∀ {m : ℕ} (x : Result) (xs : Vec Result m) →
+                   fold· ε (x ∷ xs) ≡ x · fold· ε xs
+    fold·-lemmaˡ {zero}  _ []                                 = refl
+    fold·-lemmaˡ {suc m} _ (y ∷ ys) rewrite fold·-lemmaˡ y ys = refl
 
     fold·-lemmaʳ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
-                   fold· v ≡ fold· (init v) · last v
+                   fold· ε v ≡ fold· ε (init v) · last v
     fold·-lemmaʳ {zero}  (x ∷ []) rewrite idˡ x | idʳ x = refl
     fold·-lemmaʳ {suc m} (x ∷ v) with initLast v
     fold·-lemmaʳ {suc m} (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
       rewrite
-        assoc x (fold· v′) x′
+        assoc x (fold· ε v′) x′
       | fold·-lemmaʳ {m} (v′ ∷ʳ x′)
       | initLast-∷ʳ v′ x′ = refl
 
@@ -164,22 +202,34 @@ module Prototypes.BigopBijection where
       | last-map {m} {v′ ∷ʳ x′} f
       | initLast-∷ʳ v′ x′ = refl
 
-    fold·-map-lemmaˡ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
-                       fold· (map f v) ≡ f (head v) · fold· (tail (map f v))
-    fold·-map-lemmaˡ {m} v f
-      rewrite
-        fold·-lemmaˡ (map f v)
-      | head-map {v = v} f = refl
+    fold·-map-lemmaˡ : ∀ {m} (x : Index) (xs : Vec Index m)
+                       (f : Index → Result) →
+                       fold· ε (map f (x ∷ xs)) ≡ f x · fold· ε (map f xs)
+    fold·-map-lemmaˡ x xs f = fold·-lemmaˡ (f x) (map f xs)
 
     fold·-map-lemmaʳ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
-                       fold· (map f v) ≡ fold· (init (map f v)) · f (last v)
+                       fold· ε (map f v) ≡ fold· ε (init (map f v)) · f (last v)
     fold·-map-lemmaʳ {m} v f
       rewrite
         fold·-lemmaʳ (map f v)
       | last-map {v = v} f = refl
+{-
+    reverse-∷ʳ : ∀ {m} (x : Result) (xs : Vec Result m) →
+                 reverse (x ∷ xs) ≡ (reverse xs) ∷ʳ x
+    reverse-∷ʳ x [] = refl
+    reverse-∷ʳ x (y ∷ ys) rewrite sym (foldl-pickʳ x y ys) = {!!}
 
+    fold·-reverse : ∀ {m} (rs : Vec Result m) → fold· ε rs ≡ fold· ε (reverse rs)
+    fold·-reverse [] = refl
+    fold·-reverse (r ∷ rs) rewrite foldl-pickˡ r ε rs = {!!}
+-}
+{-
+    fold·-enum-lemmaˡ : ∀ {m} → size ≡ suc m → (f : Index → Result) →
+                        fold·-map-lemmaˡ (enum index) f
+    fold·-enum-lemmaˡ = ?
+-}
   _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
-  _⟦_⟧ {i} {r} o f = fold· (map f (enum index))
+  _⟦_⟧ {i} {r} o f = fold· ε (map f (enum index))
     where
       open Bigop o
       open BigopLemmas o
