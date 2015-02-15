@@ -44,26 +44,59 @@ module Prototypes.SimpleProofs where
         m : ℕ
         m = suc n
 
-        open Bigop (bigop (suc m))
-        open BigopLemmas (bigop (suc m))
+        OpS = (bigop (suc m))
+        Op = (bigop m)
+        open BigopLemmas OpS
 
-        results : Vec Index (suc m)
-        results = enum index
-
+        results : Vec (Bigop.Index OpS) (suc m)
+        results = enum (Bigop.index OpS)
+{-
         fold·-map : fold· (map toℕ results) ≡
                     fold· (init (map toℕ results)) · toℕ (last results)
         fold·-map = fold·-map-lemmaʳ {m} results toℕ
 
-        init-map : expr m ≡ fold· (init (map toℕ results))
-        init-map = {!!}
-{-
+        init-map : ∀ {k} →
+                  (bigop (suc k)) ⟦ toℕ ⟧ ≡
+                  fold· (init (map toℕ (enum (Bigop.index (bigop (suc k))))))
+        init-map {zero} = refl
+        init-map {suc k} = {!!}
+
+        init-map {zero} = refl
+        init-map {suc m} with initLast (enum (Bigop.index (bigop (suc (suc m)))))
+        init-map {suc m} | zero ∷ xs′ , x′ , eq = {!eq!}
+        init-map {suc m} | suc _ ∷ _ , _ , ()
+
         init-map rewrite fold·-map with initLast results
         init-map | zero ∷ proj₁ , x′ , proj₃ = {!!}
         init-map | suc _ ∷ _ , _ , ()
 -}
+        open import Data.Vec.Properties
 
-        lemma₀ : expr (suc m) ≡ expr m + m
-        lemma₀ rewrite fold·-map = {!!}
+        lem₁ : ∀ {m} → (f : ∀ {m} → Fin m → ℕ) →
+               map toℕ (enum (Bigop.index (bigop (suc m)))) ≡
+               map toℕ (enum (Bigop.index (bigop m))) ∷ʳ m
+        lem₁ {zero} f = refl
+        lem₁ {suc m} f = {!!}
+
+        lemma₀ : ∀ {m} → expr (suc m) ≡ expr m + m
+        lemma₀ {m}
+          rewrite
+            lem₁ {m} toℕ = {!!}
+{-        rewrite
+            foldl-foldr 0 (map toℕ (enum (Bigop.index (bigop m))))
+          | foldl·-pickʳ m 0 (map toℕ (enum (Bigop.index (bigop m))))
+          | sym (foldl-foldr 0 (map toℕ (enum (Bigop.index (bigop m))) ∷ʳ m))
+          = {!refl!}
+-}
+        lem : ∀ {m} → map toℕ (enum (Bigop.index (bigop (suc m)))) ≡
+                      0 ∷ map (suc ∘ toℕ) (enum (Bigop.index (bigop m)))
+        lem {zero} = refl
+        lem {suc m} rewrite lem {m} = cong (_∷_ zero) {!!}
+{-
+            foldl-foldr 0 (map toℕ (enum (Bigop.index (bigop (suc (suc m))))))
+          | foldl-foldr 0 (map toℕ (enum (Bigop.index (bigop (suc m)))))
+          | foldl·-distr (suc m) 0 (map toℕ (enum (Bigop.index (bigop (suc m))))) = {!refl!}
+-}
      --   rewrite
      --     fold·-map-lemmaʳ {n} (enum (Bigop.index (bigop n))) toℕ
      --     = {!!}

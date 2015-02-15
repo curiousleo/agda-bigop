@@ -124,41 +124,41 @@ module Prototypes.BigopBijection where
     comm : Commutative _·_
     comm = IsCommutativeMonoid.comm cmon
 
-    fold· : ∀ {m : ℕ} → Result → Vec Result m → Result
-    fold· = foldr (λ _ → Result) _·_
+    foldr· : ∀ {m : ℕ} → Result → Vec Result m → Result
+    foldr· = foldr (λ _ → Result) _·_
 
-    foldl-left-distr : ∀ {m} (x y : Result) (ys : Vec Result m) →
-                       x · foldl (λ _ → Result) _·_ y ys ≡
-                       foldl (λ _ → Result) _·_ (x · y) ys
-    foldl-left-distr x y [] = refl
-    foldl-left-distr x y (y′ ∷ ys)
+    foldl· : ∀ {m : ℕ} → Result → Vec Result m → Result
+    foldl· = foldl (λ _ → Result) _·_
+
+    foldl·-distr : ∀ {m} (x y : Result) (ys : Vec Result m) →
+                   x · foldl· y ys ≡ foldl· (x · y) ys
+    foldl·-distr x y [] = refl
+    foldl·-distr x y (y′ ∷ ys)
       rewrite
-        assoc x y y′ = foldl-left-distr x (y · y′) ys
+        assoc x y y′ = foldl·-distr x (y · y′) ys
 
-    foldl-pickˡ : ∀ {m} (x y : Result) (ys : Vec Result m) →
-          x · foldl (λ _ → Result) _·_ y ys ≡
-          foldl (λ _ → Result) _·_ y (x ∷ ys)
-    foldl-pickˡ x y [] = comm x y
-    foldl-pickˡ x y (y′ ∷ ys)
+    foldl·-pickˡ : ∀ {m} (x y : Result) (ys : Vec Result m) →
+                   x · foldl· y ys ≡ foldl· y (x ∷ ys)
+    foldl·-pickˡ x y [] = comm x y
+    foldl·-pickˡ x y (y′ ∷ ys)
       rewrite
         assoc y x y′ | comm x y′ | sym (assoc y y′ x) | comm (y · y′) x
-        = foldl-left-distr x (y · y′) ys
+        = foldl·-distr x (y · y′) ys
 
-    foldl-pickʳ : ∀ {m} (x y : Result) (ys : Vec Result m) →
-          x · foldl (λ _ → Result) _·_ y ys ≡
-          foldl (λ _ → Result) _·_ y (ys ∷ʳ x)
-    foldl-pickʳ x y [] = comm x y
-    foldl-pickʳ x y (y′ ∷ ys)
+    foldl·-pickʳ : ∀ {m} (x y : Result) (ys : Vec Result m) →
+                   x · foldl· y ys ≡ foldl· y (ys ∷ʳ x)
+    foldl·-pickʳ x y [] = comm x y
+    foldl·-pickʳ x y (y′ ∷ ys)
       rewrite
-        foldl-pickʳ x (y · y′) ys = refl
+        foldl·-pickʳ x (y · y′) ys = refl
 
-    foldl-foldr : ∀ {m} → (xs : Vec Result m) →
-                  fold· ε xs ≡ foldl (λ _ → Result) _·_ ε xs
-    foldl-foldr [] = refl
-    foldl-foldr (x ∷ xs)
+    foldl-foldr : ∀ {m} (x : Result) (xs : Vec Result m) →
+                  foldr· x xs ≡ foldl· x xs
+    foldl-foldr _ [] = refl
+    foldl-foldr x (y ∷ ys)
       rewrite
-        comm ε x
-      | foldl-foldr xs = foldl-left-distr x ε xs
+        comm x y
+      | foldl-foldr x ys = foldl·-distr y x ys
 
     initLast-∷ʳ : ∀ {m} {a} {A : Set a} (xs : Vec A m) (x : A) →
                   initLast (xs ∷ʳ x) ≡ (xs , x , refl)
@@ -167,19 +167,19 @@ module Prototypes.BigopBijection where
       rewrite
         initLast-∷ʳ {m} xs x¹ = refl
 
-    fold·-lemmaˡ : ∀ {m : ℕ} (x : Result) (xs : Vec Result m) →
-                   fold· ε (x ∷ xs) ≡ x · fold· ε xs
-    fold·-lemmaˡ {zero}  _ []                                 = refl
-    fold·-lemmaˡ {suc m} _ (y ∷ ys) rewrite fold·-lemmaˡ y ys = refl
+    foldr·-lemmaˡ : ∀ {m : ℕ} (x : Result) (xs : Vec Result m) →
+                   foldr· ε (x ∷ xs) ≡ x · foldr· ε xs
+    foldr·-lemmaˡ {zero}  _ []                                 = refl
+    foldr·-lemmaˡ {suc m} _ (y ∷ ys) rewrite foldr·-lemmaˡ y ys = refl
 
-    fold·-lemmaʳ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
-                   fold· ε v ≡ fold· ε (init v) · last v
-    fold·-lemmaʳ {zero}  (x ∷ []) rewrite idˡ x | idʳ x = refl
-    fold·-lemmaʳ {suc m} (x ∷ v) with initLast v
-    fold·-lemmaʳ {suc m} (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
+    foldr·-lemmaʳ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
+                   foldr· ε v ≡ foldr· ε (init v) · last v
+    foldr·-lemmaʳ {zero}  (x ∷ []) rewrite idˡ x | idʳ x = refl
+    foldr·-lemmaʳ {suc m} (x ∷ v) with initLast v
+    foldr·-lemmaʳ {suc m} (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
       rewrite
-        assoc x (fold· ε v′) x′
-      | fold·-lemmaʳ {m} (v′ ∷ʳ x′)
+        assoc x (foldr· ε v′) x′
+      | foldr·-lemmaʳ {m} (v′ ∷ʳ x′)
       | initLast-∷ʳ v′ x′ = refl
 
     head-map : ∀ {m} {v : Vec Index (suc m)} (f : Index → Result) →
@@ -202,34 +202,34 @@ module Prototypes.BigopBijection where
       | last-map {m} {v′ ∷ʳ x′} f
       | initLast-∷ʳ v′ x′ = refl
 
-    fold·-map-lemmaˡ : ∀ {m} (x : Index) (xs : Vec Index m)
+    foldr·-map-lemmaˡ : ∀ {m} (x : Index) (xs : Vec Index m)
                        (f : Index → Result) →
-                       fold· ε (map f (x ∷ xs)) ≡ f x · fold· ε (map f xs)
-    fold·-map-lemmaˡ x xs f = fold·-lemmaˡ (f x) (map f xs)
+                       foldr· ε (map f (x ∷ xs)) ≡ f x · foldr· ε (map f xs)
+    foldr·-map-lemmaˡ x xs f = foldr·-lemmaˡ (f x) (map f xs)
 
-    fold·-map-lemmaʳ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
-                       fold· ε (map f v) ≡ fold· ε (init (map f v)) · f (last v)
-    fold·-map-lemmaʳ {m} v f
+    foldr·-map-lemmaʳ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
+                       foldr· ε (map f v) ≡ foldr· ε (init (map f v)) · f (last v)
+    foldr·-map-lemmaʳ {m} v f
       rewrite
-        fold·-lemmaʳ (map f v)
+        foldr·-lemmaʳ (map f v)
       | last-map {v = v} f = refl
 {-
     reverse-∷ʳ : ∀ {m} (x : Result) (xs : Vec Result m) →
                  reverse (x ∷ xs) ≡ (reverse xs) ∷ʳ x
     reverse-∷ʳ x [] = refl
-    reverse-∷ʳ x (y ∷ ys) rewrite sym (foldl-pickʳ x y ys) = {!!}
+    reverse-∷ʳ x (y ∷ ys) rewrite sym (foldl·-pickʳ x y ys) = {!!}
 
-    fold·-reverse : ∀ {m} (rs : Vec Result m) → fold· ε rs ≡ fold· ε (reverse rs)
-    fold·-reverse [] = refl
-    fold·-reverse (r ∷ rs) rewrite foldl-pickˡ r ε rs = {!!}
+    foldr·-reverse : ∀ {m} (rs : Vec Result m) → foldr· ε rs ≡ foldr· ε (reverse rs)
+    foldr·-reverse [] = refl
+    foldr·-reverse (r ∷ rs) rewrite foldl·-pickˡ r ε rs = {!!}
 -}
 {-
-    fold·-enum-lemmaˡ : ∀ {m} → size ≡ suc m → (f : Index → Result) →
-                        fold·-map-lemmaˡ (enum index) f
-    fold·-enum-lemmaˡ = ?
+    foldr·-enum-lemmaˡ : ∀ {m} → size ≡ suc m → (f : Index → Result) →
+                        foldr·-map-lemmaˡ (enum index) f
+    foldr·-enum-lemmaˡ = ?
 -}
   _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
-  _⟦_⟧ {i} {r} o f = fold· ε (map f (enum index))
+  _⟦_⟧ {i} {r} o f = foldr· ε (map f (enum index))
     where
       open Bigop o
       open BigopLemmas o

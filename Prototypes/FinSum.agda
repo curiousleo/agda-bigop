@@ -3,19 +3,29 @@ module Prototypes.FinSum where
   open import Data.Fin hiding (compare)
   open import Data.Nat hiding (compare)
     renaming (_+_ to _N+_ ; _≤?_ to _N≤?_ ; _≤_ to _N≤_ ; _>_ to _N>_ ; _<_ to _N<_)
+  open import Data.Nat.Properties
   open import Data.Sum
   open import Data.Product
 
   open import Function.Bijection hiding (_∘_)
   open import Function.Surjection hiding (_∘_)
 
-  open import Relation.Binary.Core using (_≡_)
+  open import Relation.Binary
+  open import Relation.Binary.Core
   open import Relation.Binary.PropositionalEquality
     using (refl ; cong ; sym ; trans ; setoid ; →-to-⟶)
 
-  open import Relation.Nullary.Core using (¬_)
+  open import Relation.Nullary
 
   open import Prototypes.Injectivity
+
+  m⊎n→m+n : ∀ {m n} → Fin m ⊎ Fin n → Fin (m N+ n)
+  m⊎n→m+n {m} {n} = [ inject+ n , raise m ]′
+
+  m+n→m⊎n : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
+  m+n→m⊎n {m} {n} i with m N≤? toℕ i
+  ... | yes m≤i = inj₂ (reduce≥ i m≤i)
+  ... | no ¬m≤i = inj₁ (fromℕ≤ {toℕ i} (≰⇒> ¬m≤i))
 
   m⊎n↔m+n : ∀ {m n} →
             Bijection (setoid (Fin m ⊎ Fin n)) (setoid (Fin (m N+ n)))
@@ -23,17 +33,12 @@ module Prototypes.FinSum where
     where
       open import Relation.Nullary
       open import Data.Fin.Properties hiding (strictTotalOrder)
-      open import Data.Nat.Properties
       open import Function.LeftInverse using (_RightInverseOf_)
       open import Data.Empty
 
-      open import Relation.Binary
       open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder) using (compare)
 
-      to→ : ∀ {m n} → Fin m ⊎ Fin n → Fin (m N+ n)
-      to→ {m} {n} = [ inject+ n , raise m ]′
-
-      to⟶ = →-to-⟶ to→
+      to⟶ = →-to-⟶ m⊎n→m+n
 
       theorem₀ : ∀ {n m} {j : Fin n} → ¬ m ≰ toℕ (raise m j)
       theorem₀ nleq = lemma₀ (lemma₁ nleq)
@@ -48,7 +53,7 @@ module Prototypes.FinSum where
           lemma₁ {m = m} {j = j} leq rewrite toℕ-raise m j = ≰⇒> leq
 
       theorem₁ : ∀ {m n} {i⊎ : Fin m ⊎ Fin n} →
-                 ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (to→ i⊎)
+                 ∃ (λ i → inj₁ i ≡ i⊎) → m N> toℕ (m⊎n→m+n i⊎)
       theorem₁ {n = n} {i⊎ = inj₁ i} (_ , eq)
         rewrite eq | sym (inject+-lemma n i) = bounded i
       theorem₁ {i⊎ = inj₂ j} (i , ())
@@ -75,8 +80,8 @@ module Prototypes.FinSum where
 
           contradiction = ([ ¬m≡n , ¬m<n ]′ (lemma m≤n))
 
-      injective : ∀ {i j : Fin m ⊎ Fin n} → to→ i ≡ to→ j → i ≡ j
-      injective {i⊎} {j⊎} eq with m N≤? toℕ (to→ i⊎) | m N≤? toℕ (to→ j⊎)
+      injective : ∀ {i j : Fin m ⊎ Fin n} → m⊎n→m+n i ≡ m⊎n→m+n j → i ≡ j
+      injective {i⊎} {j⊎} eq with m N≤? toℕ (m⊎n→m+n i⊎) | m N≤? toℕ (m⊎n→m+n j⊎)
       injective {inj₁ i} {inj₁ j} eq | _ | _ = cong inj₁ lemma
         where
           lemma : i ≡ j
@@ -96,12 +101,7 @@ module Prototypes.FinSum where
       ... | yes m≤i | no ¬m≤j rewrite eq = ⊥-elim (¬m≤j m≤i)
       ... | no ¬m≤i | yes m≤j rewrite eq = ⊥-elim (¬m≤i m≤j)
 
-      from→ : ∀ {m n} → Fin (m N+ n) → Fin m ⊎ Fin n
-      from→ {m} {n} i with m N≤? toℕ i
-      ... | yes m≤i = inj₂ (reduce≥ i m≤i)
-      ... | no ¬m≤i = inj₁ (fromℕ≤ {toℕ i} (≰⇒> ¬m≤i))
-
-      from⟶ = →-to-⟶ from→
+      from⟶ = →-to-⟶ m+n→m⊎n
 
       >⇒≰ : _N>_ ⇒ _≰_
       >⇒≰ (s≤s x) (s≤s y) = >⇒≰ x y
@@ -119,7 +119,7 @@ module Prototypes.FinSum where
       surjective : Surjective to⟶
       surjective = record { from = from⟶ ; right-inverse-of = right-inv }
         where
-          right-inv : ∀ (k : Fin (m N+ n)) → to→ {m} {n} (from→ k) ≡ k
+          right-inv : ∀ (k : Fin (m N+ n)) → m⊎n→m+n {m} {n} (m+n→m⊎n k) ≡ k
           right-inv k with m N≤? toℕ k
           right-inv k | yes m≤k = toℕ-injective (trans lemma₀ lemma₁)
             where
@@ -142,3 +142,35 @@ module Prototypes.FinSum where
 
       bijective : Bijective to⟶
       bijective = record { injective = injective ; surjective = surjective }
+
+{-
+  ⊎-bijection : ∀ {a b c d} →
+                {A : Set a} {B : Set b} {C : Set c} {D : Set d} →
+                Bijection (setoid A) (setoid B) →
+                Bijection (setoid C) (setoid D) →
+                Bijection (setoid (A ⊎ C)) (setoid (B ⊎ D))
+  ⊎-bijection {A = A} {B = B} {C = C} {D = D} A↔B C↔D = record {
+    to = →-to-⟶ f ;
+    bijective = record { injective = {!!} ; surjective = {!!} } }
+    where
+      open Bijection A↔B renaming (to to toAB ; bijective to bijAB)
+      open Bijection C↔D renaming (to to toCD ; bijective to bijCD)
+
+      open Surjective (Bijective.surjective bijAB) renaming (from to fromAB)
+      open Surjective (Bijective.surjective bijCD) renaming (from to fromCD)
+
+      open import Function using (_∘_)
+      import Function.Equality hiding (cong)
+      open Function.Equality.Π toAB renaming (_⟨$⟩_ to _⟨$⟩AB_ ; cong to congAB)
+      open Function.Equality.Π toCD renaming (_⟨$⟩_ to _⟨$⟩CD_ ; cong to congCD)
+
+      f : A ⊎ C → B ⊎ D
+      f = [ inj₁ ∘ _⟨$⟩AB_ , inj₂ ∘ _⟨$⟩CD_ ]′
+
+      inj : ∀ {x y : A ⊎ C} → f x ≡ f y → x ≡ y
+      inj {inj₁ x} {inj₁ y} eq with A↔B ⟨$⟩AB x ≡ toAB ⟨$⟩AB y
+      inj {inj₁ x} {inj₁ y} eq | eq′ = {!eq!}
+      inj {inj₁ x} {inj₂ y} ()
+      inj {inj₂ x} {inj₁ y} ()
+      inj {inj₂ x} {inj₂ y} eq = cong inj₂ {!congCD!}
+-}
