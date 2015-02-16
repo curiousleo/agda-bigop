@@ -112,3 +112,27 @@ module Prototypes.SimpleProofs where
 
         divBy : (divisor : ℕ) {≢0 : False (divisor ≟ 0)} (dividend : ℕ) → ℕ
         divBy n {≢0} m = _div_ m n {≢0}
+
+  open import Prototypes.Matrix
+
+  module Proof2 {p q r s}
+                (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
+    _⊗_ : ∀ {p q r ℓ} {T : Set ℓ} → Matrix T p q → Matrix T q r → Matrix T p r
+    m₁ ⊗ m₂ = tabulate (λ r c → {!!})
+
+    innerBigop = finSumBigop r
+    outerBigop = finSumBigop q
+
+    A×〈B×C〉 : Fin p → Fin s → ℕ
+    A×〈B×C〉 = λ i j → outerBigop
+      ⟦ (λ k → lookup i k A * (innerBigop
+        ⟦ (λ l → (lookup k l B) * (lookup l j C)) ⟧)) ⟧
+
+    〈A×B〉×C : Fin p → Fin s → ℕ
+    〈A×B〉×C = λ i j → innerBigop
+      ⟦ (λ l → (outerBigop
+        ⟦ (λ k → (lookup i k A) * (lookup k l B)) ⟧)
+        * (lookup l j C)) ⟧
+
+    eq : A×〈B×C〉 ≡ 〈A×B〉×C
+    eq = {!!}
