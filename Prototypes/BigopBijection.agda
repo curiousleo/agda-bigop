@@ -98,6 +98,24 @@ module Prototypes.BigopBijection where
         ; comm = +-comm
         }
 
+  finProdBigop : (n : ℕ) → Bigop
+  finProdBigop n = record
+    { size = n ; Index = Fin n ; Result = ℕ
+    ; index = FinFinType ; ε = 1 ; _·_ = _*_ ; cmon = cmon
+    }
+    where
+      open import Data.Nat.Properties.Simple
+      cmon : IsCommutativeMonoid _≡_ _*_ 1
+      cmon = record
+        { isSemigroup = record
+          { isEquivalence = P.isEquivalence
+          ; assoc = *-assoc
+          ; ∙-cong = P.cong₂ _*_
+          }
+        ; identityˡ = +-right-identity
+        ; comm = *-comm
+        }
+
   module BigopLemmas {i r} (bigop : Bigop {i} {r}) where
     open Bigop bigop
     import Algebra.FunctionProperties as FP
