@@ -123,16 +123,41 @@ module Prototypes.SimpleProofs where
     innerBigop = finSumBigop r
     outerBigop = finSumBigop q
 
+--  syntax innerBigop ⟦ (λ x → e) ⟧ = Σ x 〖 e 〗 -- or ⨁
+
     A×〈B×C〉 : Fin p → Fin s → ℕ
     A×〈B×C〉 = λ i j → outerBigop
-      ⟦ (λ k → lookup i k A * (innerBigop
-        ⟦ (λ l → (lookup k l B) * (lookup l j C)) ⟧)) ⟧
+      ⟦ (λ k → A [ i , k ] * (innerBigop
+        ⟦ (λ l → B [ k , l ] * C [ l , j ]) ⟧)) ⟧
+{-
+    = λ i j → Σ k 〖 A [ i , k ] * Σ l 〖 B [ k , l ] * C [ l , j ] 〗 〗
+-}
 
     〈A×B〉×C : Fin p → Fin s → ℕ
     〈A×B〉×C = λ i j → innerBigop
       ⟦ (λ l → (outerBigop
-        ⟦ (λ k → (lookup i k A) * (lookup k l B)) ⟧)
-        * (lookup l j C)) ⟧
-
-    eq : A×〈B×C〉 ≡ 〈A×B〉×C
-    eq = {!!}
+        ⟦ (λ k → A [ i , k ] * B [ k , l ]) ⟧)
+        * C [ l , j ]) ⟧
+{-
+    = λ i j → Σ l 〖 Σ k 〖 A [ i , k ] * B [ k , l ] 〗 * C [ l , j ] 〗
+-}
+    eq : ∀ {i j} → A×〈B×C〉 i j ≡ 〈A×B〉×C i j
+    eq {i} {j} =
+      begin
+        A×〈B×C〉 i j
+          ≡⟨ {!!} ⟩
+        〈A×B〉×C i j
+{-
+        Σ k 〖 A [ i , k ] * Σ l 〖 B [ k , l ] * C [ l , j ] 〗 〗
+          ≡⟨ ? ⟩
+        Σ k 〖 Σ l 〖 A [ i , k ] * (B [ k , l ] * C [ l , j ]) 〗 〗
+          ≡⟨ ? ⟩
+        Σ l 〖 Σ k 〖 A [ i , k ] * (B [ k , l ] * C [ l , j ]) 〗 〗
+          ≡⟨ ? ⟩
+        Σ l 〖 Σ k 〖 (A [ i , k ] * B [ k , l ]) * C [ l , j ] 〗 〗
+          ≡⟨ ? ⟩
+        Σ l 〖 Σ k 〖 A [ i , k ] * B [ k , l ] 〗 * C [ l , j ] 〗
+-}
+      ∎
+      where
+        open ≡-Reasoning
