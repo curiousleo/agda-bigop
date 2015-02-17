@@ -164,8 +164,8 @@ module Prototypes.BigopBijection where
         = foldl·-distr x (y · y′) ys
 
     foldl·-pickʳ : ∀ {m} (x y : Result) (ys : Vec Result m) →
-                   x · foldl· y ys ≡ foldl· y (ys ∷ʳ x)
-    foldl·-pickʳ x y [] = comm x y
+                   foldl· y (ys ∷ʳ x) ≡ foldl· y ys · x
+    foldl·-pickʳ _ _ [] = refl
     foldl·-pickʳ x y (y′ ∷ ys)
       rewrite
         foldl·-pickʳ x (y · y′) ys = refl
@@ -185,19 +185,19 @@ module Prototypes.BigopBijection where
       rewrite
         initLast-∷ʳ {m} xs x¹ = refl
 
-    foldr·-lemmaˡ : ∀ {m : ℕ} (x : Result) (xs : Vec Result m) →
-                   foldr· ε (x ∷ xs) ≡ x · foldr· ε xs
-    foldr·-lemmaˡ {zero}  _ []                                 = refl
-    foldr·-lemmaˡ {suc m} _ (y ∷ ys) rewrite foldr·-lemmaˡ y ys = refl
+    foldr·-lemmaˡ : ∀ {m : ℕ} (x y : Result) (ys : Vec Result m) →
+                   foldr· x (y ∷ ys) ≡ y · foldr· x ys
+    foldr·-lemmaˡ {zero}  _ _ []                                 = refl
+    foldr·-lemmaˡ {suc m} _ y (y′ ∷ ys) rewrite foldr·-lemmaˡ y y′ ys = refl
 
-    foldr·-lemmaʳ : ∀ {m : ℕ} (v : Vec Result (suc m)) →
-                   foldr· ε v ≡ foldr· ε (init v) · last v
-    foldr·-lemmaʳ {zero}  (x ∷ []) rewrite idˡ x | idʳ x = refl
-    foldr·-lemmaʳ {suc m} (x ∷ v) with initLast v
-    foldr·-lemmaʳ {suc m} (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
+    foldr·-lemmaʳ : ∀ {m : ℕ} (x : Result) (v : Vec Result (suc m)) →
+                   foldr· x v ≡ foldr· x (init v) · last v
+    foldr·-lemmaʳ {zero}  y (x ∷ []) = comm x y
+    foldr·-lemmaʳ {suc m} y (x ∷ v) with initLast v
+    foldr·-lemmaʳ {suc m} y (x ∷ .(v′ ∷ʳ x′)) | v′ , x′ , refl
       rewrite
-        assoc x (foldr· ε v′) x′
-      | foldr·-lemmaʳ {m} (v′ ∷ʳ x′)
+        assoc x (foldr· y v′) x′
+      | foldr·-lemmaʳ {m} y (v′ ∷ʳ x′)
       | initLast-∷ʳ v′ x′ = refl
 
     head-map : ∀ {m} {v : Vec Index (suc m)} (f : Index → Result) →
@@ -220,16 +220,18 @@ module Prototypes.BigopBijection where
       | last-map {m} {v′ ∷ʳ x′} f
       | initLast-∷ʳ v′ x′ = refl
 
-    foldr·-map-lemmaˡ : ∀ {m} (x : Index) (xs : Vec Index m)
+    foldr·-map-lemmaˡ : ∀ {m} (x : Index) (y : Result) (xs : Vec Index m)
                        (f : Index → Result) →
-                       foldr· ε (map f (x ∷ xs)) ≡ f x · foldr· ε (map f xs)
-    foldr·-map-lemmaˡ x xs f = foldr·-lemmaˡ (f x) (map f xs)
+                       foldr· y (map f (x ∷ xs)) ≡ f x · foldr· y (map f xs)
+    foldr·-map-lemmaˡ x y xs f = foldr·-lemmaˡ y (f x) (map f xs)
 
-    foldr·-map-lemmaʳ : ∀ {m} (v : Vec Index (suc m)) (f : Index → Result) →
-                       foldr· ε (map f v) ≡ foldr· ε (init (map f v)) · f (last v)
-    foldr·-map-lemmaʳ {m} v f
+    foldr·-map-lemmaʳ : ∀ {m} (x : Result) (v : Vec Index (suc m))
+                        (f : Index → Result) →
+                        foldr· x (map f v) ≡
+                        foldr· x (init (map f v)) · f (last v)
+    foldr·-map-lemmaʳ {m} x v f
       rewrite
-        foldr·-lemmaʳ (map f v)
+        foldr·-lemmaʳ x (map f v)
       | last-map {v = v} f = refl
 {-
     reverse-∷ʳ : ∀ {m} (x : Result) (xs : Vec Result m) →
