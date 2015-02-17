@@ -15,3 +15,7 @@ module Prototypes.Matrix where
 
   transpose : ∀ {r c a} {A : Set a} → Matrix A r c → Matrix A c r
   transpose {r} {c} m = tabulate (λ c r → lookup r c m)
+
+  -- TODO: turn this into a syntax declaration
+  _[_,_] : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
+  m [ i , j ] = lookup i j m
