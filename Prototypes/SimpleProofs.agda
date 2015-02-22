@@ -15,7 +15,7 @@ module Prototypes.SimpleProofs where
   module GaussFormula where
 
     expr : ℕ → ℕ
-    expr n = (finSumBigop n) ⟦ toℕ ⟧
+    expr n = (Sum n) ⟦ toℕ ⟧
 
     proof : (n : ℕ) → 2 * expr (suc n) ≡ n * (suc n)
     proof zero = refl
@@ -67,27 +67,22 @@ module Prototypes.SimpleProofs where
 
   open import Prototypes.Matrix
 
-  module Proof2 {p q r s}
-                (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
-    _⊗_ : ∀ {p q r ℓ} {T : Set ℓ} → Matrix T p q → Matrix T q r → Matrix T p r
-    m₁ ⊗ m₂ = tabulate (λ r c → {!!})
+  module MatrixAssoc {p q r s}
+         (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
 
-    innerBigop = finSumBigop r
-    outerBigop = finSumBigop q
-
---  syntax innerBigop ⟦ (λ x → e) ⟧ = Σ x 〖 e 〗 -- or ⨁
+--  syntax innerSum ⟦ (λ x → e) ⟧ = Σ x 〖 e 〗 -- or ⨁
 
     A×〈B×C〉 : Fin p → Fin s → ℕ
-    A×〈B×C〉 = λ i j → outerBigop
-      ⟦ (λ k → A [ i , k ] * (innerBigop
+    A×〈B×C〉 = λ i j → (Sum q)
+      ⟦ (λ k → A [ i , k ] * ((Sum r)
         ⟦ (λ l → B [ k , l ] * C [ l , j ]) ⟧)) ⟧
 {-
     = λ i j → Σ k 〖 A [ i , k ] * Σ l 〖 B [ k , l ] * C [ l , j ] 〗 〗
 -}
 
     〈A×B〉×C : Fin p → Fin s → ℕ
-    〈A×B〉×C = λ i j → innerBigop
-      ⟦ (λ l → (outerBigop
+    〈A×B〉×C = λ i j → (Sum r)
+      ⟦ (λ l → ((Sum q)
         ⟦ (λ k → A [ i , k ] * B [ k , l ]) ⟧)
         * C [ l , j ]) ⟧
 {-
