@@ -5,7 +5,6 @@ module Prototypes.SimpleProofs where
   open import Function using (id)
   
   open import Data.Nat
-  open import Data.Nat.DivMod
   open import Data.Nat.Properties.Simple
   open import Data.Fin hiding (_+_)
   open import Data.Unit.Base
@@ -15,36 +14,24 @@ module Prototypes.SimpleProofs where
 
   module GaussFormula where
 
-    bigop : ℕ → Bigop
-    bigop = finSumBigop
-
     expr : ℕ → ℕ
-    expr n = (bigop n) ⟦ toℕ ⟧
+    expr n = (finSumBigop n) ⟦ toℕ ⟧
 
     proof : (n : ℕ) → 2 * expr (suc n) ≡ n * (suc n)
     proof zero = refl
     proof (suc n) =
       begin
-        2 * expr (suc (suc n))
-          ≡⟨ cong (_*_ 2) (lemma {suc n}) ⟩
-        2 * ((suc n) + expr (suc n))
-          ≡⟨ distribˡ-*-+ 2 (suc n) (expr (suc n)) ⟩
-        2 * (suc n) + 2 * expr (suc n)
-          ≡⟨ cong (_+_ (2 * suc n)) (proof n) ⟩
-        2 * (suc n) + n * suc n
-          ≡⟨ sym (distribʳ-*-+ (suc n) 2 n) ⟩
-        (2 + n) * (suc n)
-          ≡⟨ *-comm (suc (suc n)) (suc n) ⟩
+        2 * expr (suc (suc n))         ≡⟨ cong (_*_ 2) (lemma {suc n}) ⟩
+        2 * ((suc n) + expr (suc n))   ≡⟨ distribˡ-*-+ 2 (suc n) (expr (suc n)) ⟩
+        2 * (suc n) + 2 * expr (suc n) ≡⟨ cong (_+_ (2 * suc n)) (proof n) ⟩
+        2 * (suc n) + n * suc n        ≡⟨ sym (distribʳ-*-+ (suc n) 2 n) ⟩
+        (2 + n) * (suc n)              ≡⟨ *-comm (2 + n) (suc n) ⟩
         (suc n) * suc (suc n)
       ∎
       where
         open ≡-Reasoning
         open import Data.Vec
         open import Function using (_∘_)
-        open import Data.Product hiding (map)
-
-        m : ℕ
-        m = suc n
 
         distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
         distribˡ-*-+ m n o
@@ -53,13 +40,6 @@ module Prototypes.SimpleProofs where
           | *-comm m o
           | sym (distribʳ-*-+ m n o)
           | *-comm (n + o) m = refl
-
-        OpS = (bigop (suc m))
-        Op = (bigop m)
-        open BigopLemmas OpS
-
-        results : Vec (Bigop.Index OpS) (suc m)
-        results = enum (Bigop.index OpS)
 
         open import Data.Vec.Properties
 
@@ -80,9 +60,9 @@ module Prototypes.SimpleProofs where
             lem {suc m} f
               rewrite
                 lem {m} (f ∘ suc)
-              | sym (assoc (f 0) m (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
+              | sym (+-assoc (f 0) m (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
               | +-comm (f 0) m
-              | sym (assoc m (f 0) (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
+              | sym (+-assoc m (f 0) (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
               = refl
 
   open import Prototypes.Matrix
