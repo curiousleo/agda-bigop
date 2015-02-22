@@ -1,0 +1,70 @@
+\RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[12pt,chapterprefix=true,toc=bibliography,numbers=noendperiod,
+               footnotes=multiple,twoside]{scrreprt}
+\usepackage{fixltx2e} % LaTeX patches, \textsubscript
+\usepackage{microtype}
+\usepackage{cmap} % fix search and cut-and-paste in Acrobat
+\usepackage{ifthen}
+\usepackage[oldstylenums,largesmallcaps,easyscsl]{kpfonts}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[british]{babel}
+\usepackage[table,hyperref,dvipsnames]{xcolor}
+\usepackage{floatrow}
+\usepackage{csquotes}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{ctable}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{attrib}
+\usepackage{algorithm}
+\usepackage{mathtools}
+\usepackage[binary-units]{siunitx}
+\usepackage[chapter]{minted}
+\usepackage[font=small,labelfont=bf,format=plain]{caption}
+\usepackage{subcaption}
+\usepackage{paralist}
+\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
+            dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[bookmarks,hidelinks]{hyperref}
+\usepackage[noabbrev,capitalise]{cleveref}
+
+\addtokomafont{chapter}{\mdseries}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\addtokomafont{pageheadfoot}{\itshape}
+% section numbering up to subsection
+\setcounter{secnumdepth}{2}
+% hyperlinks
+\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
+
+\addbibresource{Bibliography.bib}
+\pagestyle{headings}
+
+\usemintedstyle{tango}
+\newminted{cpp}{fontfamily=jkptt, fontsize=\small}
+\newminted{erlang}{fontfamily=jkptt, fontsize=\small}
+\newminted{bash}{fontfamily=jkptt, fontsize=\small}
+\newmint{erlang}{fontfamily=jkptt}
+
+\DeclareFloatVCode{ruleabove}%
+    {{\color{black}\par\rule\hsize{0.75pt}\vskip4pt\par}}
+\DeclareFloatVCode{rulebelow}%
+    {{\color{black}\par\vspace{-20pt}\rule\hsize{0.75pt}\vskip10pt\par}}
+\floatsetup[listing]{
+    style=plain,
+    frameset={\fboxsep6pt}
+    capposition=bottom,
+    precode=ruleabove,
+    midcode=rulebelow
+}
+
+\sisetup{detect-all}
+
+% custom commands
+\newlength{\smallbaselineskip}
+\setlength{\smallbaselineskip}{13.6pt}
