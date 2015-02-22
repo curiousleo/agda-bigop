@@ -13,7 +13,7 @@ module Prototypes.SimpleProofs where
   open import Relation.Binary.PropositionalEquality
   open import Relation.Nullary.Decidable hiding (map)
 
-  module Proof1 where
+  module GaussFormula where
 
     bigop : ℕ → Bigop
     bigop = finSumBigop
@@ -21,19 +21,21 @@ module Prototypes.SimpleProofs where
     expr : ℕ → ℕ
     expr n = (bigop n) ⟦ toℕ ⟧
 
-    proof : (n : ℕ) → expr (suc n) ≡ (n * (suc n)) div 2
+    proof : (n : ℕ) → 2 * expr (suc n) ≡ n * (suc n)
     proof zero = refl
     proof (suc n) =
       begin
-        expr (suc (suc n))
-          ≡⟨ lemma₀ {suc n} ⟩
-        (suc n) + expr (suc n)
-          ≡⟨ cong (_+_ (suc n)) (proof n) ⟩
-        (suc n) + (n * suc n) div 2
-          ≡⟨ lemma₁ {suc n} {n * suc n} ⟩
-        ((suc n) + (suc n) + (n * suc n)) div 2
-          ≡⟨ cong (divBy 2 {tt}) lemma₂ ⟩
-        ((suc n) * suc (suc n)) div 2
+        2 * expr (suc (suc n))
+          ≡⟨ cong (_*_ 2) (lemma {suc n}) ⟩
+        2 * ((suc n) + expr (suc n))
+          ≡⟨ distribˡ-*-+ 2 (suc n) (expr (suc n)) ⟩
+        2 * (suc n) + 2 * expr (suc n)
+          ≡⟨ cong (_+_ (2 * suc n)) (proof n) ⟩
+        2 * (suc n) + n * suc n
+          ≡⟨ sym (distribʳ-*-+ (suc n) 2 n) ⟩
+        (2 + n) * (suc n)
+          ≡⟨ *-comm (suc (suc n)) (suc n) ⟩
+        (suc n) * suc (suc n)
       ∎
       where
         open ≡-Reasoning
@@ -44,6 +46,14 @@ module Prototypes.SimpleProofs where
         m : ℕ
         m = suc n
 
+        distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
+        distribˡ-*-+ m n o
+          rewrite
+            *-comm m n
+          | *-comm m o
+          | sym (distribʳ-*-+ m n o)
+          | *-comm (n + o) m = refl
+
         OpS = (bigop (suc m))
         Op = (bigop m)
         open BigopLemmas OpS
@@ -53,9 +63,9 @@ module Prototypes.SimpleProofs where
 
         open import Data.Vec.Properties
 
-        lemma₀ : ∀ {m} → expr (suc m) ≡ m + expr m
-        lemma₀ {zero} = refl
-        lemma₀ {suc m}
+        lemma : ∀ {m} → expr (suc m) ≡ m + expr m
+        lemma {zero} = refl
+        lemma {suc m}
           rewrite
             sym (tabulate-∘ {m} toℕ Data.Fin.suc)
           | sym (tabulate-∘ {m} toℕ (Data.Fin.suc ∘ suc))
@@ -74,18 +84,6 @@ module Prototypes.SimpleProofs where
               | +-comm (f 0) m
               | sym (assoc m (f 0) (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
               = refl
-
-        lemma₁ : ∀ {i j} → i + j div 2 ≡ (i + i + j) div 2
-        lemma₁ {i} {j} = {!!}
-          where
-            lem₀ : i ≡ (i + i) div 2
-            lem₀ = {!!}
-
-        lemma₂ : (suc n) + (suc n) + (n * suc n) ≡ (suc n) * suc (suc n)
-        lemma₂ = {!!}
-
-        divBy : (divisor : ℕ) {≢0 : False (divisor ≟ 0)} (dividend : ℕ) → ℕ
-        divBy n {≢0} m = _div_ m n {≢0}
 
   open import Prototypes.Matrix
 
