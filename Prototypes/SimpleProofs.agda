@@ -43,6 +43,8 @@ module Prototypes.SimpleProofs where
 
         open import Data.Vec.Properties
 
+        -- TODO: express this in terms of `Sum-lemma`
+
         lemma : ∀ {m} → expr (suc m) ≡ m + expr m
         lemma {zero} = refl
         lemma {suc m}
