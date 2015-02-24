@@ -2,8 +2,9 @@ module Prototypes.BigopBijection where
 
 --  open import Primitive hiding (suc)
 
-  open import Function.Bijection renaming (_∘_ to _∘B_)
-  open import Function.Surjection hiding (_∘_)
+  open import Function.Bijection renaming (_∘_ to _∘B_; id to idB)
+  open import Function.Surjection hiding (_∘_; id)
+  open import Function using (id; _∘_)
   open import Data.Nat renaming (_+_ to _N+_ ; _≤_ to _N≤_ ; _≥_ to _N≥_ ; _≤?_ to _N≤?_)
   import Level as L
   open import Data.Fin
@@ -12,7 +13,9 @@ module Prototypes.BigopBijection where
   open import Relation.Binary.Core using (_≡_)
   import Function as Fun
   import Data.Bool as Bool
+  open import Data.Nat.Properties.Simple
   open import Data.Vec
+  open import Data.Vec.Properties
   open import Data.Sum hiding (map)
   open import Relation.Nullary using (¬_)
   open import Function.Equality using (_⟨$⟩_)
@@ -80,8 +83,8 @@ module Prototypes.BigopBijection where
             where
               right-inv = λ x → P.refl
 
-  finSumBigop : (n : ℕ) → Bigop
-  finSumBigop n = record
+  Sum : (n : ℕ) → Bigop
+  Sum n = record
     { size = n ; Index = Fin n ; Result = ℕ
     ; index = FinFinType ; ε = zero ; _·_ = _N+_ ; cmon = cmon
     }
@@ -98,8 +101,8 @@ module Prototypes.BigopBijection where
         ; comm = +-comm
         }
 
-  finProdBigop : (n : ℕ) → Bigop
-  finProdBigop n = record
+  Product : (n : ℕ) → Bigop
+  Product n = record
     { size = n ; Index = Fin n ; Result = ℕ
     ; index = FinFinType ; ε = 1 ; _·_ = _*_ ; cmon = cmon
     }
@@ -121,7 +124,6 @@ module Prototypes.BigopBijection where
     import Algebra.FunctionProperties as FP
     open FP {A = Result} _≡_ hiding (Op₂)
     open import Data.Nat
-    open import Data.Nat.Properties.Simple
     open import Data.Product hiding (map)
     open import Relation.Binary.PropositionalEquality
     open import Algebra
@@ -141,6 +143,30 @@ module Prototypes.BigopBijection where
 
     comm : Commutative _·_
     comm = IsCommutativeMonoid.comm cmon
+{-
+    tabulateʳ : ∀ {n} (f : Fin (suc n) → Result) → last (tabulate {suc n} f) ≡ f (fromℕ n)
+    tabulateʳ {zero} f = refl
+    tabulateʳ {suc n} f = {!!}
+-}
+
+    replicate-tabulate : ∀ {n a b c} {A : Set a} {B : Set b} {C : Set c}
+                          (f : B → C) (g : A → B) (h : Fin n → A) →
+                          replicate f ⊛ tabulate (g ∘ h) ≡ replicate (f ∘ g) ⊛ tabulate h
+    replicate-tabulate {zero} f g h = refl
+    replicate-tabulate {suc n} f g h
+      rewrite
+        replicate-tabulate f g (h ∘ suc) = refl
+
+    foldl-elim : ∀ {a b c} {A : Set a} {B : ℕ → Set b}
+                 (P : ∀ {n} → Vec A n → B n → Set c)
+                 {f : ∀ {n} → B n → A → B (1 N+ n)} {z : B 0} →
+                 P [] z →
+                 (∀ {n x′ z′} {xs′ : Vec A n} → P xs′ z′ → P (xs′ ∷ʳ x′)
+                                                             (f z′ x′)) →
+                 ∀ {n} (xs : Vec A n) → P xs (foldl B f z xs)
+    foldl-elim _ Pz _  []       = Pz
+    foldl-elim P Pz Ps (x ∷ xs) =
+      foldl-elim (λ xs′ → P (x ∷ xs′)) (Ps Pz) Ps xs
 
     foldr· : ∀ {m : ℕ} → Result → Vec Result m → Result
     foldr· = foldr (λ _ → Result) _·_
@@ -253,6 +279,38 @@ module Prototypes.BigopBijection where
     where
       open Bigop o
       open BigopLemmas o
+
+  Sum-lemma : ∀ {n} (f : ℕ → ℕ) →
+              (Sum n) ⟦ suc ∘ f ∘ toℕ ⟧ ≡ n N+ (Sum n) ⟦ f ∘ toℕ ⟧
+  Sum-lemma {zero} f = P.refl
+  Sum-lemma {suc n} f
+    rewrite
+      P.sym (tabulate-∘ {n} (f ∘ toℕ) suc)
+    | P.sym (tabulate-∘ {n} (Data.Nat.suc ∘ f ∘ toℕ) suc)
+    | P.sym (+-assoc n (f 0) (foldr (λ _ → ℕ) {n} _N+_ 0 (tabulate (f ∘ Data.Nat.suc ∘ toℕ))))
+    | +-comm n (f 0)
+    | +-assoc (f 0) n (foldr (λ _ → ℕ) {n} _N+_ 0 (tabulate (f ∘ Data.Nat.suc ∘ toℕ)))
+    | tabulate-∘ {n} (Data.Nat.suc ∘ f ∘ Data.Nat.suc ∘ toℕ) id
+    | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ toℕ) id
+    | Sum-lemma {n} (f ∘ Data.Nat.suc)
+    = P.refl -- P.cong suc (P.cong (_N+_ (f 0)) (Sum-lemma {n} (f ∘ Data.Nat.suc)))
+
+  Sum-lemma′ : ∀ {n} (f : ℕ → ℕ) →
+               (Sum (suc n)) ⟦ f ∘ toℕ ⟧ ≡ (f n) N+ (Sum n) ⟦ f ∘ toℕ ⟧
+  Sum-lemma′ {zero} f = P.refl
+  Sum-lemma′ {suc n} f
+    rewrite
+      P.refl
+    | P.sym (tabulate-∘ {n} (f ∘ toℕ) (Data.Fin.suc ∘ suc))
+    | P.sym (tabulate-∘ {n} (f ∘ toℕ) Data.Fin.suc)
+    | P.sym (+-assoc (f 0) (f 1) (foldr (λ _ → ℕ) {n} _N+_ 0 (tabulate (f ∘ Data.Nat.suc ∘ Data.Nat.suc ∘ toℕ))))
+    | +-comm (f 0) (f 1)
+    | +-assoc (f 1) (f 0) (foldr (λ _ → ℕ) {n} _N+_ 0 (tabulate (f ∘ Data.Nat.suc ∘ Data.Nat.suc ∘ toℕ)))
+    | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ Data.Nat.suc ∘ toℕ) id
+    | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ toℕ) id
+    | P.sym (Sum-lemma′ {n} (f ∘ Data.Nat.suc))
+    = {!Sum-lemma {n} f!}
+
 
 {-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →
