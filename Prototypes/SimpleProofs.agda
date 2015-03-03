@@ -17,16 +17,16 @@ module Prototypes.SimpleProofs where
     expr : ℕ → ℕ
     expr n = (Sum n) ⟦ toℕ ⟧
 
-    proof : (n : ℕ) → 2 * expr (suc n) ≡ n * (suc n)
+    proof : (n : ℕ) → 2 * expr (1 + n) ≡ n * (1 + n)
     proof zero = refl
     proof (suc n) =
       begin
-        2 * expr (suc (suc n))         ≡⟨ cong (_*_ 2) (lemma {suc n}) ⟩
-        2 * ((suc n) + expr (suc n))   ≡⟨ distribˡ-*-+ 2 (suc n) (expr (suc n)) ⟩
-        2 * (suc n) + 2 * expr (suc n) ≡⟨ cong (_+_ (2 * suc n)) (proof n) ⟩
-        2 * (suc n) + n * suc n        ≡⟨ sym (distribʳ-*-+ (suc n) 2 n) ⟩
-        (2 + n) * (suc n)              ≡⟨ *-comm (2 + n) (suc n) ⟩
-        (suc n) * suc (suc n)
+        2 * expr (2 + n)               ≡⟨ cong (_*_ 2) lemma ⟩
+        2 * ((1 + n) + expr (1 + n))   ≡⟨ distribˡ-*-+ 2 (1 + n) (expr (1 + n)) ⟩
+        2 * (1 + n) + 2 * expr (1 + n) ≡⟨ cong (_+_ (2 * (1 + n))) (proof n) ⟩
+        2 * (1 + n) + n * (1 + n)      ≡⟨ sym (distribʳ-*-+ (1 + n) 2 n) ⟩
+        (2 + n) * (1 + n)              ≡⟨ *-comm (2 + n) (1 + n) ⟩
+        (1 + n) * (2 + n)
       ∎
       where
         open ≡-Reasoning
