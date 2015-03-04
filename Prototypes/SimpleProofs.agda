@@ -105,7 +105,11 @@ module Prototypes.SimpleProofs where
         sum (map (λ k → A [ i , k ] * sum (map (λ l → B [ k , l ] * C [ l , j ])
                                                (allFin r)))
                  (allFin q))
-          ≡⟨ {!!} ⟩
+          ≡⟨ {!sym distr!} ⟩
+        sum (map (λ k → sum (map (_*_ (A [ i , k ])) (map (λ l → B [ k , l ] * C [ l , j ])
+                                                          (allFin r))))
+                 (allFin q))
+          ≡⟨ {!map-∘!} ⟩
         sum (map (λ k → sum (map (λ l → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
                                  (allFin r)))
                  (allFin q))
@@ -117,13 +121,25 @@ module Prototypes.SimpleProofs where
                  (allFin r))
           ≡⟨ refl ⟩
         (Sum r) ⟦ (λ l → ((Sum q) ⟦ (λ k → A [ i , k ] * (B [ k , l ] * C [ l , j ])) ⟧)) ⟧
-          ≡⟨ {!!} ⟩
+          ≡⟨ {!*-assoc!} ⟩
         sum (map (λ l → sum (map (λ k → (A [ i , k ] * B [ k , l ]) * C [ l , j ])
                                  (allFin q)))
                  (allFin r))
           ≡⟨ refl ⟩
         (Sum r) ⟦ (λ l → ((Sum q) ⟦ (λ k → (A [ i , k ] * B [ k , l ]) * C [ l , j ]) ⟧)) ⟧
           ≡⟨ {!!} ⟩
+        sum (map (λ l → sum (map (λ k → C [ l , j ] * (A [ i , k ] * B [ k , l ]))
+                                 (allFin q)))
+                 (allFin r))
+          ≡⟨ ? ⟩
+        sum (map (λ l → sum (map (_*_ (C [ l , j ])) (map (λ k → C [ l , j ] * (A [ i , k ] * B [ k , l ]))
+                                                          (allFin q))))
+                 (allFin r))
+          ≡⟨ {!distr!} ⟩
+        sum (map (λ l → C [ l , j ] * sum (map (λ k → C [ l , j ] * (A [ i , k ] * B [ k , l ]))
+                                               (allFin q)))
+                 (allFin r))
+          ≡⟨ {!*-comm!} ⟩
         sum (map (λ l → sum (map (λ k → A [ i , k ] * B [ k , l ])
                                  (allFin q))
                         * C [ l , j ])
