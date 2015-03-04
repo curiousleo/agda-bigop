@@ -76,6 +76,9 @@ module Prototypes.SimpleProofs where
 
 --  syntax innerSum ⟦ (λ x → e) ⟧ = Σ x 〖 e 〗 -- or ⨁
 
+    open import Data.Vec
+    open import Data.Vec.Properties
+
     A×〈B×C〉 : Fin p → Fin s → ℕ
     A×〈B×C〉 = λ i j → (Sum q)
       ⟦ (λ k → A [ i , k ] * ((Sum r)
@@ -96,7 +99,38 @@ module Prototypes.SimpleProofs where
     eq {i} {j} =
       begin
         A×〈B×C〉 i j
+          ≡⟨ refl ⟩
+        (Sum q) ⟦ (λ k → A [ i , k ] * ((Sum r) ⟦ (λ l → B [ k , l ] * C [ l , j ]) ⟧)) ⟧
+          ≡⟨ refl ⟩
+        sum (map (λ k → A [ i , k ] * sum (map (λ l → B [ k , l ] * C [ l , j ])
+                                               (allFin r)))
+                 (allFin q))
           ≡⟨ {!!} ⟩
+        sum (map (λ k → sum (map (λ l → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
+                                 (allFin r)))
+                 (allFin q))
+          ≡⟨ refl ⟩
+        (Sum q) ⟦ (λ k → ((Sum r) ⟦ (λ l → A [ i , k ] * (B [ k , l ] * C [ l , j ])) ⟧)) ⟧
+          ≡⟨ {!!} ⟩
+        sum (map (λ l → sum (map (λ k → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
+                                 (allFin q)))
+                 (allFin r))
+          ≡⟨ refl ⟩
+        (Sum r) ⟦ (λ l → ((Sum q) ⟦ (λ k → A [ i , k ] * (B [ k , l ] * C [ l , j ])) ⟧)) ⟧
+          ≡⟨ {!!} ⟩
+        sum (map (λ l → sum (map (λ k → (A [ i , k ] * B [ k , l ]) * C [ l , j ])
+                                 (allFin q)))
+                 (allFin r))
+          ≡⟨ refl ⟩
+        (Sum r) ⟦ (λ l → ((Sum q) ⟦ (λ k → (A [ i , k ] * B [ k , l ]) * C [ l , j ]) ⟧)) ⟧
+          ≡⟨ {!!} ⟩
+        sum (map (λ l → sum (map (λ k → A [ i , k ] * B [ k , l ])
+                                 (allFin q))
+                        * C [ l , j ])
+                 (allFin r))
+          ≡⟨ refl ⟩
+        (Sum r) ⟦ (λ l → ((Sum q) ⟦ (λ k → (A [ i , k ] * B [ k , l ])) ⟧ * C [ l , j ])) ⟧
+          ≡⟨ refl ⟩
         〈A×B〉×C i j
 {-
         Σ k 〖 A [ i , k ] * Σ l 〖 B [ k , l ] * C [ l , j ] 〗 〗
