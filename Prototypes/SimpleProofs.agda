@@ -9,8 +9,19 @@ module Prototypes.SimpleProofs where
   open import Data.Fin hiding (_+_)
   open import Data.Unit.Base
 
+  open import Function using (_∘_)
+
   open import Relation.Binary.PropositionalEquality
   open import Relation.Nullary.Decidable hiding (map)
+
+
+  distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
+  distribˡ-*-+ m n o
+    rewrite
+      *-comm m n
+    | *-comm m o
+    | sym (distribʳ-*-+ m n o)
+    | *-comm (n + o) m = refl
 
   module GaussFormula where
 
@@ -31,15 +42,6 @@ module Prototypes.SimpleProofs where
       where
         open ≡-Reasoning
         open import Data.Vec
-        open import Function using (_∘_)
-
-        distribˡ-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
-        distribˡ-*-+ m n o
-          rewrite
-            *-comm m n
-          | *-comm m o
-          | sym (distribʳ-*-+ m n o)
-          | *-comm (n + o) m = refl
 
         open import Data.Vec.Properties
 
