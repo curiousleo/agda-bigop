@@ -155,3 +155,19 @@ module Prototypes.BigopFold where
       where open EqR setoid
     ... | yes p | no ¬p′ = ∈ʳ-lemma is i′ i∈P′
     ... | no ¬p | _ = ⊥-elim (¬p i∈P′)
+
+
+  module SumFoldLemmas
+         {ℓ} (f : ℕ → ℕ) {P′ : Pred ℕ ℓ} (P : Decidable P′) where
+
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Algebra using (CommutativeSemiring)
+    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
+
+    open MonoidFoldLemmas +-monoid id (const $ yes tt)
+    open ListLemmas
+
+    open Monoid +-monoid using (identity)
+
+    last-lemma : ∀ {n} → sumAll f (0… (suc n)) ≈ sumAll f (0… n) + f n
+    last-lemma = ?
