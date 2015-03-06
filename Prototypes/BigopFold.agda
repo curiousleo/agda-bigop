@@ -128,12 +128,11 @@ module Prototypes.BigopFold where
 
 
   module MonoidFoldLemmas
-         {i r ℓ₀ ℓ₁ ℓ₂} {I′ : Setoid i ℓ₀} (M : Monoid r ℓ₁)
-         (f : Setoid.Carrier I′ → Monoid.Carrier M)
-         {P′ : Pred (Setoid.Carrier I′) ℓ₂} (P : Decidable P′) where
+         {i r ℓ₁ ℓ₂} {I : Set i} (M : Monoid r ℓ₁)
+         (f : I → Monoid.Carrier M)
+         {P′ : Pred I ℓ₂} (P : Decidable P′) where
 
     open Monoid M renaming (Carrier to R)
-    open Setoid I′ renaming (Carrier to I; _≈_ to _≈I_; sym to symI; refl to reflI)
 
     ∈ʳ-lemma : ∀ {n} (is : Vec I n) (i : I) →
                i ∈ P′ → fold f _∙_ P ε (is ∷ʳ i) ≈ fold f _∙_ P ε is ∙ f i
