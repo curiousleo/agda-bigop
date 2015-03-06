@@ -6,20 +6,22 @@ module Prototypes.BigopFold where
   open import Relation.Nullary
   open import Relation.Unary
   open import Relation.Binary hiding (Decidable)
-  open import Relation.Binary.PropositionalEquality
+  import Relation.Binary.EqReasoning as EqR
 
   open import Data.Empty
-  open import Data.Product
+  open import Data.Unit.Base
+  open import Data.Product hiding (map)
   open import Data.Nat hiding (fold)
   open import Data.Vec hiding (_∈_; sum)
 
   open import Function
+  import Function.Equality as FEq
 
-  open import Level renaming (zero to zeroL)
+  open import Level renaming (zero to zeroL; suc to sucL)
 
   open import Algebra
   open import Algebra.Structures
-  open import Algebra.FunctionProperties.Core using (Op₂)
+  open import Algebra.FunctionProperties
 
   fold : ∀ {i r ℓ} {I : Set i} {R : Set r} {n} →
          (I → R) → Op₂ R → {P′ : Pred I ℓ} → Decidable P′ → R → Vec I n → R
@@ -30,20 +32,46 @@ module Prototypes.BigopFold where
       ... | yes _ = f i ∙ acc
       ... | no  _ = acc
 
-  sum : ∀ {i ℓ} {I : Set i} {n} →
-        (I → ℕ) → {P′ : Pred I ℓ} → Decidable P′ → Vec I n → ℕ
-  sum f p = fold f _+_ p 0
-
   prod : ∀ {i ℓ} {I : Set i} {n} →
          (I → ℕ) → {P′ : Pred I ℓ} → Decidable P′ → Vec I n → ℕ
   prod f p = fold f _*_ p 1
 
-  syntax sum (λ x → e) p = ∑ x ∈ p [ e ]
+  sum : ∀ {i ℓ} {I : Set i} {n} →
+        (I → ℕ) → {P′ : Pred I ℓ} → Decidable P′ → Vec I n → ℕ
+  sum f p = fold f _+_ p 0
+
+  syntax sum (λ x → e) p v = Σ[ x ≔ v ∣ p ] e
+
+  sumAll : ∀ {i} {I : Set i} {n} →
+           (I → ℕ) → Vec I n → ℕ
+  sumAll f = sum f {const ⊤} (const $ yes tt)
+
+  syntax sumAll (λ x → e) v = Σ[ x ≔ v ] e
+
+  0… : (n : ℕ) → Vec ℕ n
+  0… zero    = []
+  0… (suc n) = 0 ∷ map suc (0… n)
+
+  module ListLemmas where
+
+    open import Relation.Binary.PropositionalEquality
+
+    postulate
+      pickʳ-lemma : ∀ n → 0… (suc n) ≡ 0… n ∷ʳ n
+{-
+    pickʳ-lemma : ∀ n → 0… (suc n) ≡ 0… n ∷ʳ n
+    pickʳ-lemma zero = refl
+    pickʳ-lemma (suc n) = {!!}
+-}
 
   module FoldLemmas
          {i r ℓ} {I : Set i} {R : Set r}
          (f : I → R) (_∙_ : Op₂ R) {P′ : Pred I ℓ}
          (P : Decidable P′) (ε : R) where
+
+    open ListLemmas
+
+    open import Relation.Binary.PropositionalEquality
 
     empty-lemma : ∀ {n} (is : Vec I n) → Empty P′ → fold f _∙_ P ε is ≡ ε
     empty-lemma []       e = refl
@@ -51,70 +79,82 @@ module Prototypes.BigopFold where
     ... | yes p = ⊥-elim (e i p)
     ... | no ¬p = empty-lemma is e
 
-    ∈-lemma : ∀ {n} (i : I) (is : Vec I n) →
-              i ∈ P′ → fold f _∙_ P ε (i ∷ is) ≡ f i ∙ fold f _∙_ P ε is
-    ∈-lemma i is i∈P′ with P i
+    ∈ˡ-lemma : ∀ {n} (i : I) (is : Vec I n) →
+               i ∈ P′ → fold f _∙_ P ε (i ∷ is) ≡ f i ∙ fold f _∙_ P ε is
+    ∈ˡ-lemma i is i∈P′ with P i
     ... | yes p = refl
     ... | no ¬p = ⊥-elim (¬p i∈P′)
 
-    ∉-lemma : ∀ {n} (i : I) (is : Vec I n) →
-              i ∉ P′ → fold f _∙_ P ε (i ∷ is) ≡ fold f _∙_ P ε is
-    ∉-lemma i is i∉P′ with P i
+    ∉ˡ-lemma : ∀ {n} (i : I) (is : Vec I n) →
+               i ∉ P′ → fold f _∙_ P ε (i ∷ is) ≡ fold f _∙_ P ε is
+    ∉ˡ-lemma i is i∉P′ with P i
     ... | yes p = ⊥-elim (i∉P′ p)
     ... | no ¬p = refl
+
+    ∈ʳ-lemma : ∀ {n} (is : Vec I n) (i : I) → Associative _≡_ _∙_ → Commutative _≡_ _∙_ →
+               i ∈ P′ → fold f _∙_ P ε (is ∷ʳ i) ≡ fold f _∙_ P ε is ∙ f i
+    ∈ʳ-lemma [] i assoc comm i∈P′ with P i
+    ... | yes p = comm (f i) ε
+    ... | no ¬p = ⊥-elim (¬p i∈P′)
+    ∈ʳ-lemma (i ∷ is) i′ assoc comm i∈P′ with P i′ | P i
+    ... | yes p | yes p′ =
+      begin
+        f i ∙ fold f _∙_ P ε (is ∷ʳ i′)
+          ≡⟨ cong (_∙_ (f i)) (∈ʳ-lemma is i′ assoc comm i∈P′) ⟩
+        f i ∙ (fold f _∙_ P ε is ∙ f i′)
+          ≡⟨ sym (assoc (f i) (fold f _∙_ P ε is) (f i′)) ⟩
+        (f i ∙ fold f _∙_ P ε is) ∙ f i′
+      ∎
+      where
+        open ≡-Reasoning
+    ... | yes p | no ¬p′ = ∈ʳ-lemma is i′ assoc comm i∈P′
+    ... | no ¬p | _ = ⊥-elim (¬p i∈P′)
 
   module PQFoldLemmas
          {i r ℓ} {I : Set i} {R : Set r} (f : I → R) (_∙_ : Op₂ R)
          {P′ : Pred I ℓ} (P : Decidable P′)
          {Q′ : Pred I ℓ} (Q : Decidable Q′) (ε : R) where
 
-    pred-lemma : ∀ {n} (is : Vec I n) →
-                 P′ ⊆ Q′ → P′ ⊇ Q′ → fold f _∙_ P ε is ≡ fold f _∙_ Q ε is
-    pred-lemma []       _   _   = refl
-    pred-lemma (i ∷ is) P⊆Q P⊇Q with P i | Q i
-    ... | yes p | yes q = cong (_∙_ (f i)) (pred-lemma is P⊆Q P⊇Q)
-    ... | no ¬p | no ¬q = pred-lemma is P⊆Q P⊇Q
+    open import Relation.Binary.PropositionalEquality
+
+    pq-lemma : ∀ {n} (is : Vec I n) →
+               P′ ⊆ Q′ → P′ ⊇ Q′ → fold f _∙_ P ε is ≡ fold f _∙_ Q ε is
+    pq-lemma []       _   _   = refl
+    pq-lemma (i ∷ is) P⊆Q P⊇Q with P i | Q i
+    ... | yes p | yes q = cong (_∙_ (f i)) (pq-lemma is P⊆Q P⊇Q)
+    ... | no ¬p | no ¬q = pq-lemma is P⊆Q P⊇Q
     ... | yes p | no ¬q = ⊥-elim (¬q (P⊆Q p))
     ... | no ¬p | yes q = ⊥-elim (¬p (P⊇Q q))
 
 
-  module SemigroupFoldLemmas
-         {i r ℓ₁ ℓ₂} {I : Set i} (S : Semigroup r ℓ₁)
-         (f : I → Semigroup.Carrier S)
-         {P′ : Pred I ℓ₂} (P : Decidable P′)
-         (ε : Semigroup.Carrier S) where
-
-    open Semigroup S hiding (refl)
-
-    open FoldLemmas f _∙_ P ε
-
-
   module MonoidFoldLemmas
-         {i r ℓ₁ ℓ₂} {I : Set i} (M : Monoid r ℓ₁)
-         (f : I → Monoid.Carrier M)
-         {P′ : Pred I ℓ₂} (P : Decidable P′) where
+         {i r ℓ₀ ℓ₁ ℓ₂} {I′ : Setoid i ℓ₀} (M : Monoid r ℓ₁)
+         (f : Setoid.Carrier I′ → Monoid.Carrier M)
+         {P′ : Pred (Setoid.Carrier I′) ℓ₂} (P : Decidable P′)
+         (∙-cong₂ : ∀ {x y u v} → Monoid._≈_ M x y → Monoid._≈_ M u v →
+                    (Monoid._≈_ M) (Monoid._∙_ M x u) (Monoid._∙_ M y v)) where
 
-    open Monoid M
+    open Monoid M renaming (Carrier to R)
+    open Setoid I′ renaming (Carrier to I; _≈_ to _≈I_; sym to symI; refl to reflI)
 
-    open SemigroupFoldLemmas semigroup f P ε
-
-
-  module CommutativeMonoidFoldLemmas
-         {i r ℓ₁ ℓ₂} {I : Set i} (M : CommutativeMonoid r ℓ₁)
-         (f : I → CommutativeMonoid.Carrier M)
-         {P′ : Pred I ℓ₂} (P : Decidable P′) where
-
-    open CommutativeMonoid M
-
-    open MonoidFoldLemmas monoid f P
-
-
-  module NearSemiringFoldLemmas
-         {i r ℓ₁ ℓ₂} {I : Set i} (S : NearSemiring r ℓ₁)
-         (f : I → NearSemiring.Carrier S)
-         {P′ : Pred I ℓ₂} (P : Decidable P′) where
-
-    open NearSemiring S
-
-    open MonoidFoldLemmas +-monoid f P
-    open SemigroupFoldLemmas *-semigroup f P 0#
+    ∈ʳ-lemma : ∀ {n} (is : Vec I n) (i : I) →
+               i ∈ P′ → fold f _∙_ P ε (is ∷ʳ i) ≈ fold f _∙_ P ε is ∙ f i
+    ∈ʳ-lemma [] i i∈P′ with P i
+    ... | yes p =
+      begin
+        f i ∙ ε                           ≈⟨ proj₂ identity $ f i ⟩
+        f i                               ≈⟨ sym $ proj₁ identity $ f i ⟩
+        ε ∙ f i
+      ∎
+      where open EqR setoid
+    ... | no ¬p = ⊥-elim (¬p i∈P′)
+    ∈ʳ-lemma (i ∷ is) i′ i∈P′ with P i′ | P i
+    ... | yes p | yes p′ =
+      begin
+        f i ∙ fold f _∙_ P ε (is ∷ʳ i′)   ≈⟨ ∙-cong₂ refl (∈ʳ-lemma is i′ i∈P′) ⟩
+        f i ∙ (fold f _∙_ P ε is ∙ f i′)  ≈⟨ sym (assoc (f i) (fold f _∙_ P ε is) (f i′)) ⟩
+        (f i ∙ fold f _∙_ P ε is) ∙ f i′
+      ∎
+      where open EqR setoid
+    ... | yes p | no ¬p′ = ∈ʳ-lemma is i′ i∈P′
+    ... | no ¬p | _ = ⊥-elim (¬p i∈P′)
