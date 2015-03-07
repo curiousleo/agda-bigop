@@ -49,3 +49,33 @@ module Prototypes.BigopFoldProofs where
 
         lemma₀ : Σ[ x ← 0… (suc (suc n)) $ x ] ≡ Σ[ x ← 0… (suc n) $ x ] + suc n
         lemma₀ = {!!} -- rewrite ∈ʳ-lemma (0… (suc n)) (suc (suc n)) tt = {!!}
+
+  open import Prototypes.Matrix hiding (lookup; tabulate)
+  open import Data.Fin
+
+  module MatrixAssoc {p q r s}
+         (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
+
+    0… = fromZeroFin
+
+    A×[B×C] : Fin p → Fin s → ℕ
+    A×[B×C] i j = Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
+
+    [A×B]×C : Fin p → Fin s → ℕ
+    [A×B]×C i j = Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
+
+    proof : ∀ {i j} → A×[B×C] i j ≡ [A×B]×C i j
+    proof {i} {j} =
+      begin
+        Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
+          ≡⟨ {!Σ[ x ← fromZeroℕ q ] x * x!} ⟩
+        Σ[ k ← 0… q $ Σ[ l ← 0… r $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
+          ≡⟨ {!!} ⟩
+        Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
+          ≡⟨ {!!} ⟩
+        Σ[ l ← 0… r $ Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ] ]
+          ≡⟨ {!!} ⟩
+        Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
+      ∎
+      where
+        open P.≡-Reasoning
