@@ -11,6 +11,7 @@ module Prototypes.BigopFold where
   open import Data.Empty
   open import Data.Unit.Base
   open import Data.Product hiding (map)
+  open import Data.Fin hiding (_+_; fold)
   open import Data.Nat hiding (fold)
   open import Data.Vec hiding (_∈_; sum)
 
@@ -48,16 +49,20 @@ module Prototypes.BigopFold where
 
   syntax sumAll (λ x → e) v = Σ[ x ≔ v ] e
 
-  0… : (n : ℕ) → Vec ℕ n
-  0… zero    = []
-  0… (suc n) = 0 ∷ map suc (0… n)
+  fromZeroℕ : (n : ℕ) → Vec ℕ n
+  fromZeroℕ zero    = []
+  fromZeroℕ (suc n) = zero ∷ map suc (fromZeroℕ n)
+
+  fromZeroFin : (n : ℕ) → Vec (Fin n) n
+  fromZeroFin zero = []
+  fromZeroFin (suc n) = zero ∷ map suc (fromZeroFin n)
 
   module ListLemmas where
 
     open import Relation.Binary.PropositionalEquality
 
     postulate
-      pickʳ-lemma : ∀ n → 0… (suc n) ≡ 0… n ∷ʳ n
+      pickʳ-lemma : ∀ n → fromZeroℕ (suc n) ≡ fromZeroℕ n ∷ʳ n
 {-
     pickʳ-lemma : ∀ n → 0… (suc n) ≡ 0… n ∷ʳ n
     pickʳ-lemma zero = refl
@@ -169,5 +174,11 @@ module Prototypes.BigopFold where
 
     open Monoid +-monoid using (identity)
 
-    last-lemma : ∀ {n} → sumAll f (0… (suc n)) ≈ sumAll f (0… n) + f n
-    last-lemma = ?
+--    suc-lemma : ∀ {n} → sumAll (f ∘ suc) (0… n) ≈ sumAll f (0… n) +
+
+    postulate
+      last-lemma : ∀ {n} → sumAll f (fromZeroℕ (suc n)) ≈ sumAll f (fromZeroℕ n) + f n
+
+--    last-lemma : ∀ {n} → sumAll f (0… (suc n)) ≈ sumAll f (0… n) + f n
+--    last-lemma {zero} = proj₂ identity (f zero)
+--    last-lemma {n} = {!sumAll f (0 ∷ map suc (0… n))!}
