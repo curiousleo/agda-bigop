@@ -41,13 +41,13 @@ module Prototypes.BigopFold where
         (I → ℕ) → {P′ : Pred I ℓ} → Decidable P′ → Vec I n → ℕ
   sum f p = fold f _+_ p 0
 
-  syntax sum (λ x → e) p v = Σ[ x ≔ v ∣ p ] e
+  syntax sum (λ x → e) p v = Σ[ x ← v ∣ p $ e ]
 
   sumAll : ∀ {i} {I : Set i} {n} →
            (I → ℕ) → Vec I n → ℕ
   sumAll f = sum f {const ⊤} (const $ yes tt)
 
-  syntax sumAll (λ x → e) v = Σ[ x ≔ v ] e
+  syntax sumAll (λ x → e) v = Σ[ x ← v $ e ]
 
   fromZeroℕ : (n : ℕ) → Vec ℕ n
   fromZeroℕ zero    = []
