@@ -89,22 +89,45 @@ module Prototypes.BigopFoldProofs where
     proof {i} {j} =
       begin
         Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
-          ≈⟨ Σ-cong (λ k → lemma₀ {k}) (0… q) ⟩
+          ≈⟨ Σ-cong lemma₀ (0… q) ⟩
         Σ[ k ← 0… q $ Σ[ l ← 0… r $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
-          ≈⟨ {!!} ⟩
+          ≈⟨ Σ-swap (λ k l → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
+                    (0… q) (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
-          ≈⟨ {!!} ⟩
+          ≈⟨ Σ-cong (λ l → Σ-cong (lemma₁ l) (0… q)) (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ] ]
-          ≈⟨ {!!} ⟩
+          ≈⟨ Σ-cong lemma₂ (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
       ∎
       where
         open EqR setoid
+        open import Data.Nat.Properties.Simple
 
-        lemma₀ : ∀ {k} →
-                 A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ≡
+        lemma₀ : ∀ k →
+                 A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ≈
                  Σ[ l ← 0… r $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ]
-        lemma₀ {k} = distribˡ-lemma (λ l → B [ k , l ] * C [ l , j ]) (A [ i , k ]) (0… r)
+        lemma₀ k = Σ-distr (λ l → B [ k , l ] * C [ l , j ])
+                           (A [ i , k ]) (0… r)
+
+        lemma₁ : ∀ l k →
+                 A [ i , k ] * (B [ k , l ] * C [ l , j ]) ≈
+                 (A [ i , k ] * B [ k , l ]) * C [ l , j ]
+        lemma₁ l k = sym $ *-assoc (A [ i , k ]) (B [ k , l ]) (C [ l , j ])
+
+        lemma₂ : ∀ l →
+                 Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ] ≈
+                 Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ]
+        lemma₂ l = begin
+          Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ]
+            ≈⟨ Σ-cong (λ k → *-comm (A [ i , k ] * B [ k , l ])
+                                    (C [ l , j ]))
+                      (0… q) ⟩
+          Σ[ k ← 0… q $ C [ l , j ] * (A [ i , k ] * B [ k , l ]) ]
+            ≈⟨ sym $ Σ-distr (λ k → A [ i , k ] * B [ k , l ])
+                             (C [ l , j ]) (0… q) ⟩
+          C [ l , j ] * Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ]
+            ≈⟨ *-comm (C [ l , j ]) _ ⟩
+          Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ∎
 
 {-
     proof′ : ∀ {i j} → A×[B×C] i j ≡ [A×B]×C i j
