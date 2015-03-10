@@ -181,10 +181,6 @@ module Prototypes.BigopFold where
 
     open EqR setoid
 
-    postulate
-      distribˡ-lemma : ∀ {m i} {I : Set i} (f : I → ℕ) (x : ℕ) (ns : Vec I m) →
-                       x * sumAll f ns ≈ sumAll ((_*_ x) ∘ f) ns
-
 {-
     filter-lemma : ∀ {ℓ i} {I : Set i} {n} (f : I → ℕ) (is : Vec I n)
                    {P′ : Pred I ℓ} (P : Decidable P′) →
@@ -195,23 +191,23 @@ module Prototypes.BigopFold where
     ... | no ¬p = filter-lemma f is P
 -}
 
-    Σ-cong : ∀ {i} {I : Set i} {n} (f g : I → ℕ) →
+    Σ-cong : ∀ {i} {I : Set i} {n} {f g : I → ℕ} →
              (∀ x → f x ≈ g x) → (is : Vec I n) →
              sumAll {n = n} f is ≈ sumAll g is
-    Σ-cong f g f≗g []       = refl
-    Σ-cong f g f≗g (i ∷ is) = begin
+    Σ-cong             f≗g []       = refl
+    Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
       f i + sumAll f is
-        ≈⟨ f≗g i ⟨ +-cong ⟩ Σ-cong f g f≗g is ⟩
+        ≈⟨ f≗g i ⟨ +-cong ⟩ Σ-cong {f = f} {g} f≗g is ⟩
       g i + sumAll g is ∎
 
     Σ-zero : ∀ {n} {i} {I : Set i} (xs : Vec I n) → sumAll (const 0) xs ≈ 0
     Σ-zero [] = refl
     Σ-zero (x ∷ xs) = Σ-zero xs
 
-    Σ-distr : ∀ {n} {i} {I : Set i} (f g : I → ℕ) (is : Vec I n) →
+    Σ-lift : ∀ {n} {i} {I : Set i} (f g : I → ℕ) (is : Vec I n) →
               sumAll f is + sumAll g is ≈ sumAll (λ i → f i + g i) is
-    Σ-distr f g [] = refl
-    Σ-distr f g (i ∷ is) = begin
+    Σ-lift f g [] = refl
+    Σ-lift f g (i ∷ is) = begin
       (f i + sumAll f is) + (g i + sumAll g is)
         ≈⟨ +-assoc (f i) (sumAll f is) (g i + sumAll g is) ⟩
       f i + (sumAll f is + (g i + sumAll g is))
@@ -230,34 +226,30 @@ module Prototypes.BigopFold where
           (g i + sumAll f is) + sumAll g is
             ≈⟨ +-assoc (g i) (sumAll f is) (sumAll g is) ⟩
           g i + (sumAll f is + sumAll g is)
-            ≈⟨ (refl {g i}) ⟨ +-cong ⟩ Σ-distr f g is ⟩
+            ≈⟨ (refl {g i}) ⟨ +-cong ⟩ Σ-lift f g is ⟩
           g i + sumAll (λ i → f i + g i) is ∎
 
-    Σ-swap : ∀ {m n} {i} {I : Set i} →
-             (f : I → I → ℕ) (xs : Vec I m) (ys : Vec I n) →
-             sumAll (λ j → sumAll (flip f j) ys) xs ≈
-             sumAll {n = n} (λ i → sumAll (f i) xs) ys
+    Σ-swap : ∀ {m n} {i j} {I : Set i} {J : Set j} →
+             (f : J → I → ℕ) (xs : Vec J m) (ys : Vec I n) →
+             sumAll (λ j → sumAll (f j) ys) xs ≈
+             sumAll {n = n} (λ i → sumAll (flip f i) xs) ys
     Σ-swap f [] ys = sym (Σ-zero ys)
     Σ-swap f xs [] = Σ-zero xs
     Σ-swap {suc m} {n} {I = I} f (x ∷ xs) ys = begin
-      sumAll (flip f x) ys + sumAll (λ j → sumAll (flip f j) ys) xs
-        ≈⟨ refl {sumAll (flip f x) ys} ⟨ +-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
-      sumAll (flip f x) ys + sumAll (λ i → sumAll (f i) xs) ys
-        ≈⟨ Σ-distr (flip f x) (λ i → sumAll (f i) xs) ys ⟩
-      sumAll (λ i → f i x + sumAll (f i) xs) ys ∎
+      sumAll (f x) ys + sumAll (λ j → sumAll (f j) ys) xs
+        ≈⟨ refl {sumAll (f x) ys} ⟨ +-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
+      sumAll (f x) ys + sumAll (λ i → sumAll (flip f i) xs) ys
+        ≈⟨ Σ-lift (f x) (λ i → sumAll (flip f i) xs) ys ⟩
+      sumAll (λ i → f x i + sumAll (flip f i) xs) ys ∎
 
-{-
-    distribˡ-lemma : ∀ {m} (x : ℕ) (ns : Vec ℕ m) →
-                     x * sumAll f ns ≈ sumAll ((_*_ x) ∘ f) ns
-    distribˡ-lemma x [] = proj₂ *-zero x
-    distribˡ-lemma {suc m} x (n ∷ ns) =
+    Σ-distr : ∀ {m} {i} {I : Set i} (f : I → ℕ) (x : ℕ) (is : Vec I m) →
+              x * sumAll f is ≈ sumAll ((_*_ x) ∘ f) is
+    Σ-distr f x [] = proj₂ *-zero x
+    Σ-distr {suc m} f x (n ∷ ns) =
       begin
         x * (f n + sumAll f ns)
           ≈⟨ proj₁ distrib x (f n) (sumAll f ns) ⟩
         (x * f n) + (x * sumAll f ns)
-          ≈⟨ refl ⟨ +-cong ⟩ distribˡ-lemma {m} x ns ⟩
+          ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distr {m} f x ns ⟩
         (x * f n) + sumAll ((_*_ x) ∘ f) ns
       ∎
-      where
-        open EqR setoid
--}
