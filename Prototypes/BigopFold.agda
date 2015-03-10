@@ -172,10 +172,7 @@ module Prototypes.BigopFold where
   module SumFoldLemmas
          {ℓ} {P′ : Pred ℕ ℓ} (P : Decidable P′) where
 
-    open import Relation.Binary.PropositionalEquality using (_≗_)
     import Relation.Binary.PropositionalEquality as P
-
-    open import Function.Equality using (≡-setoid)
 
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Algebra using (CommutativeSemiring)
@@ -210,14 +207,16 @@ module Prototypes.BigopFold where
     ... | no ¬p = filter-lemma f is P
 -}
 
-    Σ-cong : ∀ {i} {I : Set i} {n} →
-             {f g : I → ℕ} → f ≗ g → sumAll {n = n} f ≗ sumAll g
-    Σ-cong             f≗g []       = P.refl
-    Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
+    Σ-cong : ∀ {i} {I : Set i} {n} (f g : I → ℕ) →
+             (∀ x → f x ≈ g x) → (is : Vec I n) →
+             sumAll {n = n} f is ≈ sumAll g is
+    Σ-cong f g f≗g []       = refl
+    Σ-cong f g f≗g (i ∷ is) = begin
       f i + sumAll f is
-        ≡⟨ f≗g i ⟨ P.cong₂ _+_ ⟩ Σ-cong {f = f} {g} f≗g is ⟩
+        ≈⟨ f≗g i ⟨ +-cong ⟩ Σ-cong f g f≗g is ⟩
       g i + sumAll g is ∎
-      where open P.≡-Reasoning
+      where
+        open EqR setoid
 
     Σ-zero : ∀ {n} {i} {I : Set i} (xs : Vec I n) → sumAll (const 0) xs ≈ 0
     Σ-zero [] = refl
@@ -230,7 +229,7 @@ module Prototypes.BigopFold where
       (f i + sumAll f is) + (g i + sumAll g is)
         ≈⟨ +-assoc (f i) (sumAll f is) (g i + sumAll g is) ⟩
       f i + (sumAll f is + (g i + sumAll g is))
-        ≈⟨ +-cong refl (sym (+-assoc (sumAll f is) (g i) (sumAll g is))) ⟩
+        ≈⟨ refl ⟨ +-cong ⟩ sym (+-assoc (sumAll f is) (g i) (sumAll g is)) ⟩
       f i + ((sumAll f is + g i) + sumAll g is)
         ≈⟨ +-cong refl (+-cong (+-comm (sumAll f is) (g i)) refl) ⟩
       f i + ((g i + sumAll f is) + sumAll g is)
