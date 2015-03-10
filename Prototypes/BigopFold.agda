@@ -9,6 +9,8 @@ module Prototypes.BigopFold where
   import Relation.Binary.EqReasoning as EqR
 
   open import Data.Empty
+  open import Data.Bool
+  import Data.List as L
   open import Data.Unit.Base
   open import Data.Product hiding (map)
   open import Data.Fin hiding (_+_; fold)
@@ -22,7 +24,11 @@ module Prototypes.BigopFold where
 
   open import Algebra
   open import Algebra.Structures
-  open import Algebra.FunctionProperties
+  open import Algebra.FunctionProperties.Core using (Op₂)
+
+  filter : ∀ {a} {A : Set a} {n} (p : A → Bool) (xs : Vec A n) →
+           Vec A (L.length (L.filter p (toList xs)))
+  filter p xs = fromList $ L.filter p $ toList xs
 
   fold : ∀ {i r ℓ} {I : Set i} {R : Set r} {n} →
          (I → R) → Op₂ R → {P′ : Pred I ℓ} → Decidable P′ → R → Vec I n → R
@@ -77,6 +83,7 @@ module Prototypes.BigopFold where
     open ListLemmas
 
     open import Relation.Binary.PropositionalEquality
+    open import Algebra.FunctionProperties {A = R} (_≡_)
 
     empty-lemma : ∀ {n} (is : Vec I n) → Empty P′ → fold f _∙_ P ε is ≡ ε
     empty-lemma []       e = refl
@@ -96,7 +103,7 @@ module Prototypes.BigopFold where
     ... | yes p = ⊥-elim (i∉P′ p)
     ... | no ¬p = refl
 
-    ∈ʳ-lemma : ∀ {n} (is : Vec I n) (i : I) → Associative _≡_ _∙_ → Commutative _≡_ _∙_ →
+    ∈ʳ-lemma : ∀ {n} (is : Vec I n) (i : I) → Associative _∙_ → Commutative _∙_ →
                i ∈ P′ → fold f _∙_ P ε (is ∷ʳ i) ≡ fold f _∙_ P ε is ∙ f i
     ∈ʳ-lemma [] i assoc comm i∈P′ with P i
     ... | yes p = comm (f i) ε
@@ -163,7 +170,12 @@ module Prototypes.BigopFold where
 
 
   module SumFoldLemmas
-         {ℓ} (f : ℕ → ℕ) {P′ : Pred ℕ ℓ} (P : Decidable P′) where
+         {ℓ} {P′ : Pred ℕ ℓ} (P : Decidable P′) where
+
+    open import Relation.Binary.PropositionalEquality using (_≗_)
+    import Relation.Binary.PropositionalEquality as P
+
+    open import Function.Equality using (≡-setoid)
 
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Algebra using (CommutativeSemiring)
