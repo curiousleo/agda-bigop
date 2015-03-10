@@ -7,6 +7,7 @@ module Prototypes.BigopFold where
   open import Relation.Unary
   open import Relation.Binary hiding (Decidable)
   import Relation.Binary.EqReasoning as EqR
+  import Relation.Binary.PropositionalEquality as P
 
   open import Data.Empty
   open import Data.Bool
@@ -65,10 +66,8 @@ module Prototypes.BigopFold where
 
   module ListLemmas where
 
-    open import Relation.Binary.PropositionalEquality
-
     postulate
-      pickʳ-lemma : ∀ n → fromZeroℕ (suc n) ≡ fromZeroℕ n ∷ʳ n
+      pickʳ-lemma : ∀ n → fromZeroℕ (suc n) P.≡ fromZeroℕ n ∷ʳ n
 {-
     pickʳ-lemma : ∀ n → 0… (suc n) ≡ 0… n ∷ʳ n
     pickʳ-lemma zero = refl
@@ -127,13 +126,11 @@ module Prototypes.BigopFold where
          {P′ : Pred I ℓ} (P : Decidable P′)
          {Q′ : Pred I ℓ} (Q : Decidable Q′) (ε : R) where
 
-    open import Relation.Binary.PropositionalEquality
-
     pq-lemma : ∀ {n} (is : Vec I n) →
-               P′ ⊆ Q′ → P′ ⊇ Q′ → fold f _∙_ P ε is ≡ fold f _∙_ Q ε is
-    pq-lemma []       _   _   = refl
+               P′ ⊆ Q′ → P′ ⊇ Q′ → fold f _∙_ P ε is P.≡ fold f _∙_ Q ε is
+    pq-lemma []       _   _   = P.refl
     pq-lemma (i ∷ is) P⊆Q P⊇Q with P i | Q i
-    ... | yes p | yes q = cong (_∙_ (f i)) (pq-lemma is P⊆Q P⊇Q)
+    ... | yes p | yes q = P.cong (_∙_ (f i)) (pq-lemma is P⊆Q P⊇Q)
     ... | no ¬p | no ¬q = pq-lemma is P⊆Q P⊇Q
     ... | yes p | no ¬q = ⊥-elim (¬q (P⊆Q p))
     ... | no ¬p | yes q = ⊥-elim (¬p (P⊇Q q))
@@ -172,26 +169,17 @@ module Prototypes.BigopFold where
   module SumFoldLemmas
          {ℓ} {P′ : Pred ℕ ℓ} (P : Decidable P′) where
 
-    import Relation.Binary.PropositionalEquality as P
-
     open import Data.Nat.Properties using (commutativeSemiring)
-    open import Algebra using (CommutativeSemiring)
-
     open CommutativeSemiring commutativeSemiring
-      using (+-monoid; +-isCommutativeMonoid; setoid; distrib;
-             _≈_; refl)
+      using (+-isCommutativeMonoid; setoid; distrib;
+             _≈_; refl; sym; trans)
       renaming (zero to *-zero) public
-
-    open ListLemmas
-    open FoldLemmas
 
     open IsCommutativeMonoid +-isCommutativeMonoid
       using ()
       renaming (∙-cong to +-cong; assoc to +-assoc; comm to +-comm) public
 
-    open import Algebra.FunctionProperties _≈_
-    import Relation.Binary.Indexed as I
-    open import Relation.Nullary.Decidable
+    open EqR setoid
 
     postulate
       distribˡ-lemma : ∀ {m i} {I : Set i} (f : I → ℕ) (x : ℕ) (ns : Vec I m) →
@@ -215,8 +203,6 @@ module Prototypes.BigopFold where
       f i + sumAll f is
         ≈⟨ f≗g i ⟨ +-cong ⟩ Σ-cong f g f≗g is ⟩
       g i + sumAll g is ∎
-      where
-        open EqR setoid
 
     Σ-zero : ∀ {n} {i} {I : Set i} (xs : Vec I n) → sumAll (const 0) xs ≈ 0
     Σ-zero [] = refl
@@ -229,34 +215,36 @@ module Prototypes.BigopFold where
       (f i + sumAll f is) + (g i + sumAll g is)
         ≈⟨ +-assoc (f i) (sumAll f is) (g i + sumAll g is) ⟩
       f i + (sumAll f is + (g i + sumAll g is))
-        ≈⟨ refl ⟨ +-cong ⟩ sym (+-assoc (sumAll f is) (g i) (sumAll g is)) ⟩
-      f i + ((sumAll f is + g i) + sumAll g is)
-        ≈⟨ +-cong refl (+-cong (+-comm (sumAll f is) (g i)) refl) ⟩
-      f i + ((g i + sumAll f is) + sumAll g is)
-        ≈⟨ +-cong refl (+-assoc (g i) (sumAll f is) (sumAll g is)) ⟩
-      f i + (g i + (sumAll f is + sumAll g is))
-        ≈⟨ +-cong refl (+-cong refl (Σ-distr f g is)) ⟩
+        ≈⟨ refl {f i} ⟨ +-cong ⟩ lemma ⟩
       f i + (g i + sumAll (λ i → f i + g i) is)
         ≈⟨ sym (+-assoc (f i) (g i) (sumAll (λ i → f i + g i) is)) ⟩
       (f i + g i) + sumAll (λ i → f i + g i) is ∎
       where
-        open EqR setoid
-        open Setoid setoid using (sym)
+        lemma : sumAll f is + (g i + sumAll g is) ≈
+                g i + sumAll (λ i → f i + g i) is
+        lemma = begin
+          sumAll f is + (g i + sumAll g is)
+            ≈⟨ sym (+-assoc (sumAll f is) (g i) (sumAll g is)) ⟩
+          (sumAll f is + g i) + sumAll g is
+            ≈⟨ +-comm (sumAll f is) (g i) ⟨ +-cong ⟩ refl ⟩
+          (g i + sumAll f is) + sumAll g is
+            ≈⟨ +-assoc (g i) (sumAll f is) (sumAll g is) ⟩
+          g i + (sumAll f is + sumAll g is)
+            ≈⟨ (refl {g i}) ⟨ +-cong ⟩ Σ-distr f g is ⟩
+          g i + sumAll (λ i → f i + g i) is ∎
 
     Σ-swap : ∀ {m n} {i} {I : Set i} →
              (f : I → I → ℕ) (xs : Vec I m) (ys : Vec I n) →
              sumAll (λ j → sumAll (flip f j) ys) xs ≈
              sumAll {n = n} (λ i → sumAll (f i) xs) ys
-    Σ-swap f [] ys = P.sym (Σ-zero ys)
+    Σ-swap f [] ys = sym (Σ-zero ys)
     Σ-swap f xs [] = Σ-zero xs
     Σ-swap {suc m} {n} {I = I} f (x ∷ xs) ys = begin
       sumAll (flip f x) ys + sumAll (λ j → sumAll (flip f j) ys) xs
-        ≈⟨ +-cong refl (Σ-swap {m} {n} f xs ys) ⟩
+        ≈⟨ refl {sumAll (flip f x) ys} ⟨ +-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
       sumAll (flip f x) ys + sumAll (λ i → sumAll (f i) xs) ys
         ≈⟨ Σ-distr (flip f x) (λ i → sumAll (f i) xs) ys ⟩
       sumAll (λ i → f i x + sumAll (f i) xs) ys ∎
-      where
-        open EqR setoid
 
 {-
     distribˡ-lemma : ∀ {m} (x : ℕ) (ns : Vec ℕ m) →
