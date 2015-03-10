@@ -36,7 +36,7 @@ module Prototypes.BigopBijection where
       cmon         : IsCommutativeMonoid _≡_ _·_ ε
 
   enum : ∀ {n} {a} {A : Set a} → FinType {n} A → Vec A n
-  enum enumA = tabulate (_⟨$⟩_ to)
+  enum {n} enumA = tabulate {n} (_⟨$⟩_ to)
     where
       open import Function.Equality using (_⟨$⟩_)
       open Bijection enumA
@@ -119,6 +119,12 @@ module Prototypes.BigopBijection where
         ; comm = *-comm
         }
 
+  fold· : ∀ {i r} (b : Bigop {i} {r}) (f : Bigop.Index b → Bigop.Result b) →
+          (Bigop.Result b)
+  fold· b f = foldr (λ _ → Result) _·_ ε (map f (enum {size} index))
+    where
+      open Bigop b
+
   module BigopLemmas {i r} (bigop : Bigop {i} {r}) where
     open Bigop bigop
     import Algebra.FunctionProperties as FP
@@ -170,6 +176,10 @@ module Prototypes.BigopBijection where
 
     foldr· : ∀ {m : ℕ} → Result → Vec Result m → Result
     foldr· = foldr (λ _ → Result) _·_
+
+    foldr·-lemma : ∀ (f : Index → Result) →
+                   fold· bigop f ≡ foldr· ε (map f (enum {size} index))
+    foldr·-lemma f = refl
 
     foldl· : ∀ {m : ℕ} → Result → Vec Result m → Result
     foldl· = foldl (λ _ → Result) _·_
@@ -259,6 +269,7 @@ module Prototypes.BigopBijection where
       rewrite
         foldr·-lemmaʳ x (map f v)
       | last-map {v = v} f = refl
+
 {-
     reverse-∷ʳ : ∀ {m} (x : Result) (xs : Vec Result m) →
                  reverse (x ∷ xs) ≡ (reverse xs) ∷ʳ x
@@ -275,13 +286,57 @@ module Prototypes.BigopBijection where
     foldr·-enum-lemmaˡ = ?
 -}
   _⟦_⟧ : ∀ {i r} → (o : Bigop {i} {r}) → (Bigop.Index o → Bigop.Result o) → (Bigop.Result o)
-  _⟦_⟧ {i} {r} o f = foldr· ε (map f (enum index))
+  _⟦_⟧ {i} {r} o f = fold· o f
+
+
+{-
+  Sum-lemmaʳ : ∀ {n} (f : ℕ → ℕ) →
+               fold· (Sum (1 N+ n)) (f ∘ toℕ) ≡ fold· (Sum n) (f ∘ toℕ) N+ (f n)
+  Sum-lemmaʳ {zero}  f = +-comm (f 0) 0
+  Sum-lemmaʳ {suc n} f =
+    begin
+      fold· (Sum (2 N+ n)) (f ∘ toℕ)
+        ≡⟨ refl ⟩
+      fold+ (map (f ∘ toℕ) (finEnum (2 N+ n)))
+        ≡⟨ cong fold+ (lemma₀ {2 N+ n}) ⟩
+      fold+ (map f (natEnum (2 N+ n)))
+        ≡⟨ cong fold+ (cong (map f) (lemma₁ {suc n} id)) ⟩
+      fold+ (map f (natEnum (suc n) ∷ʳ (suc n)))
+        ≡⟨ {!!} ⟩
+      fold+ ((map f (natEnum (suc n))) ∷ʳ (f (suc n)))
+        ≡⟨ {!!} ⟩
+      fold+ (map f (natEnum (suc n))) N+ (f (suc n))
+        ≡⟨ {!!} ⟩
+      fold+ (map (f ∘ toℕ) (finEnum (suc n))) N+ (f (suc n))
+        ≡⟨ refl ⟩
+      fold· (Sum (suc n)) (f ∘ toℕ) N+ (f (suc n))
+    ∎
     where
-      open Bigop o
-      open BigopLemmas o
+      open import Relation.Binary.PropositionalEquality
+      open ≡-Reasoning
+      open BigopLemmas (Sum (1 N+ n))
+      open import Data.Product hiding (map)
+
+      finEnum : (n : ℕ) → Vec (Fin n) n
+      finEnum n = enum {n} (FinFinType {n})
+
+      natEnum : (n : ℕ) → Vec ℕ n
+      natEnum n = map toℕ (finEnum n)
+
+      fold+ : ∀ {n} → Vec ℕ n → ℕ
+      fold+ {n} = foldr (λ _ → ℕ) {n} _N+_ 0
+
+      lemma₀ : ∀ {n} → map (f ∘ toℕ) (finEnum n) ≡ map f (natEnum n)
+      lemma₀ {n} = map-∘ f toℕ (finEnum n)
+
+      lemma₁ : ∀ {n} (f : ℕ → ℕ) →
+                     map (f ∘ toℕ) (finEnum (suc n)) ≡ map (f ∘ toℕ) (finEnum n) ∷ʳ (f n)
+                     -- natEnum (suc n) ≡ natEnum n ∷ʳ n
+      lemma₁ {zero}  f = refl
+      lemma₁ {suc n} f = {!map (f ∘ toℕ) (finEnum (suc (suc n)))!}
 
   Sum-lemma : ∀ {n} (f : ℕ → ℕ) →
-              (Sum n) ⟦ suc ∘ f ∘ toℕ ⟧ ≡ n N+ (Sum n) ⟦ f ∘ toℕ ⟧
+              fold· (Sum n) (suc ∘ f ∘ toℕ) ≡ n N+ fold· (Sum n) (f ∘ toℕ)
   Sum-lemma {zero} f = P.refl
   Sum-lemma {suc n} f
     rewrite
@@ -293,12 +348,27 @@ module Prototypes.BigopBijection where
     | tabulate-∘ {n} (Data.Nat.suc ∘ f ∘ Data.Nat.suc ∘ toℕ) id
     | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ toℕ) id
     | Sum-lemma {n} (f ∘ Data.Nat.suc)
-    = P.refl -- P.cong suc (P.cong (_N+_ (f 0)) (Sum-lemma {n} (f ∘ Data.Nat.suc)))
+    = {!!} -- P.refl -- P.cong suc (P.cong (_N+_ (f 0)) (Sum-lemma {n} (f ∘ Data.Nat.suc)))
+-}
+{-
+  module _ (n : ℕ) where
+    open Bigop (Sum (1 N+ n))
+    open BigopLemmas (Sum (1 N+ n)) using (foldr·)
 
-  Sum-lemma′ : ∀ {n} (f : ℕ → ℕ) →
-               (Sum (suc n)) ⟦ f ∘ toℕ ⟧ ≡ (f n) N+ (Sum n) ⟦ f ∘ toℕ ⟧
-  Sum-lemma′ {zero} f = P.refl
-  Sum-lemma′ {suc n} f
+    lemma : ∀ {m} (y : Index) (xs : Vec Index (suc m))
+            (f : Index → Result) →
+            foldr· y (map f xs) ≡ foldr· (init (map f xs)) · f (last xs)
+    lemma {zero} = P.refl
+    lemma {suc m} = foldr·-map-lemmaʳ {m} ε (enum {suc m} index) toℕ
+      where
+        open Bigop (Sum (suc m))
+        open BigopLemmas (Sum (suc m))
+
+
+  Sum-lemma′ : ∀ {n} (f : ℕ → ℕ) → (comm : ∀ {n} → f (suc n) ≡ suc (f n)) →
+               fold· (Sum (suc n)) (f ∘ toℕ) ≡ (f n) N+ fold· (Sum n) (f ∘ toℕ)
+  Sum-lemma′ {zero}  _ _    = P.refl
+  Sum-lemma′ {suc n} f comm
     rewrite
       P.refl
     | P.sym (tabulate-∘ {n} (f ∘ toℕ) (Data.Fin.suc ∘ suc))
@@ -308,9 +378,10 @@ module Prototypes.BigopBijection where
     | +-assoc (f 1) (f 0) (foldr (λ _ → ℕ) {n} _N+_ 0 (tabulate (f ∘ Data.Nat.suc ∘ Data.Nat.suc ∘ toℕ)))
     | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ Data.Nat.suc ∘ toℕ) id
     | tabulate-∘ {n} (f ∘ Data.Nat.suc ∘ toℕ) id
-    | P.sym (Sum-lemma′ {n} (f ∘ Data.Nat.suc))
+    | comm {n}
+    | P.sym (Sum-lemma′ {n} (f ∘ Data.Nat.suc) comm)
     = {!Sum-lemma {n} f!}
-
+-}
 
 {-
   dist-enums-⊎ : ∀ {a b} {m n : ℕ} {A : Set a} {B : Set b} →

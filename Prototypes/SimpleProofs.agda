@@ -46,30 +46,13 @@ module Prototypes.SimpleProofs where
         open import Data.Vec.Properties
 
         -- TODO: express this in terms of `Sum-lemma`
+        open Bigop (Sum (1 + n))
+        open BigopLemmas (Sum (1 + n))
 
-        lemma : ∀ {m} → expr (suc m) ≡ m + expr m
-        lemma {zero} = refl
-        lemma {suc m}
-          rewrite
-            sym (tabulate-∘ {m} toℕ Data.Fin.suc)
-          | sym (tabulate-∘ {m} toℕ (Data.Fin.suc ∘ suc))
-          = cong suc (lem {m} suc)
-          where
-            sucℕ = Data.Nat.suc
+        lemma : fold· (Sum (2 + n)) toℕ ≡ (1 + n) + fold· (Sum (1 + n)) toℕ
+        lemma = {!!} -- foldr·-map-lemmaʳ ε (enum index) toℕ
 
-            lem : ∀ {m} (f : ℕ → ℕ) →
-                  sum (tabulate {m} (suc ∘ f ∘ toℕ)) ≡
-                  m + sum (tabulate {m} (f ∘ toℕ))
-            lem {zero} f = refl
-            lem {suc m} f
-              rewrite
-                lem {m} (f ∘ suc)
-              | sym (+-assoc (f 0) m (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
-              | +-comm (f 0) m
-              | sym (+-assoc m (f 0) (sum (tabulate {m} (f ∘ sucℕ ∘ toℕ))))
-              = refl
-
-  open import Prototypes.Matrix
+  open import Prototypes.Matrix hiding (lookup; tabulate)
 
   module MatrixAssoc {p q r s}
          (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
@@ -131,7 +114,7 @@ module Prototypes.SimpleProofs where
         sum (map (λ l → sum (map (λ k → C [ l , j ] * (A [ i , k ] * B [ k , l ]))
                                  (allFin q)))
                  (allFin r))
-          ≡⟨ ? ⟩
+          ≡⟨ {!!} ⟩
         sum (map (λ l → sum (map (_*_ (C [ l , j ])) (map (λ k → C [ l , j ] * (A [ i , k ] * B [ k , l ]))
                                                           (allFin q))))
                  (allFin r))
@@ -162,3 +145,55 @@ module Prototypes.SimpleProofs where
       ∎
       where
         open ≡-Reasoning
+
+        distr : ∀ {n k} (v : Vec ℕ n) →
+                sum (map (_*_ k) v) ≡ k * (sum v)
+        distr {zero}  {k} [] = *-comm 0 k
+        distr {suc n} {k} (x ∷ v)
+          rewrite
+            distr {n} {k} v = sym (distribˡ-*-+ k x (sum v))
+
+        lemma₁ : ∀ k → sum (map (_*_ (A [ i , k ])) (map (λ l → B [ k , l ] * C [ l , j ])
+                                                          (allFin r))) ≡
+                 sum (map (λ l → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
+                                 (allFin r))
+        lemma₁ k
+          rewrite
+            distr (map (λ l → B [ k , l ] * C [ l , j ]) (allFin r))
+            = {!refl!}
+
+{-
+        lemma₀ : sum (map (λ k → A [ i , k ] *
+                              sum (map (λ l → B [ k , l ] * C [ l , j ])
+                                       (tabulate id)))
+                          (tabulate id)) ≡
+                 sum (map (λ k → sum (map (λ l → A [ i , k ] *
+                                             (B [ k , l ] * C [ l , j ]))
+                                          (tabulate id)))
+                          (tabulate id))
+-}
+        lem₂ : ∀ {x n} {y} {f : Fin n → ℕ} → x * f y ≡ ((_*_ x) ∘ f) y
+        lem₂ = refl
+
+
+        lem₁ : ∀ {x n} {f : Fin n → ℕ} →
+               map (λ y → x * f y) (tabulate id) ≡
+               map (_*_ x) (map f (tabulate id))
+        lem₁ {x} {n} {f} =
+          begin
+            map (λ y → x * f y) (tabulate id)                    ≡⟨ refl ⟩
+            replicate (λ y → x * f y) ⊛ tabulate id              ≡⟨ {! map (_*_ x) (map f (tabulate id))!} ⟩
+            replicate (_*_ x) ⊛ (replicate f ⊛ tabulate id)      ≡⟨ refl ⟩
+            map (_*_ x) (map f (tabulate id))
+          ∎
+{-
+        lemma₀ : ∀ {x n} (f : Fin n → ℕ) →
+                 x * sum (map f (allFin n)) ≡
+                 sum (map (λ y → x * f y) (allFin n))
+        lemma₀ {k}
+          rewrite
+            refl
+      --    | distr {k = A [ i , k ]} (map (λ l → B [ k , l ] * C [ l , j ])
+      --                                   (tabulate id))
+            = {!!} -- distr {k = A [ i , k ]} (map (λ l → B [ k , l ] * C [ l , j ]) (tabulate id))
+-}
