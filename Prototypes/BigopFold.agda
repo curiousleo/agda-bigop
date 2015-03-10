@@ -179,18 +179,98 @@ module Prototypes.BigopFold where
 
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Algebra using (CommutativeSemiring)
-    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
-    open MonoidFoldLemmas +-monoid id (const $ yes tt)
+    open CommutativeSemiring commutativeSemiring
+      using (+-monoid; +-isCommutativeMonoid; setoid; distrib;
+             _≈_; refl)
+      renaming (zero to *-zero) public
+
     open ListLemmas
+    open FoldLemmas
 
-    open Monoid +-monoid using (identity)
+    open IsCommutativeMonoid +-isCommutativeMonoid
+      using ()
+      renaming (∙-cong to +-cong; assoc to +-assoc; comm to +-comm) public
 
---    suc-lemma : ∀ {n} → sumAll (f ∘ suc) (0… n) ≈ sumAll f (0… n) +
+    open import Algebra.FunctionProperties _≈_
+    import Relation.Binary.Indexed as I
+    open import Relation.Nullary.Decidable
 
     postulate
-      last-lemma : ∀ {n} → sumAll f (fromZeroℕ (suc n)) ≈ sumAll f (fromZeroℕ n) + f n
+      distribˡ-lemma : ∀ {m i} {I : Set i} (f : I → ℕ) (x : ℕ) (ns : Vec I m) →
+                       x * sumAll f ns ≈ sumAll ((_*_ x) ∘ f) ns
 
---    last-lemma : ∀ {n} → sumAll f (0… (suc n)) ≈ sumAll f (0… n) + f n
---    last-lemma {zero} = proj₂ identity (f zero)
---    last-lemma {n} = {!sumAll f (0 ∷ map suc (0… n))!}
+{-
+    filter-lemma : ∀ {ℓ i} {I : Set i} {n} (f : I → ℕ) (is : Vec I n)
+                   {P′ : Pred I ℓ} (P : Decidable P′) →
+                   sum f P is ≈ sumAll f (filter (λ i → ⌊ P i ⌋) is)
+    filter-lemma f [] P = P.refl
+    filter-lemma {ℓ} {I = I} {suc n} f (i ∷ is) P with P i
+    ... | yes p = +-cong refl (filter-lemma {ℓ} {I = I} {n} f is P)
+    ... | no ¬p = filter-lemma f is P
+-}
+
+    Σ-cong : ∀ {i} {I : Set i} {n} →
+             {f g : I → ℕ} → f ≗ g → sumAll {n = n} f ≗ sumAll g
+    Σ-cong             f≗g []       = P.refl
+    Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
+      f i + sumAll f is
+        ≡⟨ f≗g i ⟨ P.cong₂ _+_ ⟩ Σ-cong {f = f} {g} f≗g is ⟩
+      g i + sumAll g is ∎
+      where open P.≡-Reasoning
+
+    Σ-zero : ∀ {n} {i} {I : Set i} (xs : Vec I n) → sumAll (const 0) xs ≈ 0
+    Σ-zero [] = refl
+    Σ-zero (x ∷ xs) = Σ-zero xs
+
+    Σ-distr : ∀ {n} {i} {I : Set i} (f g : I → ℕ) (is : Vec I n) →
+              sumAll f is + sumAll g is ≈ sumAll (λ i → f i + g i) is
+    Σ-distr f g [] = refl
+    Σ-distr f g (i ∷ is) = begin
+      (f i + sumAll f is) + (g i + sumAll g is)
+        ≈⟨ +-assoc (f i) (sumAll f is) (g i + sumAll g is) ⟩
+      f i + (sumAll f is + (g i + sumAll g is))
+        ≈⟨ +-cong refl (sym (+-assoc (sumAll f is) (g i) (sumAll g is))) ⟩
+      f i + ((sumAll f is + g i) + sumAll g is)
+        ≈⟨ +-cong refl (+-cong (+-comm (sumAll f is) (g i)) refl) ⟩
+      f i + ((g i + sumAll f is) + sumAll g is)
+        ≈⟨ +-cong refl (+-assoc (g i) (sumAll f is) (sumAll g is)) ⟩
+      f i + (g i + (sumAll f is + sumAll g is))
+        ≈⟨ +-cong refl (+-cong refl (Σ-distr f g is)) ⟩
+      f i + (g i + sumAll (λ i → f i + g i) is)
+        ≈⟨ sym (+-assoc (f i) (g i) (sumAll (λ i → f i + g i) is)) ⟩
+      (f i + g i) + sumAll (λ i → f i + g i) is ∎
+      where
+        open EqR setoid
+        open Setoid setoid using (sym)
+
+    Σ-swap : ∀ {m n} {i} {I : Set i} →
+             (f : I → I → ℕ) (xs : Vec I m) (ys : Vec I n) →
+             sumAll (λ j → sumAll (flip f j) ys) xs ≈
+             sumAll {n = n} (λ i → sumAll (f i) xs) ys
+    Σ-swap f [] ys = P.sym (Σ-zero ys)
+    Σ-swap f xs [] = Σ-zero xs
+    Σ-swap {suc m} {n} {I = I} f (x ∷ xs) ys = begin
+      sumAll (flip f x) ys + sumAll (λ j → sumAll (flip f j) ys) xs
+        ≈⟨ +-cong refl (Σ-swap {m} {n} f xs ys) ⟩
+      sumAll (flip f x) ys + sumAll (λ i → sumAll (f i) xs) ys
+        ≈⟨ Σ-distr (flip f x) (λ i → sumAll (f i) xs) ys ⟩
+      sumAll (λ i → f i x + sumAll (f i) xs) ys ∎
+      where
+        open EqR setoid
+
+{-
+    distribˡ-lemma : ∀ {m} (x : ℕ) (ns : Vec ℕ m) →
+                     x * sumAll f ns ≈ sumAll ((_*_ x) ∘ f) ns
+    distribˡ-lemma x [] = proj₂ *-zero x
+    distribˡ-lemma {suc m} x (n ∷ ns) =
+      begin
+        x * (f n + sumAll f ns)
+          ≈⟨ proj₁ distrib x (f n) (sumAll f ns) ⟩
+        (x * f n) + (x * sumAll f ns)
+          ≈⟨ refl ⟨ +-cong ⟩ distribˡ-lemma {m} x ns ⟩
+        (x * f n) + sumAll ((_*_ x) ∘ f) ns
+      ∎
+      where
+        open EqR setoid
+-}
