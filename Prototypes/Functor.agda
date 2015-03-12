@@ -10,6 +10,22 @@ module Prototypes.Functor where
   import Relation.Binary as B
   import Relation.Binary.Indexed as I
 
+  record IsFunctor {f ℓ} (F : Set f → Set f) (_≈_ : I.Rel F ℓ)
+                   (_<$>_ : ∀ {A B} → (A → B) → F A → F B) :
+                   Set (suc f ⊔ ℓ) where
+    field
+      isEquivalence : I.IsEquivalence F _≈_
+      identity      : ∀ {A} (x : F A) → (id <$> x) ≈ x
+      composition   : ∀ {A B C} (f : B → C) g (x : F A) →
+                      ((f ∘′ g) <$> x) ≈ (f <$> (g <$> x))
+
+  record Functor {ℓ} (F : Set ℓ → Set ℓ) : Set (suc ℓ) where
+    infixl 4 _<$>_
+    field
+      _<$>_     : ∀ {A B} → (A → B) → F A → F B
+      _≈_       : I.Rel F ℓ
+      isFunctor : IsFunctor F _≈_ _<$>_
+
   record IsMonad {f ℓ} (F : Set f → Set f) (_≈_ : I.Rel F ℓ)
                  (return : ∀ {A} → A → F A)
                  (_>>=_  : ∀ {A B} → F A → (A → F B) → F B) :
@@ -40,8 +56,8 @@ module Prototypes.Functor where
                        Set (suc f ⊔ ℓ) where    
     field
       isEquivalence : I.IsEquivalence F _≈_
-      identity      : ∀ {A B : Set f} (u : F (A → B)) →
-                      (pure id ⊛ u) ≈ u
+--    identity      : ∀ {A B : Set f} (u : F (A → B)) →
+--                    (pure id ⊛ u) ≈ u
       composition   : ∀ {A B C D : Set f} (u : F (A → B → C)) v (w : F D) →
                       (pure (_∘′_ {A = A} {B} {C}) ⊛ (u ⊛ (v ⊛ w))) ≈ (u ⊛ (v ⊛ w))
       homomorphism  : ∀ {A B} (g : A → B) x →
@@ -53,10 +69,14 @@ module Prototypes.Functor where
                       Set (suc f ⊔ suc ℓ) where
     infixl 4 _⊛_
     field
-      pure : ∀ {A} → A → F A
-      _⊛_  : ∀ {A B} → F (A → B) → F A → F B
-      _≈_  : I.Rel F ℓ
+      pure          : ∀ {A} → A → F A
+      _⊛_           : ∀ {A B} → F (A → B) → F A → F B
+      _≈_           : I.Rel F ℓ
+      isFunctor     : IsFunctor F _≈_ (λ f x → pure f ⊛ x)
       isApplicative : IsApplicative F _≈_ pure _⊛_
+
+    _<$>_ : ∀ {A B} → (A → B) → F A → F B
+    f <$> x = (pure f) ⊛ x
 
   IFun : ∀ {i} → Set i → (ℓ : Level) → Set _
   IFun I ℓ = I → I → Set ℓ → Set ℓ
@@ -65,9 +85,10 @@ module Prototypes.Functor where
     Monad→Applicative : ∀ {f ℓ} {F : Set f → Set f} →
                         Monad {f} {ℓ} F → Applicative {f} {ℓ} F
     Monad→Applicative {f} {ℓ} {F} m = record
-      { pure = return
-      ; _⊛_ = _⊛_
-      ; _≈_ = _≈_
+      { pure          = return
+      ; _⊛_           = _⊛_
+      ; _≈_           = _≈_
+      ; isFunctor     = isFunctor
       ; isApplicative = isApplicative
       }
       where
@@ -75,13 +96,31 @@ module Prototypes.Functor where
 
         _⊛_ : ∀ {A B} → F (A → B) → F A → F B
         f ⊛ v = f >>= (λ g →
-                v >>= (λ x →
-                return (g x)))
+                v >>= return ∘′ g)
+
+        _<$>_ : ∀ {A B} → (A → B) → F A → F B
+        f <$> x = (return f) ⊛ x
+
+        isFunctor : IsFunctor F _≈_ _<$>_
+        isFunctor = record
+          { isEquivalence = isEquivalence
+          ; identity      = identity
+          ; composition   = composition
+          }
+          where
+            open I.IsEquivalence isEquivalence
+
+            identity : {A : Set f} (x : F A) → (id <$> x) ≈ x
+            identity _ = trans (identityˡ _ _) (identityʳ _)
+
+            composition : ∀ {A B C} (f : B → C) g (x : F A) →
+                          ((f ∘′ g) <$> x) ≈ (f <$> (g <$> x))
+            composition f g x = trans (identityˡ _ _) (sym (trans (identityˡ _ _) (trans (assoc _ _ _) (trans (identityˡ _ _) {!!}))))
 
         isApplicative : IsApplicative F _≈_ return _⊛_
         isApplicative = record
           { isEquivalence = isEquivalence
-          ; identity      = identity
+--        ; identity      = identity
           ; composition   = composition
           ; homomorphism  = homomorphism
           ; interchange   = interchange
@@ -89,29 +128,18 @@ module Prototypes.Functor where
           where
             open I.IsEquivalence isEquivalence
 
-            identity : ∀ {A B : Set f} (u : F (A → B)) →
-                       (return id ⊛ u) ≈ u
-            identity u = trans lemma₀ (identityʳ u)
-              where
-                lemma₀ = identityˡ id (λ g → u >>= (λ x → return (g x)))
-
             composition : ∀ {A B C D : Set f} (u : F (A → B → C)) v (w : F D) →
                           (return (_∘′_ {A = A} {B} {C}) ⊛ (u ⊛ (v ⊛ w))) ≈
                           (u ⊛ (v ⊛ w))
-            composition {A} {B} {C} u v w = trans lemma₀ {!(u ⊛ (v ⊛ w) >>= (λ x → return (_∘′_ x))) ≈ (u ⊛ (v ⊛ w))!}
-              where
-                lemma₀ = identityˡ _∘′_ (λ g → (u ⊛ (v ⊛ w)) >>= (λ x → return (g x)))
+            composition u v w = trans (identityˡ _ _) {!!}
 
             homomorphism : ∀ {A B : Set f} (f : A → B) (v : A) →
                            ((return f) ⊛ (return v)) ≈ (return (f v))
-            homomorphism f v = trans lemma₀ lemma₁
-              where
-                lemma₀ = identityˡ f (λ g → (return v) >>= (λ x → return (g x)))
-                lemma₁ = identityˡ v (λ x → return (f x))
+            homomorphism f v = trans (identityˡ _ _) (identityˡ _ _)
 
             interchange : ∀ {A B} (u : F (A → B)) x →
                           (u ⊛ return x) ≈ (return (λ g → g x) ⊛ u)
-            interchange u x = sym (trans (identityˡ (λ g → g x) (λ g → u >>= (λ x₁ → return (g x₁)))) {!(u >>= (λ x₁ → return (x₁ x))) ≈ (u ⊛ return x)!})
+            interchange u x = sym (trans (identityˡ _ _) {!!})
 
 {-
   record IsIApplicative {i f ℓ} {I : Set i} (F : IFun I f) (_≈_ : I.Rel {!!} ℓ)
