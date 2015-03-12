@@ -68,7 +68,7 @@ module Prototypes.Functor where
       { pure = return
       ; _⊛_ = _⊛_
       ; _≈_ = _≈_
-      ; isApplicative = {!!}
+      ; isApplicative = isApplicative
       }
       where
         open Monad m
@@ -81,10 +81,10 @@ module Prototypes.Functor where
         isApplicative : IsApplicative F _≈_ return _⊛_
         isApplicative = record
           { isEquivalence = isEquivalence
-          ; identity  = identity
-          ; composition = {!!}
-          ; homomorphism = homomorphism
-          ; interchange = {!!}
+          ; identity      = identity
+          ; composition   = composition
+          ; homomorphism  = homomorphism
+          ; interchange   = interchange
           }
           where
             open I.IsEquivalence isEquivalence
@@ -98,7 +98,9 @@ module Prototypes.Functor where
             composition : ∀ {A B C D : Set f} (u : F (A → B → C)) v (w : F D) →
                           (return (_∘′_ {A = A} {B} {C}) ⊛ (u ⊛ (v ⊛ w))) ≈
                           (u ⊛ (v ⊛ w))
-            composition u v w = trans (identityˡ _∘′_ (λ g → (u ⊛ (v ⊛ w)) >>= (λ x → return (g x)))) {!!}
+            composition {A} {B} {C} u v w = trans lemma₀ {!(u ⊛ (v ⊛ w) >>= (λ x → return (_∘′_ x))) ≈ (u ⊛ (v ⊛ w))!}
+              where
+                lemma₀ = identityˡ _∘′_ (λ g → (u ⊛ (v ⊛ w)) >>= (λ x → return (g x)))
 
             homomorphism : ∀ {A B : Set f} (f : A → B) (v : A) →
                            ((return f) ⊛ (return v)) ≈ (return (f v))
@@ -109,7 +111,7 @@ module Prototypes.Functor where
 
             interchange : ∀ {A B} (u : F (A → B)) x →
                           (u ⊛ return x) ≈ (return (λ g → g x) ⊛ u)
-            interchange u x = {!!}
+            interchange u x = sym (trans (identityˡ (λ g → g x) (λ g → u >>= (λ x₁ → return (g x₁)))) {!(u >>= (λ x₁ → return (x₁ x))) ≈ (u ⊛ return x)!})
 
 {-
   record IsIApplicative {i f ℓ} {I : Set i} (F : IFun I f) (_≈_ : I.Rel {!!} ℓ)
