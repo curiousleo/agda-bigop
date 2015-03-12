@@ -1,8 +1,5 @@
 module Prototypes.Functor where
 
---  open import Category.Functor
-  open import Data.Product
-
   open import Function
 
   open import Level
@@ -82,6 +79,47 @@ module Prototypes.Functor where
   IFun I ℓ = I → I → Set ℓ → Set ℓ
 
   module _ where
+
+    open import Data.List
+
+    List-Functor : ∀ {a ℓ} → Set a → Functor (List {ℓ})
+    List-Functor {ℓ} A = record
+      { _<$>_     = map
+      ;_≈_        = λ {A B} xs ys → {!!}
+      ; isFunctor = record
+        { isEquivalence = {!!}
+        ; identity      = {!!}
+        ; composition   = {!!}
+        }
+      }
+      where
+        import Relation.Binary.HeterogeneousEquality as H
+
+        _≈_ : I.Rel List ℓ
+        xs ≈ ys = xs H.≅ ys
+
+        isEquivalence : I.IsEquivalence List _≈_
+        isEquivalence = {!H.isEquivalence!}
+
+    List-Applicative : ∀ {f ℓ} {A : Set f} → B.Rel A ℓ → Applicative {f} {ℓ} List
+    List-Applicative {f} {ℓ} {A} _≈_ = record
+      { pure          = λ x → x ∷ []
+      ; _⊛_           = _⊛_
+      ; _≈_           = λ xs ys → {!!}
+      ; isFunctor     = {!_≈_!}
+      ; isApplicative = {!!}
+      }
+      where
+        _⊛_ : {A B : Set f} → List (A → B) → List A → List B
+        []       ⊛ xs       = []
+        (f ∷ fs) ⊛ []       = []
+        (f ∷ fs) ⊛ (x ∷ xs) = f x ∷ fs ⊛ xs
+
+        _≈′_ : I.Rel List ℓ
+        [] ≈′ ys = {!!}
+        (x ∷ xs) ≈′ [] = {!!}
+        (x ∷ xs) ≈′ (y ∷ ys) = {!!}
+
     Monad→Applicative : ∀ {f ℓ} {F : Set f → Set f} →
                         Monad {f} {ℓ} F → Applicative {f} {ℓ} F
     Monad→Applicative {f} {ℓ} {F} m = record
