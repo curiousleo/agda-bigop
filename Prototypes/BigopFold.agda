@@ -102,10 +102,10 @@ module Prototypes.BigopFold where
       fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
 
-  module CommutativeSemiringLemmas
-         {c ℓ} (S : CommutativeSemiring c ℓ) {i} {I : Set i} where
+  module SemiringWithoutOneLemmas
+         {c ℓ} (S : SemiringWithoutOne c ℓ) {i} {I : Set i} where
 
-    open CommutativeSemiring S
+    open SemiringWithoutOne S
       renaming (Carrier to R; zero to *-zero)
     open EqR setoid
 

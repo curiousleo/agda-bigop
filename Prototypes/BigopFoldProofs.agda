@@ -74,16 +74,16 @@ module Prototypes.BigopFoldProofs where
     proof {i} {j} = sym (assoc (A [ i , j ]) (B [ i , j ]) (C [ i , j ]))
 
   module MatrixMulAssoc {p q r s}
-         {c ℓ} (S : CommutativeSemiring c ℓ)
-         (A : Matrix (CommutativeSemiring.Carrier S) p q)
-         (B : Matrix (CommutativeSemiring.Carrier S) q r)
-         (C : Matrix (CommutativeSemiring.Carrier S) r s) where
+         {c ℓ} (S : CommutativeSemiringWithoutOne c ℓ)
+         (A : Matrix (CommutativeSemiringWithoutOne.Carrier S) p q)
+         (B : Matrix (CommutativeSemiringWithoutOne.Carrier S) q r)
+         (C : Matrix (CommutativeSemiringWithoutOne.Carrier S) r s) where
 
     0… = fromZeroFin
 
-    open CommutativeSemiring S renaming (Carrier to R)
+    open CommutativeSemiringWithoutOne S renaming (Carrier to R)
 
-    open CommutativeSemiringLemmas S
+    open SemiringWithoutOneLemmas semiringWithoutOne
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
