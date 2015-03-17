@@ -7,7 +7,6 @@ module Prototypes.BigopFoldProofs where
   open import Function
 
   open import Data.Unit hiding (setoid)
-  open import Data.Nat
   open import Data.Vec hiding (sum)
 
   open import Relation.Nullary
@@ -18,6 +17,13 @@ module Prototypes.BigopFoldProofs where
   module GaussFormula where
 
     0… = fromZeroℕ
+
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Algebra using (CommutativeSemiring)
+    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
+    open Core +-monoid
+
+    open import Data.Nat hiding (fold)
 
     proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0… (suc n) $ x ] ≡ n * (suc n)
     proof zero = P.refl
@@ -34,10 +40,6 @@ module Prototypes.BigopFoldProofs where
       where
         open P.≡-Reasoning
 
-        open import Data.Nat.Properties using (commutativeSemiring)
-        open import Algebra using (CommutativeSemiring)
-        open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
-
         distribˡ : ∀ m n o → m * (n + o) ≡ m * n + m * o
         distribˡ m n o
           rewrite
@@ -50,38 +52,48 @@ module Prototypes.BigopFoldProofs where
         lemma₀ = {!!} -- rewrite ∈ʳ-lemma (0… (suc n)) (suc (suc n)) tt = {!!}
 
   open import Prototypes.Matrix hiding (lookup; tabulate)
-  open import Data.Fin hiding (_+_)
+  open import Data.Fin hiding (_+_; fold)
 
   module MatrixSumAssoc {p q}
-         (A : Matrix ℕ p q) (B : Matrix ℕ p q) (C : Matrix ℕ p q) where
+         {c ℓ} (S : Semigroup c ℓ)
+         (A : Matrix (Semigroup.Carrier S) p q)
+         (B : Matrix (Semigroup.Carrier S) p q)
+         (C : Matrix (Semigroup.Carrier S) p q) where
 
     0… = fromZeroFin
 
-    A+[B+C] : Fin p → Fin q → ℕ
+    open Semigroup S renaming (Carrier to R; _∙_ to _+_)
+
+    A+[B+C] : Fin p → Fin q → R
     A+[B+C] i j = A [ i , j ] + (B [ i , j ] + C [ i , j ])
 
-    [A+B]+C : Fin p → Fin q → ℕ
+    [A+B]+C : Fin p → Fin q → R
     [A+B]+C i j = (A [ i , j ] + B [ i , j ]) + C [ i , j ]
-
-    open import Data.Nat.Properties using (commutativeSemiring)
-    open CommutativeSemiring commutativeSemiring using (+-commutativeMonoid)
-    open CommutativeMonoid +-commutativeMonoid
 
     proof : ∀ {i j} → A+[B+C] i j ≈ [A+B]+C i j
     proof {i} {j} = sym (assoc (A [ i , j ]) (B [ i , j ]) (C [ i , j ]))
 
   module MatrixMulAssoc {p q r s}
-         (A : Matrix ℕ p q) (B : Matrix ℕ q r) (C : Matrix ℕ r s) where
+         {c ℓ} (S : CommutativeSemiring c ℓ)
+         (A : Matrix (CommutativeSemiring.Carrier S) p q)
+         (B : Matrix (CommutativeSemiring.Carrier S) q r)
+         (C : Matrix (CommutativeSemiring.Carrier S) r s) where
 
     0… = fromZeroFin
 
-    A×[B×C] : Fin p → Fin s → ℕ
+    open CommutativeSemiring S renaming (Carrier to R)
+
+    open CommutativeSemiringLemmas S
+    open CommutativeMonoidLemmas +-commutativeMonoid
+    open MonoidLemmas +-monoid
+
+    open Core +-monoid
+
+    A×[B×C] : Fin p → Fin s → R
     A×[B×C] i j = Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
 
-    [A×B]×C : Fin p → Fin s → ℕ
+    [A×B]×C : Fin p → Fin s → R
     [A×B]×C i j = Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
-
-    open SumFoldLemmas
     
     proof : ∀ {i j} → A×[B×C] i j ≈ [A×B]×C i j
     proof {i} {j} =
@@ -99,7 +111,6 @@ module Prototypes.BigopFoldProofs where
       ∎
       where
         open EqR setoid
-        open import Data.Nat.Properties.Simple
 
         lemma₀ : ∀ k →
                  A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ≈
