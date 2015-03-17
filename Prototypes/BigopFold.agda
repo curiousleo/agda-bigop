@@ -28,10 +28,6 @@ module Prototypes.BigopFold where
 
   syntax sum (λ x → e) v = Σ[ x ← v $ e ]
 
-{-
-  syntax sum (λ x → e) (filter v ) = Σ[ x ← v ∣ p $ e ]
--}
-
   fromZeroℕ : (n : ℕ) → Vec ℕ n
   fromZeroℕ zero    = []
   fromZeroℕ (suc n) = zero ∷ map suc (fromZeroℕ n)
@@ -53,16 +49,6 @@ module Prototypes.BigopFold where
       renaming (∙-cong to +-cong; assoc to +-assoc; comm to +-comm) public
 
     open EqR setoid
-
-{-
-    filter-lemma : ∀ {ℓ i} {I : Set i} {n} (f : I → ℕ) (is : Vec I n)
-                   {P′ : Pred I ℓ} (P : Decidable P′) →
-                   sum f P is ≈ sumAll f (filter (λ i → ⌊ P i ⌋) is)
-    filter-lemma f [] P = P.refl
-    filter-lemma {ℓ} {I = I} {suc n} f (i ∷ is) P with P i
-    ... | yes p = +-cong refl (filter-lemma {ℓ} {I = I} {n} f is P)
-    ... | no ¬p = filter-lemma f is P
--}
 
     Σ-cong : ∀ {i} {I : Set i} {n} {f g : I → ℕ} →
              (∀ x → f x ≈ g x) → (is : Vec I n) →

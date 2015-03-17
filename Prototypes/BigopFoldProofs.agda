@@ -81,7 +81,7 @@ module Prototypes.BigopFoldProofs where
     [A×B]×C : Fin p → Fin s → ℕ
     [A×B]×C i j = Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
 
-    open SumFoldLemmas (const $ yes tt)
+    open SumFoldLemmas
     
     proof : ∀ {i j} → A×[B×C] i j ≈ [A×B]×C i j
     proof {i} {j} =
@@ -126,10 +126,3 @@ module Prototypes.BigopFoldProofs where
           C [ l , j ] * Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ]
             ≈⟨ *-comm (C [ l , j ]) _ ⟩
           Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ∎
-
-{-
-    proof′ : ∀ {i j} → A×[B×C] i j ≡ [A×B]×C i j
-    proof′ {i} {j}
-      rewrite
-        distribˡ-lemma (A [ i , k ])
--}
