@@ -103,16 +103,15 @@ module Prototypes.BigopFold where
 
 
   module CommutativeSemiringLemmas
-         {c ℓ} (S : CommutativeSemiring c ℓ) {i} {I : Set i} {j} {J : Set j} where
+         {c ℓ} (S : CommutativeSemiring c ℓ) {i} {I : Set i} where
 
     open CommutativeSemiring S
-      renaming (Carrier to R; zero to *-zero) public
+      renaming (Carrier to R; zero to *-zero)
     open EqR setoid
 
     open Core +-monoid
 
-    open MonoidLemmas +-monoid
-    open CommutativeMonoidLemmas +-commutativeMonoid
+    open CommutativeMonoidLemmas +-commutativeMonoid {I = I}
 
     Σ-distr : ∀ {m} (f : I → R) (x : R) (is : Vec I m) →
               x * fold f is ≈ fold ((_*_ x) ∘ f) is
