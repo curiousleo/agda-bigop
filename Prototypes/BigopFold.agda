@@ -7,7 +7,7 @@ module Prototypes.BigopFold where
 
   open import Data.Product hiding (map)
   open import Data.Fin hiding (_+_; fold; fold′)
-  open import Data.Nat hiding (fold)
+  open import Data.Nat hiding (fold) renaming (_+_ to _+ℕ_; _*_ to _*ℕ_)
   open import Data.Vec hiding (_∈_; sum)
 
   open import Function
@@ -16,17 +16,14 @@ module Prototypes.BigopFold where
   open import Algebra.Structures
   open import Algebra.FunctionProperties.Core using (Op₂)
 
-  fold : ∀ {i r} {I : Set i} {R : Set r} {n} →
-         (I → R) → Op₂ R → R → Vec I n → R
-  fold f _∙_ = foldr _ (λ x y → (f x) ∙ y)
+  module Core {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 
-  prod : ∀ {i} {I : Set i} {n} → (I → ℕ) → Vec I n → ℕ
-  prod f = fold f _*_ 1
+    open Monoid M renaming (Carrier to R)
 
-  sum : ∀ {i} {I : Set i} {n} → (I → ℕ) → Vec I n → ℕ
-  sum f = fold f _+_ 0
+    fold : ∀ {n} → (I → R) → Vec I n → R
+    fold f = foldr _ (λ x y → (f x) ∙ y) ε
 
-  syntax sum (λ x → e) v = Σ[ x ← v $ e ]
+    syntax fold (λ x → e) v = Σ[ x ← v $ e ]
 
   fromZeroℕ : (n : ℕ) → Vec ℕ n
   fromZeroℕ zero    = []
@@ -36,79 +33,95 @@ module Prototypes.BigopFold where
   fromZeroFin zero = []
   fromZeroFin (suc n) = zero ∷ map suc (fromZeroFin n)
 
-  module SumFoldLemmas where
 
-    open import Data.Nat.Properties using (commutativeSemiring)
-    open CommutativeSemiring commutativeSemiring
-      using (+-isCommutativeMonoid; setoid; distrib;
-             _≈_; refl; sym; trans)
-      renaming (zero to *-zero) public
+  module MonoidLemmas
+         {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 
-    open IsCommutativeMonoid +-isCommutativeMonoid
-      using ()
-      renaming (∙-cong to +-cong; assoc to +-assoc; comm to +-comm) public
-
+    open Monoid M renaming (Carrier to R)
     open EqR setoid
 
-    Σ-cong : ∀ {i} {I : Set i} {n} {f g : I → ℕ} →
+    open Core M
+
+    Σ-zero : ∀ {n} (xs : Vec I n) → fold (const ε) xs ≈ ε
+    Σ-zero [] = refl
+    Σ-zero (x ∷ xs) = trans (proj₁ identity _) (Σ-zero xs)
+
+    Σ-cong : ∀ {n} {f g : I → R} →
              (∀ x → f x ≈ g x) → (is : Vec I n) →
-             sum {n = n} f is ≈ sum g is
+             fold {n = n} f is ≈ fold g is
     Σ-cong             f≗g []       = refl
     Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
-      f i + sum f is
-        ≈⟨ f≗g i ⟨ +-cong ⟩ Σ-cong {f = f} {g} f≗g is ⟩
-      g i + sum g is ∎
+      f i ∙ fold f is
+        ≈⟨ f≗g i ⟨ ∙-cong ⟩ Σ-cong {f = f} {g} f≗g is ⟩
+      g i ∙ fold g is ∎
 
-    Σ-zero : ∀ {n} {i} {I : Set i} (xs : Vec I n) → sum (const 0) xs ≈ 0
-    Σ-zero [] = refl
-    Σ-zero (x ∷ xs) = Σ-zero xs
+  module CommutativeMonoidLemmas
+         {c ℓ} (M : CommutativeMonoid c ℓ) {i} {I : Set i} {j} {J : Set j} where
 
-    Σ-lift : ∀ {n} {i} {I : Set i} (f g : I → ℕ) (is : Vec I n) →
-              sum f is + sum g is ≈ sum (λ i → f i + g i) is
-    Σ-lift f g [] = refl
+    open CommutativeMonoid M renaming (Carrier to R)
+    open EqR setoid
+
+    open Core monoid
+
+    open MonoidLemmas monoid
+
+    Σ-lift : ∀ {n} (f g : I → R) (is : Vec I n) →
+              fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
+    Σ-lift f g [] = proj₁ identity _
     Σ-lift f g (i ∷ is) = begin
-      (f i + sum f is) + (g i + sum g is)
-        ≈⟨ +-assoc (f i) (sum f is) (g i + sum g is) ⟩
-      f i + (sum f is + (g i + sum g is))
-        ≈⟨ refl {f i} ⟨ +-cong ⟩ lemma ⟩
-      f i + (g i + sum (λ i → f i + g i) is)
-        ≈⟨ sym (+-assoc (f i) (g i) (sum (λ i → f i + g i) is)) ⟩
-      (f i + g i) + sum (λ i → f i + g i) is ∎
+      (f i ∙ fold f is) ∙ (g i ∙ fold g is)
+        ≈⟨ assoc (f i) (fold f is) (g i ∙ fold g is) ⟩
+      f i ∙ (fold f is ∙ (g i ∙ fold g is))
+        ≈⟨ refl {f i} ⟨ ∙-cong ⟩ lemma ⟩
+      f i ∙ (g i ∙ fold (λ i → f i ∙ g i) is)
+        ≈⟨ sym (assoc (f i) (g i) (fold (λ i → f i ∙ g i) is)) ⟩
+      (f i ∙ g i) ∙ fold (λ i → f i ∙ g i) is ∎
       where
-        lemma : sum f is + (g i + sum g is) ≈
-                g i + sum (λ i → f i + g i) is
+        lemma : fold f is ∙ (g i ∙ fold g is) ≈
+                g i ∙ fold (λ i → f i ∙ g i) is
         lemma = begin
-          sum f is + (g i + sum g is)
-            ≈⟨ sym (+-assoc (sum f is) (g i) (sum g is)) ⟩
-          (sum f is + g i) + sum g is
-            ≈⟨ +-comm (sum f is) (g i) ⟨ +-cong ⟩ refl ⟩
-          (g i + sum f is) + sum g is
-            ≈⟨ +-assoc (g i) (sum f is) (sum g is) ⟩
-          g i + (sum f is + sum g is)
-            ≈⟨ (refl {g i}) ⟨ +-cong ⟩ Σ-lift f g is ⟩
-          g i + sum (λ i → f i + g i) is ∎
+          fold f is ∙ (g i ∙ fold g is)
+            ≈⟨ sym (assoc (fold f is) (g i) (fold g is)) ⟩
+          (fold f is ∙ g i) ∙ fold g is
+            ≈⟨ comm (fold f is) (g i) ⟨ ∙-cong ⟩ refl ⟩
+          (g i ∙ fold f is) ∙ fold g is
+            ≈⟨ assoc (g i) (fold f is) (fold g is) ⟩
+          g i ∙ (fold f is ∙ fold g is)
+            ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ Σ-lift f g is ⟩
+          g i ∙ fold (λ i → f i ∙ g i) is ∎
 
-    Σ-swap : ∀ {m n} {i j} {I : Set i} {J : Set j} →
-             (f : J → I → ℕ) (xs : Vec J m) (ys : Vec I n) →
-             sum (λ j → sum (f j) ys) xs ≈
-             sum {n = n} (λ i → sum (flip f i) xs) ys
+    Σ-swap : ∀ {m n} → (f : J → I → R) (js : Vec J m) (is : Vec I n) →
+             fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
     Σ-swap f [] ys = sym (Σ-zero ys)
     Σ-swap f xs [] = Σ-zero xs
-    Σ-swap {suc m} {n} {I = I} f (x ∷ xs) ys = begin
-      sum (f x) ys + sum (λ j → sum (f j) ys) xs
-        ≈⟨ refl {sum (f x) ys} ⟨ +-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
-      sum (f x) ys + sum (λ i → sum (flip f i) xs) ys
-        ≈⟨ Σ-lift (f x) (λ i → sum (flip f i) xs) ys ⟩
-      sum (λ i → f x i + sum (flip f i) xs) ys ∎
+    Σ-swap {suc m} {n} f (x ∷ xs) ys = begin
+      fold (f x) ys ∙ fold (λ j → fold (f j) ys) xs
+        ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
+      fold (f x) ys ∙ fold (λ i → fold (flip f i) xs) ys
+        ≈⟨ Σ-lift (f x) (λ i → fold (flip f i) xs) ys ⟩
+      fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
-    Σ-distr : ∀ {m} {i} {I : Set i} (f : I → ℕ) (x : ℕ) (is : Vec I m) →
-              x * sum f is ≈ sum ((_*_ x) ∘ f) is
+
+  module CommutativeSemiringLemmas
+         {c ℓ} (S : CommutativeSemiring c ℓ) {i} {I : Set i} {j} {J : Set j} where
+
+    open CommutativeSemiring S
+      renaming (Carrier to R; zero to *-zero) public
+    open EqR setoid
+
+    open Core +-monoid
+
+    open MonoidLemmas +-monoid
+    open CommutativeMonoidLemmas +-commutativeMonoid
+
+    Σ-distr : ∀ {m} (f : I → R) (x : R) (is : Vec I m) →
+              x * fold f is ≈ fold ((_*_ x) ∘ f) is
     Σ-distr f x [] = proj₂ *-zero x
     Σ-distr {suc m} f x (n ∷ ns) =
       begin
-        x * (f n + sum f ns)
-          ≈⟨ proj₁ distrib x (f n) (sum f ns) ⟩
-        (x * f n) + (x * sum f ns)
+        x * (f n + fold f ns)
+          ≈⟨ proj₁ distrib x (f n) (fold f ns) ⟩
+        (x * f n) + (x * fold f ns)
           ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distr {m} f x ns ⟩
-        (x * f n) + sum ((_*_ x) ∘ f) ns
+        (x * f n) + fold ((_*_ x) ∘ f) ns
       ∎
