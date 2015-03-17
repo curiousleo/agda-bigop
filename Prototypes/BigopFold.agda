@@ -11,7 +11,6 @@ module Prototypes.BigopFold where
 
   open import Data.Empty
   open import Data.Bool
-  import Data.List as L
   open import Data.Unit.Base
   open import Data.Product hiding (map)
   open import Data.Fin hiding (_+_; fold; fold′)
@@ -30,9 +29,9 @@ module Prototypes.BigopFold where
   DecPred : ∀ {i} (I : Set i) {ℓ} → Set _
   DecPred I {ℓ} = Σ (Pred I ℓ) Decidable
 
-  fold′ : ∀ {i r} {I : Set i} {R : Set r} →
-          (I → R) → Op₂ R → R → L.List I → R
-  fold′ f _∙_ = L.foldr (λ x y → (f x) ∙ y)
+  fold′ : ∀ {i r} {I : Set i} {R : Set r} {n} →
+          (I → R) → Op₂ R → R → Vec I n → R
+  fold′ f _∙_ = foldr _ (λ x y → (f x) ∙ y)
 
   fold : ∀ {i r ℓ} {I : Set i} {R : Set r} {n} →
          (I → R) → Op₂ R → {P′ : Pred I ℓ} → Decidable P′ → R → Vec I n → R
