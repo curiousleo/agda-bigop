@@ -8,7 +8,7 @@ module Prototypes.BigopFoldProofs where
 
   open import Data.Unit hiding (setoid)
   open import Data.Nat
-  open import Data.Vec
+  open import Data.Vec hiding (sum)
 
   open import Relation.Nullary
   open import Relation.Binary.PropositionalEquality using (_≡_)
@@ -37,8 +37,6 @@ module Prototypes.BigopFoldProofs where
         open import Data.Nat.Properties using (commutativeSemiring)
         open import Algebra using (CommutativeSemiring)
         open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
-        open MonoidFoldLemmas +-monoid id (const $ yes tt)
-        open ListLemmas
 
         distribˡ : ∀ m n o → m * (n + o) ≡ m * n + m * o
         distribˡ m n o
