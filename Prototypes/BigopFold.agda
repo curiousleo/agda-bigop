@@ -113,14 +113,14 @@ module Prototypes.BigopFold where
 
     open CommutativeMonoidLemmas +-commutativeMonoid {I = I}
 
-    Σ-distr : ∀ {m} (f : I → R) (x : R) (is : Vec I m) →
+    Σ-distrˡ : ∀ {m} (f : I → R) (x : R) (is : Vec I m) →
               x * fold f is ≈ fold ((_*_ x) ∘ f) is
-    Σ-distr f x [] = proj₂ *-zero x
-    Σ-distr {suc m} f x (n ∷ ns) =
+    Σ-distrˡ f x [] = proj₂ *-zero x
+    Σ-distrˡ {suc m} f x (n ∷ ns) =
       begin
         x * (f n + fold f ns)
           ≈⟨ proj₁ distrib x (f n) (fold f ns) ⟩
         (x * f n) + (x * fold f ns)
-          ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distr {m} f x ns ⟩
+          ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distrˡ {m} f x ns ⟩
         (x * f n) + fold ((_*_ x) ∘ f) ns
       ∎
