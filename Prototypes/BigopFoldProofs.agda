@@ -21,7 +21,7 @@ module Prototypes.BigopFoldProofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Algebra using (CommutativeSemiring)
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
-    open Core +-monoid
+    open Core +-monoid using (Σ-syntax)
 
     open import Data.Nat hiding (fold)
 
@@ -52,7 +52,6 @@ module Prototypes.BigopFoldProofs where
         lemma₀ = {!!} -- rewrite ∈ʳ-lemma (0… (suc n)) (suc (suc n)) tt = {!!}
 
   open import Prototypes.Matrix hiding (lookup; tabulate)
-  open import Data.Fin hiding (_+_; fold)
 
   module MatrixSumAssoc {p q}
          {c ℓ} (S : Semigroup c ℓ)
@@ -60,6 +59,7 @@ module Prototypes.BigopFoldProofs where
          (B : Matrix (Semigroup.Carrier S) p q)
          (C : Matrix (Semigroup.Carrier S) p q) where
 
+    open import Data.Fin hiding (_+_; fold)
     0… = fromZeroFin
 
     open Semigroup S renaming (Carrier to R; _∙_ to _+_)
@@ -79,6 +79,8 @@ module Prototypes.BigopFoldProofs where
          (B : Matrix (CommutativeSemiringWithoutOne.Carrier S) q r)
          (C : Matrix (CommutativeSemiringWithoutOne.Carrier S) r s) where
 
+    open import Data.Fin hiding (_+_; fold)
+
     0… = fromZeroFin
 
     open CommutativeSemiringWithoutOne S renaming (Carrier to R)
@@ -87,7 +89,7 @@ module Prototypes.BigopFoldProofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid
+    open Core +-monoid using (Σ-syntax)
 
     A×[B×C] : Fin p → Fin s → R
     A×[B×C] i j = Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
@@ -115,8 +117,8 @@ module Prototypes.BigopFoldProofs where
         lemma₀ : ∀ k →
                  A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ≈
                  Σ[ l ← 0… r $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ]
-        lemma₀ k = Σ-distr (λ l → B [ k , l ] * C [ l , j ])
-                           (A [ i , k ]) (0… r)
+        lemma₀ k = Σ-distrˡ (λ l → B [ k , l ] * C [ l , j ])
+                            (A [ i , k ]) (0… r)
 
         lemma₁ : ∀ l k →
                  A [ i , k ] * (B [ k , l ] * C [ l , j ]) ≈
