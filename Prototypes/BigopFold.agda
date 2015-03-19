@@ -5,7 +5,7 @@ module Prototypes.BigopFold where
 
   import Relation.Binary.EqReasoning as EqR
 
-  open import Data.Product hiding (map)
+  open import Data.Product hiding (map; Σ-syntax)
   open import Data.Fin hiding (_+_; fold; fold′)
   open import Data.Nat hiding (fold) renaming (_+_ to _+ℕ_; _*_ to _*ℕ_)
   open import Data.Vec hiding (_∈_; sum)
@@ -23,7 +23,25 @@ module Prototypes.BigopFold where
     fold : ∀ {n} → (I → R) → Vec I n → R
     fold f = foldr _ (λ x y → (f x) ∙ y) ε
 
-    syntax fold (λ x → e) v = Σ[ x ← v $ e ]
+    Σ-syntax : _
+    Σ-syntax = fold
+
+    syntax Σ-syntax (λ x → e) v = Σ[ x ← v $ e ]
+
+    Π-syntax : _
+    Π-syntax = fold
+
+    syntax Π-syntax (λ x → e) v = Π[ x ← v $ e ]
+
+    ⨁-syntax : _
+    ⨁-syntax = fold
+
+    syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v $ e ]
+
+    ⨂-syntax : _
+    ⨂-syntax = fold
+
+    syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
 
   fromZeroℕ : (n : ℕ) → Vec ℕ n
   fromZeroℕ zero    = []
