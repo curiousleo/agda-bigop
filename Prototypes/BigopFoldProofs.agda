@@ -134,8 +134,56 @@ module Prototypes.BigopFoldProofs where
                                     (C [ l , j ]))
                       (0… q) ⟩
           Σ[ k ← 0… q $ C [ l , j ] * (A [ i , k ] * B [ k , l ]) ]
-            ≈⟨ sym $ Σ-distr (λ k → A [ i , k ] * B [ k , l ])
-                             (C [ l , j ]) (0… q) ⟩
+            ≈⟨ sym $ Σ-distrˡ (λ k → A [ i , k ] * B [ k , l ])
+                              (C [ l , j ]) (0… q) ⟩
           C [ l , j ] * Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ]
             ≈⟨ *-comm (C [ l , j ]) _ ⟩
           Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ∎
+
+  module Binomials where
+
+    0… = fromZeroℕ
+
+    open import Data.Nat using (_∸_; suc)
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
+
+    open SemiringWithoutOneLemmas semiringWithoutOne
+    open CommutativeMonoidLemmas +-commutativeMonoid
+    open MonoidLemmas +-monoid
+
+    open Core +-monoid using (Σ-syntax)
+
+    _choose_ : ℕ → ℕ → ℕ
+    _     choose 0     = 1
+    0     choose suc k = 0
+    suc n choose suc k = n choose k + n choose (suc k)
+
+    _! : ℕ → ℕ
+    0 !     = 1
+    suc n ! = suc n * (n !)
+
+    fib : ℕ → ℕ
+    fib 0             = 0
+    fib 1             = 1
+    fib (suc (suc n)) = fib n + fib (suc n)
+
+    module RowSum where
+
+      proof : ∀ m r → Σ[ k ← 0… m $ r choose k * (r ∸ 2 * k) ] ≈ m * r choose m
+      proof 0       r = refl
+      proof (suc m) r = {!!}
+
+    module PascalDiagonal where
+
+      proof : ∀ n → Σ[ k ← 0… n $ (n ∸ k) choose k ] ≡ fib n
+      proof 0             = refl
+      proof 1             = refl
+      proof (suc (suc n)) =
+        begin
+          Σ[ k ← 0… (suc (suc n)) $ (suc (suc n) ∸ k) choose k ]
+            ≡⟨ {!!} ⟩
+          fib n + fib (suc n)
+        ∎
+        where
+          open P.≡-Reasoning
