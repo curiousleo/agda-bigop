@@ -42,6 +42,17 @@ module Prototypes.BigopFold where
 
     open Core M
 
+    Σ-head : ∀ {n} → (f : I → R) (x : I) (xs : Vec I n) →
+             fold f (x ∷ xs) ≈ f x ∙ fold f xs
+    Σ-head _ _ _ = refl
+
+    Σ-shift : ∀ {n} → (f : I → R) (x : I) (xs : Vec I n) →
+              f x ≈ ε → fold f (x ∷ xs) ≈ fold f xs
+    Σ-shift f x xs fx≈ε = begin
+      f x ∙ fold f xs  ≈⟨ ∙-cong fx≈ε refl ⟩
+      ε ∙ fold f xs    ≈⟨ proj₁ identity _ ⟩
+      fold f xs ∎
+
     Σ-zero : ∀ {n} (xs : Vec I n) → fold (const ε) xs ≈ ε
     Σ-zero [] = refl
     Σ-zero (x ∷ xs) = trans (proj₁ identity _) (Σ-zero xs)
