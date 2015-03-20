@@ -8,7 +8,7 @@ module Prototypes.BigopFold where
   open import Data.Product hiding (map; Σ-syntax)
   open import Data.Fin hiding (_+_; fold; fold′)
   open import Data.Nat hiding (fold) renaming (_+_ to _+ℕ_; _*_ to _*ℕ_)
-  open import Data.Vec hiding (_∈_; sum)
+  open import Data.List.Base
 
   open import Function
 
@@ -20,8 +20,8 @@ module Prototypes.BigopFold where
 
     open Monoid M renaming (Carrier to R)
 
-    fold : ∀ {n} → (I → R) → Vec I n → R
-    fold f = foldr _ (λ x y → (f x) ∙ y) ε
+    fold : (I → R) → List I → R
+    fold f = foldr (λ x y → (f x) ∙ y) ε
 
     Σ-syntax : _
     Σ-syntax = fold
@@ -43,11 +43,11 @@ module Prototypes.BigopFold where
 
     syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
 
-  fromZeroℕ : (n : ℕ) → Vec ℕ n
+  fromZeroℕ : ℕ → List ℕ
   fromZeroℕ zero    = []
   fromZeroℕ (suc n) = zero ∷ map suc (fromZeroℕ n)
 
-  fromZeroFin : (n : ℕ) → Vec (Fin n) n
+  fromZeroFin : (n : ℕ) → List (Fin n)
   fromZeroFin zero = []
   fromZeroFin (suc n) = zero ∷ map suc (fromZeroFin n)
 
@@ -60,24 +60,23 @@ module Prototypes.BigopFold where
 
     open Core M
 
-    Σ-head : ∀ {n} → (f : I → R) (x : I) (xs : Vec I n) →
+    Σ-head : (f : I → R) (x : I) (xs : List I) →
              fold f (x ∷ xs) ≈ f x ∙ fold f xs
     Σ-head _ _ _ = refl
 
-    Σ-shift : ∀ {n} → (f : I → R) (x : I) (xs : Vec I n) →
+    Σ-shift : (f : I → R) (x : I) (xs : List I) →
               f x ≈ ε → fold f (x ∷ xs) ≈ fold f xs
     Σ-shift f x xs fx≈ε = begin
       f x ∙ fold f xs  ≈⟨ ∙-cong fx≈ε refl ⟩
       ε ∙ fold f xs    ≈⟨ proj₁ identity _ ⟩
       fold f xs ∎
 
-    Σ-zero : ∀ {n} (xs : Vec I n) → fold (const ε) xs ≈ ε
+    Σ-zero : (xs : List I) → fold (const ε) xs ≈ ε
     Σ-zero [] = refl
     Σ-zero (x ∷ xs) = trans (proj₁ identity _) (Σ-zero xs)
 
-    Σ-cong : ∀ {n} {f g : I → R} →
-             (∀ x → f x ≈ g x) → (is : Vec I n) →
-             fold {n = n} f is ≈ fold g is
+    Σ-cong : {f g : I → R} → (∀ x → f x ≈ g x) → (is : List I) →
+             fold f is ≈ fold g is
     Σ-cong             f≗g []       = refl
     Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
       f i ∙ fold f is
@@ -94,8 +93,8 @@ module Prototypes.BigopFold where
 
     open MonoidLemmas monoid
 
-    Σ-lift : ∀ {n} (f g : I → R) (is : Vec I n) →
-              fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
+    Σ-lift : (f g : I → R) (is : List I) →
+             fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
     Σ-lift f g [] = proj₁ identity _
     Σ-lift f g (i ∷ is) = begin
       (f i ∙ fold f is) ∙ (g i ∙ fold g is)
@@ -119,13 +118,13 @@ module Prototypes.BigopFold where
             ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ Σ-lift f g is ⟩
           g i ∙ fold (λ i → f i ∙ g i) is ∎
 
-    Σ-swap : ∀ {m n} → (f : J → I → R) (js : Vec J m) (is : Vec I n) →
+    Σ-swap : (f : J → I → R) (js : List J) (is : List I) →
              fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
     Σ-swap f [] ys = sym (Σ-zero ys)
     Σ-swap f xs [] = Σ-zero xs
-    Σ-swap {suc m} {n} f (x ∷ xs) ys = begin
+    Σ-swap f (x ∷ xs) ys = begin
       fold (f x) ys ∙ fold (λ j → fold (f j) ys) xs
-        ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ Σ-swap {m} {n} f xs ys ⟩
+        ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ Σ-swap f xs ys ⟩
       fold (f x) ys ∙ fold (λ i → fold (flip f i) xs) ys
         ≈⟨ Σ-lift (f x) (λ i → fold (flip f i) xs) ys ⟩
       fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
@@ -142,14 +141,14 @@ module Prototypes.BigopFold where
 
     open CommutativeMonoidLemmas +-commutativeMonoid {I = I}
 
-    Σ-distrˡ : ∀ {m} (f : I → R) (x : R) (is : Vec I m) →
-              x * fold f is ≈ fold ((_*_ x) ∘ f) is
+    Σ-distrˡ : (f : I → R) (x : R) (is : List I) →
+               x * fold f is ≈ fold ((_*_ x) ∘ f) is
     Σ-distrˡ f x [] = proj₂ *-zero x
-    Σ-distrˡ {suc m} f x (n ∷ ns) =
+    Σ-distrˡ f x (n ∷ ns) =
       begin
         x * (f n + fold f ns)
           ≈⟨ proj₁ distrib x (f n) (fold f ns) ⟩
         (x * f n) + (x * fold f ns)
-          ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distrˡ {m} f x ns ⟩
+          ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distrˡ f x ns ⟩
         (x * f n) + fold ((_*_ x) ∘ f) ns
       ∎
