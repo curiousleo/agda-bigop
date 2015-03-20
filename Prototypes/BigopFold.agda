@@ -5,16 +5,16 @@ module Prototypes.BigopFold where
 
   import Relation.Binary.EqReasoning as EqR
 
+  open import Algebra
+  open import Algebra.Structures
+  open import Algebra.FunctionProperties.Core using (Op₂)
+
   open import Data.Product hiding (map; Σ-syntax)
-  open import Data.Fin hiding (_+_; fold; fold′)
+  open import Data.Fin hiding (_+_; _≤_; fold; fold′)
   open import Data.Nat hiding (fold) renaming (_+_ to _+ℕ_; _*_ to _*ℕ_)
   open import Data.List.Base
 
   open import Function
-
-  open import Algebra
-  open import Algebra.Structures
-  open import Algebra.FunctionProperties.Core using (Op₂)
 
   module Core {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 
@@ -43,14 +43,36 @@ module Prototypes.BigopFold where
 
     syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
 
-  fromZeroℕ : ℕ → List ℕ
-  fromZeroℕ zero    = []
-  fromZeroℕ (suc n) = zero ∷ map suc (fromZeroℕ n)
+  range : ∀ {from to} → from ≤ to → List (Fin to)
+  range (z≤n {zero})          = []
+  range (z≤n {suc to})        = zero ∷ map suc (range (z≤n {to}))
+  range (s≤s {from} {to} f≤t) = map suc (range f≤t)
 
-  fromZeroFin : (n : ℕ) → List (Fin n)
-  fromZeroFin zero = []
-  fromZeroFin (suc n) = zero ∷ map suc (fromZeroFin n)
+  fromLenF : (from len : ℕ) → List (Fin (from +ℕ len))
+  fromLenF from len = range {from} {from + len} (m≤m+n from len)
+    where
+      open Data.Nat
+      open import Data.Nat.Properties.Simple
 
+      ≤-refl : ∀ n → n ≤ n
+      ≤-refl zero    = z≤n
+      ≤-refl (suc n) = s≤s (≤-refl n)
+
+      m≤m+n : ∀ m n → m ≤ m + n
+      m≤m+n zero n = z≤n
+      m≤m+n (suc m) zero rewrite +-comm (suc m) zero = ≤-refl (suc m)
+      m≤m+n (suc m) (suc n) = s≤s (m≤m+n m (suc n))
+
+  fromLenℕ : (from len : ℕ) → List ℕ
+  fromLenℕ from to = map toℕ (fromLenF from to)
+
+  module _ where
+    open import Relation.Binary.PropositionalEquality
+
+    _…+_ = fromLenℕ
+
+    test : 2 …+ 3 ≡ 2 ∷ 3 ∷ 4 ∷ []
+    test = refl
 
   module MonoidLemmas
          {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
