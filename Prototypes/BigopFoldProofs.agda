@@ -16,14 +16,14 @@ module Prototypes.BigopFoldProofs where
 
   module GaussFormula where
 
-    0… = fromZeroℕ
+    0… = fromLenℕ 0
+
+    open import Data.Nat hiding (fold)
 
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Algebra using (CommutativeSemiring)
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
     open Core +-monoid using (Σ-syntax)
-
-    open import Data.Nat hiding (fold)
 
     proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0… (suc n) $ x ] ≡ n * (suc n)
     proof zero = P.refl
@@ -59,8 +59,9 @@ module Prototypes.BigopFoldProofs where
          (B : Matrix (Semigroup.Carrier S) p q)
          (C : Matrix (Semigroup.Carrier S) p q) where
 
+    0… = fromLenF 0
+
     open import Data.Fin hiding (_+_; fold)
-    0… = fromZeroFin
 
     open Semigroup S renaming (Carrier to R; _∙_ to _+_)
 
@@ -79,9 +80,9 @@ module Prototypes.BigopFoldProofs where
          (B : Matrix (CommutativeSemiringWithoutOne.Carrier S) q r)
          (C : Matrix (CommutativeSemiringWithoutOne.Carrier S) r s) where
 
-    open import Data.Fin hiding (_+_; fold)
+    0… = fromLenF 0
 
-    0… = fromZeroFin
+    open import Data.Fin hiding (_+_; fold)
 
     open CommutativeSemiringWithoutOne S renaming (Carrier to R)
 
@@ -142,7 +143,7 @@ module Prototypes.BigopFoldProofs where
 
   module Binomials where
 
-    0… = fromZeroℕ
+    0… = fromLenℕ 0
 
     open import Data.Nat using (_∸_; suc)
     open import Data.Nat.Properties using (commutativeSemiring)
