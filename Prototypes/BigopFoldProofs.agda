@@ -7,7 +7,7 @@ module Prototypes.BigopFoldProofs where
   open import Function
 
   open import Data.Unit hiding (setoid)
-  open import Data.Vec hiding (sum)
+  open import Data.Vec hiding (sum; map)
 
   open import Relation.Nullary
   open import Relation.Binary.PropositionalEquality using (_≡_)
@@ -151,7 +151,7 @@ module Prototypes.BigopFoldProofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid using (Σ-syntax)
+    open Core +-monoid using (fold; Σ-syntax)
 
     infixr 8 _^_
 
@@ -176,24 +176,37 @@ module Prototypes.BigopFoldProofs where
     module BinomialTheorem where
 
       open P.≡-Reasoning
+      open import Data.Product using (proj₁)
 
       proof : ∀ x n → Σ[ k ← 0 …+ (suc n) $ n choose k * x ^ k ] ≈ (1 + x) ^ n
       proof x 0       = refl
       proof x (suc n) = begin
-        ((1 + n) choose 0 * x ^ 0) + Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
-          ≡⟨ {! +-cong refl ? !} ⟩
-        1 + Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
-          ≡⟨ {!!} ⟩
-        1 + Σ[ k ← 0 …+ (1 + n) $ (n choose k + n choose (1 + k)) * x ^ (1 + k) ]
-          ≡⟨ {!!} ⟩
-        1 + Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) + n choose (1 + k) * x ^ (1 + k) ]
-          ≡⟨ {!!} ⟩
+        1 + Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
+          ≡⟨ (P.refl {x = 1}) ⟨ +-cong ⟩ begin
+            Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
+              ≡⟨ sym ➂ ⟩
+            Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
+              ≡⟨ Σ-cong′ {f = λ k → (1 + n) choose (1 + k) * x ^ (1 + k)}
+                         (λ k → P.refl) (0 …+ (1 + n)) ⟩
+            Σ[ k ← 0 …+ (1 + n) $ (n choose k + n choose (1 + k)) * x ^ (1 + k) ]
+              ≡⟨ Σ-cong′ {f = λ k → (n choose k + n choose (1 + k)) * x ^ (1 + k)}
+                         (λ k → distribʳ (x ^ (1 + k)) (n choose k) _) (0 …+ (1 + n)) ⟩
+            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) + n choose (1 + k) * x ^ (1 + k) ]
+              ≡⟨ sym (Σ-lift (λ k → n choose k * x ^ (1 + k))
+                             (λ k → n choose (1 + k) * x ^ (1 + k))
+                             (0 …+ (1 + n))) ⟩
+            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+             + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ] ∎
+          ⟩
         1 + (Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
              + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ])
           ≡⟨ ➀ ⟩
         Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
              + (1 + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ])
-          ≡⟨ {! +-cong ? ➁ !} ⟩
+          ≡⟨ ➃ ⟨ +-cong ⟩ ➁ ⟩
+        x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] + Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
+          ≡⟨ +-cong (P.refl {x = x * _})
+                    (sym (proj₁ *-identity Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ])) ⟩
         x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] + 1 * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
           ≡⟨ sym (distribʳ _ x 1) ⟩
         (x + 1) * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
@@ -201,6 +214,27 @@ module Prototypes.BigopFoldProofs where
         (1 + x) * (1 + x) ^ n ∎
 
         where
+
+          open import Data.List using ([]; _∷_; map)
+
+          ➃ : Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+              ≈ x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
+          ➃ = {!!}
+
+          ➂ : Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
+              ≈ Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
+          ➂ = begin
+            Σ[ k ← 0 …+ (1 + n) $ ((1 + n) choose (1 + k)) * x ^ (1 + k) ]
+              ≡⟨ Σ-cong {g = λ k → (1 + n) choose k * x ^ k} suc (λ k → P.refl) (0 …+ (1 + n)) ⟩
+            Σ[ k ← map suc (0 …+ (1 + n)) $ (1 + n) choose k * x ^ k ]
+              ≡⟨ P.cong (fold (λ k → (1 + n) choose k * x ^ k)) (lemma 0 (suc n)) ⟩
+            Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ] ∎
+
+            where
+
+              lemma : ∀ m n → map suc (m …+ n) ≡ (suc m) …+ n
+              lemma m 0       = {!map suc (m …+ 0) ≡ suc m …+ 0!}
+              lemma m (suc n) = {!!}
 
           ➀ = lemma 1
                     Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
