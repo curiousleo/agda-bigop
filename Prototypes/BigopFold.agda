@@ -108,7 +108,7 @@ module Prototypes.BigopFold where
     -- Σ-cong could be generalised further to f : I → R, g : J → R, h : I → J
     Σ-cong : {f g : I → R} (h : I → I) → (∀ x → f x ≈ g (h x)) → (is : List I) →
              fold f is ≈ fold g (map h is)
-    Σ-cong             h f≗gh []       = refl
+    Σ-cong         h f≗gh []       = refl
     Σ-cong {f} {g} h f≗gh (i ∷ is) = begin
       f i ∙ fold f is
         ≈⟨ f≗gh i ⟨ ∙-cong ⟩ Σ-cong {f} {g} h f≗gh is ⟩
