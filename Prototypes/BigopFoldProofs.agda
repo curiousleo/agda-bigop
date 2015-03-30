@@ -143,8 +143,6 @@ module Prototypes.BigopFoldProofs where
 
   module Binomials where
 
-    0… = fromLenℕ 0
-
     open import Data.Nat using (_∸_; suc)
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
@@ -154,6 +152,12 @@ module Prototypes.BigopFoldProofs where
     open MonoidLemmas +-monoid
 
     open Core +-monoid using (Σ-syntax)
+
+    infixr 8 _^_
+
+    _^_ : ℕ → ℕ → ℕ
+    x ^ 0 = 1
+    x ^ (suc n) = x * x ^ n
 
     _choose_ : ℕ → ℕ → ℕ
     _     choose 0     = 1
@@ -169,20 +173,81 @@ module Prototypes.BigopFoldProofs where
     fib 1             = 1
     fib (suc (suc n)) = fib n + fib (suc n)
 
+    module BinomialTheorem where
+
+      open P.≡-Reasoning
+
+      proof : ∀ x n → Σ[ k ← 0 …+ (suc n) $ n choose k * x ^ k ] ≈ (1 + x) ^ n
+      proof x 0       = refl
+      proof x (suc n) = begin
+        Σ[ k ← 0 …+ (2 + n) $ (1 + n) choose k * x ^ k ]
+          ≡⟨ {!!} ⟩
+        ((1 + n) choose 0 * x ^ 0) + Σ[ k ← 1 …+ (2 + n) $ (1 + n) choose k * x ^ k ]
+          ≡⟨ {!!} ⟩
+        1 + Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
+          ≡⟨ {!!} ⟩
+        1 + Σ[ k ← 0 …+ (1 + n) $ (n choose k + n choose (1 + k)) * x ^ (1 + k) ]
+          ≡⟨ {!!} ⟩
+        1 + Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) + n choose (1 + k) * x ^ (1 + k) ]
+          ≡⟨ {!!} ⟩
+        1 + (Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+             + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ])
+          ≡⟨ ➀ ⟩
+        Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+             + (1 + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ])
+          ≡⟨ {! +-cong ? ➁ !} ⟩
+        x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] + 1 * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
+          ≡⟨ sym (distribʳ _ x 1) ⟩
+        (x + 1) * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
+          ≡⟨ *-cong (+-comm x 1) (proof x n) ⟩
+        (1 + x) * (1 + x) ^ n ∎
+
+        where
+
+          ➀ = lemma 1
+                    Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+                    Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ]
+            where
+
+              lemma : ∀ x y z → x + (y + z) ≈ y + (x + z)
+              lemma x y z = begin
+                x + (y + z)
+                  ≡⟨ sym (+-assoc x y z) ⟩
+                (x + y) + z
+                  ≡⟨ +-cong (+-comm x y) refl ⟩
+                (y + x) + z
+                  ≡⟨ +-assoc y x z ⟩
+                y + (x + z) ∎
+
+          ➁ : 1 + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ]
+              ≈ Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
+          ➁ = begin
+            1 + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ]
+              ≡⟨ {!!} ⟩
+            1 + Σ[ k ← 1 …+ (2 + n) $ n choose k * x ^ k ]
+              ≡⟨ {!!} ⟩
+            1 + (Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ] + n choose (2 + n) * x ^ (2 + n))
+              ≡⟨ {!!} ⟩
+            1 + (Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ] + 0)
+              ≡⟨ {!!} ⟩
+            1 + Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
+              ≡⟨ {!!} ⟩
+            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
+
     module RowSum where
 
-      proof : ∀ m r → Σ[ k ← 0… m $ r choose k * (r ∸ 2 * k) ] ≈ m * r choose m
+      proof : ∀ m r → Σ[ k ← 0 …+ m $ r choose k * (r ∸ 2 * k) ] ≈ m * r choose m
       proof 0       r = refl
       proof (suc m) r = {!!}
 
     module PascalDiagonal where
 
-      proof : ∀ n → Σ[ k ← 0… n $ (n ∸ k) choose k ] ≡ fib n
+      proof : ∀ n → Σ[ k ← 0 …+ n $ (n ∸ k) choose k ] ≡ fib n
       proof 0             = refl
       proof 1             = refl
       proof (suc (suc n)) =
         begin
-          Σ[ k ← 0… (suc (suc n)) $ (suc (suc n) ∸ k) choose k ]
+          Σ[ k ← 0 …+ (suc (suc n)) $ (suc (suc n) ∸ k) choose k ]
             ≡⟨ {!!} ⟩
           fib n + fib (suc n)
         ∎
