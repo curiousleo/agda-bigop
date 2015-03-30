@@ -102,14 +102,14 @@ module Prototypes.BigopFoldProofs where
     proof {i} {j} =
       begin
         Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
-          ≈⟨ Σ-cong lemma₀ (0… q) ⟩
+          ≈⟨ Σ-cong′ lemma₀ (0… q) ⟩
         Σ[ k ← 0… q $ Σ[ l ← 0… r $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
           ≈⟨ Σ-swap (λ k l → A [ i , k ] * (B [ k , l ] * C [ l , j ]))
                     (0… q) (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * (B [ k , l ] * C [ l , j ]) ] ]
-          ≈⟨ Σ-cong (λ l → Σ-cong (lemma₁ l) (0… q)) (0… r) ⟩
+          ≈⟨ Σ-cong′ (λ l → Σ-cong′ (lemma₁ l) (0… q)) (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ] ]
-          ≈⟨ Σ-cong lemma₂ (0… r) ⟩
+          ≈⟨ Σ-cong′ lemma₂ (0… r) ⟩
         Σ[ l ← 0… r $ Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ] ]
       ∎
       where
@@ -131,8 +131,8 @@ module Prototypes.BigopFoldProofs where
                  Σ[ k ← 0… q $ A [ i , k ] * B [ k , l ] ] * C [ l , j ]
         lemma₂ l = begin
           Σ[ k ← 0… q $ (A [ i , k ] * B [ k , l ]) * C [ l , j ] ]
-            ≈⟨ Σ-cong (λ k → *-comm (A [ i , k ] * B [ k , l ])
-                                    (C [ l , j ]))
+            ≈⟨ Σ-cong′ (λ k → *-comm (A [ i , k ] * B [ k , l ])
+                                     (C [ l , j ]))
                       (0… q) ⟩
           Σ[ k ← 0… q $ C [ l , j ] * (A [ i , k ] * B [ k , l ]) ]
             ≈⟨ sym $ Σ-distrˡ (λ k → A [ i , k ] * B [ k , l ])
@@ -180,10 +180,8 @@ module Prototypes.BigopFoldProofs where
       proof : ∀ x n → Σ[ k ← 0 …+ (suc n) $ n choose k * x ^ k ] ≈ (1 + x) ^ n
       proof x 0       = refl
       proof x (suc n) = begin
-        Σ[ k ← 0 …+ (2 + n) $ (1 + n) choose k * x ^ k ]
-          ≡⟨ {!!} ⟩
-        ((1 + n) choose 0 * x ^ 0) + Σ[ k ← 1 …+ (2 + n) $ (1 + n) choose k * x ^ k ]
-          ≡⟨ {!!} ⟩
+        ((1 + n) choose 0 * x ^ 0) + Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
+          ≡⟨ {! +-cong refl ? !} ⟩
         1 + Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
           ≡⟨ {!!} ⟩
         1 + Σ[ k ← 0 …+ (1 + n) $ (n choose k + n choose (1 + k)) * x ^ (1 + k) ]
