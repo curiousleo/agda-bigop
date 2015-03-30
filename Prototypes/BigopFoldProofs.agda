@@ -176,7 +176,7 @@ module Prototypes.BigopFoldProofs where
     module BinomialTheorem where
 
       open P.≡-Reasoning
-      open import Data.Product using (proj₁)
+      open import Data.Product using (proj₁; proj₂)
 
       proof : ∀ x n → Σ[ k ← 0 …+ (suc n) $ n choose k * x ^ k ] ≈ (1 + x) ^ n
       proof x 0       = refl
@@ -279,16 +279,23 @@ module Prototypes.BigopFoldProofs where
                 Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
                   ≡⟨ {!!} ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + n choose (2 + n) * x ^ (2 + n)
-                  ≡⟨ P.refl ⟨ +-cong ⟩ {!!} ⟩
+                  ≡⟨ +-cong (P.refl {x = Σ[ k ← 1 …+ n $ n choose k * x ^ k ]})
+                            (lemma 1 n ⟨ *-cong ⟩ P.refl ⟨ P.trans ⟩ zeroˡ n) ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + 0
-                  ≡⟨ {!!} ⟩
+                  ≡⟨ proj₂ +-identity _ ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] ∎
               ⟩
             1 + Σ[ k ← 1 …+ n $ n choose k * x ^ k ]
-              ≡⟨ {!!} ⟩
+              ≡⟨ P.refl ⟩
+            Σ[ k ← 0 ∷ (1 …+ n) $ n choose k * x ^ k ]
+              ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (prep-suc-lemma n) ⟩
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
 
             where
+
+              prep-suc-lemma : ∀ n → 0 ∷ (1 …+ n) ≡ 0 …+ (1 + n)
+              prep-suc-lemma 0       = P.refl
+              prep-suc-lemma (suc n) = P.refl
 
               lemma : ∀ m n → n choose ((suc m) + n) ≡ 0
               lemma m 0 = P.refl
