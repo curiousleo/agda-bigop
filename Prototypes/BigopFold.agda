@@ -97,13 +97,22 @@ module Prototypes.BigopFold where
     Σ-zero [] = refl
     Σ-zero (x ∷ xs) = trans (proj₁ identity _) (Σ-zero xs)
 
-    Σ-cong : {f g : I → R} → (∀ x → f x ≈ g x) → (is : List I) →
-             fold f is ≈ fold g is
-    Σ-cong             f≗g []       = refl
-    Σ-cong {f = f} {g} f≗g (i ∷ is) = begin
+    Σ-cong′ : {f g : I → R} → (∀ x → f x ≈ g x) → (is : List I) →
+              fold f is ≈ fold g is
+    Σ-cong′         f≗g []       = refl
+    Σ-cong′ {f} {g} f≗g (i ∷ is) = begin
       f i ∙ fold f is
-        ≈⟨ f≗g i ⟨ ∙-cong ⟩ Σ-cong {f = f} {g} f≗g is ⟩
+        ≈⟨ f≗g i ⟨ ∙-cong ⟩ Σ-cong′ {f} {g} f≗g is ⟩
       g i ∙ fold g is ∎
+
+    -- Σ-cong could be generalised further to f : I → R, g : J → R, h : I → J
+    Σ-cong : {f g : I → R} (h : I → I) → (∀ x → f x ≈ g (h x)) → (is : List I) →
+             fold f is ≈ fold g (map h is)
+    Σ-cong             h f≗gh []       = refl
+    Σ-cong {f} {g} h f≗gh (i ∷ is) = begin
+      f i ∙ fold f is
+        ≈⟨ f≗gh i ⟨ ∙-cong ⟩ Σ-cong {f} {g} h f≗gh is ⟩
+      g (h i) ∙ fold g (map h is) ∎
 
   module CommutativeMonoidLemmas
          {c ℓ} (M : CommutativeMonoid c ℓ) {i} {I : Set i} {j} {J : Set j} where
