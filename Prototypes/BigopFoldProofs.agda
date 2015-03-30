@@ -219,7 +219,28 @@ module Prototypes.BigopFoldProofs where
 
           ➃ : Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
               ≈ x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
-          ➃ = {!!}
+          ➃ = begin
+            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
+              ≡⟨ Σ-cong′ lemma (0 …+ (1 + n)) ⟩
+            Σ[ k ← 0 …+ (1 + n) $ x * (n choose k * x ^ k) ]
+              ≡⟨ Σ-distrˡ (λ k → (n choose k) * (x ^ k)) {!x!} (0 …+ (1 + n)) ⟩
+            x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
+
+            where
+
+              lemma : ∀ k → n choose k * x ^ (1 + k) ≡ x * (n choose k * x ^ k)
+              lemma k = begin
+                n choose k * (x * x ^ k)
+                  ≡⟨ sym (*-assoc (n choose k) _ _) ⟩
+                (n choose k * x) * x ^ k
+                  ≡⟨ *-comm (n choose k) _ ⟨ *-cong ⟩ P.refl ⟩
+                (x * n choose k) * x ^ k
+                  ≡⟨ *-assoc x _ _ ⟩
+                x * (n choose k * x ^ k) ∎
+
+          suc-lemma : ∀ m n → map suc (m …+ n) ≡ (suc m) …+ n
+          suc-lemma m 0       = {!map suc (m …+ 0) ≡ suc m …+ 0!}
+          suc-lemma m (suc n) = {!!}
 
           ➂ : Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
               ≈ Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
@@ -227,14 +248,8 @@ module Prototypes.BigopFoldProofs where
             Σ[ k ← 0 …+ (1 + n) $ ((1 + n) choose (1 + k)) * x ^ (1 + k) ]
               ≡⟨ Σ-cong {g = λ k → (1 + n) choose k * x ^ k} suc (λ k → P.refl) (0 …+ (1 + n)) ⟩
             Σ[ k ← map suc (0 …+ (1 + n)) $ (1 + n) choose k * x ^ k ]
-              ≡⟨ P.cong (fold (λ k → (1 + n) choose k * x ^ k)) (lemma 0 (suc n)) ⟩
+              ≡⟨ P.cong (fold (λ k → (1 + n) choose k * x ^ k)) (suc-lemma 0 (suc n)) ⟩
             Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ] ∎
-
-            where
-
-              lemma : ∀ m n → map suc (m …+ n) ≡ (suc m) …+ n
-              lemma m 0       = {!map suc (m …+ 0) ≡ suc m …+ 0!}
-              lemma m (suc n) = {!!}
 
           ➀ = lemma 1
                     Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
@@ -255,16 +270,57 @@ module Prototypes.BigopFoldProofs where
               ≈ Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
           ➁ = begin
             1 + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ]
-              ≡⟨ {!!} ⟩
-            1 + Σ[ k ← 1 …+ (2 + n) $ n choose k * x ^ k ]
-              ≡⟨ {!!} ⟩
-            1 + (Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ] + n choose (2 + n) * x ^ (2 + n))
-              ≡⟨ {!!} ⟩
-            1 + (Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ] + 0)
-              ≡⟨ {!!} ⟩
-            1 + Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
+              ≡⟨ (P.refl {x = 1}) ⟨ +-cong ⟩ begin
+                Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ]
+                  ≡⟨ Σ-cong {g = λ k → n choose k * x ^ k}
+                            suc (λ k → P.refl) (0 …+ (1 + n)) ⟩
+                Σ[ k ← map suc (0 …+ (1 + n)) $ n choose k * x ^ k ]
+                  ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-lemma 0 (suc n)) ⟩
+                Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
+                  ≡⟨ {!!} ⟩
+                Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + n choose (2 + n) * x ^ (2 + n)
+                  ≡⟨ P.refl ⟨ +-cong ⟩ {!!} ⟩
+                Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + 0
+                  ≡⟨ {!!} ⟩
+                Σ[ k ← 1 …+ n $ n choose k * x ^ k ] ∎
+              ⟩
+            1 + Σ[ k ← 1 …+ n $ n choose k * x ^ k ]
               ≡⟨ {!!} ⟩
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
+
+            where
+
+              lemma : ∀ m n → n choose ((suc m) + n) ≡ 0
+              lemma m 0 = P.refl
+              lemma m (suc n) = ⓐ ⟨ +-cong ⟩ ⓑ
+                where
+                  ⓐ : n choose (m + suc n) ≡ 0
+                  ⓐ = begin
+                    n choose (m + suc n)
+                      ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ begin
+                        m + suc n
+                          ≡⟨ +-comm m (suc n) ⟩
+                        suc (n + m)
+                          ≡⟨ P.cong suc (+-comm n m) ⟩
+                        suc (m + n) ∎
+                      ⟩
+                    n choose suc (m + n)
+                      ≡⟨ lemma m n ⟩
+                    0 ∎
+
+                  ⓑ : n choose suc (m + suc n) ≡ 0
+                  ⓑ = begin
+                    n choose suc (m + suc n)
+                      ≡⟨ (P.refl {x = n}) ⟨ P.cong₂ _choose_ ⟩ begin
+                        suc (m + suc n)
+                          ≡⟨ P.cong suc (+-comm m (suc n)) ⟩
+                        suc (suc (n + m))
+                          ≡⟨ P.cong (suc ∘ suc) (+-comm n m) ⟩
+                        suc (suc m + n) ∎
+                      ⟩
+                    n choose suc (suc m + n)
+                      ≡⟨ lemma (suc m) n ⟩
+                    0 ∎
 
     module RowSum where
 
