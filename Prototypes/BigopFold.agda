@@ -177,7 +177,7 @@ module Prototypes.BigopFold where
     open CommutativeMonoidLemmas +-commutativeMonoid {I = I}
 
     Σ-distrˡ : (f : I → R) (x : R) (is : List I) →
-               x * fold f is ≈ fold ((_*_ x) ∘ f) is
+               x * fold f is ≈ fold (λ k → x * (f k)) is
     Σ-distrˡ f x [] = proj₂ *-zero x
     Σ-distrˡ f x (n ∷ ns) =
       begin
