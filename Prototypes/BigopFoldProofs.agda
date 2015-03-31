@@ -7,7 +7,6 @@ module Prototypes.BigopFoldProofs where
   open import Function
 
   open import Data.Unit hiding (setoid)
-  open import Data.Vec hiding (sum; map)
 
   open import Relation.Nullary
   open import Relation.Binary.PropositionalEquality using (_≡_)
