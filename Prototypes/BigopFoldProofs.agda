@@ -207,16 +207,16 @@ module Prototypes.BigopFoldProofs where
           ≡⟨ ➃ ⟨ +-cong ⟩ ➁ ⟩
         x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] + Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
           ≡⟨ +-cong (P.refl {x = x * _})
-                    (sym (proj₁ *-identity Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ])) ⟩
+                    (sym $ proj₁ *-identity Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]) ⟩
         x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] + 1 * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
-          ≡⟨ sym (distribʳ _ x 1) ⟩
+          ≡⟨ sym $ distribʳ _ x 1 ⟩
         (x + 1) * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
           ≡⟨ *-cong (+-comm x 1) (proof x n) ⟩
         (1 + x) * (1 + x) ^ n ∎
 
         where
 
-          open import Data.List using ([]; _∷_; map)
+          open import Data.List
 
           ➃ : Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
               ≈ x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ]
@@ -232,7 +232,7 @@ module Prototypes.BigopFoldProofs where
               lemma : ∀ k → n choose k * x ^ (1 + k) ≡ x * (n choose k * x ^ k)
               lemma k = begin
                 n choose k * (x * x ^ k)
-                  ≡⟨ sym (*-assoc (n choose k) _ _) ⟩
+                  ≡⟨ sym $ *-assoc (n choose k) _ _ ⟩
                 (n choose k * x) * x ^ k
                   ≡⟨ *-comm (n choose k) _ ⟨ *-cong ⟩ P.refl ⟩
                 (x * n choose k) * x ^ k
@@ -240,8 +240,7 @@ module Prototypes.BigopFoldProofs where
                 x * (n choose k * x ^ k) ∎
 
           suc-lemma : ∀ m n → map suc (m …+ n) ≡ (suc m) …+ n
-          suc-lemma m 0       = {!map suc (m …+ 0) ≡ suc m …+ 0!}
-          suc-lemma m (suc n) = {!!}
+          suc-lemma m n = {!!}
 
           ➂ : Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
               ≈ Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
@@ -260,7 +259,7 @@ module Prototypes.BigopFoldProofs where
               lemma : ∀ x y z → x + (y + z) ≈ y + (x + z)
               lemma x y z = begin
                 x + (y + z)
-                  ≡⟨ sym (+-assoc x y z) ⟩
+                  ≡⟨ sym $ +-assoc x y z ⟩
                 (x + y) + z
                   ≡⟨ +-cong (+-comm x y) refl ⟩
                 (y + x) + z
@@ -278,10 +277,12 @@ module Prototypes.BigopFoldProofs where
                 Σ[ k ← map suc (0 …+ (1 + n)) $ n choose k * x ^ k ]
                   ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-lemma 0 (suc n)) ⟩
                 Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
-                  ≡⟨ {!!} ⟩
-                Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + n choose (2 + n) * x ^ (2 + n)
+                  ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-last-lemma n) ⟩
+                Σ[ k ← (1 …+ n) ∷ʳ (1 + n) $ n choose k * x ^ k ]
+                  ≡⟨ Σ-last (λ k → n choose k * x ^ k) (1 + n) (1 …+ n) ⟩
+                Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + n choose (1 + n) * x ^ (1 + n)
                   ≡⟨ +-cong (P.refl {x = Σ[ k ← 1 …+ n $ n choose k * x ^ k ]})
-                            (lemma 1 n ⟨ *-cong ⟩ P.refl ⟨ P.trans ⟩ zeroˡ n) ⟩
+                            (lemma 0 n ⟨ *-cong ⟩ P.refl ⟨ P.trans ⟩ zeroˡ n) ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + 0
                   ≡⟨ proj₂ +-identity _ ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] ∎
@@ -289,14 +290,17 @@ module Prototypes.BigopFoldProofs where
             1 + Σ[ k ← 1 …+ n $ n choose k * x ^ k ]
               ≡⟨ P.refl ⟩
             Σ[ k ← 0 ∷ (1 …+ n) $ n choose k * x ^ k ]
-              ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (prep-suc-lemma n) ⟩
+              ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-head-lemma n) ⟩
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
 
             where
 
-              prep-suc-lemma : ∀ n → 0 ∷ (1 …+ n) ≡ 0 …+ (1 + n)
-              prep-suc-lemma 0       = P.refl
-              prep-suc-lemma (suc n) = P.refl
+              suc-last-lemma : ∀ n → 1 …+ (1 + n) ≡ (1 …+ n) ∷ʳ (1 + n)
+              suc-last-lemma n = {!!}
+
+              suc-head-lemma : ∀ n → 0 ∷ (1 …+ n) ≡ 0 …+ (1 + n)
+              suc-head-lemma 0       = P.refl
+              suc-head-lemma (suc n) = P.refl
 
               lemma : ∀ m n → n choose ((suc m) + n) ≡ 0
               lemma m 0 = P.refl
