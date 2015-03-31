@@ -224,7 +224,7 @@ module Prototypes.BigopFoldProofs where
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
               ≡⟨ Σ-cong′ lemma (0 …+ (1 + n)) ⟩
             Σ[ k ← 0 …+ (1 + n) $ x * (n choose k * x ^ k) ]
-              ≡⟨ Σ-distrˡ (λ k → (n choose k) * (x ^ k)) {!x!} (0 …+ (1 + n)) ⟩
+              ≡⟨ sym $ Σ-distrˡ (λ k → n choose k * x ^ k) x (0 …+ (1 + n)) ⟩
             x * Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
 
             where
