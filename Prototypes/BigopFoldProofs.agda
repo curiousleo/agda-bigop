@@ -190,10 +190,12 @@ module Prototypes.BigopFoldProofs where
             Σ[ k ← 0 …+ (1 + n) $ (n choose k + n choose (1 + k)) * x ^ (1 + k) ]
               ≡⟨ Σ-cong′ {f = λ k → (n choose k + n choose (1 + k)) * x ^ (1 + k)}
                          (λ k → distribʳ (x ^ (1 + k)) (n choose k) _) (0 …+ (1 + n)) ⟩
-            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) + n choose (1 + k) * x ^ (1 + k) ]
-              ≡⟨ sym (Σ-lift (λ k → n choose k * x ^ (1 + k))
-                             (λ k → n choose (1 + k) * x ^ (1 + k))
-                             (0 …+ (1 + n))) ⟩
+            Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k)
+                                  + n choose (1 + k) * x ^ (1 + k) ]
+              ≡⟨ sym $ Σ-lift {I = ℕ} {J = ℕ}
+                              (λ k → n choose k * x ^ (1 + k))
+                              (λ k → n choose (1 + k) * x ^ (1 + k))
+                              (0 …+ (1 + n)) ⟩
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ (1 + k) ]
              + Σ[ k ← 0 …+ (1 + n) $ n choose (1 + k) * x ^ (1 + k) ] ∎
           ⟩
