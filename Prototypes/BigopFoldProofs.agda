@@ -177,6 +177,8 @@ module Prototypes.BigopFoldProofs where
       open P.≡-Reasoning
       open import Data.Product using (proj₁; proj₂)
 
+      open RangeLemmas
+
       proof : ∀ x n → Σ[ k ← 0 …+ (suc n) $ n choose k * x ^ k ] ≈ (1 + x) ^ n
       proof x 0       = refl
       proof x (suc n) = begin
@@ -244,9 +246,6 @@ module Prototypes.BigopFoldProofs where
                   ≡⟨ *-assoc x _ _ ⟩
                 x * (n choose k * x ^ k) ∎
 
-          suc-lemma : ∀ m n → map suc (m …+ n) ≡ (suc m) …+ n
-          suc-lemma m n = {!!}
-
           ➂ : Σ[ k ← 0 …+ (1 + n) $ (1 + n) choose (1 + k) * x ^ (1 + k) ]
               ≈ Σ[ k ← 1 …+ (1 + n) $ (1 + n) choose k * x ^ k ]
           ➂ = begin
@@ -282,7 +281,7 @@ module Prototypes.BigopFoldProofs where
                 Σ[ k ← map suc (0 …+ (1 + n)) $ n choose k * x ^ k ]
                   ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-lemma 0 (suc n)) ⟩
                 Σ[ k ← 1 …+ (1 + n) $ n choose k * x ^ k ]
-                  ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-last-lemma n) ⟩
+                  ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-last-lemma 1 n) ⟩
                 Σ[ k ← (1 …+ n) ∷ʳ (1 + n) $ n choose k * x ^ k ]
                   ≡⟨ Σ-last (λ k → n choose k * x ^ k) (1 + n) (1 …+ n) ⟩
                 Σ[ k ← 1 …+ n $ n choose k * x ^ k ] + n choose (1 + n) * x ^ (1 + n)
@@ -295,17 +294,10 @@ module Prototypes.BigopFoldProofs where
             1 + Σ[ k ← 1 …+ n $ n choose k * x ^ k ]
               ≡⟨ P.refl ⟩
             Σ[ k ← 0 ∷ (1 …+ n) $ n choose k * x ^ k ]
-              ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-head-lemma n) ⟩
+              ≡⟨ P.cong (fold (λ k → n choose k * x ^ k)) (suc-head-lemma 0 n) ⟩
             Σ[ k ← 0 …+ (1 + n) $ n choose k * x ^ k ] ∎
 
             where
-
-              suc-last-lemma : ∀ n → 1 …+ (1 + n) ≡ (1 …+ n) ∷ʳ (1 + n)
-              suc-last-lemma n = {!!}
-
-              suc-head-lemma : ∀ n → 0 ∷ (1 …+ n) ≡ 0 …+ (1 + n)
-              suc-head-lemma 0       = P.refl
-              suc-head-lemma (suc n) = P.refl
 
               lemma : ∀ m n → n choose ((suc m) + n) ≡ 0
               lemma m 0 = P.refl
