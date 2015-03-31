@@ -113,16 +113,23 @@ module Prototypes.BigopFold where
              fold f (x ∷ xs) ≈ f x ∙ fold f xs
     Σ-head _ _ _ = refl
 
-    postulate
-      Σ-last : (f : I → R) (x : I) (xs : List I) →
-               fold f (xs ∷ʳ x) ≈ fold f xs ∙ f x
+    Σ-last : (f : I → R) (x : I) (xs : List I) →
+             fold f (xs ∷ʳ x) ≈ fold f xs ∙ f x
+    Σ-last f x [] = begin
+      f x ∙ ε  ≈⟨ proj₂ identity _ ⟩
+      f x      ≈⟨ sym $ proj₁ identity _ ⟩
+      ε ∙ f x  ∎
+    Σ-last f x (y ∷ ys) = begin
+      f y ∙ fold f (ys ∷ʳ x)   ≈⟨ ∙-cong refl (Σ-last f x ys) ⟩
+      f y ∙ (fold f ys ∙ f x)  ≈⟨ sym $ assoc _ _ _ ⟩
+      (f y ∙ fold f ys) ∙ f x  ∎
 
     Σ-shift : (f : I → R) (x : I) (xs : List I) →
               f x ≈ ε → fold f (x ∷ xs) ≈ fold f xs
     Σ-shift f x xs fx≈ε = begin
       f x ∙ fold f xs  ≈⟨ ∙-cong fx≈ε refl ⟩
       ε ∙ fold f xs    ≈⟨ proj₁ identity _ ⟩
-      fold f xs ∎
+      fold f xs        ∎
 
     Σ-zero : (xs : List I) → fold (const ε) xs ≈ ε
     Σ-zero [] = refl
