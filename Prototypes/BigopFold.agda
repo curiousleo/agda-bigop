@@ -86,6 +86,10 @@ module Prototypes.BigopFold where
              fold f (x ∷ xs) ≈ f x ∙ fold f xs
     Σ-head _ _ _ = refl
 
+    postulate
+      Σ-last : (f : I → R) (x : I) (xs : List I) →
+               fold f (xs ∷ʳ x) ≈ fold f xs ∙ f x
+
     Σ-shift : (f : I → R) (x : I) (xs : List I) →
               f x ≈ ε → fold f (x ∷ xs) ≈ fold f xs
     Σ-shift f x xs fx≈ε = begin
