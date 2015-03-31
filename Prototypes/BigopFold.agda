@@ -66,10 +66,37 @@ module Prototypes.BigopFold where
   fromLenℕ : (from len : ℕ) → List ℕ
   fromLenℕ from to = map toℕ (fromLenF from to)
 
+  fromLenℕ′ : ℕ → ℕ → List ℕ
+  fromLenℕ′ from zero = []
+  fromLenℕ′ from (suc len) = from ∷ fromLenℕ′ (suc from) len
+
+  module RangeLemmas where
+    open import Relation.Binary.PropositionalEquality
+    open import Data.Nat.Base
+    open import Data.Nat.Properties.Simple
+
+    open ≡-Reasoning
+
+    suc-lemma : ∀ m n → map suc (fromLenℕ′ m n) ≡ fromLenℕ′ (suc m) n
+    suc-lemma m zero    = refl
+    suc-lemma m (suc n) = cong (_∷_ (suc m)) (suc-lemma (suc m) n)
+
+    suc-head-lemma : ∀ m n → m ∷ (fromLenℕ′ (suc m) n) ≡ fromLenℕ′ m (suc n)
+    suc-head-lemma m n = refl
+
+    suc-last-lemma : ∀ m n → fromLenℕ′ m (suc n) ≡ (fromLenℕ′ m n) ∷ʳ (m + n)
+    suc-last-lemma m zero = cong (_∷ʳ_ []) $ +-comm zero m
+    suc-last-lemma m (suc n) = begin
+      m ∷ fromLenℕ′ (suc m) (suc n)
+        ≡⟨ cong (_∷_ m) $ suc-last-lemma (suc m) n ⟩
+      m ∷ (fromLenℕ′ (suc m) n) ∷ʳ suc m + n
+        ≡⟨ cong (_∷ʳ_ $ fromLenℕ′ m (suc n)) $ sym $ +-suc m n ⟩
+      fromLenℕ′ m (suc n) ∷ʳ m + suc n ∎
+
   module _ where
     open import Relation.Binary.PropositionalEquality
 
-    _…+_ = fromLenℕ
+    _…+_ = fromLenℕ′
 
     test : 2 …+ 3 ≡ 2 ∷ 3 ∷ 4 ∷ []
     test = refl
