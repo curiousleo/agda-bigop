@@ -63,12 +63,9 @@ module Prototypes.BigopFold where
       m≤m+n (suc m) zero rewrite +-comm (suc m) zero = ≤-refl (suc m)
       m≤m+n (suc m) (suc n) = s≤s (m≤m+n m (suc n))
 
-  fromLenℕ : (from len : ℕ) → List ℕ
-  fromLenℕ from to = map toℕ (fromLenF from to)
-
-  fromLenℕ′ : ℕ → ℕ → List ℕ
-  fromLenℕ′ from zero = []
-  fromLenℕ′ from (suc len) = from ∷ fromLenℕ′ (suc from) len
+  fromLenℕ : ℕ → ℕ → List ℕ
+  fromLenℕ from zero = []
+  fromLenℕ from (suc len) = from ∷ fromLenℕ (suc from) len
 
   module RangeLemmas where
     open import Relation.Binary.PropositionalEquality
@@ -77,41 +74,29 @@ module Prototypes.BigopFold where
 
     open ≡-Reasoning
 
-    suc-lemma : ∀ m n → map suc (fromLenℕ′ m n) ≡ fromLenℕ′ (suc m) n
+    suc-lemma : ∀ m n → map suc (fromLenℕ m n) ≡ fromLenℕ (suc m) n
     suc-lemma m zero    = refl
     suc-lemma m (suc n) = cong (_∷_ (suc m)) (suc-lemma (suc m) n)
 
-    suc-head-lemma : ∀ m n → m ∷ (fromLenℕ′ (suc m) n) ≡ fromLenℕ′ m (suc n)
+    suc-head-lemma : ∀ m n → m ∷ (fromLenℕ (suc m) n) ≡ fromLenℕ m (suc n)
     suc-head-lemma m n = refl
 
-    suc-last-lemma : ∀ m n → fromLenℕ′ m (suc n) ≡ (fromLenℕ′ m n) ∷ʳ (m + n)
+    suc-last-lemma : ∀ m n → fromLenℕ m (suc n) ≡ (fromLenℕ m n) ∷ʳ (m + n)
     suc-last-lemma m zero = cong (_∷ʳ_ []) $ +-comm zero m
     suc-last-lemma m (suc n) = begin
-      m ∷ fromLenℕ′ (suc m) (suc n)
+      m ∷ fromLenℕ (suc m) (suc n)
         ≡⟨ cong (_∷_ m) $ suc-last-lemma (suc m) n ⟩
-      m ∷ (fromLenℕ′ (suc m) n) ∷ʳ suc m + n
-        ≡⟨ cong (_∷ʳ_ $ fromLenℕ′ m (suc n)) $ sym $ +-suc m n ⟩
-      fromLenℕ′ m (suc n) ∷ʳ m + suc n ∎
+      m ∷ (fromLenℕ (suc m) n) ∷ʳ suc m + n
+        ≡⟨ cong (_∷ʳ_ $ fromLenℕ m (suc n)) $ sym $ +-suc m n ⟩
+      fromLenℕ m (suc n) ∷ʳ m + suc n ∎
 
   module _ where
     open import Relation.Binary.PropositionalEquality
 
-    _…+_ = fromLenℕ′
+    _…+_ = fromLenℕ
 
     _…_ : ℕ → ℕ → List ℕ
     m … n = m …+ (suc n ∸ m)
-
-    test″ : 2 … 2 ≡ 2 ∷ []
-    test″ = refl
-
-    test‴ : 2 … 1 ≡ []
-    test‴ = refl
-
-    test′ : 2 … 5 ≡ 2 ∷ 3 ∷ 4 ∷ 5 ∷ []
-    test′ = refl
-
-    test : 2 …+ 3 ≡ 2 ∷ 3 ∷ 4 ∷ []
-    test = refl
 
   module MonoidLemmas
          {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
