@@ -98,6 +98,18 @@ module Prototypes.BigopFold where
 
     _…+_ = fromLenℕ′
 
+    _…_ : ℕ → ℕ → List ℕ
+    m … n = m …+ (suc n ∸ m)
+
+    test″ : 2 … 2 ≡ 2 ∷ []
+    test″ = refl
+
+    test‴ : 2 … 1 ≡ []
+    test‴ = refl
+
+    test′ : 2 … 5 ≡ 2 ∷ 3 ∷ 4 ∷ 5 ∷ []
+    test′ = refl
+
     test : 2 …+ 3 ≡ 2 ∷ 3 ∷ 4 ∷ []
     test = refl
 
