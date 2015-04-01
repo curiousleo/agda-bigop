@@ -208,27 +208,27 @@ module Prototypes.BigopFoldProofs where
 
     module BinomialTheorem where
 
-      open P.≡-Reasoning
       open import Data.Product using (proj₁; proj₂)
 
+      open EqR setoid
       open RangeLemmas
 
       proof : ∀ x n → Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
       proof x 0       = refl
       proof x (suc n) = begin
         1 + Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
-          ≡⟨ refl {x = 1} ⟨ +-cong ⟩ begin
+          ≈⟨ refl {x = 1} ⟨ +-cong ⟩ begin
             Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
-              ≡⟨ sym $ Σ-cong {g = f (suc n)} suc (λ _ → refl) (0 … n)
+              ≈⟨ sym $ Σ-cong {g = f (suc n)} suc (λ _ → refl) (0 … n)
                        ⟨ trans ⟩ P.cong (fold (f (suc n))) (suc-lemma 0 (suc n)) ⟩
             Σ[ k ← 0 … n $ (suc n) choose (suc k) * x ^ (suc k) ]
-              ≡⟨ Σ-cong′ {f = λ k → f (suc n) (suc k)} (λ _ → refl) (0 … n) ⟩
+              ≈⟨ Σ-cong′ {f = λ k → f (suc n) (suc k)} (λ _ → refl) (0 … n) ⟩
             Σ[ k ← 0 … n $ (n choose k + n choose (suc k)) * x ^ (suc k) ]
-              ≡⟨ Σ-cong′ {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
+              ≈⟨ Σ-cong′ {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
                          (λ k → distribʳ (x ^ (suc k)) (n choose k) _) (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k)
                                   + n choose (suc k) * x ^ (suc k) ]
-              ≡⟨ sym $ Σ-lift {J = ℕ}
+              ≈⟨ sym $ Σ-lift {J = ℕ}
                               (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
                               (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
@@ -236,19 +236,19 @@ module Prototypes.BigopFoldProofs where
           ⟩
         1 + (Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
              + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ])
-          ≡⟨ +-reorder 1 Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] _ ⟩
+          ≈⟨ +-reorder 1 Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] _ ⟩
         Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
         + (1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ])
-          ≡⟨ ➀ ⟨ +-cong ⟩ ➁ ⟩
+          ≈⟨ ➀ ⟨ +-cong ⟩ ➁ ⟩
           x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
         +     Σ[ k ← 0 … n $ n choose k * x ^ k ]
-          ≡⟨ +-cong (refl {x = x * _})
+          ≈⟨ +-cong (refl {x = x * _})
                     (sym $ proj₁ *-identity Σ[ k ← 0 … n $ f n k ]) ⟩
           x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
         + 1 * Σ[ k ← 0 … n $ n choose k * x ^ k ]
-          ≡⟨ sym $ distribʳ _ x 1 ⟩
+          ≈⟨ sym $ distribʳ _ x 1 ⟩
         (x + 1) * Σ[ k ← 0 … n $ n choose k * x ^ k ]
-          ≡⟨ *-cong (+-comm x 1) (proof x n) ⟩
+          ≈⟨ *-cong (+-comm x 1) (proof x n) ⟩
         (1 + x) * (1 + x) ^ n ∎
 
         where
@@ -258,27 +258,24 @@ module Prototypes.BigopFoldProofs where
 
           +-reorder : ∀ x y z → x + (y + z) ≈ y + (x + z)
           +-reorder x y z = begin
-            x + (y + z)  ≡⟨ sym $ +-assoc x y z ⟩
-            (x + y) + z  ≡⟨ +-cong (+-comm x y) refl ⟩
-            (y + x) + z  ≡⟨ +-assoc y x z ⟩
+            x + (y + z)  ≈⟨ sym $ +-assoc x y z ⟩
+            (x + y) + z  ≈⟨ +-cong (+-comm x y) refl ⟩
+            (y + x) + z  ≈⟨ +-assoc y x z ⟩
             y + (x + z)  ∎
 
-          ➀ : Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
-              ≈ x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
+          ➀ : Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] ≈ x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
           ➀ = begin
-            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
-              ≡⟨ Σ-cong′ reorder (0 … n) ⟩
-            Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]
-              ≡⟨ sym $ Σ-distrˡ (λ k → n choose k * x ^ k) x (0 … n) ⟩
-            x * Σ[ k ← 0 … n $ n choose k * x ^ k ] ∎
+            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ-cong′ reorder (0 … n) ⟩
+            Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]  ≈⟨ sym $ Σ-distrˡ (f n) x (0 … n) ⟩
+            x * Σ[ k ← 0 … n $ n choose k * x ^ k ]    ∎
 
             where
 
-              reorder : ∀ k → n choose k * x ^ (suc k) ≡ x * (n choose k * x ^ k)
+              reorder : ∀ k → n choose k * x ^ (suc k) ≈ x * (n choose k * x ^ k)
               reorder k = begin
-                n choose k * (x * x ^ k)  ≡⟨ sym $ *-assoc (n choose k) _ _ ⟩
-                (n choose k * x) * x ^ k  ≡⟨ *-comm (n choose k) _ ⟨ *-cong ⟩ refl ⟩
-                (x * n choose k) * x ^ k  ≡⟨ *-assoc x _ _ ⟩
+                n choose k * (x * x ^ k)  ≈⟨ sym $ *-assoc (n choose k) _ _ ⟩
+                (n choose k * x) * x ^ k  ≈⟨ *-comm (n choose k) _ ⟨ *-cong ⟩ refl ⟩
+                (x * n choose k) * x ^ k  ≈⟨ *-assoc x _ _ ⟩
                 x * (n choose k * x ^ k)  ∎
 
           open import Data.List
@@ -287,26 +284,26 @@ module Prototypes.BigopFoldProofs where
               ≈ Σ[ k ← 0 … n $ n choose k * x ^ k ]
           ➁ = begin
             1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
-              ≡⟨ (refl {x = 1}) ⟨ +-cong ⟩ begin
+              ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩ begin
                 Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
-                  ≡⟨ Σ-cong {g = f n} suc (λ k → refl) (0 … n) ⟩
+                  ≈⟨ Σ-cong {g = f n} suc (λ k → refl) (0 … n) ⟩
                 Σ[ k ← map suc (0 … n) $ n choose k * x ^ k ]
-                  ≡⟨ P.cong (fold $ f n) (suc-lemma 0 (suc n)) ⟩
+                  ≈⟨ P.cong (fold $ f n) (suc-lemma 0 (suc n)) ⟩
                 Σ[ k ← 1 … suc n $ n choose k * x ^ k ]
-                  ≡⟨ P.cong (fold $ f n) (suc-last-lemma 1 n) ⟩
+                  ≈⟨ P.cong (fold $ f n) (suc-last-lemma 1 n) ⟩
                 Σ[ k ← (1 … n) ∷ʳ (suc n) $ n choose k * x ^ k ]
-                  ≡⟨ Σ-last (f n) (suc n) (1 … n) ⟩
+                  ≈⟨ Σ-last (f n) (suc n) (1 … n) ⟩
                 Σ[ k ← 1 … n $ n choose k * x ^ k ] + n choose (suc n) * x ^ (suc n)
-                  ≡⟨ +-cong (refl {x = Σ[ k ← 1 … n $ f n k ]})
+                  ≈⟨ +-cong (refl {x = Σ[ k ← 1 … n $ f n k ]})
                             (choose-lemma 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩
                 Σ[ k ← 1 … n $ n choose k * x ^ k ] + 0
-                  ≡⟨ proj₂ +-identity _ ⟩
+                  ≈⟨ proj₂ +-identity _ ⟩
                 Σ[ k ← 1 … n $ n choose k * x ^ k ] ∎
               ⟩
             1 + Σ[ k ← 1 … n $ n choose k * x ^ k ]
-              ≡⟨ refl ⟩
+              ≈⟨ refl ⟩
             Σ[ k ← 0 ∷ (1 … n) $ n choose k * x ^ k ]
-              ≡⟨ P.cong (fold $ f n) (suc-head-lemma 0 n) ⟩
+              ≈⟨ P.cong (fold $ f n) (suc-head-lemma 0 n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ k ] ∎
 
     module RowSum where
