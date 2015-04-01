@@ -15,29 +15,33 @@ module Prototypes.BigopFoldProofs where
 
   module GaussFormula where
 
-    0… = fromLenℕ 0
-
-    open import Data.Nat hiding (fold)
-
+    open import Data.Nat using (suc)
     open import Data.Nat.Properties using (commutativeSemiring)
-    open import Algebra using (CommutativeSemiring)
-    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
-    open Core +-monoid using (Σ-syntax)
+    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0… (suc n) $ x ] ≡ n * (suc n)
-    proof zero = P.refl
+    open SemiringWithoutOneLemmas semiringWithoutOne
+    open CommutativeMonoidLemmas +-commutativeMonoid
+    open MonoidLemmas +-monoid
+
+    open Core +-monoid using (fold; Σ-syntax)
+
+    proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0 … n $ x ] ≡ n * (suc n)
+    proof 0 = P.refl
     proof (suc n) =
       begin
-        2 * Σ[ x ← 0… (suc (suc n)) $ x ]        ≡⟨ P.cong (_*_ 2) lemma₀ ⟩
-        2 * (Σ[ x ← 0… (suc n) $ x ] + suc n)    ≡⟨ distribˡ 2 Σ[ x ← 0… (suc n) $ x ] (suc n) ⟩
-        2 * Σ[ x ← 0… (suc n) $ x ] + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
-        n * suc n + 2 * suc n                    ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
-        2 * suc n + n * suc n                    ≡⟨ P.sym (distribʳ (suc n) 2 n) ⟩
-        (2 + n) * suc n                          ≡⟨ *-comm (2 + n) (suc n) ⟩
+        2 * Σ[ x ← 0 … suc n $ x ]          ≡⟨ P.cong (_*_ 2) lemma₀ ⟩
+        2 * (Σ[ x ← 0 … n $ x ] + suc n)    ≡⟨ distribˡ 2 Σ[ x ← 0 … n $ x ] (suc n) ⟩
+        2 * Σ[ x ← 0 … n $ x ] + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+        n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
+        2 * suc n + n * suc n               ≡⟨ P.sym (distribʳ (suc n) 2 n) ⟩
+        (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
         suc n * (suc (suc n))
       ∎
       where
         open P.≡-Reasoning
+        open import Data.List
+
+        open RangeLemmas
 
         distribˡ : ∀ m n o → m * (n + o) ≡ m * n + m * o
         distribˡ m n o
@@ -47,8 +51,11 @@ module Prototypes.BigopFoldProofs where
           | sym (distribʳ m n o)
           | *-comm (n + o) m = refl
 
-        lemma₀ : Σ[ x ← 0… (suc (suc n)) $ x ] ≡ Σ[ x ← 0… (suc n) $ x ] + suc n
-        lemma₀ = {!!} -- rewrite ∈ʳ-lemma (0… (suc n)) (suc (suc n)) tt = {!!}
+        lemma₀ : Σ[ x ← 0 … suc n $ x ] ≡ Σ[ x ← 0 … n $ x ] + suc n
+        lemma₀ = begin
+          Σ[ x ← 0 … suc n $ x ]       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+          Σ[ x ← 0 … n ∷ʳ suc n $ x ]  ≡⟨ Σ-last id (suc n) (0 … n) ⟩
+          Σ[ x ← 0 … n $ x ] + suc n   ∎
 
   open import Prototypes.Matrix hiding (lookup; tabulate)
 
