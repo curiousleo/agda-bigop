@@ -216,6 +216,24 @@ module Prototypes.SquareMatrixSemiring where
           0M [ r , c ] ∎
           where open SetR
 
+    *M-assoc : Associative _≈M_ _*M_
+    *M-assoc x y z = ext {!!}
+
+    *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
+    *M-cong (ext app₁) (ext app₂) = ext {!!}
+
+    *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
+    *M-identityˡ x = ext {!!}
+
+    *M-identityʳ : RightIdentity _≈M_ 1M _*M_
+    *M-identityʳ x = ext {!!}
+
+    *M-distrOverˡ-+M : (_≈M_ DistributesOverˡ _*M_) _+M_
+    *M-distrOverˡ-+M x y z = ext {!!}
+
+    *M-distrOverʳ-+M : (_≈M_ DistributesOverʳ _*M_) _+M_
+    *M-distrOverʳ-+M x y z = ext {!!}
+
     M-isSemiring : IsSemiring _≈M_ _+M_ _*M_ 0M 1M
     M-isSemiring = record
       { isSemiringWithoutAnnihilatingZero = record
@@ -231,12 +249,12 @@ module Prototypes.SquareMatrixSemiring where
         ; *-isMonoid = record
           { isSemigroup = record
             { isEquivalence = ≈M-isEquivalence
-            ; assoc  = {!!}
-            ; ∙-cong = {!!}
+            ; assoc  = *M-assoc
+            ; ∙-cong = *M-cong
             }
-          ; identity = {!!}
+          ; identity = *M-identityˡ , *M-identityʳ
           }
-        ; distrib = {!!} , {!!}
+        ; distrib = *M-distrOverˡ-+M , *M-distrOverʳ-+M
         }
       ; zero = zeroˡ , zeroʳ
       }
