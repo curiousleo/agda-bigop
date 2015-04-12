@@ -49,28 +49,20 @@ module Prototypes.SquareMatrixSemiring where
     open Core +-monoid using (Σ-syntax)
     open Core *-monoid using (Π-syntax)
 
+    _…_ = fromLenF
+
     -----------------
     -- Definitions --
     -----------------
 
-    _…_ = fromLenF
-
     M : ℕ → Set _
     M n = Matrix A n n
 
-    row : Fin n → M n → V.Vec A n
-    row = V.lookup
-
-    col : Fin n → M n → V.Vec A n
-    col c x = V.lookup c (transpose x)
-
     mult : M n → M n → Fin n → Fin n → A
     mult x y r c = Σ[ i ← 0 … n $ x [ r , i ] * y [ i , c ] ]
-    -- Σ[ i ← V.toList (V.zip (row r x) (col c y)) $ uncurry _*_ i ]
-    -- V.foldr _ _+_ 0# $ V.map (uncurry _*_) $ V.zip (row r x) (col c y)
 
     _≈M_ : Rel (M n) ℓ
-    _≈M_ = Pointwise _≈_ -- PW.Pointwise (PW.Pointwise _≈_)
+    _≈M_ = Pointwise _≈_
 
     _+M_ : ∀ {n} → Op₂ (M n)
     x +M y = tabulate (λ r c → lookup r c x + lookup r c y)
@@ -196,17 +188,13 @@ module Prototypes.SquareMatrixSemiring where
 
         z : ∀ r c → (0M *M x) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin⟨ setoid ⟩
-          (0M *M x) [ r , c ]
-            ≡⟨ lookup∘tabulate _ r c ⟩
+          (0M *M x) [ r , c ]                ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ 0M [ r , i ] * x [ i , c ] ]
             ≈⟨ Σ-cong″ (λ i → *-cong (reflexive (0M-lemma r i)) refl)
                        (P.refl {x = 0 … n}) ⟩
-          Σ[ i ← 0 … n $ 0# * x [ i , c ] ]
-            ≈⟨ sym (Σ-distrˡ _ 0# (0 … n)) ⟩
-          0# * Σ[ i ← 0 … n $ x [ i , c ] ]
-            ≈⟨ proj₁ zero _ ⟩
-          0#
-            ≡⟨ P.sym (0M-lemma r c) ⟩
+          Σ[ i ← 0 … n $ 0# * x [ i , c ] ]  ≈⟨ sym (Σ-distrˡ _ 0# (0 … n)) ⟩
+          0# * Σ[ i ← 0 … n $ x [ i , c ] ]  ≈⟨ proj₁ zero _ ⟩
+          0#                                 ≡⟨ P.sym (0M-lemma r c) ⟩
           0M [ r , c ] ∎
           where open SetR
 
@@ -218,17 +206,13 @@ module Prototypes.SquareMatrixSemiring where
 
         z : ∀ r c → (x *M 0M) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin⟨ setoid ⟩
-          (x *M 0M) [ r , c ]
-            ≡⟨ lookup∘tabulate _ r c ⟩
+          (x *M 0M) [ r , c ]                ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * 0M [ i , c ] ]
             ≈⟨ Σ-cong″ (λ i → *-cong refl (reflexive (0M-lemma i c)))
                        (P.refl {x = 0 … n}) ⟩
-          Σ[ i ← 0 … n $ x [ r , i ] * 0# ]
-            ≈⟨ sym (Σ-distrʳ _ 0# (0 … n)) ⟩
-          Σ[ i ← 0 … n $ x [ r , i ] ] * 0#
-            ≈⟨ proj₂ zero _ ⟩
-          0#
-            ≡⟨ P.sym (0M-lemma r c) ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] * 0# ]  ≈⟨ sym (Σ-distrʳ _ 0# (0 … n)) ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] ] * 0#  ≈⟨ proj₂ zero _ ⟩
+          0#                                 ≡⟨ P.sym (0M-lemma r c) ⟩
           0M [ r , c ] ∎
           where open SetR
 
