@@ -1,6 +1,6 @@
 {-# OPTIONS --copatterns #-}
 
-module AgdaExercises.Coinduction where
+module Exercises.Coinduction where
 
   -- Induction allows us to construct data in a `bottom-up' manner.  For example,
   -- lists are constructed by asserting the existence of a `bottom' element, the
@@ -193,7 +193,11 @@ module AgdaExercises.Coinduction where
   tail′ (zipWith′ f xs ys) = zipWith′ f (tail′ xs) (tail′ ys)
 
   -- EXERCISE: you try to define the following:
-  
+
+  evens′ : Stream′ → Stream′
+  head′ (evens′ xs) = head′ xs
+  tail′ (evens′ xs) = tail′ (tail′ xs)
+ 
   drop′ : ℕ → Stream′ → Stream′
   head′ (drop′ zero      xs) = head′ xs
   head′ (drop′ (suc cnt) xs) = head′ (drop′ cnt (tail′ xs))
