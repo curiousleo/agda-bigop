@@ -413,6 +413,18 @@ module Prototypes.BigopFold where
           ≈⟨ refl {x * f n} ⟨ +-cong ⟩ Σ-distrˡ f x ns ⟩
         (x * f n) + fold ((_*_ x) ∘ f) ns
       ∎
+
+    Σ-distrʳ : (f : I → R) (x : R) (is : List I) →
+               fold f is * x ≈ fold (λ k → (f k) * x) is
+    Σ-distrʳ f x [] = proj₁ *-zero x
+    Σ-distrʳ f x (n ∷ ns) =
+      begin
+        (f n + fold f ns) * x
+          ≈⟨ proj₂ distrib x (f n) (fold f ns) ⟩
+        (f n * x) + (fold f ns * x)
+          ≈⟨ refl {f n * x} ⟨ +-cong ⟩ Σ-distrʳ f x ns ⟩
+        (f n * x) + fold (λ k → (f k) * x) ns
+      ∎
 {-
   module SemiringWithoutAnnihilatingZeroLemmas
          {c ℓ} (S : SemiringWithoutAnnihilatingZero c ℓ) {i} {I : Set i} {j} {J : Set j} where
