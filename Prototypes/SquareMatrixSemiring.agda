@@ -1,15 +1,16 @@
 module Prototypes.SquareMatrixSemiring where
 
   open import Prototypes.Matrix
+  open import Prototypes.BigopFold hiding (_…_)
 
   open import Algebra
   open import Algebra.FunctionProperties
   open import Algebra.Structures
 
-  open import Data.Fin hiding (_+_)
+  open import Data.Fin using (Fin)
   open import Data.Fin.Properties using () renaming (_≟_ to _≟F_)
   open import Data.Nat using (ℕ)
-  open import Data.Product using (curry; uncurry)
+  open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
   import Data.Vec as V
 
   open import Function
@@ -45,13 +46,28 @@ module Prototypes.SquareMatrixSemiring where
   module SquareMatrix (n : ℕ) {ℓ} (s : Semiring ℓ ℓ) where
 
     open Semiring s renaming (Carrier to A)
+    open Core +-monoid using (Σ-syntax)
+    open Core *-monoid using (Π-syntax)
 
     -----------------
     -- Definitions --
     -----------------
 
+    _…_ = fromLenF
+
     M : ℕ → Set _
     M n = Matrix A n n
+
+    row : Fin n → M n → V.Vec A n
+    row = V.lookup
+
+    col : Fin n → M n → V.Vec A n
+    col c x = V.lookup c (transpose x)
+
+    mult : M n → M n → Fin n → Fin n → A
+    mult x y r c = Σ[ i ← 0 … n $ x [ r , i ] * y [ i , c ] ]
+    -- Σ[ i ← V.toList (V.zip (row r x) (col c y)) $ uncurry _*_ i ]
+    -- V.foldr _ _+_ 0# $ V.map (uncurry _*_) $ V.zip (row r x) (col c y)
 
     _≈M_ : Rel (M n) ℓ
     _≈M_ = Pointwise _≈_ -- PW.Pointwise (PW.Pointwise _≈_)
@@ -60,16 +76,7 @@ module Prototypes.SquareMatrixSemiring where
     x +M y = tabulate (λ r c → lookup r c x + lookup r c y)
 
     _*M_ : Op₂ (M n)
-    x *M y = tabulate mult
-      where
-        row : Fin n → M n → V.Vec A n
-        row = V.lookup
-
-        col : Fin n → M n → V.Vec A n
-        col c x = V.lookup c (transpose x)
-
-        mult : Fin n → Fin n → A
-        mult r c = V.foldr _ _+_ 0# $ V.map (uncurry _*_) $ V.zip (row r x) (col c y)
+    x *M y = tabulate (mult x y)
 
     0M : M n
     0M = tabulate (λ r c → 0#)
@@ -106,6 +113,9 @@ module Prototypes.SquareMatrixSemiring where
               (l∘t (f r) c)
       where
         open import Data.Vec.Properties using () renaming (lookup∘tabulate to l∘t)
+
+    0M-lemma : ∀ r c → 0M [ r , c ] ≡ 0#
+    0M-lemma = lookup∘tabulate _
 
     +M-assoc : Associative _≈M_ _+M_
     +M-assoc x y z = ext assoc
@@ -178,6 +188,50 @@ module Prototypes.SquareMatrixSemiring where
           (y +M x) [ r , c ] ∎
           where open SetR
 
+    zeroˡ : LeftZero _≈M_ 0M _*M_
+    zeroˡ x = ext z
+      where
+        open SemiringWithoutOneLemmas semiringWithoutOne
+        open MonoidLemmas +-monoid
+
+        z : ∀ r c → (0M *M x) [ r , c ] ≈ 0M [ r , c ]
+        z r c = begin⟨ setoid ⟩
+          (0M *M x) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ 0M [ r , i ] * x [ i , c ] ]
+            ≈⟨ Σ-cong″ (λ i → *-cong (reflexive (0M-lemma r i)) refl)
+                       (P.refl {x = 0 … n}) ⟩
+          Σ[ i ← 0 … n $ 0# * x [ i , c ] ]
+            ≈⟨ sym (Σ-distrˡ _ 0# (0 … n)) ⟩
+          0# * Σ[ i ← 0 … n $ x [ i , c ] ]
+            ≈⟨ proj₁ zero _ ⟩
+          0#
+            ≡⟨ P.sym (0M-lemma r c) ⟩
+          0M [ r , c ] ∎
+          where open SetR
+
+    zeroʳ : RightZero _≈M_ 0M _*M_
+    zeroʳ x = ext z
+      where
+        open SemiringWithoutOneLemmas semiringWithoutOne
+        open MonoidLemmas +-monoid
+
+        z : ∀ r c → (x *M 0M) [ r , c ] ≈ 0M [ r , c ]
+        z r c = begin⟨ setoid ⟩
+          (x *M 0M) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] * 0M [ i , c ] ]
+            ≈⟨ Σ-cong″ (λ i → *-cong refl (reflexive (0M-lemma i c)))
+                       (P.refl {x = 0 … n}) ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] * 0# ]
+            ≈⟨ sym (Σ-distrʳ _ 0# (0 … n)) ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] ] * 0#
+            ≈⟨ proj₂ zero _ ⟩
+          0#
+            ≡⟨ P.sym (0M-lemma r c) ⟩
+          0M [ r , c ] ∎
+          where open SetR
+
     M-isSemiring : IsSemiring _≈M_ _+M_ _*M_ 0M 1M
     M-isSemiring = record
       { isSemiringWithoutAnnihilatingZero = record
@@ -193,12 +247,12 @@ module Prototypes.SquareMatrixSemiring where
         ; *-isMonoid = record
           { isSemigroup = record
             { isEquivalence = ≈M-isEquivalence
-            ; assoc = {!!}
+            ; assoc  = {!!}
             ; ∙-cong = {!!}
             }
           ; identity = {!!}
           }
-        ; distrib = {!!}
+        ; distrib = {!!} , {!!}
         }
-      ; zero = {!!}
+      ; zero = zeroˡ , zeroʳ
       }
