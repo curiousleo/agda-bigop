@@ -1,0 +1,9 @@
+# use ghc-7.8.4
+cabal get agda
+cd Agda-XXX/
+cabal sandbox init
+cabal install alex happy
+# change Agda.cabal to accept cpphs <= 1.19
+cabal install --only-dependencies
+cabal build
+# the binaries are in dist/
