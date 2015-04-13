@@ -17,14 +17,58 @@
 
 \chapter{Introduction}
 
-\section{Theorem-proving with dependent types}
+\section{Motivation}
 
-\section{Agda: a dependent type theory}
+\section{Predicates and relations}
 
-\section{Big operators and finite sets}
+\section{Equational reasoning}
+
+The main use case of the agda-bigops library is to prove equalities. As an example, the Binomial Theorem can be stated as \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
+The intended meaning of this equation seems clear---it could be stated in words as follows: \enquote{for all numbers \(x\) and \(n\), if we let \(k\) range over all numbers from \(0\) to \(n\), evaluate \(\binom{n}{k} \; x^k\) at each step and finally take the sum over the results, we obtain a number that is equal to the number obtained by evaluating \((1 + x)^n\).}
+
+Unfortunately, this description is too imprecise to be translated into a statement of formal mathematics. The first question we would have to answer is what \emph{kinds} of numbers \(x\) and \(n\) are. The notation suggests that \(n\) is an integer. It does not tell us whether the equation is supposed to hold if \(n\) is negative. The number \(x\) is less constrained by notation as exponentiation is defined even for complex and irrational numbers. Is the equation meant to cover them too?
+
+Next, we have to define the meaning of each symbol that occurs in the formula. The definition of summation, exponentiation and binomial coefficients can be found in any mathematics textbook. The \enquote{big sum} symbol has two different obvious definitions (see XXX), but in this case they both turn out to evaluate to the same result.
+
+The last thing we need to consider is the meaning of the equality sign. In dependent types based logics, this is where equivalences and setoids come in.
+
+\subsection{Equivalences and setoids}
+
+Equivalences capture the essence of what it means for two things to be equal. A relation \(\_\!\!\approx\!\!\_\) is an equivalence if it is \emph{reflexive} (\(\forall a.\ a \approx a\)), \emph{symmetric} (\(\forall a,b.\ a \approx b \rightarrow b \approx a\)) and \emph{transitive} (\(\forall a,b,c.\ a \approx b \wedge b \approx c \rightarrow a \approx c\)).
+
+It is easy to see that the notion of equality we used in the example at the beginning of this section is an equivalence. Informally, it can be stated as \enquote{two terms are equivalent if they evaluate to the same number}. This intuition is captured by an equivalence called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same expression.
+
+A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence (see \cref{lst:setoid}).
+
+\begin{listing}[h]
+    \begin{agdacode}
+record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
+  infix 4 _≈_
+  field
+    Carrier       : Set c
+    _≈_           : Rel Carrier ℓ
+    isEquivalence : IsEquivalence _≈_
+    \end{agdacode}
+    \label{lst:setoid}
+    \caption{The definition of a setoid in the Agda standard library.}
+\end{listing}
+
+% Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
+
+\section{Algebra}
 
 \chapter{Implementation}
 
+\section{Design}
+
+\section{Differences to big operators in Coq}
+
 \chapter{Evaluation}
+
+\section{Theorems proved}
+
+\appendix
+
+\chapter{Semiring of square matrices}
 
 \end{document}
