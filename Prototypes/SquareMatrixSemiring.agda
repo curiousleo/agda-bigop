@@ -9,7 +9,9 @@ module Prototypes.SquareMatrixSemiring where
 
   open import Data.Fin using (Fin)
   open import Data.Fin.Properties using () renaming (_≟_ to _≟F_)
-  open import Data.Nat using (ℕ)
+  import Data.List as L
+  import Data.Nat as N
+  open N using (ℕ)
   open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
   import Data.Vec as V
 
@@ -274,7 +276,19 @@ module Prototypes.SquareMatrixSemiring where
       where
         open SemiringWithoutOneLemmas semiringWithoutOne
         open CommutativeMonoidLemmas +-commutativeMonoid
+        open MonoidLemmas +-monoid
+        open RangeLemmas
         import Level as L
+
+        open import Data.Empty
+        open import Data.Fin.Properties using (bounded)
+        open import Relation.Unary
+
+        1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
+        1M-diag c .c P.refl = {!1M [ c , c ]!}
+
+        1M-∁-diag : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
+        1M-∁-diag r c eq = {!1M [ r , c ]!}
 
         ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
         ident r c = begin⟨ setoid ⟩
@@ -284,7 +298,10 @@ module Prototypes.SquareMatrixSemiring where
             ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
           Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
-            ≈⟨ +-cong {!!} {!!} ⟩
+            ≈⟨ +-cong (Σ-cong-P (0 … n) (_≟F_ r)
+                                (λ i r≡i → *-cong (reflexive (1M-diag r i r≡i)) refl))
+                      (Σ-cong-P (0 … n) (∁-dec (_≟F_ r))
+                                (λ i r≢i → *-cong (reflexive (1M-∁-diag r i r≢i)) refl)) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1# * x [ i , c ] ] +
           Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 0# * x [ i , c ] ]
             ≈⟨ sym $ +-cong (Σ-distrˡ _ 1# (0 … n ∥ (_≟F_ r)))
@@ -295,7 +312,9 @@ module Prototypes.SquareMatrixSemiring where
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] + 0#
             ≈⟨ proj₂ +-identity _ ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ]
-            ≈⟨ {!!} ⟩
+            ≡⟨ P.cong (Σ-syntax _) (uniqueF 0 n r _ {! bounded r !}) ⟩
+          Σ[ i ← L.[ r ] $ x [ i , c ] ]
+            ≈⟨ proj₂ +-identity _  ⟩
           x [ r , c ] ∎
           where open SetR
 
