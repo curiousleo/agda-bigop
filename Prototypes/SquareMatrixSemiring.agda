@@ -254,7 +254,20 @@ module Prototypes.SquareMatrixSemiring where
           where open SetR
 
     *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
-    *M-cong (ext app₁) (ext app₂) = ext {!!}
+    *M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
+      where
+        open MonoidLemmas +-monoid
+
+        cong : ∀ r c → (u *M x) [ r , c ] ≈ (v *M y) [ r , c ]
+        cong r c = begin⟨ setoid ⟩
+          (u *M x) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ u [ r , i ] * x [ i , c ] ]
+            ≈⟨ Σ-cong′ (λ i → *-cong (app₁ r i) (app₂ i c)) (0 … n) ⟩
+          Σ[ i ← 0 … n $ v [ r , i ] * y [ i , c ] ]
+            ≡⟨ P.sym (lookup∘tabulate _ r c) ⟩
+          (v *M y) [ r , c ] ∎
+          where open SetR
 
     *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
     *M-identityˡ x = ext {!!}
