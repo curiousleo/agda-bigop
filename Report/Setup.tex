@@ -5,10 +5,16 @@
 \usepackage{microtype}
 \usepackage{cmap} % fix search and cut-and-paste in Acrobat
 \usepackage{ifthen}
-\usepackage[oldstylenums,largesmallcaps,easyscsl]{kpfonts}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
 \usepackage[british]{babel}
+\usepackage[oldstylenums,largesmallcaps,easyscsl]{kpfonts}
+% \usepackage{fontspec}
+% \usepackage[]{unicode-math}
+% \setmainfont{XITS}
+% \setmathfont{XITS Math}
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage{newunicodechar}
 \usepackage[table,hyperref,dvipsnames]{xcolor}
 \usepackage{floatrow}
 \usepackage{csquotes}
@@ -46,10 +52,12 @@
 \pagestyle{headings}
 
 \usemintedstyle{tango}
-\newminted{cpp}{fontfamily=jkptt, fontsize=\small}
-\newminted{erlang}{fontfamily=jkptt, fontsize=\small}
-\newminted{bash}{fontfamily=jkptt, fontsize=\small}
-\newmint{erlang}{fontfamily=jkptt}
+% \newminted{agda}{fontfamily=jkptt, fontsize=\small}
+\newminted{agda}{fontfamily=jkptt, fontsize=\small}
+\newmint{agda}{fontfamily=jkptt}
+
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{≈}{\ensuremath{\approx}}
 
 \DeclareFloatVCode{ruleabove}%
     {{\color{black}\par\rule\hsize{0.75pt}\vskip4pt\par}}
