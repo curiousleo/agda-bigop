@@ -208,8 +208,7 @@ module Prototypes.SquareMatrixSemiring where
         z r c = begin⟨ setoid ⟩
           (x *M 0M) [ r , c ]                ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * 0M [ i , c ] ]
-            ≈⟨ Σ-cong″ (λ i → *-cong refl (reflexive (0M-lemma i c)))
-                       (P.refl {x = 0 … n}) ⟩
+            ≈⟨ Σ-cong′ (λ i → *-cong refl (reflexive (0M-lemma i c))) (0 … n) ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * 0# ]  ≈⟨ sym (Σ-distrʳ _ 0# (0 … n)) ⟩
           Σ[ i ← 0 … n $ x [ r , i ] ] * 0#  ≈⟨ proj₂ zero _ ⟩
           0#                                 ≡⟨ P.sym (0M-lemma r c) ⟩
@@ -217,7 +216,42 @@ module Prototypes.SquareMatrixSemiring where
           where open SetR
 
     *M-assoc : Associative _≈M_ _*M_
-    *M-assoc x y z = ext {!!}
+    *M-assoc x y z = ext assoc
+      where
+        open SemiringWithoutOneLemmas semiringWithoutOne
+        open CommutativeMonoidLemmas +-commutativeMonoid
+        open MonoidLemmas +-monoid
+
+        assoc : ∀ r c → ((x *M y) *M z) [ r , c ] ≈ (x *M (y *M z)) [ r , c ]
+        assoc r c = begin⟨ setoid ⟩
+          ((x *M y) *M z) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ (x *M y) [ r , i ] * z [ i , c ] ]
+            ≈⟨ flip Σ-cong′ (0 … n) (λ i → begin⟨ setoid ⟩
+
+              (x *M y) [ r , i ] * z [ i , c ]
+                ≈⟨ *-cong (reflexive $ lookup∘tabulate _ r i) refl ⟩
+              (Σ[ j ← 0 … n $ x [ r , j ] * y [ j , i ] ]) * z [ i , c ]
+                ≈⟨ Σ-distrʳ _ _ (0 … n) ⟩
+              Σ[ j ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ] ∎ ) ⟩
+
+          Σ[ i ← 0 … n $ Σ[ j ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ] ]
+            ≈⟨ Σ-swap _ (0 … n) (0 … n) ⟩
+          Σ[ j ← 0 … n $ Σ[ i ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ] ]
+            ≈⟨ flip Σ-cong′ (0 … n) (λ j → begin⟨ setoid ⟩
+
+              Σ[ i ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ]
+                ≈⟨ Σ-cong′ (λ i → *-assoc _ _ _) (0 … n) ⟩
+              Σ[ i ← 0 … n $ x [ r , j ] * (y [ j , i ] * z [ i , c ]) ]
+                ≈⟨ sym (Σ-distrˡ _ _ (0 … n)) ⟩
+              x [ r , j ] * Σ[ i ← 0 … n $ y [ j , i ] * z [ i , c ] ]
+                ≈⟨ *-cong refl (sym $ reflexive $ lookup∘tabulate _ j c) ⟩
+              x [ r , j ] * (y *M z) [ j , c ] ∎ ) ⟩
+
+          Σ[ j ← 0 … n $ x [ r , j ] * (y *M z) [ j , c ] ]
+            ≡⟨ P.sym (lookup∘tabulate _ r c) ⟩
+          (x *M (y *M z)) [ r , c ] ∎
+          where open SetR
 
     *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
     *M-cong (ext app₁) (ext app₂) = ext {!!}
