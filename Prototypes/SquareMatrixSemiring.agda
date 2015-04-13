@@ -270,7 +270,32 @@ module Prototypes.SquareMatrixSemiring where
           where open SetR
 
     *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
-    *M-identityˡ x = ext {!!}
+    *M-identityˡ x = ext ident
+      where
+        open CommutativeMonoidLemmas +-commutativeMonoid
+        import Level as L
+
+        ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
+        ident r c = begin⟨ setoid ⟩
+          (1M *M x) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ 1M [ r , i ] * x [ i , c ] ]
+            ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
+          Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ 1M [ r , i ] * x [ i , c ] ]
+            ≈⟨ +-cong {!!} {!!} ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1# * x [ i , c ] ] +
+          Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ 0# * x [ i , c ] ]
+            ≈⟨ {!!} ⟩
+          1# * Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] +
+          0# * Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ x [ i , c ] ]
+            ≈⟨ ? ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] + 0#
+            ≈⟨ ? ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ]
+            ≈⟨ ? ⟩
+          x [ r , c ] ∎
+          where open SetR
 
     *M-identityʳ : RightIdentity _≈M_ 1M _*M_
     *M-identityʳ x = ext {!!}
