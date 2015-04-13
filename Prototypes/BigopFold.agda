@@ -12,7 +12,8 @@ module Prototypes.BigopFold where
   open import Data.Empty
   open import Data.Unit.Base hiding (_≤_)
   open import Data.Product hiding (map; Σ-syntax)
-  open import Data.Fin hiding (_+_; _≤_; fold; fold′)
+  open import Data.Fin hiding (fold; fold′) renaming (_+_ to _+F_; _≤_ to _≤F_)
+  open import Data.Fin.Properties using () renaming (_≟_ to _≟F_)
   open import Data.Nat hiding (fold) renaming (_+_ to _+ℕ_; _*_ to _*ℕ_)
   open import Data.List.Base
 
@@ -189,7 +190,7 @@ module Prototypes.BigopFold where
     test-odd = refl
 
   module RangeLemmas {i} {I : Set i} {ℓ : Level} where
-    open import Relation.Binary.PropositionalEquality
+    open import Relation.Binary.PropositionalEquality hiding ([_])
     open import Data.Nat.Base
     open import Data.Nat.Properties.Simple
 
@@ -242,6 +243,10 @@ module Prototypes.BigopFold where
                                 cong (_∷_ y) $ last-yes ys x p (fromWitness q)
     last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p (fromWitness q)
     last-yes xs x p () | no  _
+
+    postulate
+      uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → fromLenℕ m n ∥ _≟_ k ≡ [ k ]
+      uniqueF : ∀ m n k → m ≤ toℕ k → toℕ k ≤ (m +ℕ n) → fromLenF m n ∥ _≟F_ k ≡ [ k ]
 
   module MonoidLemmas
          {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
@@ -303,6 +308,10 @@ module Prototypes.BigopFold where
       f i ∙ fold f is
         ≈⟨ ∙-cong (fx≈gx i) (Σ-cong″ fx≈gx (P.refl {x = is})) ⟩
       g i ∙ fold g is ∎
+
+    postulate
+      Σ-cong-P : ∀ {ℓ} {f g : I → R} {P : Pred I ℓ} (is : List I) (p : Decidable P) →
+                 (∀ i → (P i) → f i ≈ g i) → fold f (is ∥ p) ≈ fold g (is ∥ p)
 
   module CommutativeMonoidLemmas
          {c ℓ} (M : CommutativeMonoid c ℓ) {i} {I : Set i} {j} {J : Set j} where
