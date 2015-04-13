@@ -272,6 +272,7 @@ module Prototypes.SquareMatrixSemiring where
     *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
     *M-identityˡ x = ext ident
       where
+        open SemiringWithoutOneLemmas semiringWithoutOne
         open CommutativeMonoidLemmas +-commutativeMonoid
         import Level as L
 
@@ -282,18 +283,19 @@ module Prototypes.SquareMatrixSemiring where
           Σ[ i ← 0 … n $ 1M [ r , i ] * x [ i , c ] ]
             ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
-          Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ 1M [ r , i ] * x [ i , c ] ]
+          Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
             ≈⟨ +-cong {!!} {!!} ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1# * x [ i , c ] ] +
-          Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ 0# * x [ i , c ] ]
-            ≈⟨ {!!} ⟩
+          Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 0# * x [ i , c ] ]
+            ≈⟨ sym $ +-cong (Σ-distrˡ _ 1# (0 … n ∥ (_≟F_ r)))
+                            (Σ-distrˡ _ 0# (0 … n ∥ ∁-dec (_≟F_ r))) ⟩
           1# * Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] +
           0# * Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ x [ i , c ] ]
-            ≈⟨ ? ⟩
+            ≈⟨ +-cong (proj₁ *-identity _) (proj₁ zero _) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] + 0#
-            ≈⟨ ? ⟩
+            ≈⟨ proj₂ +-identity _ ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ]
-            ≈⟨ ? ⟩
+            ≈⟨ {!!} ⟩
           x [ r , c ] ∎
           where open SetR
 
