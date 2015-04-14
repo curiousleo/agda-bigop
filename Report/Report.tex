@@ -19,12 +19,103 @@
 
 \section{Motivation}
 
-\section{Predicates and relations}
+\section{Sets and types}
 
-\section{Equational reasoning}
+Ignoring universes / levels in this report.
+
+Value and \enquote{canonical element} used interchangeably.
+
+Alpha-, beta-, eta-conversion. Basics of typed lambda calculus.
+
+Truth = type inhabitation, falsity = absurdity
+
+\section{Relations, predicates and decidability}
+
+XXX intro blurb
+
+\minisec{Relations}
+
+Usually in mathematics, a relation between two sets is defined as a subset of the cartesian product of the two sets. In a dependent type theory, a binary relation between types \mintinline{agda}{A : Set} and \mintinline{agda}{B : Set} has the type \mintinline{agda}{A → B → Set}. Via currying, this type is isomorphic to \mintinline{agda}{A × B → Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
+
+We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
+
+\emph{Divisibility} is a familiar notion with a straightforward definition as a type.
+
+\begin{listing}[h]
+\begin{agdacode}
+data _∣_ : ℕ → ℕ → Set where
+  divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
+\end{agdacode}
+\end{listing}
+
+Its definition translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
+
+An important homogeneous binary relation is called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
+
+\begin{listing}[h]
+\begin{agdacode}
+data _≡_ {a} {A : Set a} (x : A) : A → Set a where
+  refl : x ≡ x
+\end{agdacode}
+\end{listing}
+
+The relation \(\_\!\!\equiv\!\!\_\) has only one constructor called \mintinline{agda}{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
+
+The constructor \mintinline{agda}{refl} requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \mintinline{agda}{x ≡ y}, \mintinline{agda}{x} and \mintinline{agda}{y} must be shown to reduce to the same value.
+
+\minisec{Predicates}
+
+A predicate expresses some property of a term. In constructive logic, we often think of the values of a predicate as the \emph{evidence} that it holds. The type of a predicate over a type \mintinline{agda}{A} is \mintinline{agda}{A → Set}.
+
+We will consider two predicates over natural numbers as examples in this chapter, \mintinline{agda}{Even : ℕ → Set} and \mintinline{agda}{Collatz : ℕ → Set}. In words, they mean the following:
+\begin{itemize}
+\item \mintinline{agda}{Even n} provides evidence that \mintinline{agda}{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
+\item \mintinline{agda}{Collatz n} provides evidence that if we keep iterating the function \(f\) (defined below), starting with \(f (n + 1)\), eventually the result will be the number \(1\).
+\[ f(n) =
+	\begin{cases}
+		n/2    & \text{if } n \equiv 0 \text{ (mod \(2\))} \\
+		3n + 1 & \text{if } n \equiv 1 \text{ (mod \(2\))}
+	\end{cases}
+\]
+We can provide evidence for this property by giving a natural number \(i\) together with a proof that \(f^i(n+1) \equiv 1\), where \(f^i\) represents the function \(f\) iterated \(i\) times.
+\end{itemize}
+
+\begin{listing}[h]
+\begin{agdacode}
+data Even : ℕ → Set where
+  zero-even : Even zero
+  ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
+\end{agdacode}
+\end{listing}
+
+\begin{listing}[h]
+\begin{agdacode}
+Collatz : ℕ → Set
+Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
+  where
+    f : ℕ → ℕ
+    f n with n mod 2
+    f n | zero     = n div 2
+    f n | suc zero = suc (3 * n)
+    f n | suc (suc ())
+
+    iter : ∀ {A} → (A → A) → A → ℕ → A
+    iter f x zero    = x
+    iter f x (suc n) = iter f (f x) n
+\end{agdacode}
+\end{listing}
+
+\minisec{Decidability}
+
+The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \mintinline{agda}{P : A → Set}, a decision procedure would be a function which for any argument \mintinline{agda}{x : A} returns either an inhabitant of type \mintinline{agda}{P x} (evidence that the predicate holds) or an inhabitant of type \mintinline{agda}{¬ P x} (evidence that the predicate does not hold).
+
+Considering the two example again, a decision procedure for \mintinline{agda}{Even} is not entirely trivial, but still straightforward to define. The predicate \mintinline{agda}{Collatz}, on the other hand, has been shown by Conway (XXX reference) to be undecidable---this is an instance of a predicate for which no decision procedure exists.
+
+\section{Equivalences and setoids}
 
 The main use case of the agda-bigops library is to prove equalities. As an example, the Binomial Theorem can be stated as \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
-The intended meaning of this equation seems clear---it could be stated in words as follows: \enquote{for all numbers \(x\) and \(n\), if we let \(k\) range over all numbers from \(0\) to \(n\), evaluate \(\binom{n}{k} \; x^k\) at each step and finally take the sum over the results, we obtain a number that is equal to the number obtained by evaluating \((1 + x)^n\).}
+
+The intended meaning of this equation seems clear---in English, the statement could be expressed as as follows: \begin{quote}For all numbers \(x\) and \(n\), let \(k\) range over all numbers from \(0\) to \(n\) and evaluate \(\binom{n}{k} \; x^k\) at each step. The sum of all those numbers is equal to the number obtained by evaluating \((1 + x)^n\).\end{quote}
 
 Unfortunately, this description is too imprecise to be translated into a statement of formal mathematics. The first question we would have to answer is what \emph{kinds} of numbers \(x\) and \(n\) are. The notation suggests that \(n\) is an integer. It does not tell us whether the equation is supposed to hold if \(n\) is negative. The number \(x\) is less constrained by notation as exponentiation is defined even for complex and irrational numbers. Is the equation meant to cover them too?
 
@@ -32,11 +123,13 @@ Next, we have to define the meaning of each symbol that occurs in the formula. T
 
 The last thing we need to consider is the meaning of the equality sign. In dependent types based logics, this is where equivalences and setoids come in.
 
-\subsection{Equivalences and setoids}
+\minisec{Equivalences}
 
 Equivalences capture the essence of what it means for two things to be equal. A relation \(\_\!\!\approx\!\!\_\) is an equivalence if it is \emph{reflexive} (\(\forall a.\ a \approx a\)), \emph{symmetric} (\(\forall a,b.\ a \approx b \rightarrow b \approx a\)) and \emph{transitive} (\(\forall a,b,c.\ a \approx b \wedge b \approx c \rightarrow a \approx c\)).
 
 It is easy to see that the notion of equality we used in the example at the beginning of this section is an equivalence. Informally, it can be stated as \enquote{two terms are equivalent if they evaluate to the same number}. This intuition is captured by an equivalence called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same expression.
+
+\minisec{Setoids}
 
 A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence (see \cref{lst:setoid}).
 
