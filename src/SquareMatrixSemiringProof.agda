@@ -1,7 +1,7 @@
 module SquareMatrixSemiringProof where
 
   open import Matrix
-  open import Bigop.Lemmas hiding (_…_)
+  open import Bigop hiding (_…_)
 
   open import Algebra
   open import Algebra.FunctionProperties
@@ -9,8 +9,8 @@ module SquareMatrixSemiringProof where
 
   open import Data.Fin using (Fin)
   open import Data.Fin.Properties using () renaming (_≟_ to _≟F_)
-  import Data.List as L
-  import Data.Nat as N
+  import Data.List.Base as L
+  import Data.Nat.Base as N
   open N using (ℕ)
   open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
   import Data.Vec as V
@@ -185,8 +185,7 @@ module SquareMatrixSemiringProof where
     zeroˡ : LeftZero _≈M_ 0M _*M_
     zeroˡ x = ext z
       where
-        open SemiringWithoutOneLemmas semiringWithoutOne
-        open MonoidLemmas +-monoid
+        open Props.SemiringWithoutOne semiringWithoutOne
 
         z : ∀ r c → (0M *M x) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin⟨ setoid ⟩
@@ -203,8 +202,7 @@ module SquareMatrixSemiringProof where
     zeroʳ : RightZero _≈M_ 0M _*M_
     zeroʳ x = ext z
       where
-        open SemiringWithoutOneLemmas semiringWithoutOne
-        open MonoidLemmas +-monoid
+        open Props.SemiringWithoutOne semiringWithoutOne
 
         z : ∀ r c → (x *M 0M) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin⟨ setoid ⟩
@@ -220,9 +218,7 @@ module SquareMatrixSemiringProof where
     *M-assoc : Associative _≈M_ _*M_
     *M-assoc x y z = ext assoc
       where
-        open SemiringWithoutOneLemmas semiringWithoutOne
-        open CommutativeMonoidLemmas +-commutativeMonoid
-        open MonoidLemmas +-monoid
+        open Props.SemiringWithoutOne semiringWithoutOne
 
         assoc : ∀ r c → ((x *M y) *M z) [ r , c ] ≈ (x *M (y *M z)) [ r , c ]
         assoc r c = begin⟨ setoid ⟩
@@ -258,7 +254,7 @@ module SquareMatrixSemiringProof where
     *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
     *M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
       where
-        open MonoidLemmas +-monoid
+        open Props.Monoid +-monoid
 
         cong : ∀ r c → (u *M x) [ r , c ] ≈ (v *M y) [ r , c ]
         cong r c = begin⟨ setoid ⟩
@@ -274,10 +270,8 @@ module SquareMatrixSemiringProof where
     *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
     *M-identityˡ x = ext ident
       where
-        open SemiringWithoutOneLemmas semiringWithoutOne
-        open CommutativeMonoidLemmas +-commutativeMonoid
-        open MonoidLemmas +-monoid
-        open RangeLemmas
+        open Props.SemiringWithoutOne semiringWithoutOne
+        open Props.Ordinals
         import Level as L
 
         open import Data.Empty
@@ -295,7 +289,7 @@ module SquareMatrixSemiringProof where
           (1M *M x) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ 1M [ r , i ] * x [ i , c ] ]
-            ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
+{-          ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
           Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
             ≈⟨ +-cong (Σ-cong-P (0 … n) (_≟F_ r)
@@ -309,10 +303,11 @@ module SquareMatrixSemiringProof where
           1# * Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] +
           0# * Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ x [ i , c ] ]
             ≈⟨ +-cong (proj₁ *-identity _) (proj₁ zero _) ⟩
+-}          ≈⟨ {!!} ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] + 0#
             ≈⟨ proj₂ +-identity _ ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ]
-            ≡⟨ P.cong (Σ-syntax _) (uniqueF 0 n r _ {! bounded r !}) ⟩
+            ≡⟨ P.cong (Σ-syntax _) {!!} {- (uniqueF 0 n r _ {! bounded r !}) -} ⟩
           Σ[ i ← L.[ r ] $ x [ i , c ] ]
             ≈⟨ proj₂ +-identity _  ⟩
           x [ r , c ] ∎
