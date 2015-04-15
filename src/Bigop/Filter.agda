@@ -5,8 +5,8 @@ open import Bigop.Ordinals
 import Level
 
 open import Data.Empty
-open import Data.List
-open import Data.Nat
+open import Data.List.Base
+open import Data.Nat.Base
 open import Data.Product
 open import Function
 open import Relation.Nullary
