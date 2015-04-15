@@ -12,18 +12,6 @@ open import Function
 open import Relation.Nullary
 open import Relation.Unary
 
-DecPred : ∀ {i} (I : Set i) {ℓ} → Set _
-DecPred I {ℓ} = Σ (Pred I ℓ) Decidable
-
-infixl 6 _∣_ _∥_
-
-_∣_ : ∀ {i} {I : Set i} {ℓ} → List I → DecPred I {ℓ} → List I
---  is ∣ (_ , dec) = filter (λ i → ⌊ dec i ⌋) is
-[]       ∣ (_ , dec) = []
-(i ∷ is) ∣ (_ , dec) with dec i
-(i ∷ is) ∣ (p , dec) | yes _ = i ∷ is ∣ (p , dec)
-(i ∷ is) ∣ (p , dec) | no  _ =     is ∣ (p , dec)
-
 _∥_ : ∀ {i} {I : Set i} {ℓ} {P : Pred I ℓ} → List I → Decidable P → List I
 [] ∥ dec = []
 (i ∷ is) ∥ dec with dec i
@@ -58,29 +46,15 @@ odd (suc (suc n)) | no ¬p = no (ss-even′ ¬p)
     ss-even′ : ∀ {n} → ¬ Odd n → ¬ Odd (suc (suc n))
     ss-even′ ¬ps (ss-odd p) = ⊥-elim (¬ps p)
 
-even′ : DecPred ℕ {Level.zero}
-even′ = Even , even
-
-odd′ : DecPred ℕ {Level.zero}
-odd′ = ∁ (proj₁ even′) , ¬? ∘ proj₂ even′
-  where
-    open import Relation.Nullary.Negation
-
-open import Bigop.Ordinals
-
 private
  module Test where
 
+  open import Bigop.Ordinals
+
   open import Relation.Binary.PropositionalEquality
 
-  test-even′ : 1 … 6 ∣ even′ ≡ 2 ∷ 4 ∷ 6 ∷ []
-  test-even′ = refl
-
-  test-odd′ : 1 … 6 ∣ odd′ ≡ 1 ∷ 3 ∷ 5 ∷ []
-  test-odd′ = refl
-
-  test-even : 1 … 6 ∥ even ≡ 2 ∷ 4 ∷ 6 ∷ []
+  test-even : (1 … 6) ∥ even ≡ 2 ∷ 4 ∷ 6 ∷ []
   test-even = refl
 
-  test-odd : 1 … 6 ∥ odd ≡ 1 ∷ 3 ∷ 5 ∷ []
+  test-odd : (1 … 6) ∥ odd ≡ 1 ∷ 3 ∷ 5 ∷ []
   test-odd = refl
