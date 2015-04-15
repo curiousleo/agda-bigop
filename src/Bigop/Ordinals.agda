@@ -37,6 +37,8 @@ downFromLenℕ (suc from) (suc len) = suc from ∷ downFromLenℕ from len
 _…+_ = fromLenℕ
 _…-_ = downFromLenℕ
 
+infix 6 _…_
+
 _…_ : ℕ → ℕ → List ℕ
 m … n = m …+ (suc n ∸ m)
 
