@@ -27,7 +27,7 @@ module Proofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid using (fold; Σ-syntax)
+    open Fold +-monoid using (fold; Σ-syntax)
     open EqR setoid
 
     open RangeLemmas
@@ -104,7 +104,7 @@ module Proofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid using (fold; Σ-syntax)
+    open Fold +-monoid using (fold; Σ-syntax)
 
     proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0 … n $ x ] ≡ n * (suc n)
     proof 0 = P.refl
@@ -177,7 +177,7 @@ module Proofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid using (Σ-syntax)
+    open Fold +-monoid using (Σ-syntax)
 
     A×[B×C] : Fin p → Fin s → R
     A×[B×C] i j = Σ[ k ← 0… q $ A [ i , k ] * Σ[ l ← 0… r $ B [ k , l ] * C [ l , j ] ] ]
@@ -238,7 +238,7 @@ module Proofs where
     open CommutativeMonoidLemmas +-commutativeMonoid
     open MonoidLemmas +-monoid
 
-    open Core +-monoid using (fold; Σ-syntax)
+    open Fold +-monoid using (fold; Σ-syntax)
 
     infixr 8 _^_
 

@@ -3,6 +3,8 @@
 
 module Bigop.Lemmas where
 
+  open import Bigop.Core public
+
   import Relation.Binary.EqReasoning as EqR
 
   open import Algebra
@@ -25,33 +27,6 @@ module Bigop.Lemmas where
   open import Relation.Nullary.Negation
 
   open import Function
-
-  module Core {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
-
-    open Monoid M renaming (Carrier to R)
-
-    fold : (I → R) → List I → R
-    fold f = foldr (λ x y → (f x) ∙ y) ε
-
-    Σ-syntax : _
-    Σ-syntax = fold
-
-    syntax Σ-syntax (λ x → e) v = Σ[ x ← v $ e ]
-
-    Π-syntax : _
-    Π-syntax = fold
-
-    syntax Π-syntax (λ x → e) v = Π[ x ← v $ e ]
-
-    ⨁-syntax : _
-    ⨁-syntax = fold
-
-    syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v $ e ]
-
-    ⨂-syntax : _
-    ⨂-syntax = fold
-
-    syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
 
   range : ∀ {from to} → from ≤ to → List (Fin to)
   range (z≤n {zero})          = []
@@ -254,7 +229,7 @@ module Bigop.Lemmas where
     open Monoid M renaming (Carrier to R)
     open EqR setoid
 
-    open Core M
+    open Fold M
 
     Σ-head : (f : I → R) (x : I) (xs : List I) →
              fold f (x ∷ xs) ≈ f x ∙ fold f xs
@@ -319,7 +294,7 @@ module Bigop.Lemmas where
     open CommutativeMonoid M renaming (Carrier to R)
     open EqR setoid
 
-    open Core monoid
+    open Fold monoid
 
     open MonoidLemmas monoid
 
@@ -424,7 +399,7 @@ module Bigop.Lemmas where
       renaming (Carrier to R; zero to *-zero)
     open EqR setoid
 
-    open Core +-monoid
+    open Fold +-monoid
 
     open CommutativeMonoidLemmas +-commutativeMonoid {I = I}
 

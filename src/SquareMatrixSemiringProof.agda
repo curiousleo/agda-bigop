@@ -48,8 +48,8 @@ module SquareMatrixSemiringProof where
   module SquareMatrix (n : ℕ) {ℓ} (s : Semiring ℓ ℓ) where
 
     open Semiring s renaming (Carrier to A)
-    open Core +-monoid using (Σ-syntax)
-    open Core *-monoid using (Π-syntax)
+    open Fold +-monoid using (Σ-syntax)
+    open Fold *-monoid using (Π-syntax)
 
     _…_ = fromLenF
 
