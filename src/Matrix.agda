@@ -1,4 +1,4 @@
-module Prototypes.Matrix where
+module Matrix where
 
   import Data.Vec as V
   open import Data.Fin using (Fin)

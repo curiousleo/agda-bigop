@@ -1,7 +1,7 @@
-module Prototypes.SquareMatrixSemiring where
+module SquareMatrixSemiringProof where
 
-  open import Prototypes.Matrix
-  open import Prototypes.BigopFold hiding (_…_)
+  open import Matrix
+  open import Bigop.Lemmas hiding (_…_)
 
   open import Algebra
   open import Algebra.FunctionProperties

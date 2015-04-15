@@ -1,6 +1,6 @@
-module Prototypes.BigopFoldProofs where
+module Proofs where
 
-  open import Prototypes.BigopFold
+  open import Bigop.Lemmas
 
   open import Algebra
 
@@ -138,7 +138,7 @@ module Prototypes.BigopFoldProofs where
           Σ[ x ← 0 … n ∷ʳ suc n $ x ]  ≡⟨ Σ-last id (suc n) (0 … n) ⟩
           Σ[ x ← 0 … n $ x ] + suc n   ∎
 
-  open import Prototypes.Matrix hiding (lookup; tabulate)
+  open import Matrix hiding (lookup; tabulate)
 
   module MatrixSumAssoc {p q}
          {c ℓ} (S : Semigroup c ℓ)

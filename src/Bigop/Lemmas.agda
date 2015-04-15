@@ -1,7 +1,7 @@
 {-# OPTIONS --without-K #-}
 -- see https://code.google.com/p/agda/issues/detail?id=1381
 
-module Prototypes.BigopFold where
+module Bigop.Lemmas where
 
   import Relation.Binary.EqReasoning as EqR
 
