@@ -6,6 +6,7 @@ module Bigop where
 open import Bigop.Core public
 open import Bigop.Ordinals public
 open import Bigop.Filter public
+open import Bigop.Filter.Predicates public
 
 module Props where
 
