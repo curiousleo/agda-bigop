@@ -12,15 +12,15 @@ open import Function
 open import Relation.Nullary
 open import Relation.Unary
 
-_∥_ : ∀ {i} {I : Set i} {ℓ} {P : Pred I ℓ} → List I → Decidable P → List I
-[] ∥ dec = []
+_∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → List I
+[]       ∥ dec = []
 (i ∷ is) ∥ dec with dec i
 (i ∷ is) ∥ dec | yes _ = i ∷ is ∥ dec
 (i ∷ is) ∥ dec | no  _ =     is ∥ dec
 
 data Even : Pred ℕ Level.zero where
   zero-even : Even ℕ.zero
-  ss-even : ∀ {n} → Even n → Even (suc (suc n))
+  ss-even   : ∀ {n} → Even n → Even (suc (suc n))
 
 even : Decidable Even
 even 0 = yes zero-even
@@ -34,7 +34,7 @@ even (suc (suc n)) | no ¬p = no (ss-odd ¬p)
 
 data Odd : Pred ℕ Level.zero  where
   one-odd : Odd 1
-  ss-odd : ∀ {n} → Odd n → Odd (suc (suc n))
+  ss-odd  : ∀ {n} → Odd n → Odd (suc (suc n))
 
 odd : Decidable Odd
 odd 0 = no (λ ())
