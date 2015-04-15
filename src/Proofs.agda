@@ -1,6 +1,6 @@
 module Proofs where
 
-  open import Bigop.Lemmas
+  open import Bigop
 
   open import Algebra
 
@@ -15,22 +15,19 @@ module Proofs where
 
   module GaussSquared where
 
-    open import Data.List
+    open import Data.List.Base
     open import Data.Empty
     open import Relation.Nullary.Decidable
 
-    open import Data.Nat using (suc)
+    open import Data.Nat.Base using (suc)
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open SemiringWithoutOneLemmas semiringWithoutOne
-    open CommutativeMonoidLemmas +-commutativeMonoid
-    open MonoidLemmas +-monoid
+    open Props.SemiringWithoutOne semiringWithoutOne
+    open Props.Ordinals
 
     open Fold +-monoid using (fold; Σ-syntax)
     open EqR setoid
-
-    open RangeLemmas
 
     lemma : ∀ n → ¬ (Odd (n + n))
     lemma n = {!!}
@@ -100,9 +97,7 @@ module Proofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open SemiringWithoutOneLemmas semiringWithoutOne
-    open CommutativeMonoidLemmas +-commutativeMonoid
-    open MonoidLemmas +-monoid
+    open Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (fold; Σ-syntax)
 
@@ -120,9 +115,9 @@ module Proofs where
       ∎
       where
         open P.≡-Reasoning
-        open import Data.List
+        open import Data.List.Base
 
-        open RangeLemmas
+        open Props.Ordinals
 
         distribˡ : ∀ m n o → m * (n + o) ≡ m * n + m * o
         distribˡ m n o
@@ -170,12 +165,11 @@ module Proofs where
     0… = fromLenF 0
 
     open import Data.Fin hiding (_+_; fold)
+    open import Data.Nat.Base using (ℕ)
 
     open CommutativeSemiringWithoutOne S renaming (Carrier to R)
 
-    open SemiringWithoutOneLemmas semiringWithoutOne
-    open CommutativeMonoidLemmas +-commutativeMonoid
-    open MonoidLemmas +-monoid
+    open Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (Σ-syntax)
 
@@ -234,9 +228,7 @@ module Proofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open SemiringWithoutOneLemmas semiringWithoutOne
-    open CommutativeMonoidLemmas +-commutativeMonoid
-    open MonoidLemmas +-monoid
+    open Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (fold; Σ-syntax)
 
@@ -300,7 +292,7 @@ module Proofs where
 
       open EqR setoid
       open import Level renaming (zero to lzero; suc to lsuc)
-      open RangeLemmas {I = ℕ} {ℓ = lzero}
+      open Props.Ordinals
 
       proof : ∀ x n → Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
       proof x 0       = refl
@@ -317,8 +309,7 @@ module Proofs where
                          (λ k → distribʳ (x ^ (suc k)) (n choose k) _) (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k)
                                   + n choose (suc k) * x ^ (suc k) ]
-              ≈⟨ sym $ Σ-lift {J = ℕ}
-                              (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
+              ≈⟨ sym $ Σ-lift (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
                               (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
             + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ] ∎
