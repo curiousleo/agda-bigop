@@ -11,18 +11,7 @@ range (s≤s {from} {to} f≤t) = map suc (range f≤t)
 
 fromLenF : (from len : ℕ) → List (Fin (from + len))
 fromLenF from len = range {from} {from + len} (m≤m+n from len)
-  where
-    open Data.Nat
-    open import Data.Nat.Properties.Simple
-
-    ≤-refl : ∀ n → n ≤ n
-    ≤-refl zero    = z≤n
-    ≤-refl (suc n) = s≤s (≤-refl n)
-
-    m≤m+n : ∀ m n → m ≤ m + n
-    m≤m+n zero n = z≤n
-    m≤m+n (suc m) zero rewrite +-comm (suc m) zero = ≤-refl (suc m)
-    m≤m+n (suc m) (suc n) = s≤s (m≤m+n m (suc n))
+  where open import Data.Nat.Properties using (m≤m+n)
 
 fromLenℕ : ℕ → ℕ → List ℕ
 fromLenℕ from zero = []
