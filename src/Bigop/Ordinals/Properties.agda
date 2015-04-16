@@ -5,7 +5,7 @@ open import Bigop.Filter
 
 open import Data.List.Base
 open import Function
-open import Data.Nat.Base
+open import Data.Nat.Base hiding (_⊔_)
 open import Data.Nat.Properties.Simple
 -- open import Data.Nat
 -- open import Data.Fin hiding (_+_; _≤_)
@@ -70,3 +70,74 @@ postulate
   uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → fromLenℕ m n ∥ _≟_ k ≡ [ k ]
   uniqueF : ∀ m n k → m ≤ toℕ k → toℕ k ≤ (m + n) → fromLenF m n ∥ _≟F_ k ≡ [ k ]
 -}
+
+open import Level using (_⊔_)
+open import Data.Bool.Base
+open import Data.List.All
+open import Data.Product
+
+data Unique {a p} {A : Set a}
+            (P : A → Set p) : List A → Set (p ⊔ a) where
+  here  : ∀ {x xs} ( px :   P x) → (¬all : All (∁ P) xs) → Unique P (x ∷ xs)
+  there : ∀ {x xs} (¬px : ¬ P x) → (u : Unique P xs)     → Unique P (x ∷ xs)
+
+private
+ extract-unique′ : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A} →
+                   Unique P xs → Σ A P
+ extract-unique′ (here {x} px ¬all) = x , px
+ extract-unique′ (there ¬px u)      = extract-unique′ u
+
+extract-unique : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A} →
+                 Unique P xs → A
+extract-unique u = proj₁ (extract-unique′ u)
+
+all-∁-lemma : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A}
+              (dec : Decidable P) → All (∁ P) xs → xs ∥ dec ≡ []
+all-∁-lemma dec []                     = refl
+all-∁-lemma dec (_∷_ {x} {xs} px ¬all) = begin
+  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec (fromWitnessFalse px) ⟩
+       xs  ∥ dec  ≡⟨ all-∁-lemma dec ¬all ⟩
+  [] ∎
+
+unique-lemma : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A}
+               (dec : Decidable P) → (u : Unique P xs) →
+               xs ∥ dec ≡ [ extract-unique u ]
+unique-lemma dec (here {x} {xs} px ¬all) = begin
+  (x ∷ xs) ∥ dec  ≡⟨ head-yes x xs dec (fromWitness px) ⟩
+   x ∷ (xs ∥ dec) ≡⟨ cong (_∷_ x) (all-∁-lemma dec ¬all) ⟩
+  [ x ] ∎
+unique-lemma dec (there {x} {xs} ¬px u) = begin
+  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec (fromWitnessFalse ¬px) ⟩
+       xs  ∥ dec  ≡⟨ unique-lemma dec u ⟩
+  [ extract-unique u ] ∎
+
+open import Data.Fin using (Fin; fromℕ≤) renaming (zero to zeroF; suc to sucF)
+
+postulate
+  ordinals-unique : ∀ {m n k} → m ≤ k → k ≤ n →
+                    Unique (_≡_ k) (m … n)
+  ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k < (m + n)) →
+                     Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
+  ordinals-eq : ∀ {m n k} → (m≤k : m ≤ k) → (k<m+n : k < (m + n)) →
+                extract-unique (ordinals-uniqueF m≤k k<m+n) ≡ fromℕ≤ k<m+n
+
+{-
+open import Relation.Binary
+
+open import Data.Nat.Properties using (strictTotalOrder)
+open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder)
+  using (compare)
+
+ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k < (m + n)) →
+                   Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
+ordinals-uniqueF {zero} {k = zero} z≤n (s≤s k≤m+n) = here {!!} {!ordinals-lt!}
+ordinals-uniqueF {k = suc k} z≤n k≤m+n = {!!}
+ordinals-uniqueF (s≤s m≤k) k≤m+n = {!!}
+-}
+
+open import Bigop.Filter
+open import Data.Fin using (toℕ)
+
+postulate
+  ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k < (m + n)) →
+                     fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
