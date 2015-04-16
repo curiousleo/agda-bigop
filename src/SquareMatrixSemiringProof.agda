@@ -7,7 +7,9 @@ module SquareMatrixSemiringProof where
   open import Algebra.FunctionProperties
   open import Algebra.Structures
 
+  open import Data.Empty
   open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
+  open import Data.Fin.Properties using (bounded)
   import Data.List.Base as L
   import Data.Nat.Base as N
   open N using (ℕ) renaming (zero to zeroℕ; suc to sucℕ)
@@ -18,12 +20,14 @@ module SquareMatrixSemiringProof where
   open import Function.Equivalence as Equiv using (_⇔_)
 
   open import Relation.Nullary
+  open import Relation.Unary
   open import Relation.Binary.Core hiding (refl)
   open import Relation.Binary
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
   import Relation.Binary.SetoidReasoning as SetR
-  
+
+
   record Pointwise {ℓ} {A B : Set ℓ} (_∼_ : REL A B ℓ)
                    {m n} (x : Matrix A m n) (y : Matrix B m n) : Set ℓ where
     constructor ext
@@ -48,7 +52,6 @@ module SquareMatrixSemiringProof where
 
     open Semiring s renaming (Carrier to A)
     open Fold +-monoid using (Σ-syntax)
-    open Fold *-monoid using (Π-syntax)
 
     _…_ = fromLenF
 
@@ -110,6 +113,38 @@ module SquareMatrixSemiringProof where
 
     0M-lemma : ∀ r c → 0M [ r , c ] ≡ 0#
     0M-lemma = lookup∘tabulate _
+
+    1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
+    1M-diag r .r P.refl = begin
+      1M [ r , r ]  ≡⟨ lookup∘tabulate _ r r ⟩
+      diag r r      ≡⟨ diag-lemma r ⟩
+      1#  ∎
+      where
+        open P.≡-Reasoning
+
+        diag-lemma : ∀ {n} (r : Fin n) → diag r r ≡ 1#
+        diag-lemma zeroF    = P.refl
+        diag-lemma (sucF r) = diag-lemma r
+
+    1M-∁-diag : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
+    1M-∁-diag r c eq with r ≟F c
+    1M-∁-diag r .r ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
+    1M-∁-diag r  c ¬eq | no  _      = begin
+      1M [ r , c ]  ≡⟨ lookup∘tabulate _ r c ⟩
+      diag r c      ≡⟨ diag-lemma r c ¬eq ⟩
+      0#  ∎
+      where
+        open P.≡-Reasoning
+
+        suc-¬-lemma : ∀ {n} {r c : Fin n} → ¬ sucF r ≡ sucF c → ¬ r ≡ c
+        suc-¬-lemma {r} ¬eq P.refl = ¬eq P.refl
+
+        diag-lemma : ∀ {n} (r c : Fin n) → ¬ r ≡ c → diag r c ≡ 0#
+        diag-lemma zeroF zeroF    ¬eq = ⊥-elim (¬eq P.refl)
+        diag-lemma zeroF (sucF _) _   = P.refl
+        diag-lemma (sucF r) zeroF ¬eq = P.refl
+        diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
+
 
     +M-assoc : Associative _≈M_ _+M_
     +M-assoc x y z = ext assoc
@@ -273,41 +308,6 @@ module SquareMatrixSemiringProof where
         open Props.SemiringWithoutOne semiringWithoutOne
         open Props.Ordinals
         import Level as L
-
-        open import Data.Empty
-        open import Data.Fin.Properties using (bounded)
-        open import Relation.Unary
-
-        1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
-        1M-diag r .r P.refl = begin
-          1M [ r , r ]  ≡⟨ lookup∘tabulate _ r r ⟩
-          diag r r      ≡⟨ diag-lemma r ⟩
-          1#  ∎
-          where
-            open P.≡-Reasoning
-
-            diag-lemma : ∀ {n} (r : Fin n) → diag r r ≡ 1#
-            diag-lemma zeroF    = P.refl
-            diag-lemma (sucF r) = diag-lemma r
-
-        1M-∁-diag : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
-        1M-∁-diag r c eq with r ≟F c
-        1M-∁-diag r .r ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
-        1M-∁-diag r  c ¬eq | no  _      = begin
-          1M [ r , c ]  ≡⟨ lookup∘tabulate _ r c ⟩
-          diag r c      ≡⟨ diag-lemma r c ¬eq ⟩
-          0#  ∎
-          where
-            open P.≡-Reasoning
-
-            suc-¬-lemma : ∀ {n} {r c : Fin n} → ¬ sucF r ≡ sucF c → ¬ r ≡ c
-            suc-¬-lemma {r} ¬eq P.refl = ¬eq P.refl
-
-            diag-lemma : ∀ {n} (r c : Fin n) → ¬ r ≡ c → diag r c ≡ 0#
-            diag-lemma zeroF zeroF    ¬eq = ⊥-elim (¬eq P.refl)
-            diag-lemma zeroF (sucF _) _   = P.refl
-            diag-lemma (sucF r) zeroF ¬eq = P.refl
-            diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
 
         open import Data.Nat.Base using (z≤n; s≤s)
         open import Data.Fin hiding (_+_; zero)
