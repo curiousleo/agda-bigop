@@ -12,7 +12,7 @@ module SquareMatrixSemiringProof where
   open import Data.Fin.Properties using (bounded)
   import Data.List.Base as L
   import Data.Nat.Base as N
-  open N using (ℕ) renaming (zero to zeroℕ; suc to sucℕ)
+  open N using (ℕ; z≤n) renaming (zero to zeroℕ; suc to sucℕ)
   open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
   import Data.Vec as V
 
@@ -307,18 +307,13 @@ module SquareMatrixSemiringProof where
       where
         open Props.SemiringWithoutOne semiringWithoutOne
         open Props.Ordinals
-        import Level as L
-
-        open import Data.Nat.Base using (z≤n; s≤s)
-        open import Data.Fin hiding (_+_; zero)
-        open import Data.Fin.Properties hiding (setoid)
 
         ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
         ident r c = begin⟨ setoid ⟩
           (1M *M x) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ 1M [ r , i ] * x [ i , c ] ]
-            ≈⟨ Σ-split {ℓ = L.zero} _ (0 … n) (_≟F_ r) ⟩
+            ≈⟨ Σ-split _ (0 … n) (_≟F_ r) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
           Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
             ≈⟨ +-cong (Σ-cong-P (0 … n) (_≟F_ r)
