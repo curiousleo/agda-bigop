@@ -343,7 +343,30 @@ module SquareMatrixSemiringProof where
           where open SetR
 
     *M-distrOverʳ-+M : (_≈M_ DistributesOverʳ _*M_) _+M_
-    *M-distrOverʳ-+M x y z = ext {!!}
+    *M-distrOverʳ-+M z x y = ext distr
+      where
+        open Props.SemiringWithoutOne semiringWithoutOne
+
+        distr : ∀ r c → ((x +M y) *M z) [ r , c ] ≈ ((x *M z) +M (y *M z)) [ r , c ]
+        distr r c = begin⟨ setoid ⟩
+          ((x +M y) *M z) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ (x +M y) [ r , i ] * z [ i , c ] ]
+            ≈⟨ flip Σ-cong′ (0 … n) (λ i → begin⟨ setoid ⟩
+              (x +M y) [ r , i ] * z [ i , c ]
+                ≈⟨ *-cong (reflexive (lookup∘tabulate _ r i)) refl ⟩
+              (x [ r , i ] + y [ r , i ]) * z [ i , c ]
+                ≈⟨ proj₂ distrib _ _ _ ⟩
+              (x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]) ∎)⟩
+          Σ[ i ← 0 … n $ (x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]) ]
+            ≈⟨ sym (Σ-lift _ _ (0 … n)) ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] * z [ i , c ] ] +
+          Σ[ i ← 0 … n $ y [ r , i ] * z [ i , c ] ]
+            ≡⟨ P.sym $ P.cong₂ _+_ (lookup∘tabulate _ r c) (lookup∘tabulate _ r c) ⟩
+          (x *M z) [ r , c ] + (y *M z) [ r , c ]
+            ≡⟨ P.sym (lookup∘tabulate _ r c) ⟩
+          ((x *M z) +M (y *M z)) [ r , c ] ∎
+          where open SetR
 
     M-isSemiring : IsSemiring _≈M_ _+M_ _*M_ 0M 1M
     M-isSemiring = record
