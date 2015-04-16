@@ -23,7 +23,7 @@ module Proofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
     open Props.Ordinals
 
     open Fold +-monoid using (fold; Σ-syntax)
@@ -39,7 +39,7 @@ module Proofs where
                  Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ] ≈ Σ[ k ← xs ∥ p $ f k ] + f x
     Σ-last-yes f xs x p tpx = begin
       Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p tpx) ⟩
-      Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ-last f x (xs ∥ p) ⟩
+      Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ.last f x (xs ∥ p) ⟩
       Σ[ k ← xs ∥ p $ f k ] + f x   ∎
 
     proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd $ i ] ≈ n * n
@@ -97,7 +97,7 @@ module Proofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (fold; Σ-syntax)
 
@@ -130,7 +130,7 @@ module Proofs where
         lemma₀ : Σ[ x ← 0 … suc n $ x ] ≡ Σ[ x ← 0 … n $ x ] + suc n
         lemma₀ = begin
           Σ[ x ← 0 … suc n $ x ]       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
-          Σ[ x ← 0 … n ∷ʳ suc n $ x ]  ≡⟨ Σ-last id (suc n) (0 … n) ⟩
+          Σ[ x ← 0 … n ∷ʳ suc n $ x ]  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
           Σ[ x ← 0 … n $ x ] + suc n   ∎
 
   module Binomials where
@@ -139,7 +139,7 @@ module Proofs where
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    open Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (fold; Σ-syntax)
 
@@ -211,17 +211,17 @@ module Proofs where
         1 + Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
           ≈⟨ refl {x = 1} ⟨ +-cong ⟩ begin
             Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
-              ≈⟨ sym $ Σ-cong {g = f (suc n)} suc (λ _ → refl) (0 … n)
+              ≈⟨ sym $ Σ.cong {g = f (suc n)} suc (λ _ → refl) (0 … n)
                        ⟨ trans ⟩ P.cong (fold (f (suc n))) (suc-lemma 0 (suc n)) ⟩
             Σ[ k ← 0 … n $ (suc n) choose (suc k) * x ^ (suc k) ]
-              ≈⟨ Σ-cong′ {f = λ k → f (suc n) (suc k)} (λ _ → refl) (0 … n) ⟩
+              ≈⟨ Σ.cong′ {f = λ k → f (suc n) (suc k)} (λ _ → refl) (0 … n) ⟩
             Σ[ k ← 0 … n $ (n choose k + n choose (suc k)) * x ^ (suc k) ]
-              ≈⟨ Σ-cong′ {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
+              ≈⟨ Σ.cong′ {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
                          (λ k → distribʳ (x ^ (suc k)) (n choose k) _) (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k)
                                   + n choose (suc k) * x ^ (suc k) ]
-              ≈⟨ sym $ Σ-lift (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
-                              (0 … n) ⟩
+              ≈⟨ sym $ Σ.split (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
+                               (0 … n) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
             + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ] ∎
           ⟩
@@ -256,8 +256,8 @@ module Proofs where
 
           ➀ : Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] ≈ x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
           ➀ = begin
-            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ-cong′ reorder (0 … n) ⟩
-            Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]  ≈⟨ sym $ Σ-distrˡ (f n) x (0 … n) ⟩
+            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ.cong′ reorder (0 … n) ⟩
+            Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]  ≈⟨ sym $ Σ.distrˡ (f n) x (0 … n) ⟩
             x * Σ[ k ← 0 … n $ n choose k * x ^ k ]    ∎
 
             where
@@ -277,13 +277,13 @@ module Proofs where
             1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
               ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩ begin
                 Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
-                  ≈⟨ Σ-cong {g = f n} suc (λ k → refl) (0 … n) ⟩
+                  ≈⟨ Σ.cong {g = f n} suc (λ k → refl) (0 … n) ⟩
                 Σ[ k ← map suc (0 … n) $ n choose k * x ^ k ]
                   ≈⟨ P.cong (fold $ f n) (suc-lemma 0 (suc n)) ⟩
                 Σ[ k ← 1 … suc n $ n choose k * x ^ k ]
                   ≈⟨ P.cong (fold $ f n) (suc-last-lemma 1 n) ⟩
                 Σ[ k ← (1 … n) ∷ʳ (suc n) $ n choose k * x ^ k ]
-                  ≈⟨ Σ-last (f n) (suc n) (1 … n) ⟩
+                  ≈⟨ Σ.last (f n) (suc n) (1 … n) ⟩
                 Σ[ k ← 1 … n $ n choose k * x ^ k ] + n choose (suc n) * x ^ (suc n)
                   ≈⟨ +-cong (refl {x = Σ[ k ← 1 … n $ f n k ]})
                             (choose-lemma 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩

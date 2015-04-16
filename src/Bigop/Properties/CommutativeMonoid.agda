@@ -8,7 +8,7 @@ open import Bigop.Core
 import Bigop.Properties.Monoid as MonoidProps
 
 open import Data.List.Base
-open import Data.Product hiding (map)
+open import Data.Product hiding (map; swap)
 open import Function
 open import Relation.Nullary
 open import Relation.Unary
@@ -20,18 +20,17 @@ open import Relation.Binary.EqReasoning setoid
 open Fold monoid
 
 {-
-Σ-reverse : (f : I → R) (is : List I) →
-            fold f is ≈ fold f (reverse is)
-Σ-reverse f []       = refl
-Σ-reverse f (i ∷ is) = begin
+perm : (f : I → R) (is : List I) → fold f is ≈ fold f (reverse is)
+perm f []       = refl
+perm f (i ∷ is) = begin
   f i ∙ fold f is
     ≈⟨ comm _ _ ⟩
   fold f is ∙ f i
-    ≈⟨ ∙-cong (Σ-reverse f is) refl ⟩
+    ≈⟨ ∙-cong (perm f is) refl ⟩
   fold f (reverse is) ∙ f i
-    ≈⟨ sym (Σ-last f i (reverse is)) ⟩
+    ≈⟨ sym (last f i (reverse is)) ⟩
   fold f (reverse is ∷ʳ i)
-    ≈⟨ Σ-cong″ (λ x → refl) (P.sym (reverse-∷ʳ i is)) ⟩ -- ≡⟨ P.cong (fold f) (P.sym (reverse-∷ʳ i is)) ⟩
+    ≈⟨ cong″ (λ x → refl) (P.sym (reverse-∷ʳ i is)) ⟩ -- ≡⟨ P.cong (fold f) (P.sym (reverse-∷ʳ i is)) ⟩
   fold f (reverse (i ∷ is)) ∎
   where
     import Relation.Binary.PropositionalEquality as P
@@ -58,11 +57,11 @@ open Fold monoid
       reverse (j ∷ js) ∷ʳ i □
 -}
 
-Σ-lift : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
+split : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
          fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
        -- Σ[ k ← is $ f k ] + Σ[ k ← is $ g k ] ≡ Σ[ k ← is $ f k + g k ]
-Σ-lift f g [] = proj₁ identity _
-Σ-lift f g (i ∷ is) = begin
+split f g [] = proj₁ identity _
+split f g (i ∷ is) = begin
   (f i ∙ fold f is) ∙ (g i ∙ fold g is)
     ≈⟨ assoc (f i) (fold f is) (g i ∙ fold g is) ⟩
   f i ∙ (fold f is ∙ (g i ∙ fold g is))
@@ -81,33 +80,33 @@ open Fold monoid
       (g i ∙ fold f is) ∙ fold g is
         ≈⟨ assoc (g i) (fold f is) (fold g is) ⟩
       g i ∙ (fold f is ∙ fold g is)
-        ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ Σ-lift f g is ⟩
+        ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ split f g is ⟩
       g i ∙ fold (λ i → f i ∙ g i) is ∎
 
-Σ-swap : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → R)
+swap : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → R)
          (js : List J) (is : List I) →
          fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
-Σ-swap f [] ys = sym (Σ-zero ys)
-Σ-swap f xs [] = Σ-zero xs
-Σ-swap f (x ∷ xs) ys = begin
+swap f [] ys = sym (zero ys)
+swap f xs [] = zero xs
+swap f (x ∷ xs) ys = begin
   fold (f x) ys ∙ fold (λ j → fold (f j) ys) xs
-    ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ Σ-swap f xs ys ⟩
+    ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ swap f xs ys ⟩
   fold (f x) ys ∙ fold (λ i → fold (flip f i) xs) ys
-    ≈⟨ Σ-lift (f x) (λ i → fold (flip f i) xs) ys ⟩
+    ≈⟨ split (f x) (λ i → fold (flip f i) xs) ys ⟩
   fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
 open import Bigop.Filter
 
 postulate
-  Σ-split : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
+  split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
             (p : Decidable P) →
             fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
 
 {-
-Σ-split : ∀ {ℓ} {P : Pred I ℓ} → (f : I → R) (is : List I) (p : Decidable P) →
+split : ∀ {ℓ} {P : Pred I ℓ} → (f : I → R) (is : List I) (p : Decidable P) →
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
-Σ-split f [] p = {!!} -- proj₁ identity _
-Σ-split f (i ∷ is) p with p i
+split f [] p = {!!} -- proj₁ identity _
+split f (i ∷ is) p with p i
 ... | yes q = {!!}
 ... | no ¬q = {!!}
 -}
