@@ -66,7 +66,7 @@ last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p (fromWitness q)
 last-yes xs x p () | no  _
 
 {-
-postulate
+postulatE
   uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → fromLenℕ m n ∥ _≟_ k ≡ [ k ]
   uniqueF : ∀ m n k → m ≤ toℕ k → toℕ k ≤ (m + n) → fromLenF m n ∥ _≟F_ k ≡ [ k ]
 -}
@@ -113,14 +113,15 @@ unique-lemma dec (there {x} {xs} ¬px u) = begin
 
 open import Data.Fin using (Fin; fromℕ≤) renaming (zero to zeroF; suc to sucF)
 
-postulate
+{-
+postulatE
   ordinals-unique : ∀ {m n k} → m ≤ k → k ≤ n →
                     Unique (_≡_ k) (m … n)
   ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k < (m + n)) →
                      Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
   ordinals-eq : ∀ {m n k} → (m≤k : m ≤ k) → (k<m+n : k < (m + n)) →
                 extract-unique (ordinals-uniqueF m≤k k<m+n) ≡ fromℕ≤ k<m+n
-
+-}
 {-
 open import Relation.Binary
 
