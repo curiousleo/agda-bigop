@@ -6,27 +6,22 @@ module SquareMatrixSemiringProof where
   open import Algebra
   open import Algebra.FunctionProperties
   open import Algebra.Structures
-
   open import Data.Empty
   open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
   open import Data.Fin.Properties using (bounded)
-  import Data.List.Base as L
+  import Data.List.Base as L using ([_])
   import Data.Nat.Base as N
   open N using (ℕ; z≤n) renaming (zero to zeroℕ; suc to sucℕ)
-  open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
-  import Data.Vec as V
-
+  open import Data.Product using (proj₁; proj₂; _,_; uncurry)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
-
   open import Relation.Nullary
   open import Relation.Unary
-  open import Relation.Binary.Core hiding (refl)
+  open import Relation.Binary.Core using (_≡_; _≢_)
   open import Relation.Binary
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
   import Relation.Binary.SetoidReasoning as SetR
-
 
   record Pointwise {ℓ} {A B : Set ℓ} (_∼_ : REL A B ℓ)
                    {m n} (x : Matrix A m n) (y : Matrix B m n) : Set ℓ where
@@ -110,6 +105,7 @@ module SquareMatrixSemiringProof where
               (l∘t (f r) c)
       where
         open import Data.Vec.Properties using () renaming (lookup∘tabulate to l∘t)
+        import Data.Vec as V using (lookup; tabulate)
 
     0M-lemma : ∀ r c → 0M [ r , c ] ≡ 0#
     0M-lemma = lookup∘tabulate _
