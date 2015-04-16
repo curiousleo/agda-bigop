@@ -16,10 +16,6 @@ open EqR setoid
 
 open Fold M
 
-Σ-head : ∀ {i} {I : Set i} (f : I → R) (x : I) (xs : List I) →
-         fold f (x ∷ xs) ≈ f x ∙ fold f xs
-Σ-head _ _ _ = refl
-
 Σ-last : ∀ {i} {I : Set i} (f : I → R) (x : I) (xs : List I) →
          fold f (xs ∷ʳ x) ≈ fold f xs ∙ f x
 Σ-last f x [] = begin
