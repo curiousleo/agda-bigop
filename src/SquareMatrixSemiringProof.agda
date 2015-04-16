@@ -182,8 +182,8 @@ module SquareMatrixSemiringProof where
           (y +M x) [ r , c ] ∎
           where open SetR
 
-    zeroˡ : LeftZero _≈M_ 0M _*M_
-    zeroˡ x = ext z
+    M-zeroˡ : LeftZero _≈M_ 0M _*M_
+    M-zeroˡ x = ext z
       where
         open Props.SemiringWithoutOne semiringWithoutOne
 
@@ -199,8 +199,8 @@ module SquareMatrixSemiringProof where
           0M [ r , c ] ∎
           where open SetR
 
-    zeroʳ : RightZero _≈M_ 0M _*M_
-    zeroʳ x = ext z
+    M-zeroʳ : RightZero _≈M_ 0M _*M_
+    M-zeroʳ x = ext z
       where
         open Props.SemiringWithoutOne semiringWithoutOne
 
@@ -377,18 +377,18 @@ module SquareMatrixSemiringProof where
             ; assoc         = +M-assoc
             ; ∙-cong        = +M-cong
             }
-          ; identityˡ = +M-identityˡ
-          ; comm = +M-comm
+          ; identityˡ       = +M-identityˡ
+          ; comm            = +M-comm
           }
         ; *-isMonoid = record
           { isSemigroup = record
             { isEquivalence = ≈M-isEquivalence
-            ; assoc  = *M-assoc
-            ; ∙-cong = *M-cong
+            ; assoc         = *M-assoc
+            ; ∙-cong        = *M-cong
             }
-          ; identity = *M-identityˡ , *M-identityʳ
+          ; identity        = *M-identityˡ , *M-identityʳ
           }
-        ; distrib = *M-distrOverˡ-+M , *M-distrOverʳ-+M
+        ; distrib           = *M-distrOverˡ-+M , *M-distrOverʳ-+M
         }
-      ; zero = zeroˡ , zeroʳ
+      ; zero                = M-zeroˡ , M-zeroʳ
       }
