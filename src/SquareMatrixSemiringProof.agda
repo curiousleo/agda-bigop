@@ -7,11 +7,10 @@ module SquareMatrixSemiringProof where
   open import Algebra.FunctionProperties
   open import Algebra.Structures
 
-  open import Data.Fin using (Fin)
-  open import Data.Fin.Properties using () renaming (_≟_ to _≟F_)
+  open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
   import Data.List.Base as L
   import Data.Nat.Base as N
-  open N using (ℕ)
+  open N using (ℕ) renaming (zero to zeroℕ; suc to sucℕ)
   open import Data.Product using (_×_; proj₁; proj₂; _,_; uncurry)
   import Data.Vec as V
 
@@ -75,13 +74,14 @@ module SquareMatrixSemiringProof where
     0M : M n
     0M = tabulate (λ r c → 0#)
 
+    diag : {n : ℕ} → Fin n → Fin n → A
+    diag zeroF    zeroF    = 1#
+    diag zeroF    (sucF c) = 0#
+    diag (sucF r) zeroF    = 0#
+    diag (sucF r) (sucF c) = diag r c
+
     1M : M n
     1M = tabulate diag
-      where
-        diag : Fin n → Fin n → A
-        diag r c with r ≟F c
-        ... | yes _ = 1#
-        ... | no  _ = 0#
 
     ------------
     -- Proofs --
@@ -279,17 +279,46 @@ module SquareMatrixSemiringProof where
         open import Relation.Unary
 
         1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
-        1M-diag c .c P.refl = {!1M [ c , c ]!}
+        1M-diag r .r P.refl = begin
+          1M [ r , r ]  ≡⟨ lookup∘tabulate _ r r ⟩
+          diag r r      ≡⟨ diag-lemma r ⟩
+          1#  ∎
+          where
+            open P.≡-Reasoning
+
+            diag-lemma : ∀ {n} (r : Fin n) → diag r r ≡ 1#
+            diag-lemma zeroF    = P.refl
+            diag-lemma (sucF r) = diag-lemma r
 
         1M-∁-diag : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
-        1M-∁-diag r c eq = {!1M [ r , c ]!}
+        1M-∁-diag r c eq with r ≟F c
+        1M-∁-diag r .r ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
+        1M-∁-diag r  c ¬eq | no  _      = begin
+          1M [ r , c ]  ≡⟨ lookup∘tabulate _ r c ⟩
+          diag r c      ≡⟨ diag-lemma r c ¬eq ⟩
+          0#  ∎
+          where
+            open P.≡-Reasoning
+
+            suc-¬-lemma : ∀ {n} {r c : Fin n} → ¬ sucF r ≡ sucF c → ¬ r ≡ c
+            suc-¬-lemma {r} ¬eq P.refl = ¬eq P.refl
+
+            diag-lemma : ∀ {n} (r c : Fin n) → ¬ r ≡ c → diag r c ≡ 0#
+            diag-lemma zeroF zeroF    ¬eq = ⊥-elim (¬eq P.refl)
+            diag-lemma zeroF (sucF _) _   = P.refl
+            diag-lemma (sucF r) zeroF ¬eq = P.refl
+            diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
+
+        open import Data.Nat.Base using (z≤n; s≤s)
+        open import Data.Fin hiding (_+_; zero)
+        open import Data.Fin.Properties hiding (setoid)
 
         ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
         ident r c = begin⟨ setoid ⟩
           (1M *M x) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ 1M [ r , i ] * x [ i , c ] ]
-{-          ≈⟨ Σ-split {L.zero} _ (0 … n) (_≟F_ r) ⟩
+            ≈⟨ Σ-split {ℓ = L.zero} _ (0 … n) (_≟F_ r) ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
           Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
             ≈⟨ +-cong (Σ-cong-P (0 … n) (_≟F_ r)
@@ -303,11 +332,11 @@ module SquareMatrixSemiringProof where
           1# * Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] +
           0# * Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ r)) $ x [ i , c ] ]
             ≈⟨ +-cong (proj₁ *-identity _) (proj₁ zero _) ⟩
--}          ≈⟨ {!!} ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ] + 0#
             ≈⟨ proj₂ +-identity _ ⟩
           Σ[ i ← 0 … n ∥ (_≟F_ r) $ x [ i , c ] ]
-            ≡⟨ P.cong (Σ-syntax _) {!!} {- (uniqueF 0 n r _ {! bounded r !}) -} ⟩
+            ≡⟨ P.cong (Σ-syntax (λ i → x [ i , c ]))
+                      (ordinals-filterF z≤n (bounded r)) ⟩
           Σ[ i ← L.[ r ] $ x [ i , c ] ]
             ≈⟨ proj₂ +-identity _  ⟩
           x [ r , c ] ∎
