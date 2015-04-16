@@ -71,8 +71,9 @@ import Relation.Binary.PropositionalEquality as P
     ≈⟨ ∙-cong (fx≈gx i) (Σ-cong″ fx≈gx (P.refl {x = is})) ⟩
   g i ∙ fold g is ∎
 
-{-
+open import Bigop.Filter
+
 postulate
-  Σ-cong-P : ∀ {ℓ} {f g : I → R} {P : Pred I ℓ} (is : List I) (p : Decidable P) →
+  Σ-cong-P : ∀ {i ℓ} {I : Set i} {f g : I → R} {P : Pred I ℓ} (is : List I)
+             (p : Decidable P) →
              (∀ i → (P i) → f i ≈ g i) → fold f (is ∥ p) ≈ fold g (is ∥ p)
--}
