@@ -96,17 +96,13 @@ open Fold monoid
     ≈⟨ Σ-lift (f x) (λ i → fold (flip f i) xs) ys ⟩
   fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
-{-
-∁-dec : ∀ {ℓ} {P : Pred I ℓ} → Decidable P → Decidable (∁ P)
-∁-dec p x with p x
-∁-dec p x | yes q = no (λ ¬q → ¬q q)
-∁-dec p x | no ¬q = yes (λ q → ¬q q)
--}
-{-
+open import Bigop.Filter
+
 postulate
-  Σ-split : ∀ {ℓ} {P : Pred I ℓ} → (f : I → R) (is : List I) (p : Decidable P) →
+  Σ-split : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
+            (p : Decidable P) →
             fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
--}
+
 {-
 Σ-split : ∀ {ℓ} {P : Pred I ℓ} → (f : I → R) (is : List I) (p : Decidable P) →
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
