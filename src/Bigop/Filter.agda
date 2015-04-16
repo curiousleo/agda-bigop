@@ -4,17 +4,15 @@ open import Bigop.Ordinals
 
 import Level
 
-open import Data.List.Base
-open import Relation.Nullary
-open import Relation.Unary
+open import Data.List.Base using (List; filter)
+open import Function using (_∘_)
+open import Relation.Nullary.Decidable using (⌊_⌋)
+open import Relation.Unary using (Pred; Decidable)
 
 infix 5 _∥_
 
 _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → List I
-[]       ∥ dec = []
-(i ∷ is) ∥ dec with dec i
-(i ∷ is) ∥ dec | yes _ = i ∷ (is ∥ dec)
-(i ∷ is) ∥ dec | no  _ =      is ∥ dec
+is ∥ dec = filter (⌊_⌋ ∘ dec) is
 
 private
  module Test where
@@ -22,6 +20,7 @@ private
   open import Bigop.Ordinals
   open import Bigop.Filter.Predicates
 
+  open import Data.List.Base
   open import Relation.Binary.PropositionalEquality
 
   test-even : (1 … 6) ∥ even ≡ 2 ∷ 4 ∷ 6 ∷ []
