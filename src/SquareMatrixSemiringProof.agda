@@ -338,7 +338,44 @@ module SquareMatrixSemiringProof where
           where open SetR
 
     *M-identityʳ : RightIdentity _≈M_ 1M _*M_
-    *M-identityʳ x = ext {!!}
+    *M-identityʳ x = ext ident
+      where
+        open Props.SemiringWithoutOne semiringWithoutOne
+        open Props.Ordinals
+
+        ∁-sym : ∀ {a} {A : Set a} {x y : A} → ∁ (_≡_ x) y → ∁ (λ z → y ≡ z) x
+        ∁-sym eq P.refl = eq P.refl
+
+        ident : ∀ r c → (x *M 1M) [ r , c ] ≈ x [ r , c ]
+        ident r c = begin⟨ setoid ⟩
+          (x *M 1M) [ r , c ]
+            ≡⟨ lookup∘tabulate _ r c ⟩
+          Σ[ i ← 0 … n $ x [ r , i ] * 1M [ i , c ] ]
+            ≈⟨ Σ-split _ (0 … n) (_≟F_ c) ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ c) $ x [ r , i ] * 1M [ i , c ] ] +
+          Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ c) $ x [ r , i ] * 1M [ i , c ] ]
+            ≈⟨ +-cong (Σ-cong-P (0 … n) (_≟F_ c)
+                                (λ i c≡i → *-cong refl
+                                                  (reflexive (1M-diag i c (P.sym c≡i)))))
+                      (Σ-cong-P (0 … n) (∁-dec (_≟F_ c))
+                                (λ i c≢i → *-cong refl
+                                                  (reflexive (1M-∁-diag i c (∁-sym c≢i))))) ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ c) $ x [ r , i ] * 1# ] +
+          Σ[ i ← 0 … n ∥ ∁-dec (_≟F_ c) $ x [ r , i ] * 0# ]
+            ≈⟨ sym $ +-cong (Σ-distrʳ _ 1# (0 … n ∥ (_≟F_ c)))
+                            (Σ-distrʳ _ 0# (0 … n ∥ ∁-dec (_≟F_ c))) ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ c) $ x [ r , i ] ] * 1# +
+          Σ[ i ← 0 … n ∥ (∁-dec (_≟F_ c)) $ x [ r , i ] ] * 0#
+            ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ c) $ x [ r , i ] ] + 0#
+            ≈⟨ proj₂ +-identity _ ⟩
+          Σ[ i ← 0 … n ∥ (_≟F_ c) $ x [ r , i ] ]
+            ≡⟨ P.cong (Σ-syntax (λ i → x [ r , i ]))
+                      (ordinals-filterF z≤n (bounded c)) ⟩
+          Σ[ i ← L.[ c ] $ x [ r , i ] ]
+            ≈⟨ proj₂ +-identity _  ⟩
+          x [ r , c ] ∎
+          where open SetR
 
     *M-distrOverˡ-+M : (_≈M_ DistributesOverˡ _*M_) _+M_
     *M-distrOverˡ-+M x y z = ext distr
