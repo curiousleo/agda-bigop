@@ -39,11 +39,23 @@ head-yes x xs p t with p x
 head-yes x xs p t  | yes _ = refl
 head-yes x xs p () | no  _
 
+head-∁-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
+             True (p x) → (x ∷ xs) ∥ ∁-dec p ≡ xs ∥ ∁-dec p
+head-∁-yes x xs p t with p x
+head-∁-yes x xs p t  | yes _ = refl
+head-∁-yes x xs p () | no  _
+
 head-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
           False (p x) → (x ∷ xs) ∥ p ≡ xs ∥ p
 head-no x xs p f with p x
 head-no x xs p () | yes _
 head-no x xs p tt | no  _ = refl
+
+head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
+            False (p x) → (x ∷ xs) ∥ ∁-dec p ≡ x ∷ (xs ∥ ∁-dec p)
+head-∁-no x xs p f with p x
+head-∁-no x xs p () | yes _
+head-∁-no x xs p tt | no  _ = refl
 
 last-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
           False (p x) → (xs ∷ʳ x) ∥ p ≡ xs ∥ p
