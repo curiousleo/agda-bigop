@@ -106,17 +106,12 @@ postulate
 split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
           (p : Decidable P) →
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
-split-P f [] p = sym (proj₁ identity _)
+split-P f [] p = sym (proj₁ ident _)
 split-P f (i ∷ is) p with p i
 split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | yes pi = begin
-  -- f i ∙ fold f is
-  -- foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p)
-  -- f i ∙ foldr (λ x → _∙_ (f x)) ε is
-  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p)
+  f i ∙ fold f is
     ≈⟨ {!!} ⟩
-  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p) ∙
-  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ (∁-dec p)) ∎
-  -- fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) p) ∙  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!∁-dec p!}) ∎
+  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!p!}) ∙ fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!∁-dec p!}) ∎
 split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | no ¬pi = begin
   f i ∙ fold f is
     ≈⟨ {!!} ⟩
