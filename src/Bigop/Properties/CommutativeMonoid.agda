@@ -97,23 +97,42 @@ swap f (x ∷ xs) ys = begin
 
 open import Bigop.Filter using (_∥_; ∁-dec)
 
-postulate
-  split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
-            (p : Decidable P) →
-            fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
-
-{-
 split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
           (p : Decidable P) →
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
 split-P f [] p = sym (proj₁ ident _)
-split-P f (i ∷ is) p with p i
-split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | yes pi = begin
+split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
   f i ∙ fold f is
-    ≈⟨ {!!} ⟩
-  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!p!}) ∙ fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!∁-dec p!}) ∎
-split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | no ¬pi = begin
-  f i ∙ fold f is
-    ≈⟨ {!!} ⟩
-  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!p!}) ∙ fold f (_∥_ {ℓ = ℓ} {P = ∁ P} (i ∷ is) (∁-dec {!p!})) ∎
--}
+    ≈⟨ ∙-cong refl (split-P f is p) ⟩
+  f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+    ≈⌊ i ∈ p ⌋⟨ split-yes ⟩⟨ split-no ⟩
+  fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
+  where
+    open import Bigop.Filter.PredicateReasoning
+    import Relation.Binary.PropositionalEquality as P
+    open import Bigop.Ordinals.Properties
+    open import Relation.Nullary.Decidable
+
+    split-yes : P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+                      ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p)
+    split-yes pi = begin
+      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+        ≈⟨ sym (assoc _ _ _) ⟩
+      fold f (i ∷ (is ∥ p)) ∙ fold f (is ∥ ∁-dec p)
+        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-yes i is p (fromWitness pi)))
+                               (P.cong (fold f) (head-∁-yes i is p (fromWitness pi))) ⟩
+      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
+
+    split-no : ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+                       ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p)
+    split-no ¬pi = begin
+      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+        ≈⟨ ∙-cong refl (comm _ _) ⟩
+      f i ∙ (fold f (is ∥ ∁-dec p) ∙ fold f (is ∥ p))
+        ≈⟨ sym (assoc _ _ _) ⟩
+      fold f (i ∷ (is ∥ ∁-dec p)) ∙ fold f (is ∥ p)
+        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-∁-no i is p (fromWitnessFalse ¬pi)))
+                               (P.cong (fold f) (head-no i is p (fromWitnessFalse ¬pi))) ⟩
+      fold f (i ∷ is ∥ ∁-dec p) ∙ fold f (i ∷ is ∥ p)
+        ≈⟨ comm _ _ ⟩
+      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
