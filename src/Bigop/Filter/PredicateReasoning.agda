@@ -9,6 +9,8 @@ open import Relation.Binary hiding (Decidable)
 
 open Setoid
 
+infixr 2 _≈⌊_∈_⌋⟨_⟩⟨_⟩_ _≡⌊_∈_⌋⟨_⟩⟨_⟩_
+
 _≈⌊_∈_⌋⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁} {i ℓ₂} {I : Set i} {P : Pred I ℓ₂}
                  (x : Carrier S) (i : I) (dec : Decidable P) {y z : Carrier S} →
                  ((P i) → _≈_ S x y) → ((¬ P i) → _≈_ S x y) →
