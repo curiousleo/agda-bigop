@@ -222,8 +222,8 @@ module SquareMatrixSemiringProof where
         z r c = begin⟨ setoid ⟩
           (0M *M x) [ r , c ]                ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ 0M [ r , i ] * x [ i , c ] ]
-            ≈⟨ Σ.cong″ (λ i → *-cong (reflexive (0M-lemma r i)) refl)
-                       (P.refl {x = 0 … n}) ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n})
+                      (λ i → *-cong (reflexive (0M-lemma r i)) refl) ⟩
           Σ[ i ← 0 … n $ 0# * x [ i , c ] ]  ≈⟨ sym (Σ.distrˡ _ 0# (0 … n)) ⟩
           0# * Σ[ i ← 0 … n $ x [ i , c ] ]  ≈⟨ proj₁ zero _ ⟩
           0#                                 ≡⟨ P.sym (0M-lemma r c) ⟩
@@ -237,7 +237,8 @@ module SquareMatrixSemiringProof where
         z r c = begin⟨ setoid ⟩
           (x *M 0M) [ r , c ]                ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * 0M [ i , c ] ]
-            ≈⟨ Σ.cong′ (λ i → *-cong refl (reflexive (0M-lemma i c))) (0 … n) ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n})
+                      (λ i → *-cong refl (reflexive (0M-lemma i c))) ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * 0# ]  ≈⟨ sym (Σ.distrʳ _ 0# (0 … n)) ⟩
           Σ[ i ← 0 … n $ x [ r , i ] ] * 0#  ≈⟨ proj₂ zero _ ⟩
           0#                                 ≡⟨ P.sym (0M-lemma r c) ⟩
@@ -252,7 +253,7 @@ module SquareMatrixSemiringProof where
           ((x *M y) *M z) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ (x *M y) [ r , i ] * z [ i , c ] ]
-            ≈⟨ flip Σ.cong′ (0 … n) (λ i → begin⟨ setoid ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ i → begin⟨ setoid ⟩
 
               (x *M y) [ r , i ] * z [ i , c ]
                 ≈⟨ *-cong (reflexive $ lookup∘tabulate _ r i) refl ⟩
@@ -263,10 +264,10 @@ module SquareMatrixSemiringProof where
           Σ[ i ← 0 … n $ Σ[ j ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ] ]
             ≈⟨ Σ.swap _ (0 … n) (0 … n) ⟩
           Σ[ j ← 0 … n $ Σ[ i ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ] ]
-            ≈⟨ flip Σ.cong′ (0 … n) (λ j → begin⟨ setoid ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ j → begin⟨ setoid ⟩
 
               Σ[ i ← 0 … n $ (x [ r , j ] * y [ j , i ]) * z [ i , c ] ]
-                ≈⟨ Σ.cong′ (λ i → *-assoc _ _ _) (0 … n) ⟩
+                ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ i → *-assoc _ _ _) ⟩
               Σ[ i ← 0 … n $ x [ r , j ] * (y [ j , i ] * z [ i , c ]) ]
                 ≈⟨ sym (Σ.distrˡ _ _ (0 … n)) ⟩
               x [ r , j ] * Σ[ i ← 0 … n $ y [ j , i ] * z [ i , c ] ]
@@ -286,7 +287,7 @@ module SquareMatrixSemiringProof where
           (u *M x) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ u [ r , i ] * x [ i , c ] ]
-            ≈⟨ Σ.cong′ (λ i → *-cong (app₁ r i) (app₂ i c)) (0 … n) ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ i → *-cong (app₁ r i) (app₂ i c)) ⟩
           Σ[ i ← 0 … n $ v [ r , i ] * y [ i , c ] ]
             ≡⟨ P.sym (lookup∘tabulate _ r c) ⟩
           (v *M y) [ r , c ] ∎
@@ -369,7 +370,7 @@ module SquareMatrixSemiringProof where
           (x *M (y +M z)) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ x [ r , i ] * (y +M z) [ i , c ] ]
-            ≈⟨ flip Σ.cong′ (0 … n) (λ i → begin⟨ setoid ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ i → begin⟨ setoid ⟩
               x [ r , i ] * (y +M z) [ i , c ]
                 ≈⟨ *-cong refl (reflexive (lookup∘tabulate _ i c)) ⟩
               x [ r , i ] * (y [ i , c ] + z [ i , c ])
@@ -393,7 +394,7 @@ module SquareMatrixSemiringProof where
           ((x +M y) *M z) [ r , c ]
             ≡⟨ lookup∘tabulate _ r c ⟩
           Σ[ i ← 0 … n $ (x +M y) [ r , i ] * z [ i , c ] ]
-            ≈⟨ flip Σ.cong′ (0 … n) (λ i → begin⟨ setoid ⟩
+            ≈⟨ Σ.cong (P.refl {x = 0 … n}) (λ i → begin⟨ setoid ⟩
               (x +M y) [ r , i ] * z [ i , c ]
                 ≈⟨ *-cong (reflexive (lookup∘tabulate _ r i)) refl ⟩
               (x [ r , i ] + y [ r , i ]) * z [ i , c ]

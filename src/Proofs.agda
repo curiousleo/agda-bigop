@@ -211,13 +211,15 @@ module Proofs where
         1 + Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
           ≈⟨ refl {x = 1} ⟨ +-cong ⟩ begin
             Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
-              ≈⟨ sym $ Σ.cong {g = f (suc n)} suc (λ _ → refl) (0 … n)
+              ≈⟨ sym $ Σ.map {g = f (suc n)} suc (λ _ → refl) (0 … n)
                        ⟨ trans ⟩ P.cong (fold (f (suc n))) (suc-lemma 0 (suc n)) ⟩
             Σ[ k ← 0 … n $ (suc n) choose (suc k) * x ^ (suc k) ]
-              ≈⟨ Σ.cong′ {f = λ k → f (suc n) (suc k)} (λ _ → refl) (0 … n) ⟩
+              ≈⟨ Σ.cong {f = λ k → f (suc n) (suc k)}
+                        (P.refl {x = 0 … n}) (λ _ → refl) ⟩
             Σ[ k ← 0 … n $ (n choose k + n choose (suc k)) * x ^ (suc k) ]
-              ≈⟨ Σ.cong′ {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
-                         (λ k → distribʳ (x ^ (suc k)) (n choose k) _) (0 … n) ⟩
+              ≈⟨ Σ.cong {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
+                        (P.refl {x = 0 … n})
+                        (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
             Σ[ k ← 0 … n $ n choose k * x ^ (suc k)
                                   + n choose (suc k) * x ^ (suc k) ]
               ≈⟨ sym $ Σ.split (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
@@ -256,7 +258,7 @@ module Proofs where
 
           ➀ : Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] ≈ x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
           ➀ = begin
-            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ.cong′ reorder (0 … n) ⟩
+            Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ.cong P.refl reorder ⟩
             Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]  ≈⟨ sym $ Σ.distrˡ (f n) x (0 … n) ⟩
             x * Σ[ k ← 0 … n $ n choose k * x ^ k ]    ∎
 
@@ -277,7 +279,7 @@ module Proofs where
             1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
               ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩ begin
                 Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
-                  ≈⟨ Σ.cong {g = f n} suc (λ k → refl) (0 … n) ⟩
+                  ≈⟨ Σ.map {g = f n} suc (λ k → refl) (0 … n) ⟩
                 Σ[ k ← map suc (0 … n) $ n choose k * x ^ k ]
                   ≈⟨ P.cong (fold $ f n) (suc-lemma 0 (suc n)) ⟩
                 Σ[ k ← 1 … suc n $ n choose k * x ^ k ]

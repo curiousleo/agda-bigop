@@ -13,7 +13,7 @@ open import Function
 open import Relation.Nullary
 open import Relation.Unary
 
-open CommutativeMonoid M renaming (Carrier to R)
+open CommutativeMonoid M renaming (Carrier to R; identity to ident)
 open MonoidProps {c} {ℓ} monoid public
 
 open import Relation.Binary.EqReasoning setoid
@@ -60,7 +60,7 @@ perm f (i ∷ is) = begin
 split : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
          fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
        -- Σ[ k ← is $ f k ] + Σ[ k ← is $ g k ] ≡ Σ[ k ← is $ f k + g k ]
-split f g [] = proj₁ identity _
+split f g [] = proj₁ ident _
 split f g (i ∷ is) = begin
   (f i ∙ fold f is) ∙ (g i ∙ fold g is)
     ≈⟨ assoc (f i) (fold f is) (g i ∙ fold g is) ⟩
@@ -86,8 +86,8 @@ split f g (i ∷ is) = begin
 swap : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → R)
          (js : List J) (is : List I) →
          fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
-swap f [] ys = sym (zero ys)
-swap f xs [] = zero xs
+swap f [] ys = sym (identity ys)
+swap f xs [] = identity xs
 swap f (x ∷ xs) ys = begin
   fold (f x) ys ∙ fold (λ j → fold (f j) ys) xs
     ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ swap f xs ys ⟩
@@ -95,7 +95,7 @@ swap f (x ∷ xs) ys = begin
     ≈⟨ split (f x) (λ i → fold (flip f i) xs) ys ⟩
   fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
-open import Bigop.Filter
+open import Bigop.Filter using (_∥_; ∁-dec)
 
 postulate
   split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
@@ -103,10 +103,22 @@ postulate
             fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
 
 {-
-split : ∀ {ℓ} {P : Pred I ℓ} → (f : I → R) (is : List I) (p : Decidable P) →
+split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
+          (p : Decidable P) →
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
-split f [] p = {!!} -- proj₁ identity _
-split f (i ∷ is) p with p i
-... | yes q = {!!}
-... | no ¬q = {!!}
+split-P f [] p = sym (proj₁ identity _)
+split-P f (i ∷ is) p with p i
+split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | yes pi = begin
+  -- f i ∙ fold f is
+  -- foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p)
+  -- f i ∙ foldr (λ x → _∙_ (f x)) ε is
+  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p)
+    ≈⟨ {!!} ⟩
+  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ p) ∙
+  foldr (λ x → _∙_ (f x)) ε ((i ∷ is) ∥ (∁-dec p)) ∎
+  -- fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) p) ∙  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!∁-dec p!}) ∎
+split-P {ℓ = ℓ} {P = P} f (i ∷ is) p | no ¬pi = begin
+  f i ∙ fold f is
+    ≈⟨ {!!} ⟩
+  fold f (_∥_ {ℓ = ℓ} {P = P} (i ∷ is) {!p!}) ∙ fold f (_∥_ {ℓ = ℓ} {P = ∁ P} (i ∷ is) (∁-dec {!p!})) ∎
 -}
