@@ -15,15 +15,14 @@ _≈⌊_∈_⌋⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁} {i ℓ₂}
                  (x : Carrier S) (i : I) (dec : Decidable P) {y z : Carrier S} →
                  ((P i) → _≈_ S x y) → ((¬ P i) → _≈_ S x y) →
                  _IsRelatedTo_ S y z → _IsRelatedTo_ S x z
-_≈⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r with dec i
-_≈⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r | yes pi = x ≈⟨ y pi  ⟩ r
-_≈⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r | no ¬pi = x ≈⟨ n ¬pi ⟩ r
-
+x ≈⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r with dec i
+x ≈⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | yes pi = x ≈⟨ y  pi ⟩ r
+x ≈⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | no ¬pi = x ≈⟨ n ¬pi ⟩ r
 
 _≡⌊_∈_⌋⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁} {i ℓ₂} {I : Set i} {P : Pred I ℓ₂}
                  (x : Carrier S) (i : I) (dec : Decidable P) {y z : Carrier S} →
                  ((P i) → _≡_ x y) → ((¬ P i) → _≡_ x y) →
                  _IsRelatedTo_ S y z → _IsRelatedTo_ S x z
-_≡⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r with dec i
-_≡⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r | yes pi = x ≡⟨ y pi  ⟩ r
-_≡⌊_∈_⌋⟨_⟩⟨_⟩_ {S = S} x i dec y n r | no ¬pi = x ≡⟨ n ¬pi ⟩ r
+x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r with dec i
+x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | yes pi = x ≡⟨ y  pi ⟩ r
+x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | no ¬pi = x ≡⟨ n ¬pi ⟩ r
