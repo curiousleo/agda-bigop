@@ -51,7 +51,39 @@ cong {f = f} {g} {i ∷ is}  P.refl fx≈gx = begin
 
 open import Bigop.Filter
 
-postulate
-  cong-P : ∀ {i ℓ} {I : Set i} {f g : I → R} {P : Pred I ℓ} (is : List I)
-           (p : Decidable P) →
-           (∀ i → (P i) → f i ≈ g i) → fold f (is ∥ p) ≈ fold g (is ∥ p)
+cong-P : ∀ {i ℓ} {I : Set i} {f g : I → R} {P : Pred I ℓ} (is : List I)
+         (p : Decidable P) →
+         (∀ i → (P i) → f i ≈ g i) → fold f (is ∥ p) ≈ fold g (is ∥ p)
+cong-P                 []       _ _  = refl
+cong-P {f = f} {g} {P} (i ∷ is) p eq = begin
+  fold f (i ∷ is ∥ p)
+    ≈⌊ i ∈ p ⌋⟨ (λ pi →
+
+    begin
+      fold f (i ∷ is ∥ p)
+        ≡⟨ P.cong (fold f) (head-yes i is p (fromWitness pi)) ⟩
+      f i ∙ fold f (is ∥ p)
+        ≈⟨ ∙-cong (eq i pi) (cong-P is p eq) ⟩
+      g i ∙ fold g (is ∥ p)
+        ≡⟨ P.cong (fold g) (P.sym $ head-yes i is p (fromWitness pi)) ⟩
+      fold g (i ∷ is ∥ p)
+    ∎)
+
+    ⟩⟨ (λ ¬pi →
+
+    begin
+      fold f (i ∷ is ∥ p)
+        ≡⟨ P.cong (fold f) (head-no i is p (fromWitnessFalse ¬pi)) ⟩
+      fold f (is ∥ p)
+        ≈⟨ cong-P is p eq ⟩
+      fold g (is ∥ p)
+        ≡⟨ P.cong (fold g) (P.sym $ head-no i is p (fromWitnessFalse ¬pi)) ⟩
+      fold g (i ∷ is ∥ p)
+    ∎)⟩
+
+  fold g (i ∷ is ∥ p) ∎
+  where
+    open import Bigop.Filter.PredicateReasoning
+    open import Relation.Nullary
+    open import Relation.Nullary.Decidable
+    open import Bigop.Ordinals.Properties
