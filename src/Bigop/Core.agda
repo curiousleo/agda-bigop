@@ -1,9 +1,10 @@
 module Bigop.Core where
 
 open import Algebra
-open import Data.List using (List; foldr)
 
 module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
+
+  open import Data.List using (List; foldr)
 
   open Monoid M renaming (Carrier to R)
 
@@ -29,3 +30,22 @@ module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
   ⨂-syntax = fold
 
   syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
+
+module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
+
+  open import Data.List.NonEmpty
+
+  open Semigroup S renaming (Carrier to R)
+
+  fold : (I → R) → List⁺ I → R
+  fold f = foldr (λ x y → (f x) ∙ y) f
+
+  ⋁-syntax : _
+  ⋁-syntax = fold
+
+  syntax ⋁-syntax (λ x → e) v = ⋁[ x ← v $ e ]
+
+  ⋀-syntax : _
+  ⋀-syntax = fold
+
+  syntax ⋀-syntax (λ x → e) v = ⋀[ x ← v $ e ]
