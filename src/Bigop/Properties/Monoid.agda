@@ -60,26 +60,20 @@ cong-P {f = f} {g} {P} (i ∷ is) p eq = begin
     ≈⌊ i ∈ p ⌋⟨ (λ pi →
 
     begin
-      fold f (i ∷ is ∥ p)
-        ≡⟨ P.cong (fold f) (head-yes i is p (fromWitness pi)) ⟩
-      f i ∙ fold f (is ∥ p)
-        ≈⟨ ∙-cong (eq i pi) (cong-P is p eq) ⟩
-      g i ∙ fold g (is ∥ p)
-        ≡⟨ P.cong (fold g) (P.sym $ head-yes i is p (fromWitness pi)) ⟩
-      fold g (i ∷ is ∥ p)
-    ∎)
+      fold f (i ∷ is ∥ p)    ≡⟨ P.cong (fold f) (head-yes i is p pi) ⟩
+      f i ∙ fold f (is ∥ p)  ≈⟨ ∙-cong (eq i pi) (cong-P is p eq) ⟩
+      g i ∙ fold g (is ∥ p)  ≡⟨ P.cong (fold g) (P.sym $ head-yes i is p pi) ⟩
+      fold g (i ∷ is ∥ p)    ∎
+    )
 
     ⟩⟨ (λ ¬pi →
 
     begin
-      fold f (i ∷ is ∥ p)
-        ≡⟨ P.cong (fold f) (head-no i is p (fromWitnessFalse ¬pi)) ⟩
-      fold f (is ∥ p)
-        ≈⟨ cong-P is p eq ⟩
-      fold g (is ∥ p)
-        ≡⟨ P.cong (fold g) (P.sym $ head-no i is p (fromWitnessFalse ¬pi)) ⟩
-      fold g (i ∷ is ∥ p)
-    ∎)⟩
+      fold f (i ∷ is ∥ p)  ≡⟨ P.cong (fold f) (head-no i is p ¬pi) ⟩
+      fold f (is ∥ p)      ≈⟨ cong-P is p eq ⟩
+      fold g (is ∥ p)      ≡⟨ P.cong (fold g) (P.sym $ head-no i is p ¬pi) ⟩
+      fold g (i ∷ is ∥ p)  ∎
+    )⟩
 
   fold g (i ∷ is ∥ p) ∎
   where

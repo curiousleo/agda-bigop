@@ -5,7 +5,8 @@ open import Bigop.Filter
 
 open import Data.List.Base
 open import Function
-open import Data.Nat.Base hiding (_⊔_)
+open import Data.Empty using (⊥-elim)
+open import Data.Nat.Base as N hiding (_⊔_; _<_)
 open import Data.Nat.Properties.Simple
 -- open import Data.Nat
 -- open import Data.Fin hiding (_+_; _≤_)
@@ -34,48 +35,48 @@ suc-last-lemma m (suc n) = begin
   fromLenℕ m (suc n) ∷ʳ m + suc n ∎
 
 head-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-           True (p x) → (x ∷ xs) ∥ p ≡ x ∷ (xs ∥ p)
-head-yes x xs p t with p x
-head-yes x xs p t  | yes _ = refl
-head-yes x xs p () | no  _
+           P x → (x ∷ xs) ∥ p ≡ x ∷ (xs ∥ p)
+head-yes x _ p px with p x
+head-yes x _ p px | yes _  = refl
+head-yes x _ p px | no ¬px = ⊥-elim (¬px px)
 
 head-∁-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-             True (p x) → (x ∷ xs) ∥ ∁-dec p ≡ xs ∥ ∁-dec p
-head-∁-yes x xs p t with p x
-head-∁-yes x xs p t  | yes _ = refl
-head-∁-yes x xs p () | no  _
+             P x → (x ∷ xs) ∥ ∁-dec p ≡ xs ∥ ∁-dec p
+head-∁-yes x _ p px with p x
+head-∁-yes x _ p px | yes _  = refl
+head-∁-yes x _ p px | no ¬px = ⊥-elim (¬px px)
 
 head-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-          False (p x) → (x ∷ xs) ∥ p ≡ xs ∥ p
-head-no x xs p f with p x
-head-no x xs p () | yes _
-head-no x xs p tt | no  _ = refl
+          ¬ P x → (x ∷ xs) ∥ p ≡ xs ∥ p
+head-no x xs p ¬px with p x
+head-no x xs p ¬px | yes px = ⊥-elim (¬px px)
+head-no x xs p ¬px | no  _  = refl
 
 head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-            False (p x) → (x ∷ xs) ∥ ∁-dec p ≡ x ∷ (xs ∥ ∁-dec p)
-head-∁-no x xs p f with p x
-head-∁-no x xs p () | yes _
-head-∁-no x xs p tt | no  _ = refl
+            ¬ P x → (x ∷ xs) ∥ ∁-dec p ≡ x ∷ (xs ∥ ∁-dec p)
+head-∁-no x xs p px with p x
+head-∁-no x xs p px | yes ¬px = ⊥-elim (px ¬px)
+head-∁-no x xs p px | no  _   = refl
 
 last-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
-          False (p x) → (xs ∷ʳ x) ∥ p ≡ xs ∥ p
-last-no     xs       x p f with p x
-last-no     xs       x p () | yes _
-last-no {P} []       x p tt | no ¬p =     head-no {P} x [] p (fromWitnessFalse ¬p)
-last-no     (y ∷ ys) x p tt | no ¬p with p y
-last-no     (y ∷ ys) x p tt | no ¬p | yes _ =
-                               cong (_∷_ y) $ last-no ys x p (fromWitnessFalse ¬p)
-last-no     (y ∷ ys) x p tt | no ¬p | no  _ = last-no ys x p (fromWitnessFalse ¬p)
+          ¬ P x → (xs ∷ʳ x) ∥ p ≡ xs ∥ p
+last-no     xs       x p ¬px with p x
+last-no     xs       x p ¬px | yes px = ⊥-elim (¬px px)
+last-no {P} []       x p ¬px | no ¬p = head-no {P} x [] p ¬p
+last-no     (y ∷ ys) x p ¬px | no ¬p with p y
+last-no     (y ∷ ys) x p ¬px | no ¬p | yes _ =
+                               cong (_∷_ y) $ last-no ys x p ¬p
+last-no     (y ∷ ys) x p ¬px | no ¬p | no  _ = last-no ys x p ¬p
 
 last-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
-           True (p x) → (xs ∷ʳ x) ∥ p ≡ (xs ∥ p) ∷ʳ x
+           P x → (xs ∷ʳ x) ∥ p ≡ (xs ∥ p) ∷ʳ x
 last-yes xs x p t with p x
-last-yes [] x p tt | yes q =               head-yes x [] p (fromWitness q)
+last-yes [] x p tt | yes q =               head-yes x [] p q
 last-yes (y ∷ ys) x p tt | yes q with p y
 last-yes (y ∷ ys) x p tt | yes q | yes _ =
-                            cong (_∷_ y) $ last-yes ys x p (fromWitness q)
-last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p (fromWitness q)
-last-yes xs x p () | no  _
+                            cong (_∷_ y) $ last-yes ys x p q
+last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p q
+last-yes xs x p px | no ¬px = ⊥-elim (¬px px)
 
 {-
 postulatE
@@ -107,7 +108,7 @@ all-∁-lemma : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A}
               (dec : Decidable P) → All (∁ P) xs → xs ∥ dec ≡ []
 all-∁-lemma dec []                     = refl
 all-∁-lemma dec (_∷_ {x} {xs} px ¬all) = begin
-  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec (fromWitnessFalse px) ⟩
+  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec px ⟩
        xs  ∥ dec  ≡⟨ all-∁-lemma dec ¬all ⟩
   [] ∎
 
@@ -115,11 +116,11 @@ unique-lemma : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A}
                (dec : Decidable P) → (u : Unique P xs) →
                xs ∥ dec ≡ [ extract-unique u ]
 unique-lemma dec (here {x} {xs} px ¬all) = begin
-  (x ∷ xs) ∥ dec  ≡⟨ head-yes x xs dec (fromWitness px) ⟩
+  (x ∷ xs) ∥ dec  ≡⟨ head-yes x xs dec px ⟩
    x ∷ (xs ∥ dec) ≡⟨ cong (_∷_ x) (all-∁-lemma dec ¬all) ⟩
   [ x ] ∎
 unique-lemma dec (there {x} {xs} ¬px u) = begin
-  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec (fromWitnessFalse ¬px) ⟩
+  (x ∷ xs) ∥ dec  ≡⟨ head-no x xs dec ¬px ⟩
        xs  ∥ dec  ≡⟨ unique-lemma dec u ⟩
   [ extract-unique u ] ∎
 
@@ -152,5 +153,5 @@ open import Bigop.Filter
 open import Data.Fin using (toℕ)
 
 postulate
-  ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k < (m + n)) →
+  ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
                      fromLenF m n ∥ (_≟F_ k) ≡ [ k ]

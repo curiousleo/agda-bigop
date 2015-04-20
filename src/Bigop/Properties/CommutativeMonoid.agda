@@ -117,8 +117,8 @@ split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
       f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
         ≈⟨ sym (assoc _ _ _) ⟩
       fold f (i ∷ (is ∥ p)) ∙ fold f (is ∥ ∁-dec p)
-        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-yes i is p (fromWitness pi)))
-                               (P.cong (fold f) (head-∁-yes i is p (fromWitness pi))) ⟩
+        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-yes i is p pi))
+                               (P.cong (fold f) (head-∁-yes i is p pi)) ⟩
       fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
 
     split-no : ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
@@ -129,8 +129,8 @@ split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
       f i ∙ (fold f (is ∥ ∁-dec p) ∙ fold f (is ∥ p))
         ≈⟨ sym (assoc _ _ _) ⟩
       fold f (i ∷ (is ∥ ∁-dec p)) ∙ fold f (is ∥ p)
-        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-∁-no i is p (fromWitnessFalse ¬pi)))
-                               (P.cong (fold f) (head-no i is p (fromWitnessFalse ¬pi))) ⟩
+        ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-∁-no i is p ¬pi))
+                               (P.cong (fold f) (head-no i is p ¬pi)) ⟩
       fold f (i ∷ is ∥ ∁-dec p) ∙ fold f (i ∷ is ∥ p)
         ≈⟨ comm _ _ ⟩
       fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
