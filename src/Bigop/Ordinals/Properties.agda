@@ -78,6 +78,29 @@ last-yes (y ∷ ys) x p tt | yes q | yes _ =
 last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p q
 last-yes xs x p px | no ¬px = ⊥-elim (¬px px)
 
+open import Data.Product
+
+combine-filters : ∀ {a p q} {A : Set a} {P : Pred A p} {Q : Pred A q}
+                  (xs : List A) (dec-p : Decidable P) (dec-q : Decidable Q)
+                  (dec-p∩q : Decidable (P ∩ Q)) →
+                  (xs ∥ dec-p) ∥ dec-q ≡ xs ∥ dec-p∩q
+combine-filters [] p q p∩q = refl
+combine-filters (x ∷ xs) p q p∩q with p x | q x | p∩q x
+combine-filters (x ∷ xs) p q p∩q | yes px | yes qx | yes p∩qx = begin
+  (x ∷ (xs ∥ p)) ∥ q  ≡⟨ head-yes x (xs ∥ p) q qx ⟩
+  x ∷ ((xs ∥ p) ∥ q)  ≡⟨ cong (_∷_ x) (combine-filters xs p q p∩q) ⟩
+  x ∷ (xs ∥ p∩q)      ∎
+combine-filters (x ∷ xs) p q p∩q | yes px | yes qx | no ¬p∩qx = ⊥-elim (¬p∩qx (px , qx))
+combine-filters (x ∷ xs) p q p∩q | yes px | no ¬qx | yes p∩qx = ⊥-elim (¬qx (proj₂ p∩qx))
+combine-filters (x ∷ xs) p q p∩q | yes px | no ¬qx | no ¬p∩qx = begin
+  (x ∷ (xs ∥ p)) ∥ q  ≡⟨ head-no x (xs ∥ p) q ¬qx ⟩
+  (xs ∥ p) ∥ q        ≡⟨ combine-filters xs p q p∩q ⟩
+  xs ∥ p∩q            ∎
+combine-filters (x ∷ xs) p q p∩q | no ¬px | yes qx | yes p∩qx = ⊥-elim (¬px (proj₁ p∩qx))
+combine-filters (x ∷ xs) p q p∩q | no ¬px | yes qx | no ¬p∩qx = combine-filters xs p q p∩q
+combine-filters (x ∷ xs) p q p∩q | no ¬px | no ¬qx | yes p∩qx = ⊥-elim (¬qx (proj₂ p∩qx))
+combine-filters (x ∷ xs) p q p∩q | no ¬px | no ¬qx | no ¬p∩qx = combine-filters xs p q p∩q
+
 {-
 postulatE
   uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → fromLenℕ m n ∥ _≟_ k ≡ [ k ]
@@ -155,3 +178,55 @@ open import Data.Fin using (toℕ)
 postulate
   ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
                      fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
+
+{-
+ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
+                   fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
+ordinals-filterF {m} {n} {k} m≤k k<m+n = begin
+  fromLenF m n ∥ (_≟F_ k)
+    ≡⌊ m ~ toℕ k by compare ⌋⟨ filter< ⟩⟨ filter≈ ⟩⟨ filter> ⟩
+  [ k ] ∎
+  where
+    open import Bigop.Filter.PredicateReasoning
+
+    open import Relation.Binary
+    open import Data.Nat.Properties using (strictTotalOrder)
+    open StrictTotalOrder strictTotalOrder
+
+    filter< : m < toℕ k → ¬ m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter< m<k ¬m≈k ¬m>k = {!!}
+
+    filter≈ : ¬ m < toℕ k → m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter≈ ¬m<k m≈k ¬m>k = {!m≈k!}
+
+    filter> : ¬ m < toℕ k → ¬ m ≈ toℕ k → toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter> ¬m<k ¬m≈k m>k = {!!}
+-}
+
+{-
+-- THIS IS IT
+
+ordinals-filterF′ : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
+                    fromLenF m n ∥ (_≟F_ (fromℕ≤ k<m+n)) ≡ [ fromℕ≤ k<m+n ]
+ordinals-filterF′ {m} {n} {k} m≤k k<m+n = begin
+  fromLenF m n ∥ (_≟F_ k′)
+    ≡⌊ m ~ k by compare ⌋⟨ filter< ⟩⟨ filter≈ ⟩⟨ filter> ⟩
+  [ k′ ] ∎
+  where
+    open import Bigop.Filter.PredicateReasoning
+
+    open import Relation.Binary
+    open import Data.Nat.Properties using (strictTotalOrder)
+    open StrictTotalOrder strictTotalOrder
+
+    k′ = fromℕ≤ k<m+n
+
+    filter< : m < k → ¬ m ≈ k → ¬ k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter< m<k ¬m≈k ¬m>k = {!!} -- recurse
+
+    filter≈ : ¬ m < k → m ≈ k → ¬ k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter≈ ¬m<k m≈k ¬m>k = {!m≈k!} -- change tactic
+
+    filter> : ¬ m < k → ¬ m ≈ k → k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter> ¬m<k ¬m≈k m>k = {!!} -- absurd
+-}
