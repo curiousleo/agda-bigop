@@ -295,10 +295,11 @@ module SquareMatrixSemiringProof where
             ≈⟨ Σ.split-P _ (ι n) (_≟F_ r) ⟩
           Σ[ i ← ι n ∥ (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ] +
           Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) $ 1M [ r , i ] * x [ i , c ] ]
-            ≈⟨ +-cong (Σ.cong-P (ι n) (_≟F_ r)
-                                (λ i r≡i → *-cong (reflexive (1M-diag r i r≡i)) refl))
-                      (Σ.cong-P (ι n) (∁-dec (_≟F_ r))
-                                (λ i r≢i → *-cong (reflexive (1M-∁-diag r i r≢i)) refl)) ⟩
+            ≈⟨ +-cong
+                 (Σ.cong-P (ι n) (_≟F_ r)
+                           (λ i r≡i → *-cong (reflexive (1M-diag r i r≡i)) refl))
+                 (Σ.cong-P (ι n) (∁-dec (_≟F_ r))
+                           (λ i r≢i → *-cong (reflexive (1M-∁-diag r i r≢i)) refl)) ⟩
           Σ[ i ← ι n ∥ (_≟F_ r) $ 1# * x [ i , c ] ] +
           Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) $ 0# * x [ i , c ] ]
             ≈⟨ sym $ +-cong (Σ.distrˡ _ 1# (ι n ∥ (_≟F_ r)))
