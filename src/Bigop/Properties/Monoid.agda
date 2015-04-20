@@ -39,6 +39,14 @@ map {f = f} {g} h f≗gh (i ∷ is) = begin
     ≈⟨ f≗gh i ⟨ ∙-cong ⟩ map {f = f} {g} h f≗gh is ⟩
   g (h i) ∙ fold g (L.map h is) ∎
 
+join : ∀ {i} → {I : Set i} (f : I → R) (xs : List I) (ys : List I) →
+       fold f xs ∙ fold f ys ≈ fold f (xs ++ ys)
+join f []       ys = proj₁ ident _
+join f (x ∷ xs) ys = begin
+  (f x ∙  fold f xs) ∙ fold f ys   ≈⟨ assoc _ _ _ ⟩
+   f x ∙ (fold f xs  ∙ fold f ys)  ≈⟨ ∙-cong refl (join f xs ys) ⟩
+   f x ∙  fold f (xs ++ ys)        ∎
+
 import Relation.Binary.PropositionalEquality as P
 
 cong : ∀ {i} {I : Set i} {f g : I → R} {is : List I} {js : List I} →
