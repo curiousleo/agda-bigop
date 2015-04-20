@@ -8,13 +8,13 @@ module Matrix where
   Matrix A r c = V.Vec (V.Vec A c) r
 
   lookup : ∀ {r c a} {A : Set a} → Fin r → Fin c → Matrix A r c → A
-  lookup {r} {c} i j m = V.lookup j (V.lookup i m)
+  lookup i j m = V.lookup j (V.lookup i m)
 
   tabulate : ∀ {r c a} {A : Set a} → (Fin r → Fin c → A) → Matrix A r c
   tabulate f = V.tabulate (λ r → V.tabulate (λ c → f r c))
 
   transpose : ∀ {r c a} {A : Set a} → Matrix A r c → Matrix A c r
-  transpose {r} {c} m = tabulate (λ c r → lookup r c m)
+  transpose m = tabulate (λ c r → lookup r c m)
 
   -- TODO: turn this into a syntax declaration
   _[_,_] : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
