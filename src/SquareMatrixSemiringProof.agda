@@ -15,6 +15,7 @@ module SquareMatrixSemiringProof where
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
+  open import Level using (_⊔_)
   open import Relation.Nullary
   open import Relation.Unary
   open import Relation.Binary.Core using (_≡_; _≢_)
@@ -23,8 +24,8 @@ module SquareMatrixSemiringProof where
   import Relation.Binary.PropositionalEquality as P
   import Relation.Binary.SetoidReasoning as SetR
 
-  record Pointwise {ℓ} {A B : Set ℓ} (_∼_ : REL A B ℓ)
-                   {m n} (x : Matrix A m n) (y : Matrix B m n) : Set ℓ where
+  record Pointwise {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
+                   {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
     constructor ext
     field app : ∀ r c → lookup r c x ∼ lookup r c y
 
@@ -43,7 +44,7 @@ module SquareMatrixSemiringProof where
       from : Pointwise _~_ x y → PW.Pointwise (PW.Pointwise _~_) x y
       from (ext app) = PW.ext (λ r → PW.ext (app r))
 
-  module SquareMatrix (n : ℕ) {ℓ} (s : Semiring ℓ ℓ) where
+  module SquareMatrix (n : ℕ) {c ℓ} (s : Semiring c ℓ) where
 
     open Semiring s renaming (Carrier to A)
     open Fold +-monoid using (Σ-syntax)
@@ -62,7 +63,7 @@ module SquareMatrixSemiringProof where
     mult : M n → M n → Fin n → Fin n → A
     mult x y r c = Σ[ i ← 0 … n $ x [ r , i ] * y [ i , c ] ]
 
-    _≈M_ : Rel (M n) ℓ
+    _≈M_ : Rel (M n) (ℓ ⊔ c)
     _≈M_ = Pointwise _≈_
 
     _+M_ : ∀ {n} → Op₂ (M n)
