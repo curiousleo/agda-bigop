@@ -35,10 +35,10 @@ module Proofs where
     open import Relation.Unary
 
     Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
-                 {P : Pred I ℓ} (p : Decidable P) → True (p x) →
+                 {P : Pred I ℓ} (p : Decidable P) → P x →
                  Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ] ≈ Σ[ k ← xs ∥ p $ f k ] + f x
-    Σ-last-yes f xs x p tpx = begin
-      Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p tpx) ⟩
+    Σ-last-yes f xs x p px = begin
+      Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
       Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ.last f x (xs ∥ p) ⟩
       Σ[ k ← xs ∥ p $ f k ] + f x   ∎
 
@@ -53,7 +53,7 @@ module Proofs where
       Σ[ i ← 0 … (n + suc n) ∥ odd $ i ]
         ≈⟨ P.cong (fold id) (suc-last-lemma 0 {!n + suc n!}) ⟩
       Σ[ i ← (0 … (n + n) ∷ʳ (n + suc n)) ∥ odd $ i ]
-        ≈⟨ Σ-last-yes id (0 … (n + n)) (n + (suc n)) odd (fromWitness (2n+1-odd n)) ⟩
+        ≈⟨ Σ-last-yes id (0 … (n + n)) (n + (suc n)) odd (2n+1-odd n) ⟩
       Σ[ i ← 0 … (n + n) ∥ odd $ i ] + (n + suc n)
         ≈⟨ proof n ⟨ +-cong ⟩ refl ⟩
       n * n + (n + suc n)
@@ -89,7 +89,7 @@ module Proofs where
                 lemma′ : 0 … (suc n + suc n) ≡ 0 … (n + suc n) ∷ʳ (suc n + suc n)
                 lemma′ = suc-last-lemma 0 $ suc n + suc n
 
-            ⓑ = last-no {P = Odd} (0 … _+_ n (suc n)) (_+_ (suc n) (suc n)) odd (fromWitness ¬last-odd)
+            ⓑ = last-no {P = Odd} (0 … _+_ n (suc n)) (_+_ (suc n) (suc n)) odd ¬last-odd
 
   module GaussFormula where
 
