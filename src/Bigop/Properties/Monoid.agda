@@ -27,7 +27,7 @@ last f x (y ∷ ys) = begin
   (f y ∙ fold f ys) ∙ f x  ∎
 
 identity : ∀ {i} {I : Set i} (xs : List I) → fold (const ε) xs ≈ ε
-identity [] = refl
+identity []       = refl
 identity (x ∷ xs) = trans (proj₁ ident _) (identity xs)
 
 map : ∀ {i j} {I : Set i} {J : Set j} {f : I → R} {g : J → R} (h : I → J) →
