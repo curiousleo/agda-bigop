@@ -37,7 +37,7 @@ module Proofs where
         ≡⟨ P.cong (fold id) (begin
 
           0 …+ suc (suc n + suc n) ∥ odd
-            ≡⟨ P.cong ((flip _∥_ odd) ∘ (_…+_ 0)) (3suc n) ⟩
+            ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
           0 …+ suc (suc (suc (n + n))) ∥ odd
             ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
           0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
