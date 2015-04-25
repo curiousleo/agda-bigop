@@ -116,13 +116,21 @@ postulatE
 
 open import Level using (_⊔_)
 open import Data.Bool.Base
-open import Data.List.All
-open import Data.Product
+open import Data.List.All hiding (head; tail; tabulate; map; lookup)
+open import Data.Product hiding (map)
+
+open import Data.Vec hiding ([_])
+
+All-Vec : ∀ {a p n} → {A : Set a} (P : A → Set p) → Vec A n → Set (p ⊔ a)
+All-Vec P xs = All P (toList xs)
 
 data Unique {a p} {A : Set a}
             (P : A → Set p) : List A → Set (p ⊔ a) where
   here  : ∀ {x xs} ( px :   P x) → (¬all : All (∁ P) xs) → Unique P (x ∷ xs)
   there : ∀ {x xs} (¬px : ¬ P x) → (u : Unique P xs)     → Unique P (x ∷ xs)
+
+Unique-Vec : ∀ {a p n} {A : Set a} (P : A → Set p) → Vec A n → Set (p ⊔ a)
+Unique-Vec P xs = Unique P (toList xs)
 
 private
  extract-unique′ : ∀ {a p} → {A : Set a} {P : A → Set p} {xs : List A} →
@@ -180,12 +188,41 @@ ordinals-uniqueF (s≤s m≤k) k≤m+n = {!!}
 -}
 
 open import Bigop.Filter
-open import Data.Fin using (toℕ)
+open import Data.Fin using (toℕ; inject+; inject≤; inject₁; fromℕ)
 
 postulate
   ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
                      fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
 
+open import Data.Nat using () renaming (_≟_ to _≟N_)
+open import Data.Maybe hiding (map)
+
+headMaybe : ∀ {a} → {A : Set a} → List A → Maybe A
+headMaybe []      = nothing
+headMaybe (x ∷ _) = just x
+
+fromLenℕ-head : ∀ {m n} → headMaybe (fromLenℕ m (suc n)) ≡ just m
+fromLenℕ-head = refl
+
+open import Data.Nat.Properties.Simple using (+-comm)
+
+{-
+ordinals-filterℕ : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
+                   fromLenℕ m n ∥ (_≟N_ k) ≡ [ k ]
+ordinals-filterℕ {m} {n} {k} m≤k k<m+n with m ≟N k
+ordinals-filterℕ {m} {zero} m≤k k<m+n | yes refl = ⊥-elim (¬m+1≤m+0 k<m+n)
+  where
+    ¬m+1≤m : ∀ {m} → ¬ suc m ≤ m
+    ¬m+1≤m {zero} ()
+    ¬m+1≤m {suc m} (s≤s le) = ¬m+1≤m le
+
+    ¬m+1≤m+0 : ∀ {m} → ¬ suc m ≤ m + 0
+    ¬m+1≤m+0 {zero} ()
+    ¬m+1≤m+0 {suc m} (s≤s le) rewrite +-comm m 0 = ¬m+1≤m le
+
+ordinals-filterℕ {m} {suc n} m≤k k<m+n | yes refl rewrite +-comm m (suc n) = head-yes m (fromLenℕ (suc m) {!m!}) (_≟N_ {!m!}) {!refl {x = m}!}
+ordinals-filterℕ {n = n} m≤k k<m+n | no ¬p = {!!}
+-}
 {-
 ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
                    fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
@@ -211,7 +248,36 @@ ordinals-filterF {m} {n} {k} m≤k k<m+n = begin
 -}
 
 {-
--- THIS IS IT
+
+downFromF : (n : ℕ) → List (Fin n)
+downFromF zero = []
+downFromF (suc n) = fromℕ≤ {n} (s≤s ≤-refl) ∷ map inject₁ (downFromF n)
+  where
+    ≤-refl : ∀ {n} → n ≤ n
+    ≤-refl {zero} = z≤n
+    ≤-refl {suc n} = s≤s ≤-refl
+
+test : downFromF 3 ≡ (sucF (sucF zeroF)) ∷ sucF zeroF ∷ zeroF ∷ []
+test = refl
+
+lemma : ∀ {m n} → n ≤ m + suc n
+lemma = {!!}
+
+fromLenF-head : ∀ {m n} → headMaybe (fromLenF m (suc n)) ≡ just (inject+ {!!} {!!})
+fromLenF-head {m} {n} = {!!}
+
+ordinals-∉ : ∀ {m n k} → k N.< m → (k<m+n : k N.< (m + n)) →
+             fromLenF m n ∥ (_≟F_ (fromℕ≤ k<m+n)) ≡ []
+ordinals-∉ {m} {n} {k} k<m k<m+n with fromLenF m n
+ordinals-∉ k<m k<m+n | [] = refl
+ordinals-∉ {m} k<m k<m+n | x ∷ xs = {!x!}
+
+ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
+                   Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
+ordinals-uniqueF {m} {n} {k} m≤k k<m+n with m ≟N k
+ordinals-uniqueF m≤k k<m+n | yes refl = {!here!}
+ordinals-uniqueF m≤k k<m+n | no ¬p = {!!}
+
 
 ordinals-filterF′ : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
                     fromLenF m n ∥ (_≟F_ (fromℕ≤ k<m+n)) ≡ [ fromℕ≤ k<m+n ]
@@ -236,4 +302,89 @@ ordinals-filterF′ {m} {n} {k} m≤k k<m+n = begin
 
     filter> : ¬ m < k → ¬ m ≈ k → k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
     filter> ¬m<k ¬m≈k m>k = {!!} -- absurd
+-}
+
+open import Data.Fin
+open import Data.Vec
+
+[]=-tabulate : ∀ {n a} {A : Set a} (f : Fin n → A) i → tabulate f [ i ]= f i
+[]=-tabulate f zero    = here
+[]=-tabulate f (suc i) = there ([]=-tabulate (f ∘ suc) i)
+
+ι-lemma : ∀ from {len} n → ι-fin-vec from (suc len) [ n ]= raise from n
+ι-lemma from n = []=-tabulate (raise from) n
+
+raise-inj₂ : ∀ {k} n (i j : Fin k) → raise n i ≡ raise n j → i ≡ j
+raise-inj₂ zero    i .i refl = refl
+raise-inj₂ (suc n) i  j eq   = raise-inj₂ n i j (suc-inj (raise n i) (raise n j) eq)
+  where
+    suc-inj : ∀ {k} (i j : Fin k) → Data.Fin.suc i ≡ suc j → i ≡ j
+    suc-inj i j eq with i ≟F j
+    suc-inj _       _        _    | yes p = p
+    suc-inj zero    zero     refl | no ¬p = ⊥-elim (¬p refl)
+    suc-inj zero    (suc _)  ()   | no ¬p
+    suc-inj (suc _) zero     ()   | no ¬p
+    suc-inj (suc _) (suc ._) refl | no ¬p = ⊥-elim (¬p refl)
+
+ι-lemma′ : ∀ from {len} n → raise from n Data.Vec.∈ ι-fin-vec from (suc len)
+ι-lemma′ from n = ∈-tabulate (raise from) n
+  where
+    open import Data.Vec.Properties
+
+-- also have ∈⇒List-∈ []=↔lookup lookup∘tabulate
+
+ι-lemma″ : ∀ from {len} i → lookup i (ι-fin-vec from (suc len)) ≡ raise from i
+ι-lemma″ from i = lookup∘tabulate (raise from) i
+  where
+    open import Data.Vec.Properties
+
+lookupMaybe : ∀ {a} {A : Set a} (i : ℕ) (xs : List A) → Maybe A
+lookupMaybe _       []       = nothing
+lookupMaybe zero    (x ∷ _ ) = just x
+lookupMaybe (suc i) (_ ∷ xs) = lookupMaybe i xs
+
+import Data.List.Any as Any
+module M = Any.Membership-≡
+
+∈→lookup : ∀ {a} {A : Set a} {x : A} {xs : List A} →
+           x M.∈ xs → ∃ λ i → lookupMaybe i xs ≡ just x
+∈→lookup (Any.here px) = zero , sym (cong just px)
+∈→lookup (Any.there x∈xs) with ∈→lookup x∈xs
+∈→lookup (Any.there x∈xs) | i , eq = suc i , eq
+
+{-
+ι-list-lemma : ∀ from {len} i →
+               lookupMaybe (toℕ i) (toList (ι-fin-vec from (suc len)))
+               ≡ just (raise from i)
+ι-list-lemma from i = {!!}
+-}
+
+ι-∃! : ∀ from {len} n →
+       ∃! _≡_ λ i → lookup i (ι-fin-vec from (suc len)) ≡ raise from n
+ι-∃! f {len} n = n , lookup∘tabulate (raise f) n , unique
+  where
+    open import Data.Vec.Properties using (lookup∘tabulate)
+    unique : ∀ {i} → lookup i (ι-fin-vec f (suc len)) ≡ raise f n → n ≡ i
+    unique {i} eq rewrite lookup∘tabulate (raise f) i = raise-inj₂ f n i (sym eq)
+
+lookup→List : ∀ {a n} {A : Set a} {x : A} (i : Fin n) xs →
+              lookup i xs ≡ x → lookupMaybe (toℕ i) (toList xs) ≡ just x
+lookup→List zero    (x ∷ _ ) refl = refl
+lookup→List (suc i) (_ ∷ xs) eq   = lookup→List i xs eq
+
+{-
+ι-unique : ∀ from len n → ι-fin-list from (suc len) ∥ (_≟F_ (raise from n)) ≡ Data.List.Base.[ raise from n ]
+ι-unique zero len zero = cong (_∷_ zero) {!!}
+ι-unique (suc from) zero zero = head-yes (suc (raise from zero)) {!!} {!!} {!!}
+ι-unique (suc from) (suc len) zero = head-yes (suc (raise from zero)) {!!} {!!} {!!}
+ι-unique from len (suc n) = {!!}
+-}
+{-
+ι-unique : ∀ from {len} i → from N.≤ toℕ i →
+           Unique-Vec (_≡_ i) (ι-fin-vec from (suc len))
+ι-unique from i from≤i = {!!}
+-}
+{-
+ι-filter : ∀ from {len} n → ι-fin-list from (suc len) ∥ (_≟F_ n) ≡ Data.List.Base.[ n ]
+ι-filter from n = {!!}
 -}
