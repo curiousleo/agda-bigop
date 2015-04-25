@@ -18,17 +18,20 @@ module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
   -- An equivalent definition would be
   --   fold f = foldr (λ x y → (f x) ∙ y) ε
 
+  infix 6 Σ-syntax ⨁-syntax
+  infix 5 Π-syntax ⨂-syntax
+
   Σ-syntax = fold
-  syntax Σ-syntax (λ x → e) v = Σ[ x ← v $ e ]
+  syntax Σ-syntax (λ x → e) v = Σ[ x ← v ] e
 
   Π-syntax = fold
-  syntax Π-syntax (λ x → e) v = Π[ x ← v $ e ]
+  syntax Π-syntax (λ x → e) v = Π[ x ← v ] e
 
   ⨁-syntax = fold
-  syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v $ e ]
+  syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v ] e
 
   ⨂-syntax = fold
-  syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v $ e ]
+  syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v ] e
 
 module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
 
@@ -46,8 +49,11 @@ module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
   -- Equivalently,
   --   fold f = foldr (λ x y → (f x) ∙ y) f
 
+  infix 6 ⋁-syntax
+  infix 5 ⋀-syntax
+
   ⋁-syntax = fold
-  syntax ⋁-syntax (λ x → e) v = ⋁[ x ← v $ e ]
+  syntax ⋁-syntax (λ x → e) v = ⋁[ x ← v ] e
 
   ⋀-syntax = fold
-  syntax ⋀-syntax (λ x → e) v = ⋀[ x ← v $ e ]
+  syntax ⋀-syntax (λ x → e) v = ⋀[ x ← v ] e
