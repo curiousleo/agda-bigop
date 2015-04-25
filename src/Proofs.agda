@@ -13,83 +13,85 @@ module Proofs where
   import Relation.Binary.PropositionalEquality as P
   import Relation.Binary.EqReasoning as EqR
 
-  module GaussSquared where
+  module OddGauss where
 
     open import Data.List.Base
     open import Data.Empty
     open import Relation.Nullary.Decidable
 
-    open import Data.Nat.Base using (suc)
+    open import Data.Nat.Base hiding (fold)
     open import Data.Nat.Properties using (commutativeSemiring)
-    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
+    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
     open Props.Ordinals
 
     open Fold +-monoid using (fold; Σ-syntax)
-    open EqR setoid
-
-    lemma : ∀ n → ¬ (Odd (n + n))
-    lemma n = {!!}
 
     open import Relation.Unary
 
-    Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
-                 {P : Pred I ℓ} (p : Decidable P) → P x →
-                 Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ] ≈ Σ[ k ← xs ∥ p $ f k ] + f x
-    Σ-last-yes f xs x p px = begin
-      Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
-      Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ.last f x (xs ∥ p) ⟩
-      Σ[ k ← xs ∥ p $ f k ] + f x   ∎
+    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd $ i ] ≈ n * n
+    proof zero = P.refl
+    proof (suc n) = begin
+      Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd $ i ]
+        ≡⟨ P.cong (fold id) (begin
 
-    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd $ i ] ≈ n * n
-    proof 0 = refl
-    proof (suc n) with odd (suc n + suc n)
-    proof (suc n) | yes last-odd = ⊥-elim (lemma (suc n) last-odd)
+          0 …+ suc (suc n + suc n) ∥ odd
+            ≡⟨ P.cong ((flip _∥_ odd) ∘ (_…+_ 0)) (3suc n) ⟩
+          0 …+ suc (suc (suc (n + n))) ∥ odd
+            ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
+          0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
+            ≡⟨ last-no (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
+                       (even→¬odd (ss-even (2n-even n))) ⟩
+          0 …+ suc (suc (n + n)) ∥ odd
+            ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
+          0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
 
-    proof (suc n) | no ¬last-odd = begin
-      Σ[ i ← 0 … (suc n + suc n) ∥ odd $ i ]
-        ≈⟨ P.cong (fold id) ➀ ⟩
-      Σ[ i ← 0 … (n + suc n) ∥ odd $ i ]
-        ≈⟨ P.cong (fold id) (suc-last-lemma 0 {!n + suc n!}) ⟩
-      Σ[ i ← (0 … (n + n) ∷ʳ (n + suc n)) ∥ odd $ i ]
-        ≈⟨ Σ-last-yes id (0 … (n + n)) (n + (suc n)) odd (2n+1-odd n) ⟩
-      Σ[ i ← 0 … (n + n) ∥ odd $ i ] + (n + suc n)
-        ≈⟨ proof n ⟨ +-cong ⟩ refl ⟩
-      n * n + (n + suc n)
-        ≈⟨ sym (+-assoc (n * n) _ _) ⟩
-      (n * n + n) + suc n
-        ≈⟨ +-comm (n * n) n ⟨ +-cong ⟩ refl ⟩
-      (suc n * n) + suc n
-        ≈⟨ +-comm (n + n * n) _ ⟩
-      suc n + (suc n * n)
-        ≈⟨ (P.refl {x = suc n}) ⟨ +-cong ⟩ *-comm (suc n) n ⟩
-      suc n * suc n ∎
+        ∎)⟩
+      Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd $ i ]
+        ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+      Σ[ i ← 0 …+ suc (n + n) ∥ odd $ i ] + suc (n + n)
+        ≡⟨ +-cong (proof n) refl ⟩
 
+      n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
+      n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
+      (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
+      suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
+      suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
+      suc n + n * suc n    ∎
       where
-        -- open import Data.Nat.Properties.Simple
+        open import Data.Nat.Properties.Simple using (+-suc)
+        open P.≡-Reasoning
 
-        even→odd : ∀ n → Even n → Odd (suc n)
-        even→odd 0 zero-even = one-odd
-        even→odd (suc ._) (ss-even even) = ss-odd (even→odd _ even)
+        3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
+        3suc zero = P.refl
+        3suc (suc n) = P.cong (suc ∘ suc ∘ suc) (+-suc n (suc n))
 
-        2n+1-odd : ∀ n → Odd (n + suc n)
-        2n+1-odd n = {!!}
+        2suc : ∀ n → suc (n + suc n) ≡ suc (suc (n + n))
+        2suc zero = P.refl
+        2suc (suc n) = P.cong (suc ∘ suc) (+-suc n (suc n))
 
-        ➁ : ∀ n → 0 … (suc n + suc n) ≡ 0 … (n + n) ∷ʳ (n + suc n) ∷ʳ (suc n + suc n)
-        ➁ 0 = P.refl
-        ➁ (suc n) = {!➁ n!}
+        2n-even : ∀ n → Even (n + n)
+        2n-even zero = zero-even
+        2n-even (suc n) rewrite 2suc n = ss-even (2n-even n)
 
-        ➀ : 0 … (suc n + suc n) ∥ odd ≡ 0 … (n + suc n) ∥ odd
-        ➀ = ⓐ ⟨ P.trans ⟩ ⓑ
+        even→¬odd : ∀ {n} → Even n → ¬ Odd n
+        even→¬odd zero-even        ()
+        even→¬odd (ss-even even-n) (ss-odd odd-n) = even→¬odd even-n odd-n
+
+        even+1 : ∀ {n} → Even n → Odd (suc n)
+        even+1 zero-even        = one-odd
+        even+1 (ss-even even-n) = ss-odd (even+1 even-n)
+        
+        Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
+                     {P : Pred I ℓ} (p : Decidable P) → P x →
+                     Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ] ≈ Σ[ k ← xs ∥ p $ f k ] + f x
+        Σ-last-yes f xs x p px = start
+          Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
+          Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ.last f x (xs ∥ p) ⟩
+          Σ[ k ← xs ∥ p $ f k ] + f x   □
           where
-            ⓐ : 0 … (suc n + suc n) ∥ odd ≡ (0 … (n + suc n) ∷ʳ (suc n + suc n)) ∥ odd
-            ⓐ = P.cong (flip _∥_ odd) lemma′
-              where
-                lemma′ : 0 … (suc n + suc n) ≡ 0 … (n + suc n) ∷ʳ (suc n + suc n)
-                lemma′ = suc-last-lemma 0 $ suc n + suc n
-
-            ⓑ = last-no {P = Odd} (0 … _+_ n (suc n)) (_+_ (suc n) (suc n)) odd ¬last-odd
+            open EqR setoid renaming (begin_ to start_; _∎ to _□)
 
   module GaussFormula where
 
