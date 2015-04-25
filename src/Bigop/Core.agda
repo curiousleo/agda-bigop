@@ -4,12 +4,19 @@ open import Algebra
 
 module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 
-  open import Data.List using (List; foldr)
+  open import Data.List using (List; foldr; map)
+  open import Function using (_∘_)
 
   open Monoid M renaming (Carrier to R)
 
   fold : (I → R) → List I → R
-  fold f = foldr (λ x y → (f x) ∙ y) ε
+  fold f = crush ∘ map f
+    where
+      crush : List R → R
+      crush = foldr _∙_ ε
+
+  -- An equivalent definition would be
+  --   fold f = foldr (λ x y → (f x) ∙ y) ε
 
   Σ-syntax = fold
   syntax Σ-syntax (λ x → e) v = Σ[ x ← v $ e ]
@@ -25,12 +32,19 @@ module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 
 module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
 
-  open import Data.List.NonEmpty using (List⁺; foldr)
+  open import Data.List.NonEmpty using (List⁺; foldr₁; map)
+  open import Function using (_∘_; id)
 
   open Semigroup S renaming (Carrier to R)
 
   fold : (I → R) → List⁺ I → R
-  fold f = foldr (λ x y → (f x) ∙ y) f
+  fold f = crush ∘ map f
+    where
+      crush : List⁺ R → R
+      crush = foldr₁ _∙_
+
+  -- Equivalently,
+  --   fold f = foldr (λ x y → (f x) ∙ y) f
 
   ⋁-syntax = fold
   syntax ⋁-syntax (λ x → e) v = ⋁[ x ← v $ e ]
