@@ -14,6 +14,8 @@ _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → 
 (i ∷ is) ∥ dec | yes _ = i ∷ (is ∥ dec)
 (i ∷ is) ∥ dec | no  _ =      is ∥ dec
 
+-- equivalent to `filter (⌊_⌋ ∘ dec) is`
+
 ∁-dec : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → Decidable P → Decidable (∁ P)
 ∁-dec p x with p x
 ∁-dec p x | yes q = no (λ ¬q → ¬q q)
