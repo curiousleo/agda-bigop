@@ -10,9 +10,7 @@ open import Relation.Binary.PropositionalEquality as P using (_≡_)
 import Relation.Binary.EqReasoning as EqR
 
 open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
-
 module Σ = Props.SemiringWithoutOne semiringWithoutOne
-
 open Fold +-monoid using (fold; Σ-syntax)
 
 infixr 8 _^_
@@ -27,7 +25,7 @@ _     choose 0     = 1
 suc n choose suc k = n choose k + n choose (suc k)
 
 choose-lemma : ∀ m n → n choose ((suc m) + n) ≡ 0
-choose-lemma m 0 = P.refl
+choose-lemma m 0       = P.refl
 choose-lemma m (suc n) = ➀ ⟨ +-cong ⟩ ➁
   where
     open P.≡-Reasoning
@@ -77,42 +75,42 @@ module BinomialTheorem where
   open import Level renaming (zero to lzero; suc to lsuc)
   open Props.Ordinals
 
-  proof : ∀ x n → Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
+  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n
   proof x 0       = refl
   proof x (suc n) = begin
-    1 + Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
+    1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
       ≈⟨ refl {x = 1} ⟨ +-cong ⟩ begin
-        Σ[ k ← 1 … suc n $ (suc n) choose k * x ^ k ]
+        Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
           ≈⟨ sym $ Σ.map {g = f (suc n)} suc (λ _ → refl) (0 … n)
                    ⟨ trans ⟩ P.cong (fold (f (suc n))) (suc-lemma 0 (suc n)) ⟩
-        Σ[ k ← 0 … n $ (suc n) choose (suc k) * x ^ (suc k) ]
+        Σ[ k ← 0 … n ] (suc n) choose (suc k) * x ^ (suc k)
           ≈⟨ Σ.cong {f = λ k → f (suc n) (suc k)}
                     (P.refl {x = 0 … n}) (λ _ → refl) ⟩
-        Σ[ k ← 0 … n $ (n choose k + n choose (suc k)) * x ^ (suc k) ]
+        Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
           ≈⟨ Σ.cong {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
                     (P.refl {x = 0 … n})
                     (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
-        Σ[ k ← 0 … n $ n choose k * x ^ (suc k)
-                              + n choose (suc k) * x ^ (suc k) ]
+        Σ[ k ← 0 … n ] (n choose k * x ^ (suc k)
+                        + n choose (suc k) * x ^ (suc k))
           ≈⟨ sym $ Σ.split (λ k → n choose k * x ^ (suc k)) (λ k → f n (suc k))
                            (0 … n) ⟩
-        Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
-        + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ] ∎
+        Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+        + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ∎
       ⟩
-    1 + (Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
-         + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ])
-      ≈⟨ +-reorder 1 Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] _ ⟩
-    Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]
-    + (1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ])
+    1 + (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+         + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
+      ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+    Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+    + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
       ≈⟨ ➀ ⟨ +-cong ⟩ ➁ ⟩
-      x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
-    +     Σ[ k ← 0 … n $ n choose k * x ^ k ]
+      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+    +      Σ[ k ← 0 … n ] n choose k * x ^ k
       ≈⟨ +-cong (refl {x = x * _})
-                (sym $ proj₁ *-identity Σ[ k ← 0 … n $ f n k ]) ⟩
-      x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
-    + 1 * Σ[ k ← 0 … n $ n choose k * x ^ k ]
+                (sym $ proj₁ *-identity (Σ[ k ← 0 … n ] f n k)) ⟩
+      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+    + 1 * (Σ[ k ← 0 … n ] n choose k * x ^ k)
       ≈⟨ sym $ distribʳ _ x 1 ⟩
-    (x + 1) * Σ[ k ← 0 … n $ n choose k * x ^ k ]
+    (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
       ≈⟨ *-cong (+-comm x 1) (proof x n) ⟩
     (1 + x) * (1 + x) ^ n ∎
 
@@ -128,11 +126,11 @@ module BinomialTheorem where
         (y + x) + z  ≈⟨ +-assoc y x z ⟩
         y + (x + z)  ∎
 
-      ➀ : Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ] ≈ x * Σ[ k ← 0 … n $ n choose k * x ^ k ]
+      ➀ : Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≈ x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
       ➀ = begin
-        Σ[ k ← 0 … n $ n choose k * x ^ (suc k) ]  ≈⟨ Σ.cong (P.refl {x = 0 … n}) reorder ⟩
-        Σ[ k ← 0 … n $ x * (n choose k * x ^ k) ]  ≈⟨ sym $ Σ.distrˡ (f n) x (0 … n) ⟩
-        x * Σ[ k ← 0 … n $ n choose k * x ^ k ]    ∎
+        Σ[ k ← 0 … n ] n choose k * x ^ (suc k)  ≈⟨ Σ.cong (P.refl {x = 0 … n}) reorder ⟩
+        Σ[ k ← 0 … n ] x * (n choose k * x ^ k)  ≈⟨ sym $ Σ.distrˡ (f n) x (0 … n) ⟩
+        x * (Σ[ k ← 0 … n ] n choose k * x ^ k)  ∎
 
         where
 
@@ -145,46 +143,46 @@ module BinomialTheorem where
 
       open import Data.List
 
-      ➁ : 1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
-          ≈ Σ[ k ← 0 … n $ n choose k * x ^ k ]
+      ➁ : 1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+          ≈ Σ[ k ← 0 … n ] n choose k * x ^ k
       ➁ = begin
-        1 + Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
+        1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
           ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩ begin
-            Σ[ k ← 0 … n $ n choose (suc k) * x ^ (suc k) ]
+            Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
               ≈⟨ Σ.map {g = f n} suc (λ k → refl) (0 … n) ⟩
-            Σ[ k ← map suc (0 … n) $ n choose k * x ^ k ]
+            Σ[ k ← map suc (0 … n) ] n choose k * x ^ k
               ≈⟨ P.cong (fold $ f n) (suc-lemma 0 (suc n)) ⟩
-            Σ[ k ← 1 … suc n $ n choose k * x ^ k ]
+            Σ[ k ← 1 … suc n ] n choose k * x ^ k
               ≈⟨ P.cong (fold $ f n) (suc-last-lemma 1 n) ⟩
-            Σ[ k ← (1 … n) ∷ʳ (suc n) $ n choose k * x ^ k ]
+            Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k
               ≈⟨ Σ.last (f n) (suc n) (1 … n) ⟩
-            Σ[ k ← 1 … n $ n choose k * x ^ k ] + n choose (suc n) * x ^ (suc n)
-              ≈⟨ +-cong (refl {x = Σ[ k ← 1 … n $ f n k ]})
+            (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
+              ≈⟨ +-cong (refl {x = Σ[ k ← 1 … n ] f n k})
                         (choose-lemma 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩
-            Σ[ k ← 1 … n $ n choose k * x ^ k ] + 0
+            (Σ[ k ← 1 … n ] n choose k * x ^ k) + 0
               ≈⟨ proj₂ +-identity _ ⟩
-            Σ[ k ← 1 … n $ n choose k * x ^ k ] ∎
+            Σ[ k ← 1 … n ] n choose k * x ^ k ∎
           ⟩
-        1 + Σ[ k ← 1 … n $ n choose k * x ^ k ]
+        1 + Σ[ k ← 1 … n ] n choose k * x ^ k
           ≈⟨ refl ⟩
-        Σ[ k ← 0 ∷ (1 … n) $ n choose k * x ^ k ]
+        Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k
           ≈⟨ P.cong (fold $ f n) (suc-head-lemma 0 n) ⟩
-        Σ[ k ← 0 … n $ n choose k * x ^ k ] ∎
+        Σ[ k ← 0 … n ] n choose k * x ^ k ∎
 
 module RowSum where
 
-  proof : ∀ m r → Σ[ k ← 0 …+ m $ r choose k * (r ∸ 2 * k) ] ≈ m * r choose m
+  proof : ∀ m r → Σ[ k ← 0 …+ m ] r choose k * (r ∸ 2 * k) ≈ m * r choose m
   proof 0       r = refl
   proof (suc m) r = {!!}
 
 module PascalDiagonal where
 
-  proof : ∀ n → Σ[ k ← 0 …+ n $ (n ∸ k) choose k ] ≡ fib n
+  proof : ∀ n → Σ[ k ← 0 …+ n ] (n ∸ k) choose k ≡ fib n
   proof 0             = refl
   proof 1             = refl
   proof (suc (suc n)) =
     begin
-      Σ[ k ← 0 …+ (suc (suc n)) $ (suc (suc n) ∸ k) choose k ]
+      Σ[ k ← 0 …+ (suc (suc n)) ] (suc (suc n) ∸ k) choose k
         ≡⟨ {!!} ⟩
       fib n + fib (suc n)
     ∎

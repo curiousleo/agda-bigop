@@ -30,10 +30,10 @@ module Proofs where
 
     open import Relation.Unary
 
-    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd $ i ] ≈ n * n
+    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
     proof zero = P.refl
     proof (suc n) = begin
-      Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd $ i ]
+      Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
         ≡⟨ P.cong (fold id) (begin
 
           0 …+ suc (suc n + suc n) ∥ odd
@@ -48,9 +48,9 @@ module Proofs where
           0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
 
         ∎)⟩
-      Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd $ i ]
+      Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd ] i
         ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
-      Σ[ i ← 0 …+ suc (n + n) ∥ odd $ i ] + suc (n + n)
+      Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
         ≡⟨ +-cong (proof n) refl ⟩
 
       n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
@@ -85,11 +85,11 @@ module Proofs where
         
         Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
                      {P : Pred I ℓ} (p : Decidable P) → P x →
-                     Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ] ≈ Σ[ k ← xs ∥ p $ f k ] + f x
+                     Σ[ k ← xs ∷ʳ x ∥ p ] f k ≈ Σ[ k ← xs ∥ p ] f k + f x
         Σ-last-yes f xs x p px = start
-          Σ[ k ← (xs ∷ʳ x) ∥ p $ f k ]  ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
-          Σ[ k ← (xs ∥ p) ∷ʳ x $ f k ]  ≈⟨ Σ.last f x (xs ∥ p) ⟩
-          Σ[ k ← xs ∥ p $ f k ] + f x   □
+          Σ[ k ← xs ∷ʳ x ∥ p ] f k   ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
+          Σ[ k ← xs ∥ p ∷ʳ x ] f k   ≈⟨ Σ.last f x (xs ∥ p) ⟩
+          Σ[ k ← xs ∥ p ] f k + f x  □
           where
             open EqR setoid renaming (begin_ to start_; _∎ to _□)
 
@@ -103,13 +103,13 @@ module Proofs where
 
     open Fold +-monoid using (fold; Σ-syntax)
 
-    proof : ∀ (n : ℕ) → 2 * Σ[ x ← 0 … n $ x ] ≡ n * (suc n)
+    proof : ∀ (n : ℕ) → 2 * (Σ[ x ← 0 … n ] x) ≡ n * (suc n)
     proof 0 = P.refl
     proof (suc n) =
       begin
-        2 * Σ[ x ← 0 … suc n $ x ]          ≡⟨ P.cong (_*_ 2) lemma₀ ⟩
-        2 * (Σ[ x ← 0 … n $ x ] + suc n)    ≡⟨ distribˡ 2 Σ[ x ← 0 … n $ x ] (suc n) ⟩
-        2 * Σ[ x ← 0 … n $ x ] + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+        2 * (Σ[ x ← 0 … suc n ] x)          ≡⟨ P.cong (_*_ 2) lemma₀ ⟩
+        2 * (Σ[ x ← 0 … n ] x + suc n)      ≡⟨ distribˡ 2 (Σ[ x ← 0 … n ] x) (suc n) ⟩
+        2 * (Σ[ x ← 0 … n ] x) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
         n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
         2 * suc n + n * suc n               ≡⟨ P.sym (distribʳ (suc n) 2 n) ⟩
         (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
@@ -129,8 +129,8 @@ module Proofs where
           | sym (distribʳ m n o)
           | *-comm (n + o) m = refl
 
-        lemma₀ : Σ[ x ← 0 … suc n $ x ] ≡ Σ[ x ← 0 … n $ x ] + suc n
+        lemma₀ : Σ[ x ← 0 … suc n ] x ≡ Σ[ x ← 0 … n ] x + suc n
         lemma₀ = begin
-          Σ[ x ← 0 … suc n $ x ]       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
-          Σ[ x ← 0 … n ∷ʳ suc n $ x ]  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
-          Σ[ x ← 0 … n $ x ] + suc n   ∎
+          Σ[ x ← 0 … suc n ] x       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+          Σ[ x ← 0 … n ∷ʳ suc n ] x  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
+          Σ[ x ← 0 … n ] x + suc n   ∎
