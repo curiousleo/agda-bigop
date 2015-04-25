@@ -78,7 +78,14 @@ last-yes (y ∷ ys) x p tt | yes q | yes _ =
 last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p q
 last-yes xs x p px | no ¬px = ⊥-elim (¬px px)
 
-open import Data.Product
+open import Data.Product hiding (map)
+
+∥-filters : ∀ {a p} {A : Set a} {P : Pred A p} (xs : List A) (dec : Decidable P) →
+            xs ∥ dec ≡ filter (⌊_⌋ ∘ dec) xs
+∥-filters [] dec = refl
+∥-filters (x ∷ xs) dec with dec x
+∥-filters (x ∷ xs) dec | yes p = cong (_∷_ x) (∥-filters xs dec)
+∥-filters (x ∷ xs) dec | no ¬p = ∥-filters xs dec
 
 combine-filters : ∀ {a p q} {A : Set a} {P : Pred A p} {Q : Pred A q}
                   (xs : List A) (dec-p : Decidable P) (dec-q : Decidable Q)

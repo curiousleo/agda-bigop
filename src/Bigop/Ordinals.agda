@@ -34,6 +34,19 @@ m … n = m …+ (suc n ∸ m)
 _…↓_ : ℕ → ℕ → List ℕ
 m …↓ n = m …- (suc m ∸ n)
 
+open import Data.Vec
+
+ι-fin-vec : (from : ℕ) → (len : ℕ) → Vec (Fin (from + len)) len
+ι-fin-vec from len = tabulate {len} (raise from)
+
+ι-nat-vec : (from : ℕ) → (len : ℕ) → Vec ℕ len
+ι-nat-vec from len = Data.Vec.map toℕ (ι-fin-vec from len) -- tabulate {len} ((_+_ from) ∘ toℕ)
+  where
+    open import Function
+
+ι-fin-list : (from : ℕ) → (len : ℕ) → List (Fin (from + len))
+ι-fin-list from len = toList (ι-fin-vec from len)
+
 {-
 
 …-lemma : ∀ m n → m …↓ n ≡ reverse (n … m)
