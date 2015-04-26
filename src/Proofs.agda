@@ -97,6 +97,7 @@ module Proofs where
 
     open import Data.Nat using (suc)
     open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Product using (proj₁; proj₂)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -105,32 +106,22 @@ module Proofs where
 
     proof : ∀ (n : ℕ) → 2 * (Σ[ x ← 0 … n ] x) ≡ n * (suc n)
     proof 0 = P.refl
-    proof (suc n) =
-      begin
-        2 * (Σ[ x ← 0 … suc n ] x)          ≡⟨ P.cong (_*_ 2) lemma₀ ⟩
-        2 * (Σ[ x ← 0 … n ] x + suc n)      ≡⟨ distribˡ 2 (Σ[ x ← 0 … n ] x) (suc n) ⟩
+    proof (suc n) = begin
+        2 * (Σ[ x ← 0 … suc n ] x)          ≡⟨ P.cong (_*_ 2) lemma ⟩
+        2 * (Σ[ x ← 0 … n ] x + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ x ← 0 … n ] x) (suc n) ⟩
         2 * (Σ[ x ← 0 … n ] x) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
         n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
-        2 * suc n + n * suc n               ≡⟨ P.sym (distribʳ (suc n) 2 n) ⟩
+        2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
         (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
-        suc n * (suc (suc n))
-      ∎
+        suc n * (suc (suc n))               ∎
       where
         open P.≡-Reasoning
         open import Data.List.Base
 
         open Props.Ordinals
 
-        distribˡ : ∀ m n o → m * (n + o) ≡ m * n + m * o
-        distribˡ m n o
-          rewrite
-            *-comm m n
-          | *-comm m o
-          | sym (distribʳ m n o)
-          | *-comm (n + o) m = refl
-
-        lemma₀ : Σ[ x ← 0 … suc n ] x ≡ Σ[ x ← 0 … n ] x + suc n
-        lemma₀ = begin
+        lemma : Σ[ x ← 0 … suc n ] x ≡ Σ[ x ← 0 … n ] x + suc n
+        lemma = begin
           Σ[ x ← 0 … suc n ] x       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
           Σ[ x ← 0 … n ∷ʳ suc n ] x  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
           Σ[ x ← 0 … n ] x + suc n   ∎
