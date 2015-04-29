@@ -44,17 +44,23 @@ module SquareMatrixSemiringProof where
       from : Pointwise _~_ x y → PW.Pointwise (PW.Pointwise _~_) x y
       from (ext app) = PW.ext (λ r → PW.ext (app r))
 
-  module SquareMatrix (n : ℕ) {c ℓ} (s : Semiring c ℓ) where
+  module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
-    open Semiring s renaming (Carrier to A)
+    open Semiring semiring
+      using (0#; 1#; _+_; _*_;
+             setoid;
+             +-semigroup; +-monoid; +-commutativeMonoid;
+             *-semigroup; *-monoid;
+             semiringWithoutOne)
+      renaming (Carrier to A)
+
+    open Setoid setoid
+
     open Fold +-monoid using (Σ-syntax)
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
     open Props.Ordinals
 
     open EqR setoid
-    open P.≡-Reasoning
-      using ()
-      renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
+    open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 
     ι = fromLenF 0
 
@@ -148,6 +154,8 @@ module SquareMatrixSemiringProof where
     +M-assoc : Associative _≈M_ _+M_
     +M-assoc x y z = ext assoc
       where
+        open Semigroup +-semigroup using () renaming (assoc to +-assoc)
+
         factorₗ : ∀ r c →
                    ((x +M y) +M z) [ r , c ] ≡ (x [ r , c ] + y [ r , c ]) + z [ r , c ]
         factorₗ r c = start
@@ -172,6 +180,8 @@ module SquareMatrixSemiringProof where
     +M-cong : _+M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
     +M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
       where
+        open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
+
         cong : ∀ r c → (u +M x) [ r , c ] ≈ (v +M y) [ r , c ]
         cong r c = begin
           (u +M x) [ r , c ]         ≡⟨ l∘t r c ⟩
@@ -182,6 +192,8 @@ module SquareMatrixSemiringProof where
     +M-identityˡ : LeftIdentity _≈M_ 0M _+M_
     +M-identityˡ x = ext ident
       where
+        open Monoid +-monoid using () renaming (identity to +-identity)
+
         ident : ∀ r c → (0M +M x) [ r , c ] ≈ x [ r , c ]
         ident r c = begin
           (0M +M x) [ r , c ]         ≡⟨ l∘t r c ⟩
@@ -192,6 +204,8 @@ module SquareMatrixSemiringProof where
     +M-comm : Commutative _≈M_ _+M_
     +M-comm x y = ext comm
       where
+        open CommutativeMonoid +-commutativeMonoid using () renaming (comm to +-comm)
+
         comm : ∀ r c → (x +M y) [ r , c ] ≈ (y +M x) [ r , c ]
         comm r c = begin
           (x +M y) [ r , c ]         ≡⟨ l∘t r c ⟩
@@ -202,6 +216,9 @@ module SquareMatrixSemiringProof where
     M-zeroˡ : LeftZero _≈M_ 0M _*M_
     M-zeroˡ x = ext z
       where
+        open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         z : ∀ r c → (0M *M x) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin
           (0M *M x) [ r , c ]              ≡⟨ l∘t r c ⟩
@@ -216,6 +233,9 @@ module SquareMatrixSemiringProof where
     M-zeroʳ : RightZero _≈M_ 0M _*M_
     M-zeroʳ x = ext z
       where
+        open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         z : ∀ r c → (x *M 0M) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin
           (x *M 0M) [ r , c ]              ≡⟨ l∘t r c ⟩
@@ -230,6 +250,9 @@ module SquareMatrixSemiringProof where
     *M-assoc : Associative _≈M_ _*M_
     *M-assoc x y z = ext assoc
       where
+        open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         factorˡ : ∀ r c →
                   ((x *M y) *M z) [ r , c ] ≈
                   Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
@@ -274,6 +297,9 @@ module SquareMatrixSemiringProof where
     *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
     *M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
       where
+        open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
+        module Σ = Props.Monoid +-monoid
+
         cong : ∀ r c → (u *M x) [ r , c ] ≈ (v *M y) [ r , c ]
         cong r c = begin
           (u *M x) [ r , c ]
@@ -287,6 +313,9 @@ module SquareMatrixSemiringProof where
     *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
     *M-identityˡ x = ext ident
       where
+        open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
         ident r c = begin
           (1M *M x) [ r , c ]
@@ -319,6 +348,9 @@ module SquareMatrixSemiringProof where
     *M-identityʳ : RightIdentity _≈M_ 1M _*M_
     *M-identityʳ x = ext ident
       where
+        open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         ∁-sym : ∀ {a} {A : Set a} {x y : A} → ∁ (_≡_ x) y → ∁ (λ z → y ≡ z) x
         ∁-sym eq P.refl = eq P.refl
 
@@ -356,6 +388,9 @@ module SquareMatrixSemiringProof where
     *M-distrOverˡ-+M : (_≈M_ DistributesOverˡ _*M_) _+M_
     *M-distrOverˡ-+M x y z = ext distr
       where
+        open Semiring semiring using (*-cong; distrib)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         distr : ∀ r c → (x *M (y +M z)) [ r , c ] ≈ ((x *M y) +M (x *M z)) [ r , c ]
         distr r c = begin
           (x *M (y +M z)) [ r , c ]
@@ -381,6 +416,9 @@ module SquareMatrixSemiringProof where
     *M-distrOverʳ-+M : (_≈M_ DistributesOverʳ _*M_) _+M_
     *M-distrOverʳ-+M z x y = ext distr
       where
+        open Semiring semiring using (*-cong; distrib)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
         distr : ∀ r c → ((x +M y) *M z) [ r , c ] ≈ ((x *M z) +M (y *M z)) [ r , c ]
         distr r c = begin
           ((x +M y) *M z) [ r , c ]
