@@ -362,11 +362,13 @@ module SquareMatrixSemiringProof where
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] x [ r , i ] * (y +M z) [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
+
               x [ r , i ] * (y +M z) [ i , c ]
                 ≈⟨ *-cong refl (reflexive (l∘t i c)) ⟩
               x [ r , i ] * (y [ i , c ] + z [ i , c ])
                 ≈⟨ proj₁ distrib _ _ _ ⟩
               (x [ r , i ] * y [ i , c ]) + (x [ r , i ] * z [ i , c ]) ∎)⟩
+
           Σ[ i ← ι n ] ((x [ r , i ] * y [ i , c ]) + (x [ r , i ] * z [ i , c ]))
             ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
           Σ[ i ← ι n ] x [ r , i ] * y [ i , c ] +
@@ -385,11 +387,13 @@ module SquareMatrixSemiringProof where
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] (x +M y) [ r , i ] * z [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
+
               (x +M y) [ r , i ] * z [ i , c ]
                 ≈⟨ *-cong (reflexive (l∘t r i)) refl ⟩
               (x [ r , i ] + y [ r , i ]) * z [ i , c ]
                 ≈⟨ proj₂ distrib _ _ _ ⟩
               (x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]) ∎)⟩
+
           Σ[ i ← ι n ] ((x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]))
             ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
           Σ[ i ← ι n ] x [ r , i ] * z [ i , c ] +
