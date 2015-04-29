@@ -473,6 +473,135 @@ where
 
 \section{Differences to big operators in Coq}
 
+\chapter{Square matrices over semirings}
+
+Square matrices of a particular size whose elements belong to the carrier of a semiring together with matrix addition and multiplication defined using the addition and multiplication of the element semiring again form a semiring.
+
+Proving this fact using the library developed in this project was the success criterion set in the project proposal. This chapter describes the proof and how it makes use of the \AgdaModule{Bigop} library.
+
+\AgdaHide{
+\begin{code}
+module SquareMatrixSemiringProof where
+
+  open import Matrix
+  open import Bigop
+
+  open import Algebra
+  open import Algebra.FunctionProperties
+  open import Algebra.Structures
+  open import Data.Empty
+  open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
+  open import Data.Fin.Properties using (bounded)
+  import Data.List.Base as L using ([_])
+  import Data.Nat.Base as N
+  open N using (ℕ; z≤n)
+  open import Data.Product using (proj₁; proj₂; _,_; uncurry)
+  open import Function
+  open import Function.Equivalence as Equiv using (_⇔_)
+  open import Level using (_⊔_)
+  open import Relation.Nullary
+  open import Relation.Unary
+  open import Relation.Binary.Core using (_≡_; _≢_)
+  open import Relation.Binary
+  import Relation.Binary.Vec.Pointwise as PW
+  import Relation.Binary.PropositionalEquality as P
+\end{code}
+}
+
+\section{Definitions}
+
+The proof starts by defining an equivalence relation for matrices.\footnote{To be precise, \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} is just a relation for now. The proof that it really is an equivalence relation provided that \AgdaDatatype{\_\sim\_} is one comes later.} It is defined by pointwise equivalence between the elements of two matrices of the same shape.
+
+\begin{code}
+  record Pointwise {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
+                   {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
+    constructor ext
+    field app : (r : Fin m) (c : Fin n) → x [ r , c ] ∼ y [ r , c ]
+\end{code}
+
+This definition can be read as follows: in order to show that the \AgdaDatatype{Pointwise} relation holds between two matrices, we must give a function which for any row index \AgdaBound{r} and any column index \AgdaBound{c} and returns evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
+
+The remainder of the proof resides in a module that is parameterised over the size \AgdaBound{n} of the matrices and the underlying semiring.
+
+\begin{code}
+  module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
+\end{code}
+
+To begin, we bring the underlying semiring with its special elements, operators, induced substructures and carrier type into scope. \emph{Induced substructures} are the weaker structures that can automatically be derived from the given structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we forget about the commutative law.
+
+Semirings contain many induced substructures. In the following, the ones we are interested in are brought into scope explicitly: the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
+
+\begin{code}
+    open Semiring semiring
+      using     ( 0#; 1#; _+_; _*_
+                ; setoid
+                ; +-semigroup; +-monoid; +-commutativeMonoid
+                ; *-semigroup; *-monoid; semiringWithoutOne)
+      renaming  ( Carrier to A)
+\end{code}
+
+Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the ordinals lemmas, equational reasoning in the element setoid and propositional equality reasoning.
+
+\begin{code}
+    open Setoid setoid using (_≈_; refl; sym; reflexive)
+    open Fold +-monoid using (Σ-syntax)
+    open Props.Ordinals
+
+    open import Relation.Binary.EqReasoning setoid
+    open P.≡-Reasoning
+      using ()
+      renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
+\end{code}
+
+\AgdaHide{
+\begin{code}
+    ι = fromLenF 0
+\end{code}
+}
+
+\AgdaDatatype{M} \AgdaBound{n} is defined as a shortcut for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring.
+
+\begin{code}
+    M : ℕ → Set _
+    M n = Matrix A n n
+\end{code}
+
+We call the pointwise relation between two square matrices of the same size \AgdaDatatype{\_≈M\_}.
+
+\begin{code}
+    _≈M_ : Rel (M n) (c ⊔ ℓ)
+    _≈M_ = Pointwise _≈_
+\end{code}
+
+We are now ready to define matrix addition \AgdaFunction{\_+M\_} and multiplication \AgdaFunction{\_*M\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
+
+\begin{code}
+    _+M_ : Op₂ (M n)
+    x +M y = tabulate (λ r c → x [ r , c ] + y [ r , c ])
+\end{code}
+
+Using Σ-syntax, multiplication can be defined in a concise way.
+
+\begin{code}
+    mult : M n → M n → Fin n → Fin n → A
+    mult x y r c = Σ[ i ← ι n ] x [ r , i ] * y [ i , c ]
+
+    _*M_ : Op₂ (M n)
+    x *M y = tabulate (mult x y)
+
+    0M : M n
+    0M = tabulate (λ r c → 0#)
+
+    diag : {n : ℕ} → Fin n → Fin n → A
+    diag zeroF    zeroF    = 1#
+    diag zeroF    (sucF c) = 0#
+    diag (sucF r) zeroF    = 0#
+    diag (sucF r) (sucF c) = diag r c
+
+    1M : M n
+    1M = tabulate diag
+\end{code}
+
 \chapter{Evaluation}
 
 \section{Theorems proved}
@@ -480,9 +609,5 @@ where
 Binomial theorem
 
 Gauss
-
-\appendix
-
-\chapter{Semiring of square matrices}
 
 \end{document}
