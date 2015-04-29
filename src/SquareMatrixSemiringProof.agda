@@ -52,7 +52,8 @@ module SquareMatrixSemiringProof where
     open Props.Ordinals
 
     open EqR setoid
-    module ≡-R = P.≡-Reasoning
+    open P.≡-Reasoning
+      using ()
       renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 
     ι = fromLenF 0
@@ -118,9 +119,8 @@ module SquareMatrixSemiringProof where
     1M-diag r .r P.refl = start
       1M [ r , r ]  ≣⟨ l∘t r r ⟩
       diag r r      ≣⟨ diag-lemma r ⟩
-      1#  □
-      where
-        open ≡-R
+      1#            □
+        where
 
         diag-lemma : ∀ {n} (r : Fin n) → diag r r ≡ 1#
         diag-lemma zeroF    = P.refl
@@ -132,9 +132,8 @@ module SquareMatrixSemiringProof where
     1M-∁-diag r  c ¬eq | no  _      = start
       1M [ r , c ]  ≣⟨ l∘t r c ⟩
       diag r c      ≣⟨ diag-lemma r c ¬eq ⟩
-      0#  □
-      where
-        open ≡-R
+      0#            □
+        where
 
         suc-¬-lemma : ∀ {n} {r c : Fin n} → ¬ sucF r ≡ sucF c → ¬ r ≡ c
         suc-¬-lemma {r} ¬eq P.refl = ¬eq P.refl
@@ -155,8 +154,6 @@ module SquareMatrixSemiringProof where
           ((x +M y) +M z) [ r , c ]         ≣⟨ l∘t r c ⟩
           (x +M y) [ r , c ] + z [ r , c ]  ≣⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
           (x [ r , c ] + y [ r , c ]) + z [ r , c ] □
-          where
-            open ≡-R
 
         factorᵣ : ∀ r c →
                    (x +M (y +M z)) [ r , c ] ≡ x [ r , c ] + (y [ r , c ] + z [ r , c ])
@@ -164,8 +161,6 @@ module SquareMatrixSemiringProof where
           (x +M (y +M z)) [ r , c ]         ≣⟨ l∘t r c ⟩
           x [ r , c ] + (y +M z) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (l∘t r c) ⟩
           x [ r , c ] + (y [ r , c ] + z [ r , c ]) □
-          where
-            open ≡-R
 
         assoc : ∀ r c → ((x +M y) +M z) [ r , c ] ≈ (x +M (y +M z)) [ r , c ]
         assoc r c = begin
