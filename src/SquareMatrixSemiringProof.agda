@@ -230,19 +230,32 @@ module SquareMatrixSemiringProof where
     *M-assoc : Associative _≈M_ _*M_
     *M-assoc x y z = ext assoc
       where
-        assoc : ∀ r c → ((x *M y) *M z) [ r , c ] ≈ (x *M (y *M z)) [ r , c ]
-        assoc r c = begin
+        factorˡ : ∀ r c →
+                  ((x *M y) *M z) [ r , c ] ≈
+                  Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
+        factorˡ r c = begin
           ((x *M y) *M z) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] (x *M y) [ r , i ] * z [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
+            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
+          Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ] ∎
 
-              (x *M y) [ r , i ] * z [ i , c ]
-                ≈⟨ *-cong (reflexive $ l∘t r i) refl ⟩
-              (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
-                ≈⟨ Σ.distrʳ _ _ (ι n) ⟩
-              Σ[ j ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ] ∎ ) ⟩
+        factorʳ : ∀ r c →
+                  (x *M (y *M z)) [ r , c ] ≈
+                  Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ])
+        factorʳ r c = begin
+          (x *M (y *M z)) [ r , c ]
+            ≡⟨ l∘t r c ⟩
+          Σ[ j ← ι n ] x [ r , j ] * (y *M z) [ j , c ]
+            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ j → *-cong refl (reflexive (l∘t j c))) ⟩
+          Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ]) ∎
 
+        assoc : ∀ r c → ((x *M y) *M z) [ r , c ] ≈ (x *M (y *M z)) [ r , c ]
+        assoc r c = begin
+          ((x *M y) *M z) [ r , c ]
+            ≈⟨ factorˡ r c ⟩
+          Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
+            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → Σ.distrʳ _ _ (ι n)) ⟩
           Σ[ i ← ι n ] Σ[ j ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ]
             ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
           Σ[ j ← ι n ] Σ[ i ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ]
@@ -252,12 +265,10 @@ module SquareMatrixSemiringProof where
                 ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-assoc _ _ _) ⟩
               Σ[ i ← ι n ] x [ r , j ] * (y [ j , i ] * z [ i , c ])
                 ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
-              x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ])
-                ≈⟨ *-cong refl (sym $ reflexive $ l∘t j c) ⟩
-              x [ r , j ] * (y *M z) [ j , c ] ∎ ) ⟩
+              x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ]) ∎ ) ⟩
 
-          Σ[ j ← ι n ] x [ r , j ] * (y *M z) [ j , c ]
-            ≡⟨ P.sym (l∘t r c) ⟩
+          Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ])
+            ≈⟨ sym $ factorʳ r c ⟩
           (x *M (y *M z)) [ r , c ] ∎
 
     *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
