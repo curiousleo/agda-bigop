@@ -1,5 +1,5 @@
 \nonstopmode
-\RequirePackage[l2tabu, orthodox]{nag}
+% \RequirePackage[l2tabu, orthodox]{nag}
 \documentclass[12pt,chapterprefix=true,toc=bibliography,numbers=noendperiod,
                footnotes=multiple,twoside]{scrreprt}
 
@@ -7,22 +7,15 @@
 \newcommand{\AGDALATEX}[1]{#1}
 \newcommand{\PLAINLATEX}[1]{}
 
-\usepackage{amsfonts,amssymb,textgreek,stmaryrd}
-% \usepackage[postscript]{ucs}
-\usepackage{pifont}
-\usepackage[utf8x]{inputenc}
-
-\usepackage{fixltx2e}
-\usepackage{microtype}
-\usepackage{cmap}
-\usepackage[british]{babel}
-% \usepackage[oldstylenums,largesmallcaps,easyscsl]{kpfonts}
-\usepackage[proportional,scaled=1.064]{erewhon}
-\usepackage[erewhon,vvarbb,bigdelims]{newtxmath}
-\usepackage[T1]{fontenc}
-\renewcommand*\oldstylenums[1]{\textosf{#1}}
-
 \usepackage{mathtools}
+\usepackage{unicode-math}
+\usepackage{polyglossia}
+\setmainlanguage[variant=british]{english}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Pagella}
+\setmathfont{XITS Math}
+
 \usepackage{bussproofs}
 \usepackage{csquotes}
 \usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
@@ -54,14 +47,7 @@
 \title{Big Operators in Agda}
 \author{Leonhard Markert \\ Emmanuel College}
 
-\def\titlerunning{Normalization by Evaluation in the Delay Monad}
-\def\authorrunning{A. Abel \& J. Chapman}
-
 \setlength{\mathindent}{\parindent}
-\addtokomafont{chapter}{\mdseries}
-\addtokomafont{disposition}{\rmfamily}
-\addtokomafont{descriptionlabel}{\rmfamily}
-\addtokomafont{pageheadfoot}{\itshape}
 \setcounter{secnumdepth}{2}
 \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 
@@ -70,6 +56,24 @@
 \begin{titlepage}
 \maketitle
 \end{titlepage}
+
+\AgdaHide{
+\begin{code}
+module Report where
+
+{-
+open import Data.Empty
+open import Data.Fin
+open import Data.Nat
+open import Data.Nat.DivMod
+open import Data.Product using (∃)
+open import Relation.Nullary
+open import Relation.Unary using (Pred; Decidable)
+import Relation.Binary.PropositionalEquality as P
+open P using (_≡_)
+-}
+\end{code}
+}
 
 \chapter{Introduction}
 
@@ -189,73 +193,109 @@ XXX intro blurb
 
 \minisec{Relations}
 
-Usually in mathematics, a relation between two sets is defined as a subset of the cartesian product of the two sets. In a dependent type theory, a binary relation between types \texttt{A : Set} and \texttt{B : Set} has the type \texttt{A → B → Set}. Via currying, this type is isomorphic to \texttt{A × B → Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
+Usually in mathematics, a relation between two sets is defined as a subset of the cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. Via currying, this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
 
 We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
 
 \emph{Divisibility} is a familiar notion with a straightforward definition as a type.
 
-\begin{verbatim}
-data _∣_ : ℕ → ℕ → Set where
-  divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
-\end{verbatim}
+\AgdaHide{
+\begin{code}
+module _ where
+  open import Data.Nat.Base
+  open import Relation.Binary.PropositionalEquality
+\end{code}
+}
+
+\begin{code}
+  data _∣_ : ℕ → ℕ → Set where
+    divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
+
+  1-divides-n : ∀ n → 1 ∣ n
+  1-divides-n n = divides {1} {n} n n≡n*1
+    where
+      n≡n*1 : ∀ {n} → n ≡ n * 1
+      n≡n*1 {zero}  = refl
+      n≡n*1 {suc n} = cong suc n≡n*1
+\end{code}
 
 Its definition translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
 
-An important homogeneous binary relation is called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
+An important homogeneous binary relation is called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
-\begin{verbatim}
-data _≡_ {a} {A : Set a} (x : A) : A → Set a where
-  refl : x ≡ x
-\end{verbatim}
+\AgdaHide{
+\begin{code}
+module PropEq where
+\end{code}
+}
 
-The relation \(\_\!\!\equiv\!\!\_\) has only one constructor called \texttt{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
+\begin{code}
+  data _≡_ {a} {A : Set a} (x : A) : A → Set a where
+    refl : x ≡ x
+\end{code}
 
-The constructor \texttt{refl} requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \texttt{x ≡ y}, \texttt{x} and \texttt{y} must be shown to reduce to the same value.
+The relation \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
+
+The constructor \AgdaInductiveConstructor{refl} requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
 
 \minisec{Predicates}
 
-A predicate expresses some property of a term. In constructive logic, we often think of the values of a predicate as the \emph{evidence} that it holds. The type of a predicate over a type \texttt{A} is \texttt{A → Set}.
+A predicate expresses some property of a term. In constructive logic, we often think of the values of a predicate as the \emph{evidence} that it holds. The type of a predicate over a type \AgdaDatatype{A} is \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
 
-We will consider two predicates over natural numbers as examples in this chapter, \texttt{Even : ℕ → Set} and \texttt{Collatz : ℕ → Set}. In words, they mean the following:
+We will consider two predicates over natural numbers as examples in this chapter, \AgdaDatatype{Even} \AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{Collatz} \AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. In words, they mean the following:
 \begin{itemize}
-\item \texttt{Even n} provides evidence that \texttt{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
-\item \texttt{Collatz n} provides evidence that if we keep iterating the function \(f\) (defined below), starting with \(f (n + 1)\), eventually the result will be the number \(1\).
+\item \AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
+\item \AgdaDatatype{Collatz} \AgdaBound{n} provides evidence that if we keep iterating the function \AgdaFunction{f} (defined below), starting with \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}, eventually the result will be the number \AgdaPrimitive{1}.
 \[ f(n) =
 	\begin{cases}
 		n/2    & \text{if } n \equiv 0 \text{ (mod \(2\))} \\
 		3n + 1 & \text{if } n \equiv 1 \text{ (mod \(2\))}
 	\end{cases}
 \]
-We can provide evidence for this property by giving a natural number \(i\) together with a proof that \(f^i(n+1) \equiv 1\), where \(f^i\) represents the function \(f\) iterated \(i\) times.
+We can provide evidence for this property by giving a natural number \AgdaBound{i} together with a proof that \AgdaFunction{iter} \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} \AgdaBound{i} \AgdaDatatype{≡} \AgdaPrimitive{1}.
 \end{itemize}
 
-\begin{verbatim}
-data Even : ℕ → Set where
-  zero-even : Even zero
-  ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
-\end{verbatim}
+\AgdaHide{
+\begin{code}
+module Predicates where
+  open import Data.Empty
+  open import Data.Fin
+  open import Data.Nat
+  open import Data.Nat.DivMod
+  open import Data.Product using (∃)
+  open import Relation.Nullary
+  open import Relation.Unary using (Pred; Decidable)
+  open import Relation.Binary.PropositionalEquality using (_≡_)
+\end{code}
+}
 
-\begin{verbatim}
-Collatz : ℕ → Set
-Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
-  where
-    f : ℕ → ℕ
-    f n with n mod 2
-    f n | zero     = n div 2
-    f n | suc zero = suc (3 * n)
-    f n | suc (suc ())
+\begin{code}
+  data Even : ℕ → Set where
+    zero-even : Even zero
+    ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
+\end{code}
 
-    iter : ∀ {A} → (A → A) → A → ℕ → A
-    iter f x zero    = x
-    iter f x (suc n) = iter f (f x) n
-\end{verbatim}
+\begin{code}
+
+  Collatz : ℕ → Set
+  Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
+    where
+      f : ℕ → ℕ
+      f n with n mod 2
+      f n | zero     = n div 2
+      f n | suc zero = suc (3 * n)
+      f n | suc (suc ())
+
+      iter : ∀ {A} → (A → A) → A → ℕ → A
+      iter f x zero    = x
+      iter f x (suc n) = iter f (f x) n
+\end{code}
 
 \minisec{Decidability}
 
-The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \texttt{P : A → Set}, a decision procedure would be a function which for any argument \texttt{x : A} returns either an inhabitant of type \texttt{P x} (evidence that the predicate holds) or an inhabitant of type \texttt{¬ P x} (evidence that the predicate does not hold).
+The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \AgdaDatatype{P} \AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}, a decision procedure would be a function which for any argument \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A} returns either an inhabitant of type \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate holds) or an inhabitant of type \AgdaDatatype{¬} \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate does not hold).
 
-Considering the two example again, a decision procedure for \texttt{Even} is not entirely trivial, but still straightforward to define. The predicate \texttt{Collatz}, on the other hand, has been shown by Conway (XXX reference) to be undecidable---this is an instance of a predicate for which no decision procedure exists.
+Considering the two example again, a decision procedure for \AgdaDatatype{Even} is not entirely trivial, but still straightforward to define. The predicate \AgdaDatatype{Collatz}, on the other hand, has been shown by Conway (XXX reference) to be undecidable---this is an instance of a predicate for which no decision procedure exists.
 
 \section{Equivalences and setoids}
 
@@ -271,22 +311,30 @@ The last thing we need to consider is the meaning of the equality sign. In depen
 
 \minisec{Equivalences}
 
-Equivalences capture the essence of what it means for two things to be equal. A relation \(\_\!\!\approx\!\!\_\) is an equivalence if it is \emph{reflexive} (\(\forall a.\ a \approx a\)), \emph{symmetric} (\(\forall a,b.\ a \approx b \rightarrow b \approx a\)) and \emph{transitive} (\(\forall a,b,c.\ a \approx b \wedge b \approx c \rightarrow a \approx c\)).
+Equivalences capture the essence of what it means for two things to be equal. A relation \AgdaDatatype{\_≈\_} is an equivalence if it is \emph{reflexive} (\(\forall a.\ a \approx a\)), \emph{symmetric} (\(\forall a,b.\ a \approx b \rightarrow b \approx a\)) and \emph{transitive} (\(\forall a,b,c.\ a \approx b \wedge b \approx c \rightarrow a \approx c\)).
 
-It is easy to see that the notion of equality we used in the example at the beginning of this section is an equivalence. Informally, it can be stated as \enquote{two terms are equivalent if they evaluate to the same number}. This intuition is captured by an equivalence called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same expression.
+It is easy to see that the notion of equality we used in the example at the beginning of this section is an equivalence. Informally, it can be stated as \enquote{two terms are equivalent if they evaluate to the same number}. This intuition is captured by an equivalence called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same expression.
 
 \minisec{Setoids}
 
 A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence.
 
-\begin{verbatim}
-record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
-  infix 4 _≈_
-  field
-    Carrier       : Set c
-    _≈_           : Rel Carrier ℓ
-    isEquivalence : IsEquivalence _≈_
-\end{verbatim}
+\AgdaHide{
+\begin{code}
+module Setoids where
+  open import Level
+  open import Relation.Binary.Core
+\end{code}
+}
+
+\begin{code}
+  record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
+    infix 4 _≈_
+    field
+      Carrier       : Set c
+      _≈_           : Rel Carrier ℓ
+      isEquivalence : IsEquivalence _≈_
+\end{code}
 
 % Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
 
@@ -329,7 +377,7 @@ Together, the solutions to the issues of empty lists and ambiguous folds mean th
 
 The Agda standard library contains a hierarchy of algebraic structures. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
 
-The following tables list the algebraic structures and their properties as defined in the Agda standard library's \texttt{Algebra} module.
+The following tables list the algebraic structures and their properties as defined in the Agda standard library's \AgdaModule{Algebra} module.
 
 XXX: insert table
 
@@ -366,15 +414,28 @@ x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
 
 In section XXX, it was argued that the meaning of any big operator can be expressed as a fold over a monoid. More precisely, we take in a list of elements in some index set, evaluate an expression on every member, and combine the results using the binary operator of the monoid. If the list is empty, the fold evaluates to the monoid's unit element.
 
-One way of expressing this as a computation in a functional programming language is using the functions \texttt{map} and \texttt{crush} (reference!). \texttt{map} takes a function and a list and applies the function to each element of the list. \texttt{crush} reduces a list using a binary operator.
+One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
 
-\begin{verbatim}
-fold : (I → R) → List I → R
-fold f = crush ∘ map f
-  where
-    crush : List R → R
-    crush = foldr _∙_ ε
-\end{verbatim}
+\AgdaHide{
+\begin{code}
+open import Algebra
+
+module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
+
+  open import Data.List using (List; foldr; map)
+  open import Function using (_∘_)
+
+  open Monoid M renaming (Carrier to R)
+\end{code}
+}
+
+\begin{code}
+  fold : (I → R) → List I → R
+  fold f = crush ∘ map f
+    where
+      crush : List R → R
+      crush = foldr _∙_ ε
+\end{code}
 
 \begin{align*}
 \texttt{fold f l}
