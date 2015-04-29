@@ -248,9 +248,138 @@ record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
 
 \section{Algebra}
 
+XXX need to explain why I'm using lists
+
+XXX also: can define fold for semigroups on non-empty lists (BooleanAlgebra \ldots)
+
+% The treatment of algebraic structures is one aspect in which the library presented here is very different from Coq's bigop module.
+
+\minisec{Folds and monoids}
+
+Fundamentally, given any binary operator \(\_\!\!\odot\!\!\_\), what is the meaning of \(\bigodot_{i \leftarrow \textit{Idx}} f(i)\)? There are two main issues here: (1) the index list \(I\) may be empty; (2) in order to compute the result, we need to decide in which order the operator is applied.
+
+Before describing my solutions to these issues, let us first be a little more precise about the types involved. \(\textit{Idx}\) is a list whose elements are of type \(I\). The function \(f : I \rightarrow R\) takes those elements to a \emph{result} type \(R\). The binary operator is defined over this result type, so \(\_\!\!\odot\!\!\_ : R \rightarrow R \rightarrow R\). The entire big operator expression itself also has type \(R\).
+
+This partly dictates the solution to issue (1): since the big operator expression has type \(R\), we must pick some \(\epsilon : R\) to which it evaluates if \(\textit{Idx}\) is empty, such that \(\bigodot_{i \leftarrow []} f(i) \equiv \epsilon\). What would be a sensible choice of \(\epsilon\)? Consider
+
+\[
+	\left(\bigodot_{i \leftarrow []} f(i) \right) \odot \left(\bigodot_{i \leftarrow \textit{Idx}} g(i)\right)
+	\qquad \text{and} \qquad
+	\left(\bigodot_{i \leftarrow \textit{Idx}} g(i)\right) \odot \left(\bigodot_{i \leftarrow []} f(i)\right)
+\]
+
+In both cases, it would be reasonable to expect the result to be equal to just \(\bigodot_{i \leftarrow \textit{Idx}} g(i)\). This requirement exactly amounts to saying that \(\epsilon\) should be the \emph{identity} for \(\_\!\!\odot\!\!\_\), that is, \(\epsilon \odot x \equiv x \odot \epsilon \equiv x\) for any \(x : R\).
+
+Problem (2) is a little more subtle. Our goal is to define the meaning of a big operator by a series of applications of its underlying binary operator. This operation, common in in functional programming, is usually called \emph{fold}. Unfortunately, there are two natural ways to fold over lists: left-fold and right-fold.
+
+\begin{align*}
+	\textit{foldl} &\qquad \bigodot_{i \leftarrow \textit{Idx}} g(i) \equiv g(i_0) \odot (g(i_1) \odot (g(i_2) \odot \ldots )) \\
+	\textit{foldr} &\qquad \bigodot_{i \leftarrow \textit{Idx}} g(i) \equiv ( \ldots ((g(i_0) \odot g(i_1)) \odot g(i_2)) \ldots )
+\end{align*}
+
+It is clearly not desirable to have any ambiguity over what the big operator expression evaluates to. The solution adopted by the library presented here is to force the left-fold and the right-fold to be equivalent by requiring the underlying operator to be \emph{associative}. Then \(r \odot (r' \odot r'') \equiv (r \odot r') \odot r''\) for any \(r, r', r'' : R\), making the fold unique.
+
+Together, the solutions to the issues of empty lists and ambiguous folds mean that in order to create a well-defined big operator, the underlying binary operation must be associative and have an identity. In other words, we need a \emph{monoid}.
+
+\minisec{Algebraic hierarchy in Agda}
+
+The Agda standard library contains a hierarchy of algebraic structures. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
+
+The following tables list the algebraic structures and their properties as defined in the Agda standard library's \texttt{Algebra} module.
+
+XXX: insert table
+
+commutative monoids:
+
+\begin{align*}
+\bigodot_{i \leftarrow \textit{Idx}} \left(f(i) \odot g(i)\right)
+&\equiv
+\left(\bigodot_{i \leftarrow \textit{Idx}} f(i) \right) \odot \left(\bigodot_{i \leftarrow \textit{Idx}} g(i)\right) \\
+\bigodot_{i \leftarrow \textit{Idx}_0} \left(\bigodot_{j \leftarrow \textit{Idx}_1} f(i,j)\right)
+&\equiv
+\bigodot_{j \leftarrow \textit{Idx}_1} \left(\bigodot_{i \leftarrow \textit{Idx}_0} f(i,j)\right)
+\end{align*}
+
++ congruence lemmas.
+
+semirings without one:
+
+\begin{align*}
+\sum_{i \leftarrow \textit{Idx}} \left(x \times f(i)\right)
+&\equiv
+x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
+\sum_{i \leftarrow \textit{Idx}} \left(f(i) \times x\right)
+&\equiv
+\left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \times x \\
+\end{align*}
+
+
 \chapter{Implementation}
 
 \section{Design}
+
+\section{Fold}
+
+In section XXX, it was argued that the meaning of any big operator can be expressed as a fold over a monoid. More precisely, we take in a list of elements in some index set, evaluate an expression on every member, and combine the results using the binary operator of the monoid. If the list is empty, the fold evaluates to the monoid's unit element.
+
+One way of expressing this as a computation in a functional programming language is using the functions \texttt{map} and \texttt{crush} (reference!). \texttt{map} takes a function and a list and applies the function to each element of the list. \texttt{crush} reduces a list using a binary operator.
+
+\begin{listing}[h]
+\begin{agdacode}
+fold : (I → R) → List I → R
+fold f = crush ∘ map f
+  where
+    crush : List R → R
+    crush = foldr _∙_ ε
+\end{agdacode}
+\end{listing}
+
+\begin{align*}
+\texttt{fold f l}
+\quad&\equiv\quad \texttt{(crush \(\circ\) map f) l} \\
+\quad&\equiv\quad \texttt{crush (map f l)} \\
+\quad&\equiv\quad \texttt{crush (map f [\(\texttt{l}_0\), \(\texttt{l}_1\), \(\texttt{l}_2\), \ldots])} \\
+\quad&\equiv\quad \texttt{crush [f \(\texttt{l}_0\), f \(\texttt{l}_1\), f \(\texttt{l}_2\), \ldots])} \\
+\quad&\equiv\quad \texttt{f \(\texttt{l}_0\) \(\cdot\) (f \(\texttt{l}_1\) \(\cdot\) (f \(\texttt{l}_2\) \(\cdot\) \(\ldots\)))} \\
+\quad&\equiv\quad \texttt{f \(\texttt{l}_0\) \(\cdot\) f \(\texttt{l}_1\) \(\cdot\) f \(\texttt{l}_2\) \(\cdot\) \(\ldots\)}
+\end{align*}
+
+\begin{align*}
+\texttt{fold f []}
+\quad&\equiv\quad \texttt{(crush \(\circ\) map f) []} \\
+\quad&\equiv\quad \texttt{crush (map f [])} \\
+\quad&\equiv\quad \texttt{crush []} \\
+\quad&\equiv\quad \epsilon
+\end{align*}
+
+\section{Ordinals}
+
+Since this library was created with matrix algebra in mind, the most important index type is (bounded) natural numbers, and the most important lists contain consecutive natural numbers.
+
+\section{Filters}
+
+Consider the following formula: \[ \sum_{\substack{0 \leq i < 2n+1 \\ (i\ \text{odd})}} i \equiv n^2 \]
+
+An annotation is added here that we have not come across before: the condition (\(i\) odd). What this is saying is that when evaluating the formula, out of the natural numbers from zero to \(2n\), we only consider the ones which are odd, and throw away all the others.
+
+In terms of types, \emph{odd} can be expressed as a decidable predicate. (Other option: function A -> Bool -- explain why decidable predicates are better XXX). \emph{Filtering} is the process of removing the elements that do not satisfy the predicate from the list.
+
+In the spirit of modularity, filters were implemented as a function taking a list and a decidable predicate without any dependency on other parts of the library. The expression that generates the list of values for the example above is
+
+\begin{agdacode}
+0 …+ suc (n + n) ∥ odd
+\end{agdacode}
+
+where
+\begin{itemize}
+\item \mintinline{agda}{0 …+ suc (n + n) : List ℕ},
+\item \mintinline{agda}{odd : Decidable Odd} and
+\item \mintinline{agda}{_∥_ : List I → Decidable P → List I}.
+\end{itemize}
+
+\begin{agdacode}
+∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
+\end{agdacode}
 
 \section{Differences to big operators in Coq}
 
@@ -258,8 +387,14 @@ record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
 
 \section{Theorems proved}
 
+Binomial theorem
+
+Gauss
+
 \appendix
 
 \chapter{Semiring of square matrices}
+
+% \inputminted[fontsize=\small]{agda}{../src/SquareMatrixSemiringProof.agda}
 
 \end{document}
