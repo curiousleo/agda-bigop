@@ -1,19 +1,37 @@
 \nonstopmode
-\documentclass[preliminary,copyright,creativecommons]{eptcs}
+\RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[12pt,chapterprefix=true,toc=bibliography,numbers=noendperiod,
+               footnotes=multiple,twoside]{scrreprt}
 
 % type-set with agda --latex
 \newcommand{\AGDALATEX}[1]{#1}
 \newcommand{\PLAINLATEX}[1]{}
 
 \usepackage{amsfonts,amssymb,textgreek,stmaryrd}
-\usepackage[postscript]{ucs}
+% \usepackage[postscript]{ucs}
 \usepackage{pifont}
 \usepackage[utf8x]{inputenc}
 
+\usepackage{fixltx2e}
+\usepackage{microtype}
+\usepackage{cmap}
+\usepackage[british]{babel}
+% \usepackage[oldstylenums,largesmallcaps,easyscsl]{kpfonts}
+\usepackage[proportional,scaled=1.064]{erewhon}
+\usepackage[erewhon,vvarbb,bigdelims]{newtxmath}
+\usepackage[T1]{fontenc}
+\renewcommand*\oldstylenums[1]{\textosf{#1}}
+
+\usepackage{mathtools}
+\usepackage{bussproofs}
+\usepackage{csquotes}
+\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
+            dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+\usepackage[bookmarks,hidelinks]{hyperref}
+\usepackage[noabbrev,capitalise]{cleveref}
 
 \AGDALATEX{%
 \usepackage{agda}
-% \usepackage[conor]{latex/agda} %% almost Barbie
 }
 \PLAINLATEX{%
 \usepackage{verbatim}
@@ -54,6 +72,7 @@
   pdftitle={Big Operators in Agda},
   pdfauthor={Leonhard Markert (lm510), Emmanuel College}
 }
+\addbibresource{Bibliography.bib}
 \title{Big Operators in Agda}
 \author{Leonhard Markert \\ Emmanuel College}
 
@@ -61,6 +80,12 @@
 \def\authorrunning{A. Abel \& J. Chapman}
 
 \setlength{\mathindent}{\parindent}
+\addtokomafont{chapter}{\mdseries}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\addtokomafont{pageheadfoot}{\itshape}
+\setcounter{secnumdepth}{2}
+\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 
 \begin{document}
 
@@ -192,23 +217,19 @@ We will restrict our attention to the special case of relations between inhabita
 
 \emph{Divisibility} is a familiar notion with a straightforward definition as a type.
 
-\begin{listing}[h]
-\begin{agdacode}
+\begin{verbatim}
 data _∣_ : ℕ → ℕ → Set where
   divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
-\end{agdacode}
-\end{listing}
+\end{verbatim}
 
 Its definition translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
 
 An important homogeneous binary relation is called \emph{propositional equality}, written as \(\_\!\!\equiv\!\!\_\) in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
-\begin{listing}[h]
-\begin{agdacode}
+\begin{verbatim}
 data _≡_ {a} {A : Set a} (x : A) : A → Set a where
   refl : x ≡ x
-\end{agdacode}
-\end{listing}
+\end{verbatim}
 
 The relation \(\_\!\!\equiv\!\!\_\) has only one constructor called \texttt{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
 
@@ -231,16 +252,13 @@ We will consider two predicates over natural numbers as examples in this chapter
 We can provide evidence for this property by giving a natural number \(i\) together with a proof that \(f^i(n+1) \equiv 1\), where \(f^i\) represents the function \(f\) iterated \(i\) times.
 \end{itemize}
 
-\begin{listing}[h]
-\begin{agdacode}
+\begin{verbatim}
 data Even : ℕ → Set where
   zero-even : Even zero
   ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
-\end{agdacode}
-\end{listing}
+\end{verbatim}
 
-\begin{listing}[h]
-\begin{agdacode}
+\begin{verbatim}
 Collatz : ℕ → Set
 Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
   where
@@ -253,8 +271,7 @@ Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
     iter : ∀ {A} → (A → A) → A → ℕ → A
     iter f x zero    = x
     iter f x (suc n) = iter f (f x) n
-\end{agdacode}
-\end{listing}
+\end{verbatim}
 
 \minisec{Decidability}
 
@@ -282,20 +299,16 @@ It is easy to see that the notion of equality we used in the example at the begi
 
 \minisec{Setoids}
 
-A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence (see \cref{lst:setoid}).
+A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence.
 
-\begin{listing}[h]
-    \begin{agdacode}
+\begin{verbatim}
 record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
   infix 4 _≈_
   field
     Carrier       : Set c
     _≈_           : Rel Carrier ℓ
     isEquivalence : IsEquivalence _≈_
-    \end{agdacode}
-    \label{lst:setoid}
-    \caption{The definition of a setoid in the Agda standard library.}
-\end{listing}
+\end{verbatim}
 
 % Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
 
@@ -377,15 +390,13 @@ In section XXX, it was argued that the meaning of any big operator can be expres
 
 One way of expressing this as a computation in a functional programming language is using the functions \texttt{map} and \texttt{crush} (reference!). \texttt{map} takes a function and a list and applies the function to each element of the list. \texttt{crush} reduces a list using a binary operator.
 
-\begin{listing}[h]
-\begin{agdacode}
+\begin{verbatim}
 fold : (I → R) → List I → R
 fold f = crush ∘ map f
   where
     crush : List R → R
     crush = foldr _∙_ ε
-\end{agdacode}
-\end{listing}
+\end{verbatim}
 
 \begin{align*}
 \texttt{fold f l}
@@ -424,11 +435,11 @@ In the spirit of modularity, filters were implemented as a function taking a lis
 \end{verbatim}
 
 where
-\begin{itemize}
-\item \texttt{0 …+ suc (n + n) : List ℕ},
-\item \texttt{odd : Decidable Odd} and
-\item \texttt{_∥_ : List I → Decidable P → List I}.
-\end{itemize}
+% \begin{itemize}
+% \item \texttt{0 …+ suc (n + n) : List ℕ},
+% \item \texttt{odd : Decidable Odd} and
+% \item \texttt{_∥_ : List I → Decidable P → List I}.
+% \end{itemize}
 
 \begin{verbatim}
 ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
@@ -447,7 +458,5 @@ Gauss
 \appendix
 
 \chapter{Semiring of square matrices}
-
-% \inputminted[fontsize=\small]{agda}{../src/SquareMatrixSemiringProof.agda}
 
 \end{document}

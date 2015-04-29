@@ -1,5 +1,5 @@
 AGDA=agda
-AFLAGS=-i../Dependencies/agda-stdlib/src -i. --latex
+AFLAGS=-i../Dependencies/agda-stdlib/src -i. --latex --latex-dir=.
 SOURCE=Report
 POSTPROCESS=postprocess-latex.pl
 LATEX=latexmk -pdf # -use-make -e '$$pdflatex=q/xelatex %O %S/'
@@ -11,6 +11,4 @@ all:
 #	mv $(SOURCE).processed $(SOURCE).tex && \
 #	$(LATEX) $(SOURCE).tex && \
 #	mv $(SOURCE).pdf ..
-	cd latex/ && \
-	$(LATEX) $(SOURCE).tex && \
-	mv $(SOURCE).pdf ..
+	$(LATEX) $(SOURCE).tex
