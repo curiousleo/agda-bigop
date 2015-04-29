@@ -157,14 +157,14 @@ module SquareMatrixSemiringProof where
         open Semigroup +-semigroup using () renaming (assoc to +-assoc)
 
         factorₗ : ∀ r c →
-                   ((x +M y) +M z) [ r , c ] ≡ (x [ r , c ] + y [ r , c ]) + z [ r , c ]
+                  ((x +M y) +M z) [ r , c ] ≡ (x [ r , c ] + y [ r , c ]) + z [ r , c ]
         factorₗ r c = start
           ((x +M y) +M z) [ r , c ]         ≣⟨ l∘t r c ⟩
           (x +M y) [ r , c ] + z [ r , c ]  ≣⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
           (x [ r , c ] + y [ r , c ]) + z [ r , c ] □
 
         factorᵣ : ∀ r c →
-                   (x +M (y +M z)) [ r , c ] ≡ x [ r , c ] + (y [ r , c ] + z [ r , c ])
+                  (x +M (y +M z)) [ r , c ] ≡ x [ r , c ] + (y [ r , c ] + z [ r , c ])
         factorᵣ r c = start
           (x +M (y +M z)) [ r , c ]         ≣⟨ l∘t r c ⟩
           x [ r , c ] + (y +M z) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (l∘t r c) ⟩
