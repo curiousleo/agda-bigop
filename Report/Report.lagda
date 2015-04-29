@@ -426,21 +426,21 @@ module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 \end{code}
 
 \begin{align*}
-\texttt{fold f l}
-\quad&\equiv\quad \texttt{(crush \(\circ\) map f) l} \\
-\quad&\equiv\quad \texttt{crush (map f l)} \\
-\quad&\equiv\quad \texttt{crush (map f [\(\texttt{l}_0\), \(\texttt{l}_1\), \(\texttt{l}_2\), \ldots])} \\
-\quad&\equiv\quad \texttt{crush [f \(\texttt{l}_0\), f \(\texttt{l}_1\), f \(\texttt{l}_2\), \ldots])} \\
-\quad&\equiv\quad \texttt{f \(\texttt{l}_0\) \(\cdot\) (f \(\texttt{l}_1\) \(\cdot\) (f \(\texttt{l}_2\) \(\cdot\) \(\ldots\)))} \\
-\quad&\equiv\quad \texttt{f \(\texttt{l}_0\) \(\cdot\) f \(\texttt{l}_1\) \(\cdot\) f \(\texttt{l}_2\) \(\cdot\) \(\ldots\)}
+\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaBound{l}}
+\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaBound{l}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaBound{l}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaSymbol{[}\AgdaBound{l₀}, \AgdaBound{l₁}, \AgdaBound{l₂}, \(\cdots\)\AgdaSymbol{]}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{[}\AgdaFunction{f} \AgdaBound{l₀}, \AgdaFunction{f} \AgdaBound{l₁}, \AgdaFunction{f} \AgdaBound{l₂}, \(\cdots\)\AgdaSymbol{]}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₂} \AgdaFunction{∙} \(\cdots\)\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₂} \AgdaFunction{∙} \(\cdots\)}
 \end{align*}
 
 \begin{align*}
-\texttt{fold f []}
-\quad&\equiv\quad \texttt{(crush \(\circ\) map f) []} \\
-\quad&\equiv\quad \texttt{crush (map f [])} \\
-\quad&\equiv\quad \texttt{crush []} \\
-\quad&\equiv\quad \epsilon
+\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaInductiveConstructor{[]}}
+\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaInductiveConstructor{[]}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaInductiveConstructor{[]}} \\
+\quad&\equiv\quad \text{\AgdaBound{ε}}
 \end{align*}
 
 \section{Ordinals}
@@ -457,9 +457,9 @@ In terms of types, \emph{odd} can be expressed as a decidable predicate. (Other 
 
 In the spirit of modularity, filters were implemented as a function taking a list and a decidable predicate without any dependency on other parts of the library. The expression that generates the list of values for the example above is
 
-\begin{verbatim}
-0 …+ suc (n + n) ∥ odd
-\end{verbatim}
+% \begin{verbatim}
+% 0 …+ suc (n + n) ∥ odd
+% \end{verbatim}
 
 where
 % \begin{itemize}
@@ -468,9 +468,9 @@ where
 % \item \texttt{_∥_ : List I → Decidable P → List I}.
 % \end{itemize}
 
-\begin{verbatim}
-∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
-\end{verbatim}
+% \begin{verbatim}
+% ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
+% \end{verbatim}
 
 \section{Differences to big operators in Coq}
 
