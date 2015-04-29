@@ -11,7 +11,7 @@ module SquareMatrixSemiringProof where
   open import Data.Fin.Properties using (bounded)
   import Data.List.Base as L using ([_])
   import Data.Nat.Base as N
-  open N using (ℕ; z≤n) renaming (zero to zeroℕ; suc to sucℕ)
+  open N using (ℕ; z≤n)
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
