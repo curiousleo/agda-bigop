@@ -46,28 +46,6 @@
 \DeclareUnicodeCharacter{10218}{$\langle\!\langle$}
 \DeclareUnicodeCharacter{10219}{$\rangle\!\rangle$}
 
-\newcommand{\DelayI}{\AgdaDatatype{Delay}~\AgdaBound{i}}
-\newcommand{\DelayA}[1]{\AgdaDatatype{Delay}~\AgdaBound{#1}~\AgdaBound{A}}
-\newcommand{\DelayIA}{\DelayA{i}}
-\newcommand{\IDelayA}[1]{\AgdaDatatype{∞Delay}~\AgdaBound{#1}~\AgdaBound{A}}
-\newcommand{\IDelayIA}{\IDelayA{i}}
-\newcommand{\force}{\AgdaField{force}}
-\newcommand{\ainf}{\AgdaBound{a∞}}
-\newcommand{\aq}{\AgdaBound{a?}}
-\newcommand{\aqp}{\AgdaBound{a?′}}
-\newcommand{\jlti}{\ensuremath{\AgdaBound{j} < \AgdaBound{i}}}
-\newcommand{\RawMonad}{\AgdaFunction{RawMonad}}
-\newcommand{\RawFunctor}{\AgdaFunction{RawFunctor}}
-\newcommand{\fmap}{\ensuremath{\AgdaFunction{\_<\$>\_}}}
-\newcommand{\return}{\AgdaFunction{return}}
-\newcommand{\bind}{\AgdaFunction{>>=}}
-\newcommand{\prebind}{\AgdaFunction{\_>>=\_}}
-\newcommand{\preinfbind}{\AgdaFunction{\_∞>>=\_}}
-\newcommand{\prebisim}{\ensuremath{\AgdaDatatype{\_∼\_}}}
-\newcommand{\presizedbisim}[1]{\ensuremath{\AgdaDatatype{\_∼⟨~\AgdaBound{#1}~⟩∼\_}}}
-\newcommand{\presizedinfbisim}[1]{\ensuremath{\AgdaDatatype{\_∞∼⟨~\AgdaBound{#1}~⟩∼\_}}}
-\newcommand{\conv}{\ensuremath{\AgdaDatatype{⇓}}}
-
 \hypersetup{
   pdftitle={Big Operators in Agda},
   pdfauthor={Leonhard Markert (lm510), Emmanuel College}
