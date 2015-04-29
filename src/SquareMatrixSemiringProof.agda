@@ -191,10 +191,8 @@ module SquareMatrixSemiringProof where
         ident r c = begin
           (0M +M x) [ r , c ]         ≡⟨ l∘t r c ⟩
           0M [ r , c ] + x [ r , c ]  ≡⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
-                    0# + x [ r , c ]  ≈⟨ identityˡ _ ⟩
+                    0# + x [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
                          x [ r , c ]  ∎
-          where
-            open IsCommutativeMonoid +-isCommutativeMonoid
 
     +M-comm : Commutative _≈M_ _+M_
     +M-comm x y = ext comm
