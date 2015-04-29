@@ -23,3 +23,7 @@ Report/Report.tex
 *.ptb
 *.run.xml
 *.tex.blg
+
+# XeLaTeX
+fonts.dir
+fonts.scale
