@@ -60,18 +60,6 @@
 \AgdaHide{
 \begin{code}
 module Report where
-
-{-
-open import Data.Empty
-open import Data.Fin
-open import Data.Nat
-open import Data.Nat.DivMod
-open import Data.Product using (∃)
-open import Relation.Nullary
-open import Relation.Unary using (Pred; Decidable)
-import Relation.Binary.PropositionalEquality as P
-open P using (_≡_)
--}
 \end{code}
 }
 
