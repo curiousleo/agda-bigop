@@ -12,9 +12,9 @@
 \usepackage{polyglossia}
 \setmainlanguage[variant=british]{english}
 \usepackage{fontspec}
-\setmainfont{TeX Gyre Pagella}
-\setsansfont{TeX Gyre Pagella}
-\setmathfont{XITS Math}
+\setmainfont{XITS}
+\setsansfont{Gillius ADF}[Scale=MatchLowercase]
+\setmathfont{Asana-Math.otf}[Scale=MatchLowercase]
 
 \usepackage{bussproofs}
 \usepackage{csquotes}
@@ -36,6 +36,8 @@
 \DeclareUnicodeCharacter{8718}{$\blacksquare$}
 \DeclareUnicodeCharacter{10214}{$\llbracket$}
 \DeclareUnicodeCharacter{10215}{$\rrbracket$}
+\DeclareUnicodeCharacter{10216}{$\langle$}
+\DeclareUnicodeCharacter{10217}{$\rangle$}
 \DeclareUnicodeCharacter{10218}{$\langle\!\langle$}
 \DeclareUnicodeCharacter{10219}{$\rangle\!\rangle$}
 
