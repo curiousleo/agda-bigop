@@ -48,8 +48,10 @@
 \author{Leonhard Markert \\ Emmanuel College}
 
 \setlength{\mathindent}{\parindent}
+\setlength{\bibitemsep}{.5\baselineskip}
 \setcounter{secnumdepth}{2}
 \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
+\pagestyle{headings}
 
 \begin{document}
 
