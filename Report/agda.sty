@@ -24,14 +24,14 @@
     % Hack to get the amsthm package working.
     % http://tex.stackexchange.com/questions/130491/xelatex-error-paragraph-ended-before-tempa-was-complete
     \let\AgdaOpenBracket\[\let\AgdaCloseBracket\]
-    \RequirePackage{fontspec}
+%    \RequirePackage{fontspec}
     \let\[\AgdaOpenBracket\let\]\AgdaCloseBracket
-    \RequirePackage{unicode-math}
+%    \RequirePackage{unicode-math}
 
     \tracinglostchars=2 % If the font is missing some symbol, then say
                         % so in the compilation output.
-    \setmainfont[Ligatures=TeX]{texgyrepagella-regular.otf}
-    \setmathfont{Asana-Math.otf}
+%    \setmainfont[Ligatures=TeX]{texgyrepagella-regular.otf}
+%    \setmathfont{Asana-Math.otf}
 
     \providecommand{\DeclareUnicodeCharacter}[2]{\relax}
 
