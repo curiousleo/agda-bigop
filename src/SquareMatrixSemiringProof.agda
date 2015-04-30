@@ -22,44 +22,43 @@ module SquareMatrixSemiringProof where
   open import Relation.Binary
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
-  import Relation.Binary.EqReasoning as EqR
 
-  record Pointwise {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
-                   {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
+  record Pointwise {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
+                   {m n} (A : Matrix S m n) (B : Matrix T m n) : Set (s ⊔ t ⊔ ℓ) where
     constructor ext
-    field app : ∀ r c → lookup r c x ∼ lookup r c y
+    field app : ∀ r c → lookup r c A ∼ lookup r c B
 
-  PW-equivalent : ∀ {ℓ} {A B : Set ℓ} {_~_ : REL A B ℓ} {m n}
-                  {x : Matrix A m n} {y : Matrix B m n} →
-                  PW.Pointwise (PW.Pointwise _~_) x y ⇔ Pointwise _~_ x y
-  PW-equivalent {_~_ = _~_} {x = x} {y} = Equiv.equivalence to from
+  PW-equivalent : ∀ {ℓ} {S T : Set ℓ} {_~_ : REL S T ℓ} {m n}
+                  {A : Matrix S m n} {B : Matrix T m n} →
+                  PW.Pointwise (PW.Pointwise _~_) A B ⇔ Pointwise _~_ A B
+  PW-equivalent {_~_ = _~_} {A = A} {B} = Equiv.equivalence to from
     where
-      to : PW.Pointwise (PW.Pointwise _~_) x y → Pointwise _~_ x y
+      to : PW.Pointwise (PW.Pointwise _~_) A B → Pointwise _~_ A B
       to (PW.ext app) = ext cong
         where
-          cong : ∀ r c → lookup r c x ~ lookup r c y
+          cong : ∀ r c → lookup r c A ~ lookup r c B
           cong r c with app r
           cong r c | PW.ext app′ = app′ c
 
-      from : Pointwise _~_ x y → PW.Pointwise (PW.Pointwise _~_) x y
+      from : Pointwise _~_ A B → PW.Pointwise (PW.Pointwise _~_) A B
       from (ext app) = PW.ext (λ r → PW.ext (app r))
 
   module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
     open Semiring semiring
-      using (0#; 1#; _+_; _*_;
+      using (Carrier;
+             0#; 1#; _+_; _*_;
              setoid;
              +-semigroup; +-monoid; +-commutativeMonoid;
              *-semigroup; *-monoid;
              semiringWithoutOne)
-      renaming (Carrier to A)
 
-    open Setoid setoid
+    open Setoid setoid using (_≈_; refl; sym; trans; reflexive)
 
     open Fold +-monoid using (Σ-syntax)
     open Props.Ordinals
 
-    open EqR setoid
+    open import Relation.Binary.EqReasoning setoid
     open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 
     ι = fromLenF 0
@@ -69,24 +68,24 @@ module SquareMatrixSemiringProof where
     -----------------
 
     M : ℕ → Set _
-    M n = Matrix A n n
+    M n = Matrix Carrier n n
 
-    mult : M n → M n → Fin n → Fin n → A
-    mult x y r c = Σ[ i ← ι n ] x [ r , i ] * y [ i , c ]
+    _≋_ : Rel (M n) (c ⊔ ℓ)
+    _≋_ = Pointwise _≈_
 
-    _≈M_ : Rel (M n) (c ⊔ ℓ)
-    _≈M_ = Pointwise _≈_
+    _⊕_ : Op₂ (M n)
+    A ⊕ B = tabulate (λ r c → A [ r , c ] + B [ r , c ])
 
-    _+M_ : Op₂ (M n)
-    x +M y = tabulate (λ r c → x [ r , c ] + y [ r , c ])
+    mult : M n → M n → Fin n → Fin n → Carrier
+    mult A B r c = Σ[ i ← ι n ] A [ r , i ] * B [ i , c ]
 
-    _*M_ : Op₂ (M n)
-    x *M y = tabulate (mult x y)
+    _⊗_ : Op₂ (M n)
+    A ⊗ B = tabulate (mult A B)
 
     0M : M n
     0M = tabulate (λ r c → 0#)
 
-    diag : {n : ℕ} → Fin n → Fin n → A
+    diag : {n : ℕ} → Fin n → Fin n → Carrier
     diag zeroF    zeroF    = 1#
     diag zeroF    (sucF c) = 0#
     diag (sucF r) zeroF    = 0#
@@ -99,19 +98,19 @@ module SquareMatrixSemiringProof where
     -- Proofs --
     ------------
 
-    ≈M-isEquivalence : IsEquivalence _≈M_
-    ≈M-isEquivalence = record { refl = ≈M-refl ; sym = ≈M-sym ; trans = ≈M-trans }
+    ≋-isEquivalence : IsEquivalence _≋_
+    ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
       where
-        ≈M-refl : Reflexive _≈M_
-        ≈M-refl = ext (λ r c → refl)
+        ≋-refl : Reflexive _≋_
+        ≋-refl = ext (λ r c → refl)
 
-        ≈M-sym : Symmetric _≈M_
-        ≈M-sym (ext app) = ext (λ r c → sym (app r c))
+        ≋-sym : Symmetric _≋_
+        ≋-sym (ext app) = ext (λ r c → sym (app r c))
 
-        ≈M-trans : Transitive _≈M_
-        ≈M-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
+        ≋-trans : Transitive _≋_
+        ≋-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
 
-    l∘t : ∀ {f : Fin n → Fin n → A} r c →
+    l∘t : ∀ {f : Fin n → Fin n → Carrier} r c →
           lookup r c (tabulate f) ≡ f r c
     l∘t {f} r c =
       P.trans (P.cong (V.lookup c)
@@ -151,217 +150,217 @@ module SquareMatrixSemiringProof where
         diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
 
 
-    +M-assoc : Associative _≈M_ _+M_
-    +M-assoc x y z = ext assoc
+    ⊕-assoc : Associative _≋_ _⊕_
+    ⊕-assoc A B C = ext assoc
       where
         open Semigroup +-semigroup using () renaming (assoc to +-assoc)
 
         factorₗ : ∀ r c →
-                  ((x +M y) +M z) [ r , c ] ≡ (x [ r , c ] + y [ r , c ]) + z [ r , c ]
+                  ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
         factorₗ r c = start
-          ((x +M y) +M z) [ r , c ]         ≣⟨ l∘t r c ⟩
-          (x +M y) [ r , c ] + z [ r , c ]  ≣⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
-          (x [ r , c ] + y [ r , c ]) + z [ r , c ] □
+          ((A ⊕ B) ⊕ C) [ r , c ]         ≣⟨ l∘t r c ⟩
+          (A ⊕ B) [ r , c ] + C [ r , c ]  ≣⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
+          (A [ r , c ] + B [ r , c ]) + C [ r , c ] □
 
         factorᵣ : ∀ r c →
-                  (x +M (y +M z)) [ r , c ] ≡ x [ r , c ] + (y [ r , c ] + z [ r , c ])
+                  (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
         factorᵣ r c = start
-          (x +M (y +M z)) [ r , c ]         ≣⟨ l∘t r c ⟩
-          x [ r , c ] + (y +M z) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (l∘t r c) ⟩
-          x [ r , c ] + (y [ r , c ] + z [ r , c ]) □
+          (A ⊕ (B ⊕ C)) [ r , c ]         ≣⟨ l∘t r c ⟩
+          A [ r , c ] + (B ⊕ C) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (l∘t r c) ⟩
+          A [ r , c ] + (B [ r , c ] + C [ r , c ]) □
 
-        assoc : ∀ r c → ((x +M y) +M z) [ r , c ] ≈ (x +M (y +M z)) [ r , c ]
+        assoc : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≈ (A ⊕ (B ⊕ C)) [ r , c ]
         assoc r c = begin
-          ((x +M y) +M z) [ r , c ]                    ≡⟨ factorₗ r c ⟩
-          (x [ r , c ] +  y [ r , c ]) + z [ r , c ]   ≈⟨ +-assoc _ _ _ ⟩
-           x [ r , c ] + (y [ r , c ]  + z [ r , c ])  ≡⟨ P.sym (factorᵣ r c) ⟩
-          (x +M (y +M z)) [ r , c ]                    ∎
+          ((A ⊕ B) ⊕ C) [ r , c ]                    ≡⟨ factorₗ r c ⟩
+          (A [ r , c ] +  B [ r , c ]) + C [ r , c ]   ≈⟨ +-assoc _ _ _ ⟩
+           A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorᵣ r c) ⟩
+          (A ⊕ (B ⊕ C)) [ r , c ]                    ∎
 
-    +M-cong : _+M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
-    +M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
+    ⊕-cong : _⊕_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
+    ⊕-cong {u} {v} {A} {B} (ext app₁) (ext app₂) = ext cong
       where
         open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
 
-        cong : ∀ r c → (u +M x) [ r , c ] ≈ (v +M y) [ r , c ]
+        cong : ∀ r c → (u ⊕ A) [ r , c ] ≈ (v ⊕ B) [ r , c ]
         cong r c = begin
-          (u +M x) [ r , c ]         ≡⟨ l∘t r c ⟩
-          u [ r , c ] + x [ r , c ]  ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
-          v [ r , c ] + y [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
-          (v +M y) [ r , c ] ∎
+          (u ⊕ A) [ r , c ]         ≡⟨ l∘t r c ⟩
+          u [ r , c ] + A [ r , c ]  ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
+          v [ r , c ] + B [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
+          (v ⊕ B) [ r , c ] ∎
 
-    +M-identityˡ : LeftIdentity _≈M_ 0M _+M_
-    +M-identityˡ x = ext ident
+    ⊕-identityˡ : LeftIdentity _≋_ 0M _⊕_
+    ⊕-identityˡ A = ext ident
       where
         open Monoid +-monoid using () renaming (identity to +-identity)
 
-        ident : ∀ r c → (0M +M x) [ r , c ] ≈ x [ r , c ]
+        ident : ∀ r c → (0M ⊕ A) [ r , c ] ≈ A [ r , c ]
         ident r c = begin
-          (0M +M x) [ r , c ]         ≡⟨ l∘t r c ⟩
-          0M [ r , c ] + x [ r , c ]  ≡⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
-                    0# + x [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
-                         x [ r , c ]  ∎
+          (0M ⊕ A) [ r , c ]         ≡⟨ l∘t r c ⟩
+          0M [ r , c ] + A [ r , c ]  ≡⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
+                    0# + A [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
+                         A [ r , c ]  ∎
 
-    +M-comm : Commutative _≈M_ _+M_
-    +M-comm x y = ext comm
+    ⊕-comm : Commutative _≋_ _⊕_
+    ⊕-comm A B = ext comm
       where
         open CommutativeMonoid +-commutativeMonoid using () renaming (comm to +-comm)
 
-        comm : ∀ r c → (x +M y) [ r , c ] ≈ (y +M x) [ r , c ]
+        comm : ∀ r c → (A ⊕ B) [ r , c ] ≈ (B ⊕ A) [ r , c ]
         comm r c = begin
-          (x +M y) [ r , c ]         ≡⟨ l∘t r c ⟩
-          x [ r , c ] + y [ r , c ]  ≈⟨ +-comm _ _ ⟩
-          y [ r , c ] + x [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
-          (y +M x) [ r , c ] ∎
+          (A ⊕ B) [ r , c ]         ≡⟨ l∘t r c ⟩
+          A [ r , c ] + B [ r , c ]  ≈⟨ +-comm _ _ ⟩
+          B [ r , c ] + A [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
+          (B ⊕ A) [ r , c ] ∎
 
-    M-zeroˡ : LeftZero _≈M_ 0M _*M_
-    M-zeroˡ x = ext z
+    M-zeroˡ : LeftZero _≋_ 0M _⊗_
+    M-zeroˡ A = ext z
       where
         open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        z : ∀ r c → (0M *M x) [ r , c ] ≈ 0M [ r , c ]
+        z : ∀ r c → (0M ⊗ A) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin
-          (0M *M x) [ r , c ]              ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] 0M [ r , i ] * x [ i , c ]
+          (0M ⊗ A) [ r , c ]              ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] 0M [ r , i ] * A [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n})
                       (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
-          Σ[ i ← ι n ] 0# * x [ i , c ]  ≈⟨ sym (Σ.distrˡ _ 0# (ι n)) ⟩
-          0# * (Σ[ i ← ι n ] x [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+          Σ[ i ← ι n ] 0# * A [ i , c ]  ≈⟨ sym (Σ.distrˡ _ 0# (ι n)) ⟩
+          0# * (Σ[ i ← ι n ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
           0#                               ≡⟨ P.sym (l∘t r c) ⟩
           0M [ r , c ] ∎
 
-    M-zeroʳ : RightZero _≈M_ 0M _*M_
-    M-zeroʳ x = ext z
+    M-zeroʳ : RightZero _≋_ 0M _⊗_
+    M-zeroʳ A = ext z
       where
         open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        z : ∀ r c → (x *M 0M) [ r , c ] ≈ 0M [ r , c ]
+        z : ∀ r c → (A ⊗ 0M) [ r , c ] ≈ 0M [ r , c ]
         z r c = begin
-          (x *M 0M) [ r , c ]              ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] x [ r , i ] * 0M [ i , c ]
+          (A ⊗ 0M) [ r , c ]              ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] A [ r , i ] * 0M [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n})
                       (λ i → *-cong refl (reflexive (l∘t i c))) ⟩
-          Σ[ i ← ι n ] x [ r , i ] * 0#  ≈⟨ sym (Σ.distrʳ _ 0# (ι n)) ⟩
-          (Σ[ i ← ι n ] x [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
+          Σ[ i ← ι n ] A [ r , i ] * 0#  ≈⟨ sym (Σ.distrʳ _ 0# (ι n)) ⟩
+          (Σ[ i ← ι n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
           0#                               ≡⟨ P.sym (l∘t r c) ⟩
           0M [ r , c ] ∎
 
-    *M-assoc : Associative _≈M_ _*M_
-    *M-assoc x y z = ext assoc
+    ⊗-assoc : Associative _≋_ _⊗_
+    ⊗-assoc A B C = ext assoc
       where
         open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
         factorˡ : ∀ r c →
-                  ((x *M y) *M z) [ r , c ] ≈
-                  Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
+                  ((A ⊗ B) ⊗ C) [ r , c ] ≈
+                  Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
         factorˡ r c = begin
-          ((x *M y) *M z) [ r , c ]
+          ((A ⊗ B) ⊗ C) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] (x *M y) [ r , i ] * z [ i , c ]
+          Σ[ i ← ι n ] (A ⊗ B) [ r , i ] * C [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
-          Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ] ∎
+          Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
 
         factorʳ : ∀ r c →
-                  (x *M (y *M z)) [ r , c ] ≈
-                  Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ])
+                  (A ⊗ (B ⊗ C)) [ r , c ] ≈
+                  Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
         factorʳ r c = begin
-          (x *M (y *M z)) [ r , c ]
+          (A ⊗ (B ⊗ C)) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ j ← ι n ] x [ r , j ] * (y *M z) [ j , c ]
+          Σ[ j ← ι n ] A [ r , j ] * (B ⊗ C) [ j , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ j → *-cong refl (reflexive (l∘t j c))) ⟩
-          Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ]) ∎
+          Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎
 
-        assoc : ∀ r c → ((x *M y) *M z) [ r , c ] ≈ (x *M (y *M z)) [ r , c ]
+        assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
         assoc r c = begin
-          ((x *M y) *M z) [ r , c ]
+          ((A ⊗ B) ⊗ C) [ r , c ]
             ≈⟨ factorˡ r c ⟩
-          Σ[ i ← ι n ] (Σ[ j ← ι n ] x [ r , j ] * y [ j , i ]) * z [ i , c ]
+          Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → Σ.distrʳ _ _ (ι n)) ⟩
-          Σ[ i ← ι n ] Σ[ j ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ]
+          Σ[ i ← ι n ] Σ[ j ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
-          Σ[ j ← ι n ] Σ[ i ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ]
+          Σ[ j ← ι n ] Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ j → begin
 
-              Σ[ i ← ι n ] (x [ r , j ] * y [ j , i ]) * z [ i , c ]
+              Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
                 ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-assoc _ _ _) ⟩
-              Σ[ i ← ι n ] x [ r , j ] * (y [ j , i ] * z [ i , c ])
+              Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
                 ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
-              x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ]) ∎ ) ⟩
+              A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎ ) ⟩
 
-          Σ[ j ← ι n ] x [ r , j ] * (Σ[ i ← ι n ] y [ j , i ] * z [ i , c ])
+          Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
             ≈⟨ sym $ factorʳ r c ⟩
-          (x *M (y *M z)) [ r , c ] ∎
+          (A ⊗ (B ⊗ C)) [ r , c ] ∎
 
-    *M-cong : _*M_ Preserves₂ _≈M_ ⟶ _≈M_ ⟶ _≈M_
-    *M-cong {u} {v} {x} {y} (ext app₁) (ext app₂) = ext cong
+    ⊗-cong : _⊗_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
+    ⊗-cong {u} {v} {A} {B} (ext app₁) (ext app₂) = ext cong
       where
         open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
         module Σ = Props.Monoid +-monoid
 
-        cong : ∀ r c → (u *M x) [ r , c ] ≈ (v *M y) [ r , c ]
+        cong : ∀ r c → (u ⊗ A) [ r , c ] ≈ (v ⊗ B) [ r , c ]
         cong r c = begin
-          (u *M x) [ r , c ]
+          (u ⊗ A) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] u [ r , i ] * x [ i , c ]
+          Σ[ i ← ι n ] u [ r , i ] * A [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-cong (app₁ r i) (app₂ i c)) ⟩
-          Σ[ i ← ι n ] v [ r , i ] * y [ i , c ]
+          Σ[ i ← ι n ] v [ r , i ] * B [ i , c ]
             ≡⟨ P.sym (l∘t r c) ⟩
-          (v *M y) [ r , c ] ∎
+          (v ⊗ B) [ r , c ] ∎
 
-    *M-identityˡ : LeftIdentity _≈M_ 1M _*M_
-    *M-identityˡ x = ext ident
+    ⊗-identityˡ : LeftIdentity _≋_ 1M _⊗_
+    ⊗-identityˡ A = ext ident
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        ident : ∀ r c → (1M *M x) [ r , c ] ≈ x [ r , c ]
+        ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
         ident r c = begin
-          (1M *M x) [ r , c ]
+          (1M ⊗ A) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] 1M [ r , i ] * x [ i , c ]
+          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]
             ≈⟨ Σ.split-P _ (ι n) (_≟F_ r) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * x [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * x [ i , c ]
+          Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] +
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
             ≈⟨ +-cong
                  (Σ.cong-P (ι n) (_≟F_ r)
                            (λ i r≡i → *-cong (reflexive (1M-diag r i r≡i)) refl))
                  (Σ.cong-P (ι n) (∁-dec (_≟F_ r))
                            (λ i r≢i → *-cong (reflexive (1M-∁-diag r i r≢i)) refl)) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1# * x [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 0# * x [ i , c ]
+          Σ[ i ← ι n ∥ (_≟F_ r) ] 1# * A [ i , c ] +
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 0# * A [ i , c ]
             ≈⟨ sym $ +-cong (Σ.distrˡ _ 1# (ι n ∥ (_≟F_ r)))
                             (Σ.distrˡ _ 0# (ι n ∥ ∁-dec (_≟F_ r))) ⟩
-          1# * (Σ[ i ← ι n ∥ (_≟F_ r) ] x [ i , c ]) +
-          0# * (Σ[ i ← ι n ∥ (∁-dec (_≟F_ r)) ] x [ i , c ])
+          1# * (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]) +
+          0# * (Σ[ i ← ι n ∥ (∁-dec (_≟F_ r)) ] A [ i , c ])
             ≈⟨ +-cong (proj₁ *-identity _) (proj₁ zero _) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ r) ] x [ i , c ] + 0#)
+          (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ] + 0#)
             ≈⟨ proj₂ +-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] x [ i , c ]
-            ≡⟨ P.cong (Σ-syntax (λ i → x [ i , c ]))
+          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
+            ≡⟨ P.cong (Σ-syntax (λ i → A [ i , c ]))
                       (ordinals-filterF z≤n (bounded r)) ⟩
-          Σ[ i ← L.[ r ] ] x [ i , c ]
+          Σ[ i ← L.[ r ] ] A [ i , c ]
             ≈⟨ proj₂ +-identity _  ⟩
-          x [ r , c ] ∎
+          A [ r , c ] ∎
 
-    *M-identityʳ : RightIdentity _≈M_ 1M _*M_
-    *M-identityʳ x = ext ident
+    ⊗-identityʳ : RightIdentity _≋_ 1M _⊗_
+    ⊗-identityʳ A = ext ident
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        ∁-sym : ∀ {a} {A : Set a} {x y : A} → ∁ (_≡_ x) y → ∁ (λ z → y ≡ z) x
+        ∁-sym : ∀ {a} {A : Set a} {A B : A} → ∁ (_≡_ A) B → ∁ (λ C → B ≡ C) A
         ∁-sym eq P.refl = eq P.refl
 
-        ident : ∀ r c → (x *M 1M) [ r , c ] ≈ x [ r , c ]
+        ident : ∀ r c → (A ⊗ 1M) [ r , c ] ≈ A [ r , c ]
         ident r c = begin
-          (x *M 1M) [ r , c ]
+          (A ⊗ 1M) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] x [ r , i ] * 1M [ i , c ]
+          Σ[ i ← ι n ] A [ r , i ] * 1M [ i , c ]
             ≈⟨ Σ.split-P _ (ι n) (_≟F_ c) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] x [ r , i ] * 1M [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] x [ r , i ] * 1M [ i , c ]
+          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ] * 1M [ i , c ] +
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] A [ r , i ] * 1M [ i , c ]
             ≈⟨ +-cong
                  (Σ.cong-P (ι n) (_≟F_ c)
                            (λ i c≡i → *-cong refl
@@ -369,103 +368,103 @@ module SquareMatrixSemiringProof where
                  (Σ.cong-P (ι n) (∁-dec (_≟F_ c))
                            (λ i c≢i → *-cong refl
                                              (reflexive (1M-∁-diag i c (∁-sym c≢i))))) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] x [ r , i ] * 1# +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] x [ r , i ] * 0#
+          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ] * 1# +
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] A [ r , i ] * 0#
             ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (ι n ∥ (_≟F_ c)))
                             (Σ.distrʳ _ 0# (ι n ∥ ∁-dec (_≟F_ c))) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ c) ] x [ r , i ]) * 1# +
-          (Σ[ i ← ι n ∥ (∁-dec (_≟F_ c)) ] x [ r , i ]) * 0#
+          (Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]) * 1# +
+          (Σ[ i ← ι n ∥ (∁-dec (_≟F_ c)) ] A [ r , i ]) * 0#
             ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ c) ] x [ r , i ]) + 0#
+          (Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]) + 0#
             ≈⟨ proj₂ +-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] x [ r , i ]
-            ≡⟨ P.cong (Σ-syntax (λ i → x [ r , i ]))
+          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]
+            ≡⟨ P.cong (Σ-syntax (λ i → A [ r , i ]))
                       (ordinals-filterF z≤n (bounded c)) ⟩
-          Σ[ i ← L.[ c ] ] x [ r , i ]
+          Σ[ i ← L.[ c ] ] A [ r , i ]
             ≈⟨ proj₂ +-identity _  ⟩
-          x [ r , c ] ∎
+          A [ r , c ] ∎
 
-    *M-distrOverˡ-+M : (_≈M_ DistributesOverˡ _*M_) _+M_
-    *M-distrOverˡ-+M x y z = ext distr
+    ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
+    ⊗-distrOverˡ-⊕ A B C = ext distr
       where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        distr : ∀ r c → (x *M (y +M z)) [ r , c ] ≈ ((x *M y) +M (x *M z)) [ r , c ]
+        distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
         distr r c = begin
-          (x *M (y +M z)) [ r , c ]
+          (A ⊗ (B ⊕ C)) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] x [ r , i ] * (y +M z) [ i , c ]
+          Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
 
-              x [ r , i ] * (y +M z) [ i , c ]
+              A [ r , i ] * (B ⊕ C) [ i , c ]
                 ≈⟨ *-cong refl (reflexive (l∘t i c)) ⟩
-              x [ r , i ] * (y [ i , c ] + z [ i , c ])
+              A [ r , i ] * (B [ i , c ] + C [ i , c ])
                 ≈⟨ proj₁ distrib _ _ _ ⟩
-              (x [ r , i ] * y [ i , c ]) + (x [ r , i ] * z [ i , c ]) ∎)⟩
+              (A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]) ∎)⟩
 
-          Σ[ i ← ι n ] ((x [ r , i ] * y [ i , c ]) + (x [ r , i ] * z [ i , c ]))
+          Σ[ i ← ι n ] ((A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]))
             ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
-          Σ[ i ← ι n ] x [ r , i ] * y [ i , c ] +
-          Σ[ i ← ι n ] x [ r , i ] * z [ i , c ]
+          Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
+          Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]
             ≡⟨ P.sym $ P.cong₂ _+_ (l∘t r c) (l∘t r c) ⟩
-          (x *M y) [ r , c ] + (x *M z) [ r , c ]
+          (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]
             ≡⟨ P.sym (l∘t r c) ⟩
-          ((x *M y) +M (x *M z)) [ r , c ] ∎
+          ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ] ∎
 
-    *M-distrOverʳ-+M : (_≈M_ DistributesOverʳ _*M_) _+M_
-    *M-distrOverʳ-+M z x y = ext distr
+    ⊗-distrOverʳ-⊕ : (_≋_ DistributesOverʳ _⊗_) _⊕_
+    ⊗-distrOverʳ-⊕ C A B = ext distr
       where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-        distr : ∀ r c → ((x +M y) *M z) [ r , c ] ≈ ((x *M z) +M (y *M z)) [ r , c ]
+        distr : ∀ r c → ((A ⊕ B) ⊗ C) [ r , c ] ≈ ((A ⊗ C) ⊕ (B ⊗ C)) [ r , c ]
         distr r c = begin
-          ((x +M y) *M z) [ r , c ]
+          ((A ⊕ B) ⊗ C) [ r , c ]
             ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] (x +M y) [ r , i ] * z [ i , c ]
+          Σ[ i ← ι n ] (A ⊕ B) [ r , i ] * C [ i , c ]
             ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
 
-              (x +M y) [ r , i ] * z [ i , c ]
+              (A ⊕ B) [ r , i ] * C [ i , c ]
                 ≈⟨ *-cong (reflexive (l∘t r i)) refl ⟩
-              (x [ r , i ] + y [ r , i ]) * z [ i , c ]
+              (A [ r , i ] + B [ r , i ]) * C [ i , c ]
                 ≈⟨ proj₂ distrib _ _ _ ⟩
-              (x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]) ∎)⟩
+              (A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]) ∎)⟩
 
-          Σ[ i ← ι n ] ((x [ r , i ] * z [ i , c ]) + (y [ r , i ] * z [ i , c ]))
+          Σ[ i ← ι n ] ((A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]))
             ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
-          Σ[ i ← ι n ] x [ r , i ] * z [ i , c ] +
-          Σ[ i ← ι n ] y [ r , i ] * z [ i , c ]
+          Σ[ i ← ι n ] A [ r , i ] * C [ i , c ] +
+          Σ[ i ← ι n ] B [ r , i ] * C [ i , c ]
             ≡⟨ P.sym $ P.cong₂ _+_ (l∘t r c) (l∘t r c) ⟩
-          (x *M z) [ r , c ] + (y *M z) [ r , c ]
+          (A ⊗ C) [ r , c ] + (B ⊗ C) [ r , c ]
             ≡⟨ P.sym (l∘t r c) ⟩
-          ((x *M z) +M (y *M z)) [ r , c ] ∎
+          ((A ⊗ C) ⊕ (B ⊗ C)) [ r , c ] ∎
 
     ------------------------
     -- It's a … semiring! --
     ------------------------
 
-    M-isSemiring : IsSemiring _≈M_ _+M_ _*M_ 0M 1M
+    M-isSemiring : IsSemiring _≋_ _⊕_ _⊗_ 0M 1M
     M-isSemiring = record
       { isSemiringWithoutAnnihilatingZero = record
         { +-isCommutativeMonoid = record
           { isSemigroup = record
-            { isEquivalence = ≈M-isEquivalence
-            ; assoc         = +M-assoc
-            ; ∙-cong        = +M-cong
+            { isEquivalence = ≋-isEquivalence
+            ; assoc         = ⊕-assoc
+            ; ∙-cong        = ⊕-cong
             }
-          ; identityˡ       = +M-identityˡ
-          ; comm            = +M-comm
+          ; identityˡ       = ⊕-identityˡ
+          ; comm            = ⊕-comm
           }
         ; *-isMonoid = record
           { isSemigroup = record
-            { isEquivalence = ≈M-isEquivalence
-            ; assoc         = *M-assoc
-            ; ∙-cong        = *M-cong
+            { isEquivalence = ≋-isEquivalence
+            ; assoc         = ⊗-assoc
+            ; ∙-cong        = ⊗-cong
             }
-          ; identity        = *M-identityˡ , *M-identityʳ
+          ; identity        = ⊗-identityˡ , ⊗-identityʳ
           }
-        ; distrib           = *M-distrOverˡ-+M , *M-distrOverʳ-+M
+        ; distrib           = ⊗-distrOverˡ-⊕ , ⊗-distrOverʳ-⊕
         }
       ; zero                = M-zeroˡ , M-zeroʳ
       }
