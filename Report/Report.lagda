@@ -189,6 +189,7 @@ We will restrict our attention to the special case of relations between inhabita
 
 \emph{Divisibility} is a familiar notion with a straightforward definition as a type.
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module _ where
@@ -208,11 +209,13 @@ module _ where
       n≡n*1 {zero}  = refl
       n≡n*1 {suc n} = cong suc n≡n*1
 \end{code}
+%TC:endignore
 
 Its definition translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
 
 An important homogeneous binary relation is called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module PropEq where
@@ -223,6 +226,7 @@ module PropEq where
   data _≡_ {a} {A : Set a} (x : A) : A → Set a where
     refl : x ≡ x
 \end{code}
+%TC:endignore
 
 The relation \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
 
@@ -245,6 +249,7 @@ We will consider two predicates over natural numbers as examples in this chapter
 We can provide evidence for this property by giving a natural number \AgdaBound{i} together with a proof that \AgdaFunction{iter} \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} \AgdaBound{i} \AgdaDatatype{≡} \AgdaPrimitive{1}.
 \end{itemize}
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module Predicates where
@@ -280,6 +285,7 @@ module Predicates where
       iter f x zero    = x
       iter f x (suc n) = iter f (f x) n
 \end{code}
+%TC:endignore
 
 \minisec{Decidability}
 
@@ -309,6 +315,7 @@ It is easy to see that the notion of equality we used in the example at the begi
 
 A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence.
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module Setoids where
@@ -325,6 +332,7 @@ module Setoids where
       _≈_           : Rel Carrier ℓ
       isEquivalence : IsEquivalence _≈_
 \end{code}
+%TC:endignore
 
 % Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
 
@@ -406,6 +414,7 @@ In section XXX, it was argued that the meaning of any big operator can be expres
 
 One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 open import Algebra
@@ -426,6 +435,7 @@ module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
       crush : List R → R
       crush = foldr _∙_ ε
 \end{code}
+%TC:endignore
 
 \begin{align*}
 \text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}}
@@ -481,6 +491,7 @@ Square matrices of a particular size whose elements belong to the carrier of a s
 
 Proving this fact using the library developed in this project was the success criterion set in the project proposal. This chapter describes the proof and how it makes use of the \AgdaModule{Bigop} library.
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module SquareMatrixSemiringProof where
@@ -509,30 +520,36 @@ module SquareMatrixSemiringProof where
   import Relation.Binary.PropositionalEquality as P
 \end{code}
 }
+%TC:endignore
 
 \section{Definitions}
 
 The proof starts by defining an equivalence relation for matrices.\footnote{To be precise, \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} is just a relation for now. The proof that it really is an equivalence relation provided that \AgdaDatatype{\_\sim\_} is one comes later.} It is defined by pointwise equivalence between the elements of two matrices of the same shape.
 
+%TC:ignore
 \begin{code}
   record Pointwise {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
                    {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
     constructor ext
     field app : (r : Fin m) (c : Fin n) → x [ r , c ] ∼ y [ r , c ]
 \end{code}
+%TC:endignore
 
 This definition can be read as follows: in order to show that the \AgdaDatatype{Pointwise} relation holds between two matrices, we must give a function which for any row index \AgdaBound{r} and any column index \AgdaBound{c} and returns evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
 
 The remainder of the proof resides in a module that is parameterised over the size \AgdaBound{n} of the matrices and the underlying semiring.
 
+%TC:ignore
 \begin{code}
   module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 \end{code}
+%TC:endignore
 
 To begin, we bring the underlying semiring with its special elements, operators, induced substructures and carrier type into scope. \emph{Induced substructures} are the weaker structures that can automatically be derived from the given structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we forget about the commutative law.
 
 Semirings contain many induced substructures. In the following, the ones we are interested in are brought into scope explicitly: the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
 
+%TC:ignore
 \begin{code}
     open Semiring semiring
       using     ( 0#; 1#; _+_; _*_
@@ -541,9 +558,11 @@ Semirings contain many induced substructures. In the following, the ones we are 
                 ; *-semigroup; *-monoid; semiringWithoutOne)
       renaming  ( Carrier to A)
 \end{code}
+%TC:endignore
 
 Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the ordinals lemmas, equational reasoning in the element setoid and propositional equality reasoning.
 
+%TC:ignore
 \begin{code}
     open Setoid setoid using (_≈_; refl; sym; reflexive)
     open Fold +-monoid using (Σ-syntax)
@@ -560,30 +579,38 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
     ι = fromLenF 0
 \end{code}
 }
+%TC:endignore
 
 \AgdaDatatype{M} \AgdaBound{n} is defined as a shortcut for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring.
 
+%TC:ignore
 \begin{code}
     M : ℕ → Set _
     M n = Matrix A n n
 \end{code}
+%TC:endignore
 
 We call the pointwise relation between two square matrices of the same size \AgdaDatatype{\_≈M\_}.
 
+%TC:ignore
 \begin{code}
     _≈M_ : Rel (M n) (c ⊔ ℓ)
     _≈M_ = Pointwise _≈_
 \end{code}
+%TC:endignore
 
 We are now ready to define matrix addition \AgdaFunction{\_+M\_} and multiplication \AgdaFunction{\_*M\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
 
+%TC:ignore
 \begin{code}
     _+M_ : Op₂ (M n)
     x +M y = tabulate (λ r c → x [ r , c ] + y [ r , c ])
 \end{code}
+%TC:endignore
 
 Using Σ-syntax, multiplication can be defined in a concise way.
 
+%TC:ignore
 \begin{code}
     mult : M n → M n → Fin n → Fin n → A
     mult x y r c = Σ[ i ← ι n ] x [ r , i ] * y [ i , c ]
@@ -603,6 +630,7 @@ Using Σ-syntax, multiplication can be defined in a concise way.
     1M : M n
     1M = tabulate diag
 \end{code}
+%TC:endignore
 
 \chapter{Evaluation}
 
