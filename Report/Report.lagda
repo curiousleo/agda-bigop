@@ -1,20 +1,18 @@
 \nonstopmode
-% \RequirePackage[l2tabu, orthodox]{nag}
 \documentclass[12pt,chapterprefix=true,toc=bibliography,numbers=noendperiod,
                footnotes=multiple,twoside]{scrreprt}
 
-% type-set with agda --latex
 \newcommand{\AGDALATEX}[1]{#1}
 \newcommand{\PLAINLATEX}[1]{}
 
-\usepackage{mathtools}
-\usepackage{unicode-math}
+\usepackage{amsmath}
 \usepackage{polyglossia}
 \setmainlanguage[variant=british]{english}
 \usepackage{fontspec}
-\setmainfont{XITS}
+\setmainfont{erewhon}
 \setsansfont{Gillius ADF}[Scale=MatchLowercase]
-\setmathfont{Asana-Math.otf}[Scale=MatchLowercase]
+\setmonofont{Source Code Pro}[Scale=MatchLowercase]
+\usepackage[]{unicode-math}
 
 \usepackage{bussproofs}
 \usepackage{csquotes}
@@ -31,15 +29,31 @@
 \newenvironment{code}{\verbatim}{\endverbatim}
 \long\def\AgdaHide#1{} % Used to hide code from LaTeX.
 }
-\DeclareUnicodeCharacter{8759}{::}
-\DeclareUnicodeCharacter{9733}{$\star$}
-\DeclareUnicodeCharacter{8718}{$\blacksquare$}
-\DeclareUnicodeCharacter{10214}{$\llbracket$}
-\DeclareUnicodeCharacter{10215}{$\rrbracket$}
-\DeclareUnicodeCharacter{10216}{$\langle$}
-\DeclareUnicodeCharacter{10217}{$\rangle$}
-\DeclareUnicodeCharacter{10218}{$\langle\!\langle$}
-\DeclareUnicodeCharacter{10219}{$\rangle\!\rangle$}
+\usepackage{newunicodechar}
+\newunicodechar{ℓ}{\ensuremath{ℓ}}
+\newunicodechar{≈}{\ensuremath{≈}}
+\newunicodechar{⊔}{\ensuremath{⊔}}
+\newunicodechar{→}{\ensuremath{→}}
+\newunicodechar{←}{\ensuremath{←}}
+\newunicodechar{ℕ}{\ensuremath{ℕ}}
+\newunicodechar{∀}{\ensuremath{∀}}
+\newunicodechar{∃}{\ensuremath{∃}}
+\newunicodechar{λ}{\ensuremath{λ}}
+\newunicodechar{≡}{\ensuremath{≡}}
+\newunicodechar{×}{\ensuremath{×}}
+\newunicodechar{∣}{\ensuremath{∣}}
+\newunicodechar{¬}{\ensuremath{¬}}
+\newunicodechar{∘}{\ensuremath{∘}}
+\newunicodechar{∙}{\ensuremath{∙}}
+\newunicodechar{ε}{\ensuremath{ε}}
+\newunicodechar{Σ}{\ensuremath{Σ}}
+\newunicodechar{…}{\ensuremath{…}}
+\newunicodechar{∥}{\ensuremath{∥}}
+\newunicodechar{□}{\ensuremath{□}}
+\newunicodechar{∎}{\ensuremath{∎}}
+\newunicodechar{⟩}{\ensuremath{⟩}}
+\newunicodechar{⟨}{\ensuremath{⟨}}
+\newunicodechar{≣}{\ensuremath{≣}}
 
 \hypersetup{
   pdftitle={Big Operators in Agda},
@@ -56,6 +70,7 @@
 \pagestyle{headings}
 
 \begin{document}
+\setmathfont{Asana-Math.otf}
 
 \begin{titlepage}
 \maketitle
