@@ -612,4 +612,6 @@ Binomial theorem
 
 Gauss
 
+\printbibliography
+
 \end{document}
