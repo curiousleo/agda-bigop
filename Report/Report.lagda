@@ -694,11 +694,11 @@ The next two lemmas show that the elements of the identity matrix \AgdaFunction{
 
 %TC:ignore
 \begin{code}
-    1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
+    1M-diag : ∀ {r c} → r ≡ c → 1M [ r , c ] ≡ 1#
 \end{code}
 \AgdaHide{
 \begin{code}
-    1M-diag r .r P.refl = start
+    1M-diag {r} {.r} P.refl = start
       1M [ r , r ]  ≣⟨ l∘t r r ⟩
       diag r r      ≣⟨ diag-lemma r ⟩
       1#            □
@@ -709,14 +709,14 @@ The next two lemmas show that the elements of the identity matrix \AgdaFunction{
 \end{code}
 }
 \begin{code}
-    1M-∁-diag  : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
+    1M-∁-diag  : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
     -- Proofs omitted.
 \end{code}
 \AgdaHide{
 \begin{code}
-    1M-∁-diag  r  c   eq  with r ≟F c
-    1M-∁-diag  r  .r  ¬eq  | yes  P.refl  = ⊥-elim (¬eq P.refl)
-    1M-∁-diag  r  c   ¬eq  | no   _       = start
+    1M-∁-diag  {r} {c}   eq  with ≟ r c
+    1M-∁-diag  {r} {.r}  ¬eq  | yes  P.refl  = ⊥-elim (¬eq P.refl)
+    1M-∁-diag  {r} {c}   ¬eq  | no   _       = start
       1M [ r , c ]  ≣⟨ l∘t r c ⟩
       diag r c      ≣⟨ diag-lemma r c ¬eq ⟩
       0#            □
@@ -789,7 +789,7 @@ Since the only law used in this proof is \AgdaFunction{+-assoc}, the semigroup o
 
 \minisec{Congruence of matrix addition}
 
-Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{preservation of equivalence} or \emph{congruence} must be proved for each function.
+Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{preservation of equivalence} or \emph{congruence} and must be proved for each function.
 
 Here we prove that matrix addition preserves equivalence, that is, \(A ≋ A′ ∧ B ≋ B′ ⇒ A ⊕ B ≋ A′ ⊕ B′\).
 
@@ -888,13 +888,12 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
         open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne using (cong; swap; distrˡ; distrʳ)
 
-        inner :  ∀ r c j →
-                 Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
-                 A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
+        inner : ∀ r c j →  Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
+                           A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
         inner r c j = begin
 {- 3.4 -}  Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (λ i → *-assoc _ _ _) ⟩
 {- 3.5 -}  Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])  ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
-          A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])  ∎
+          A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])   ∎
 
         assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
         assoc r c = begin
@@ -903,7 +902,7 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
 {- 3.3 -}  Σ[ i ← ι n ] Σ[ j ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
            Σ[ j ← ι n ] Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c) ⟩
 {- 3.6 -}  Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])  ≈⟨ sym $ factorʳ r c ⟩
-          (A ⊗ (B ⊗ C)) [ r , c ]                                              ∎
+          (A ⊗ (B ⊗ C)) [ r , c ]                                               ∎
 \end{code}
 \AgdaHide{
 \begin{code}
@@ -924,6 +923,26 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
 %TC:endignore
 
 \minisec{Left identity for matrix multiplication}
+
+This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \AgdaFunction{⊗} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A} for all \AgdaBound{A}. The key idea here is that for any term involving \AgdaFunction{1M}, it makes sense to case split on whether the row \AgdaBound{r} and column \AgdaBound{c} are equal. If they are, then \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#} by \AgdaFunction{1M-diag}. If not, then by \AgdaFunction{1M-∁-diag} we have \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}.
+
+In \AgdaFunction{ident}, after unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaFunction{ι} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≈} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≉} \AgdaBound{i} separately.
+
+\AgdaFunction{≈-step} deals with the first case. From \AgdaBound{r} \AgdaFunction{≈} \AgdaBound{i} follows \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#}. Using distributivity and the identity law for \AgdaFunction{\_*\_}, we can deduce that
+
+\[ \text{
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+}\]
+
+Otherwise, \AgdaFunction{≉-step} assumes that \AgdaBound{r} \AgdaFunction{≉} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. Then by distributivity and the \AgdaFunction{zero} law of the underlying semiring, it follows that
+
+\[ \text{
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{∁′} (\AgdaFunction{≟} \AgdaBound{r}) \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
+\AgdaFunction{0\#}
+}\]
+
+XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
 
 %TC:ignore
 \begin{code}
