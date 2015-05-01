@@ -951,40 +951,72 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
+          using (cong-P; split-P; distrˡ)
 
-        p-step :  ∀ r c →
-                  Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] ≈
-                  Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
-        p-step r c = begin
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (ι n) (_≟F_ r)
-                         (λ i r≡i → reflexive (1M-diag r i r≡i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (ι n ∥ (_≟F_ r)) ⟩
-          1# * (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]         ∎
+        ≈-step : ∀ r c →  Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]
+        ≈-step r c = begin
+          Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (≟ r)
+                         (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (ι n ∥ ≟ r) ⟩
+          1# * (Σ[ i ← ι n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]         ∎
 
-        ¬p-step :  ∀ r c →
-                   Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
-        ¬p-step r c = begin
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (ι n) (∁-dec (_≟F_ r))
-                         (λ i r≢i → reflexive (1M-∁-diag r i r≢i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (ι n ∥ ∁-dec (_≟F_ r)) ⟩
-          0# * (Σ[ i ← ι n ∥ (∁-dec (_≟F_ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
-          0#                                                 ∎
+        ≉-step : ∀ r c → Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+        ≉-step r c = begin
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (∁′ (≟ r))
+                         (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (ι n ∥ ∁′ (≟ r)) ⟩
+          0# * (Σ[ i ← ι n ∥ (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+          0#                                            ∎
+
+        filter : ∀ r c → ι n ∥ ≟ r ≡ L.[ r ]
+        filter r c = ordinals-filterF z≤n (bounded r)
 
         ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
         ident r c = begin
-          (1M ⊗ A) [ r , c ]                                           ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                      ≈⟨ Σ.split-P _ (ι n) (_≟F_ r) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ]        1M [ r , i ] * A [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ p-step r c ⟨ +-cong ⟩ ¬p-step r c ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ] + 0#)                   ≈⟨ proj₂ +-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
-            ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
-                       (ordinals-filterF z≤n (bounded r)) ⟩
-          Σ[ i ← L.[ r ] ] A [ i , c ]                                 ≈⟨ proj₂ +-identity _  ⟩
-          A [ r , c ]                                                  ∎
+          (1M ⊗ A) [ r , c ]                                     ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                ≈⟨ Σ.split-P _ (ι n) (≟ r) ⟩
+          Σ[ i ← ι n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≈-step r c ⟨ +-cong ⟩ ≉-step r c ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+                                                                            (filter r c) ⟩
+          A [ r , c ] + 0#                                       ≈⟨ proj₂ +-identity _  ⟩
+          A [ r , c ]                                            ∎
+\end{code}
+%TC:endignore
+
+\minisec{Left-distributivity}
+
+%TC:ignore
+\begin{code}
+
+    ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
+    ⊗-distrOverˡ-⊕ A B C = ext distr
+      where
+        open Semiring semiring using (*-cong; distrib)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
+        inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
+                          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
+        inner r c i = begin
+          A [ r , i ] * (B ⊕ C) [ i , c ]                        ≈⟨ refl ⟨ *-cong ⟩ reflexive (l∘t i c) ⟩
+          A [ r , i ] * (B [ i , c ] + C [ i , c ])              ≈⟨ proj₁ distrib _ _ _ ⟩
+          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]  ∎
+
+        distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
+        distr r c = begin
+          (A ⊗ (B ⊕ C)) [ r , c ]                       ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
+          Σ[ i ← ι n ] (  A [ r , i ] * B [ i , c ] +
+                          A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
+          Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
+          Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]        ≡⟨ P.sym $ l∘t r c ⟨ P.cong₂ _+_ ⟩ l∘t r c ⟩
+          (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]         ≡⟨ P.sym $ l∘t r c ⟩
+          ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]                 ∎
 \end{code}
 %TC:endignore
 
