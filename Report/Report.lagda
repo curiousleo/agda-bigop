@@ -32,6 +32,7 @@
 \usepackage{newunicodechar}
 \newunicodechar{ℓ}{\ensuremath{ℓ}}
 \newunicodechar{≈}{\ensuremath{≈}}
+\newunicodechar{≋}{\ensuremath{≋}}
 \newunicodechar{⊔}{\ensuremath{⊔}}
 \newunicodechar{→}{\ensuremath{→}}
 \newunicodechar{←}{\ensuremath{←}}
@@ -54,6 +55,9 @@
 \newunicodechar{⟩}{\ensuremath{⟩}}
 \newunicodechar{⟨}{\ensuremath{⟨}}
 \newunicodechar{≣}{\ensuremath{≣}}
+\newunicodechar{ˡ}{\ensuremath{^{l}}}
+\newunicodechar{ʳ}{\ensuremath{^{r}}}
+
 
 \hypersetup{
   pdftitle={Big Operators in Agda},
@@ -526,6 +530,8 @@ module SquareMatrixSemiringProof where
   import Data.Nat.Base as N
   open N using (ℕ; z≤n)
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
+  import Data.Vec as V using (lookup; tabulate)
+  open import Data.Vec.Properties using (lookup∘tabulate)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
   open import Level using (_⊔_)
@@ -569,11 +575,11 @@ Semirings contain many induced substructures. In the following, the ones we are 
 %TC:ignore
 \begin{code}
     open Semiring semiring
-      using     ( 0#; 1#; _+_; _*_
+      using     ( Carrier
+                ; 0#; 1#; _+_; _*_
                 ; setoid
                 ; +-semigroup; +-monoid; +-commutativeMonoid
                 ; *-semigroup; *-monoid; semiringWithoutOne)
-      renaming  ( Carrier to A)
 \end{code}
 %TC:endignore
 
@@ -581,7 +587,7 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
 
 %TC:ignore
 \begin{code}
-    open Setoid setoid using (_≈_; refl; sym; reflexive)
+    open Setoid setoid using (_≈_; refl; sym; trans; reflexive)
     open Fold +-monoid using (Σ-syntax)
     open Props.Ordinals
 
@@ -602,26 +608,26 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
 
 %TC:ignore
 \begin{code}
-    M : ℕ → Set _
-    M n = Matrix A n n
+    M : ℕ → Set c
+    M n = Matrix Carrier n n
 \end{code}
 %TC:endignore
 
-We call the pointwise relation between two square matrices of the same size \AgdaDatatype{\_≈M\_}.
+We call the pointwise relation between two square matrices of the same size \AgdaDatatype{\_≋\_}.
 
 %TC:ignore
 \begin{code}
-    _≈M_ : Rel (M n) (c ⊔ ℓ)
-    _≈M_ = Pointwise _≈_
+    _≋_ : Rel (M n) (c ⊔ ℓ)
+    _≋_ = Pointwise _≈_
 \end{code}
 %TC:endignore
 
-We are now ready to define matrix addition \AgdaFunction{\_+M\_} and multiplication \AgdaFunction{\_*M\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
+We are now ready to define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
 
 %TC:ignore
 \begin{code}
-    _+M_ : Op₂ (M n)
-    x +M y = tabulate (λ r c → x [ r , c ] + y [ r , c ])
+    _⊕_ : Op₂ (M n)
+    A ⊕ B = tabulate (λ r c → A [ r , c ] + B [ r , c ])
 \end{code}
 %TC:endignore
 
@@ -629,25 +635,227 @@ Using Σ-syntax, multiplication can be defined in a concise way.
 
 %TC:ignore
 \begin{code}
-    mult : M n → M n → Fin n → Fin n → A
-    mult x y r c = Σ[ i ← ι n ] x [ r , i ] * y [ i , c ]
+    mult : M n → M n → Fin n → Fin n → Carrier
+    mult A B r c = Σ[ i ← ι n ] A [ r , i ] * B [ i , c ]
 
-    _*M_ : Op₂ (M n)
-    x *M y = tabulate (mult x y)
+    _⊗_ : Op₂ (M n)
+    A ⊗ B = tabulate (mult A B)
+\end{code}
+%TC:endignore
 
+Note how the definition of \AgdaFunction{mult} resembles the component-wise definition of matrix multiplication in standard mathematical notation, \[(A\,B)_{r,c} = \sum_{i \leftarrow \iota\ n} A_{r,i}\,B_{i,c}\]
+
+The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihilator for matrix multiplication. All its elements are set to the zero element of the underlying semiring.
+
+%TC:ignore
+\begin{code}
     0M : M n
     0M = tabulate (λ r c → 0#)
+\end{code}
+%TC:endignore
 
-    diag : {n : ℕ} → Fin n → Fin n → A
-    diag zeroF    zeroF    = 1#
-    diag zeroF    (sucF c) = 0#
-    diag (sucF r) zeroF    = 0#
-    diag (sucF r) (sucF c) = diag r c
+\AgdaFunction{1M} is the identity for matrix multiplication. Its definition relies on the function \AgdaFunction{diag}, which returns \AgdaBound{1\#} if its arguments are equal and \AgdaBound{0\#} if they are different.\footnote{There are many ways to define the function \AgdaFunction{diag}. One alternative would be to use an explicit equality test. I found the inductive definition given above easier to work with in proofs.}
+
+%TC:ignore
+\begin{code}
+    diag : {n : ℕ} → Fin n → Fin n → Carrier
+    diag  zeroF     zeroF     =  1#
+    diag  zeroF     (sucF c)  =  0#
+    diag  (sucF r)  zeroF     =  0#
+    diag  (sucF r)  (sucF c)  =  diag r c
 
     1M : M n
     1M = tabulate diag
 \end{code}
 %TC:endignore
+
+This concludes the preliminary definitions.
+
+\section{Auxiliary lemmas}
+
+One of the most important lemmas in this file, \AgdaFunction{l∘t}, shows that if a matrix was created by tabulating a function \AgdaBound{f}, then looking up the element at row \AgdaBound{r} and column \AgdaBound{c} returns \AgdaBound{f} \AgdaBound{r} \AgdaBound{c}. The proof uses a similar lemma for vectors, \AgdaFunction{lookup∘tabulate}.
+
+%TC:ignore
+\begin{code}
+    l∘t : ∀ {f : Fin n → Fin n → Carrier} r c → lookup r c (tabulate f) ≡ f r c
+    -- Proof omitted.
+\end{code}
+\AgdaHide{
+\begin{code}
+    l∘t {f} r c = P.trans  (P.cong  (V.lookup c)
+                                    (lookup∘tabulate (λ r → V.tabulate (f r)) r))
+                           (lookup∘tabulate (f r) c)
+\end{code}
+}
+%TC:endignore
+
+The next two lemmas show that the elements of the identity matrix \AgdaFunction{1M} are equal to \AgdaFunction{1\#} on the diagonal and \AgdaFunction{0\#} everywhere else.
+
+%TC:ignore
+\begin{code}
+    1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
+\end{code}
+\AgdaHide{
+\begin{code}
+    1M-diag r .r P.refl = start
+      1M [ r , r ]  ≣⟨ l∘t r r ⟩
+      diag r r      ≣⟨ diag-lemma r ⟩
+      1#            □
+        where
+          diag-lemma  : ∀ {n} (r : Fin n) → diag r r ≡ 1#
+          diag-lemma  zeroF     =  P.refl
+          diag-lemma  (sucF r)  =  diag-lemma r
+\end{code}
+}
+\begin{code}
+    1M-∁-diag  : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
+    -- Proofs omitted.
+\end{code}
+\AgdaHide{
+\begin{code}
+    1M-∁-diag  r  c   eq  with r ≟F c
+    1M-∁-diag  r  .r  ¬eq  | yes  P.refl  = ⊥-elim (¬eq P.refl)
+    1M-∁-diag  r  c   ¬eq  | no   _       = start
+      1M [ r , c ]  ≣⟨ l∘t r c ⟩
+      diag r c      ≣⟨ diag-lemma r c ¬eq ⟩
+      0#            □
+        where
+          suc-¬-lemma  : ∀ {n} {r c : Fin n} → ¬ sucF r ≡ sucF c → ¬ r ≡ c
+          suc-¬-lemma  {r} ¬eq P.refl = ¬eq P.refl
+
+          diag-lemma  : ∀ {n} (r c : Fin n) → ¬ r ≡ c → diag r c ≡ 0#
+          diag-lemma  zeroF     zeroF     ¬eq  =  ⊥-elim (¬eq P.refl)
+          diag-lemma  zeroF     (sucF _)  _    =  P.refl
+          diag-lemma  (sucF r)  zeroF     ¬eq  =  P.refl
+          diag-lemma  (sucF r)  (sucF c)  ¬eq  =  diag-lemma r c (suc-¬-lemma ¬eq)
+\end{code}
+}
+%TC:endignore
+
+\section{Proofs}
+
+XXX not sure if ≋-isEquivalence should be discussed.
+
+%TC:ignore
+\begin{code}
+    ≋-isEquivalence : IsEquivalence _≋_
+    ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
+      where
+        ≋-refl : Reflexive _≋_
+        ≋-refl = ext (λ r c → refl)
+
+        ≋-sym : Symmetric _≋_
+        ≋-sym (ext app) = ext (λ r c → sym (app r c))
+
+        ≋-trans : Transitive _≋_
+        ≋-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
+\end{code}
+%TC:endignore
+
+\minisec{Associativity of matrix addition}
+
+The first algebraic proof shows that matrix addition is associative, that is, \((A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)\). Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence is straightforward: unfold the definition of \AgdaFunction{\_⊕\_}; use associativity of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
+
+Auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} take care of the bookkeeping.
+
+%TC:ignore
+\begin{code}
+    ⊕-assoc : Associative _≋_ _⊕_
+    ⊕-assoc A B C = ext assoc
+      where
+        open Semigroup +-semigroup using () renaming (assoc to +-assoc)
+
+        assoc : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≈ (A ⊕ (B ⊕ C)) [ r , c ]
+        assoc r c = begin
+          ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ factorˡ r c ⟩
+          (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
+          A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorʳ r c) ⟩
+          (A ⊕ (B ⊕ C)) [ r , c ]                     ∎
+\end{code}
+\AgdaHide{
+\begin{code}
+          where
+            factorˡ : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
+            factorˡ r c = l∘t r c ⟨ P.trans ⟩ P.cong₂ _+_ (l∘t r c) P.refl
+
+            factorʳ : ∀ r c → (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
+            factorʳ r c = l∘t r c ⟨ P.trans ⟩ P.cong₂ _+_ P.refl (l∘t r c)
+\end{code}
+}
+%TC:endignore
+
+Since the only law used in this proof is \AgdaFunction{+-assoc}, the semigroup over \AgdaFunction{\_+\_} induced by the underlying semiring is sufficient to prove that matrix addition is associative.
+
+\minisec{Congruence of matrix addition}
+
+Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{preservation of equivalence} or \emph{congruence} must be proved for each function.
+
+Here we prove that matrix addition preserves equivalence, that is, \(A ≋ A′ ∧ B ≋ B′ ⇒ A ⊕ B ≋ A′ ⊕ B′\).
+
+%TC:ignore
+\begin{code}
+    ⊕-cong : _⊕_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
+    ⊕-cong {A} {A′} {B} {B′} (ext app₁) (ext app₂) = ext cong
+      where
+        open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
+
+        cong : ∀ r c → (A ⊕ B) [ r , c ] ≈ (A′ ⊕ B′) [ r , c ]
+        cong r c = begin
+          (A ⊕ B) [ r , c ]             ≡⟨ l∘t r c ⟩
+          A [ r , c ]   + B [ r , c ]   ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
+          A′ [ r , c ]  + B′ [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
+          (A′ ⊕ B′) [ r , c ]           ∎
+\end{code}
+%TC:endignore
+
+The structure of the proof is similar to the associativity proof above. Again, a semigroup over \AgdaFunction{\_+\_} provides sufficient structure.
+
+\minisec{Left zero for matrix multiplication}
+
+In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}, that is, \AgdaFunction{0M} \AgdaFunction{⊗} \AgdaBound{A} \AgdaDatatype{≋} \AgdaFunction{0M}, we use two lemmas from \AgdaModule{Bigop.Properties} for the first time.
+
+As described in XXX, \AgdaFunction{Σ.cong} states that if lists \AgdaBound{is} and \AgdaBound{js} are propositionally equal and functions \AgdaBound{f} and \AgdaBound{g} are extensionally equal with respect to \AgdaDatatype{\_≈\_}, then \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{is} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaBound{js} \AgdaFunction{]} \AgdaBound{g} \AgdaBound{j}.
+
+%TC:ignore
+\begin{code}
+    M-zeroˡ : LeftZero _≋_ 0M _⊗_
+    M-zeroˡ A = ext z
+      where
+        open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne using (cong; distrˡ)
+
+        z : ∀ r c → (0M ⊗ A) [ r , c ] ≈ 0M [ r , c ]
+        z r c = begin
+          (0M ⊗ A) [ r , c ]                       ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] 0M [ r , i ] * A [ i , c ]  ≈⟨ Σ.cong  (ι n) P.refl
+                                                              (λ i → reflexive (l∘t r i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ] 0# * A [ i , c ]            ≈⟨ sym (Σ.distrˡ _ 0# (ι n)) ⟩
+          0# * (Σ[ i ← ι n ] A [ i , c ])          ≈⟨ proj₁ zero _ ⟩
+          0#                                       ≡⟨ P.sym (l∘t r c) ⟩
+          0M [ r , c ]                             ∎
+\end{code}
+%TC:endignore
+
+Let us consider the second step of the proof in detail. The aim is to use \AgdaFunction{Σ.cong} to show that
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+\AgdaDatatype{≈}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
+
+On both sides of the equivalence, we take the sum over \AgdaSymbol{(}\AgdaFunction{ι} \AgdaBound{n}\AgdaSymbol{)}. The proof that the lists are propositionally equal is therefore just \AgdaInductiveConstructor{P.refl}.
+
+We now need to prove that \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} for all \AgdaBound{i}. The outer form of this expression is a multiplication. Since our goal is to replace equal subterms by equal subterms, we need to use the appropriate congruence rule, \AgdaFunction{*-cong}. The right hand sides of the two multiplications are both \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}, so they are trivially equivalent by \AgdaFunction{refl}.
+
+\AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} is propositionally equal to \AgdaFunction{0\#} by (\AgdaFunction{l∘t} \AgdaBound{r} \AgdaBound{i}). Equivalence in \AgdaDatatype{\_≈\_} follows from propositional equality by \AgdaFunction{reflexivity}, which proves that the left hand sides of the multiplications are ≈-equivalent too.
+
+Putting this all together, we have built a term
+\[ \text{\AgdaFunction{Σ.cong} \AgdaSymbol{(}\AgdaFunction{ι} \AgdaBound{n}\AgdaSymbol{)} \AgdaInductiveConstructor{P.refl} \AgdaSymbol{(λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaFunction{reflexive} \AgdaSymbol{(}\AgdaFunction{l∘t} \AgdaBound{r} \AgdaBound{i}\AgdaSymbol{)} \AgdaFunction{⟨} \AgdaFunction{*-cong} \AgdaFunction{⟩} \AgdaFunction{refl}\AgdaSymbol{)} \AgdaFunction{⟩}} \]
+proving
+
+\[ \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+\AgdaDatatype{≈}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \]
+
+In the remainder of the proof, we first multiply out the \AgdaFunction{0\#} using distributivity and then apply the \AgdaFunction{zero} law of the underlying semiring.
 
 \chapter{Evaluation}
 
