@@ -735,7 +735,20 @@ The next two lemmas show that the elements of the identity matrix \AgdaFunction{
 
 \section{Proofs}
 
-XXX not sure if ≋-isEquivalence should be discussed.
+
+\minisec{\AgdaDatatype{\_≋\_} is an equivalence relation}
+
+For \AgdaDatatype{\_≋\_} to be an equivalence relation, it needs to be reflexive, symmetric and transitive. All three properties follow directly from the fact that the underlying element-wise relation \AgdaDatatype{\_≈\_} is an equivalence relation.
+
+Let us consider symmetry as an example. The property \AgdaFunction{Symmetric} \AgdaDatatype{\_≋\_} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. Now since \AgdaDatatype{\_≋\_} has only one constructor, any evidence \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} must be of the form \AgdaInductiveConstructor{ext} \AgdaBound{app} with \AgdaBound{app} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This allows us to pattern match on the argument to \AgdaFunction{≋-sym} to extract \AgdaBound{app}.
+
+In order to construct an element of \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, we must supply the constructor \AgdaInductiveConstructor{ext} with a function of type \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This can be achieved by abstracting over \AgdaBound{r} and \AgdaBound{c} and then applying \AgdaBound{app} \AgdaBound{r} \AgdaBound{c} to \AgdaFunction{sym}, the symmetry law of the underlying equivalence. Our symmetry proof for \AgdaDatatype{\_≋\_} is therefore
+
+\[\text{
+\AgdaFunction{≋-sym} \AgdaSymbol{(}\AgdaInductiveConstructor{ext} \AgdaBound{app}\AgdaSymbol{)} \AgdaSymbol{=} \AgdaInductiveConstructor{ext} \AgdaSymbol{(λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}
+}\]
+
+Reflexivity and transitivity are proved in a similar fashion.
 
 %TC:ignore
 \begin{code}
@@ -922,6 +935,40 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
 }
 %TC:endignore
 
+
+\minisec{Left-distributivity}
+
+XXX
+
+%TC:ignore
+\begin{code}
+    ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
+    ⊗-distrOverˡ-⊕ A B C = ext distr
+      where
+        open Semiring semiring using (*-cong; distrib)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
+        inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
+                          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
+        inner r c i = begin
+          A [ r , i ] * (B ⊕ C) [ i , c ]                        ≈⟨ refl ⟨ *-cong ⟩ reflexive (l∘t i c) ⟩
+          A [ r , i ] * (B [ i , c ] + C [ i , c ])              ≈⟨ proj₁ distrib _ _ _ ⟩
+          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]  ∎
+
+        distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
+        distr r c = begin
+          (A ⊗ (B ⊕ C)) [ r , c ]                       ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
+          Σ[ i ← ι n ] (  A [ r , i ] * B [ i , c ] +
+                          A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
+          Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
+          Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]        ≡⟨ P.sym $ l∘t r c ⟨ P.cong₂ _+_ ⟩ l∘t r c ⟩
+          (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]         ≡⟨ P.sym $ l∘t r c ⟩
+          ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]                 ∎
+\end{code}
+%TC:endignore
+
+
 \minisec{Left identity for matrix multiplication}
 
 This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \AgdaFunction{⊗} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A} for all \AgdaBound{A}. The key idea here is that for any term involving \AgdaFunction{1M}, it makes sense to case split on whether the row \AgdaBound{r} and column \AgdaBound{c} are equal. If they are, then \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#} by \AgdaFunction{1M-diag}. If not, then by \AgdaFunction{1M-∁-diag} we have \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}.
@@ -986,37 +1033,6 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
                                                                             (filter r c) ⟩
           A [ r , c ] + 0#                                       ≈⟨ proj₂ +-identity _  ⟩
           A [ r , c ]                                            ∎
-\end{code}
-%TC:endignore
-
-\minisec{Left-distributivity}
-
-%TC:ignore
-\begin{code}
-
-    ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
-    ⊗-distrOverˡ-⊕ A B C = ext distr
-      where
-        open Semiring semiring using (*-cong; distrib)
-        module Σ = Props.SemiringWithoutOne semiringWithoutOne
-
-        inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
-                          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
-        inner r c i = begin
-          A [ r , i ] * (B ⊕ C) [ i , c ]                        ≈⟨ refl ⟨ *-cong ⟩ reflexive (l∘t i c) ⟩
-          A [ r , i ] * (B [ i , c ] + C [ i , c ])              ≈⟨ proj₁ distrib _ _ _ ⟩
-          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]  ∎
-
-        distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
-        distr r c = begin
-          (A ⊗ (B ⊕ C)) [ r , c ]                       ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
-          Σ[ i ← ι n ] (  A [ r , i ] * B [ i , c ] +
-                          A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
-          Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
-          Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]        ≡⟨ P.sym $ l∘t r c ⟨ P.cong₂ _+_ ⟩ l∘t r c ⟩
-          (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]         ≡⟨ P.sym $ l∘t r c ⟩
-          ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]                 ∎
 \end{code}
 %TC:endignore
 
