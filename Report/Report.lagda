@@ -42,6 +42,7 @@
 \newunicodechar{λ}{\ensuremath{λ}}
 \newunicodechar{≡}{\ensuremath{≡}}
 \newunicodechar{×}{\ensuremath{×}}
+\newunicodechar{⊗}{\ensuremath{⊗}}
 \newunicodechar{∣}{\ensuremath{∣}}
 \newunicodechar{¬}{\ensuremath{¬}}
 \newunicodechar{∘}{\ensuremath{∘}}
@@ -856,6 +857,117 @@ proving
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \]
 
 In the remainder of the proof, we first multiply out the \AgdaFunction{0\#} using distributivity and then apply the \AgdaFunction{zero} law of the underlying semiring.
+
+\minisec{Associativity of matrix multiplication}
+
+This proof is more involved than the associativity proof for matrix addition. The argument runs as follows:
+
+\begin{align}
+((A ⊗ B) ⊗ C)_{r,c}
+&≈ \sum_{i\,←\,ι\,n} \left( \sum_{j\,←\,ι\,n} A_{r,j}\, B_{j,i} \right) C_{i,c}
+    && \text{by the definition of ⊗} \\
+&≈ \sum_{i\,←\,ι\,n} \sum_{j\,←\,ι\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
+    && \text{by right-distributivity} \\
+&≈ \sum_{j\,←\,ι\,n} \sum_{i\,←\,ι\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
+    && \text{swapping the outer sums} \\
+&≈ \sum_{j\,←\,ι\,n} \sum_{i\,←\,ι\,n} A_{r,j}\, (B_{j,i}\, C_{i,c})
+    && \text{by associativity} \\
+&≈ \sum_{j\,←\,ι\,n} A_{r,j} \sum_{i\,←\,ι\,n} B_{j,i}\, C_{i,c}
+    && \text{by left-distributivity} \\
+&≈ (A ⊗ (B ⊗ C))_{r,c}
+    && \text{by the definition of ⊗}
+\end{align}
+
+Again, we use the appropriate congruence rules to replace equals by equals within terms. Steps (3.4) and (3.5) have been factored into a separate function \AgdaFunction{inner} to make the proof more readable.
+
+%TC:ignore
+\begin{code}
+    ⊗-assoc : Associative _≋_ _⊗_
+    ⊗-assoc A B C = ext assoc
+      where
+        open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne using (cong; swap; distrˡ; distrʳ)
+
+        inner :  ∀ r c j →
+                 Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
+                 A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
+        inner r c j = begin
+{- 3.4 -}  Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (λ i → *-assoc _ _ _) ⟩
+{- 3.5 -}  Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])  ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
+          A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])  ∎
+
+        assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
+        assoc r c = begin
+{- 3.1 -}  ((A ⊗ B) ⊗ C) [ r , c ]                                              ≈⟨ factorˡ r c ⟩
+{- 3.2 -}  Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (λ i → Σ.distrʳ _ _ (ι n)) ⟩
+{- 3.3 -}  Σ[ i ← ι n ] Σ[ j ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
+           Σ[ j ← ι n ] Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c) ⟩
+{- 3.6 -}  Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])  ≈⟨ sym $ factorʳ r c ⟩
+          (A ⊗ (B ⊗ C)) [ r , c ]                                              ∎
+\end{code}
+\AgdaHide{
+\begin{code}
+          where
+            factorˡ : ∀ r c →
+                      ((A ⊗ B) ⊗ C) [ r , c ] ≈
+                      Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+            factorˡ r c = reflexive (l∘t r c) ⟨ trans ⟩
+                          Σ.cong (ι n) P.refl (λ i → *-cong (reflexive (l∘t r i)) refl)
+
+            factorʳ : ∀ r c →
+                      (A ⊗ (B ⊗ C)) [ r , c ] ≈
+                      Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
+            factorʳ r c = reflexive (l∘t r c) ⟨ trans ⟩
+                          Σ.cong (ι n) P.refl (λ j → *-cong refl (reflexive (l∘t j c)))
+\end{code}
+}
+%TC:endignore
+
+\minisec{Left identity for matrix multiplication}
+
+%TC:ignore
+\begin{code}
+    ⊗-identityˡ : LeftIdentity _≋_ 1M _⊗_
+    ⊗-identityˡ A = ext ident
+      where
+        open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
+        p-step :  ∀ r c →
+                  Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] ≈
+                  Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
+        p-step r c = begin
+          Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (_≟F_ r)
+                         (λ i r≡i → reflexive (1M-diag r i r≡i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ (_≟F_ r) ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (ι n ∥ (_≟F_ r)) ⟩
+          1# * (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
+          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]         ∎
+
+        ¬p-step :  ∀ r c →
+                   Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+        ¬p-step r c = begin
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (∁-dec (_≟F_ r))
+                         (λ i r≢i → reflexive (1M-∁-diag r i r≢i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (ι n ∥ ∁-dec (_≟F_ r)) ⟩
+          0# * (Σ[ i ← ι n ∥ (∁-dec (_≟F_ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+          0#                                                 ∎
+
+        ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
+        ident r c = begin
+          (1M ⊗ A) [ r , c ]                                           ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                      ≈⟨ Σ.split-P _ (ι n) (_≟F_ r) ⟩
+          Σ[ i ← ι n ∥ (_≟F_ r) ]        1M [ r , i ] * A [ i , c ] +
+          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ p-step r c ⟨ +-cong ⟩ ¬p-step r c ⟩
+          (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ] + 0#)                   ≈⟨ proj₂ +-identity _ ⟩
+          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
+            ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+                       (ordinals-filterF z≤n (bounded r)) ⟩
+          Σ[ i ← L.[ r ] ] A [ i , c ]                                 ≈⟨ proj₂ +-identity _  ⟩
+          A [ r , c ]                                                  ∎
+\end{code}
+%TC:endignore
 
 \chapter{Evaluation}
 
