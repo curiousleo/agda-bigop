@@ -13,6 +13,8 @@ module SquareMatrixSemiringProof where
   import Data.Nat.Base as N
   open N using (ℕ; z≤n)
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
+  import Data.Vec as V using (lookup; tabulate)
+  open import Data.Vec.Properties using (lookup∘tabulate)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
   open import Level using (_⊔_)
@@ -67,7 +69,7 @@ module SquareMatrixSemiringProof where
     -- Definitions --
     -----------------
 
-    M : ℕ → Set _
+    M : ℕ → Set c
     M n = Matrix Carrier n n
 
     _≋_ : Rel (M n) (c ⊔ ℓ)
@@ -94,21 +96,9 @@ module SquareMatrixSemiringProof where
     1M : M n
     1M = tabulate diag
 
-    ------------
-    -- Proofs --
-    ------------
-
-    ≋-isEquivalence : IsEquivalence _≋_
-    ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
-      where
-        ≋-refl : Reflexive _≋_
-        ≋-refl = ext (λ r c → refl)
-
-        ≋-sym : Symmetric _≋_
-        ≋-sym (ext app) = ext (λ r c → sym (app r c))
-
-        ≋-trans : Transitive _≋_
-        ≋-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
+    ----------------------
+    -- Auxiliary lemmas --
+    ----------------------
 
     l∘t : ∀ {f : Fin n → Fin n → Carrier} r c →
           lookup r c (tabulate f) ≡ f r c
@@ -116,9 +106,6 @@ module SquareMatrixSemiringProof where
       P.trans (P.cong (V.lookup c)
                       (lookup∘tabulate (λ r → V.tabulate (f r)) r))
               (lookup∘tabulate (f r) c)
-      where
-        open import Data.Vec.Properties using (lookup∘tabulate)
-        import Data.Vec as V using (lookup; tabulate)
 
     1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
     1M-diag r .r P.refl = start
@@ -149,6 +136,21 @@ module SquareMatrixSemiringProof where
         diag-lemma (sucF r) zeroF    ¬eq = P.refl
         diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
 
+    ------------
+    -- Proofs --
+    ------------
+
+    ≋-isEquivalence : IsEquivalence _≋_
+    ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
+      where
+        ≋-refl : Reflexive _≋_
+        ≋-refl = ext (λ r c → refl)
+
+        ≋-sym : Symmetric _≋_
+        ≋-sym (ext app) = ext (λ r c → sym (app r c))
+
+        ≋-trans : Transitive _≋_
+        ≋-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
 
     ⊕-assoc : Associative _≋_ _⊕_
     ⊕-assoc A B C = ext assoc
@@ -177,16 +179,16 @@ module SquareMatrixSemiringProof where
           (A ⊕ (B ⊕ C)) [ r , c ]                    ∎
 
     ⊕-cong : _⊕_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
-    ⊕-cong {u} {v} {A} {B} (ext app₁) (ext app₂) = ext cong
+    ⊕-cong {A} {A′} {B} {B′} (ext app₁) (ext app₂) = ext cong
       where
         open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
 
-        cong : ∀ r c → (u ⊕ A) [ r , c ] ≈ (v ⊕ B) [ r , c ]
+        cong : ∀ r c → (A ⊕ B) [ r , c ] ≈ (A′ ⊕ B′) [ r , c ]
         cong r c = begin
-          (u ⊕ A) [ r , c ]         ≡⟨ l∘t r c ⟩
-          u [ r , c ] + A [ r , c ]  ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
-          v [ r , c ] + B [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
-          (v ⊕ B) [ r , c ] ∎
+          (A ⊕ B) [ r , c ]            ≡⟨ l∘t r c ⟩
+          A [ r , c ] + B [ r , c ]    ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
+          A′ [ r , c ] + B′ [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
+          (A′ ⊕ B′) [ r , c ]          ∎
 
     ⊕-identityˡ : LeftIdentity _≋_ 0M _⊕_
     ⊕-identityˡ A = ext ident
@@ -222,7 +224,7 @@ module SquareMatrixSemiringProof where
         z r c = begin
           (0M ⊗ A) [ r , c ]              ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] 0M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n})
+            ≈⟨ Σ.cong (ι n) P.refl
                       (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
           Σ[ i ← ι n ] 0# * A [ i , c ]  ≈⟨ sym (Σ.distrˡ _ 0# (ι n)) ⟩
           0# * (Σ[ i ← ι n ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
@@ -239,7 +241,7 @@ module SquareMatrixSemiringProof where
         z r c = begin
           (A ⊗ 0M) [ r , c ]              ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * 0M [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n})
+            ≈⟨ Σ.cong (ι n) P.refl
                       (λ i → *-cong refl (reflexive (l∘t i c))) ⟩
           Σ[ i ← ι n ] A [ r , i ] * 0#  ≈⟨ sym (Σ.distrʳ _ 0# (ι n)) ⟩
           (Σ[ i ← ι n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
@@ -259,7 +261,7 @@ module SquareMatrixSemiringProof where
           ((A ⊗ B) ⊗ C) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] (A ⊗ B) [ r , i ] * C [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
           Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
 
         factorʳ : ∀ r c →
@@ -269,7 +271,7 @@ module SquareMatrixSemiringProof where
           (A ⊗ (B ⊗ C)) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ j ← ι n ] A [ r , j ] * (B ⊗ C) [ j , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ j → *-cong refl (reflexive (l∘t j c))) ⟩
+            ≈⟨ Σ.cong (ι n) P.refl (λ j → *-cong refl (reflexive (l∘t j c))) ⟩
           Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎
 
         assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
@@ -277,14 +279,14 @@ module SquareMatrixSemiringProof where
           ((A ⊗ B) ⊗ C) [ r , c ]
             ≈⟨ factorˡ r c ⟩
           Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → Σ.distrʳ _ _ (ι n)) ⟩
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → Σ.distrʳ _ _ (ι n)) ⟩
           Σ[ i ← ι n ] Σ[ j ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
           Σ[ j ← ι n ] Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ j → begin
+            ≈⟨ Σ.cong (ι n) P.refl (λ j → begin
 
               Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-                ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-assoc _ _ _) ⟩
+                ≈⟨ Σ.cong (ι n) P.refl (λ i → *-assoc _ _ _) ⟩
               Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
                 ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
               A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎ ) ⟩
@@ -304,7 +306,7 @@ module SquareMatrixSemiringProof where
           (u ⊗ A) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] u [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → *-cong (app₁ r i) (app₂ i c)) ⟩
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → *-cong (app₁ r i) (app₂ i c)) ⟩
           Σ[ i ← ι n ] v [ r , i ] * B [ i , c ]
             ≡⟨ P.sym (l∘t r c) ⟩
           (v ⊗ B) [ r , c ] ∎
@@ -395,7 +397,7 @@ module SquareMatrixSemiringProof where
           (A ⊗ (B ⊕ C)) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → begin
 
               A [ r , i ] * (B ⊕ C) [ i , c ]
                 ≈⟨ *-cong refl (reflexive (l∘t i c)) ⟩
@@ -423,7 +425,7 @@ module SquareMatrixSemiringProof where
           ((A ⊕ B) ⊗ C) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] (A ⊕ B) [ r , i ] * C [ i , c ]
-            ≈⟨ Σ.cong (P.refl {x = ι n}) (λ i → begin
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → begin
 
               (A ⊕ B) [ r , i ] * C [ i , c ]
                 ≈⟨ *-cong (reflexive (l∘t r i)) refl ⟩

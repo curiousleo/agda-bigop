@@ -48,13 +48,14 @@ join f (x ∷ xs) ys = begin
    f x ∙  fold f (xs ++ ys)        ∎
 
 import Relation.Binary.PropositionalEquality as P
+open P using (_≡_)
 
-cong : ∀ {i} {I : Set i} {f g : I → R} {is : List I} {js : List I} →
-       is P.≡ js → (∀ x → f x ≈ g x) → fold f is ≈ fold g js
-cong             {is = []} P.refl fx≈gx = refl
-cong {f = f} {g} {i ∷ is}  P.refl fx≈gx = begin
+cong : ∀ {i} {I : Set i} {f g : I → R} (is : List I) {js : List I} →
+       is ≡ js → (∀ x → f x ≈ g x) → fold f is ≈ fold g js
+cong             []       P.refl fx≈gx = refl
+cong {f = f} {g} (i ∷ is) P.refl fx≈gx = begin
   f i ∙ fold f is
-    ≈⟨ ∙-cong (fx≈gx i) (cong (P.refl {x = is}) fx≈gx) ⟩
+    ≈⟨ ∙-cong (fx≈gx i) (cong is P.refl fx≈gx) ⟩
   g i ∙ fold g is ∎
 
 open import Bigop.Filter

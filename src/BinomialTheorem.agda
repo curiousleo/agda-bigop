@@ -85,10 +85,10 @@ module BinomialTheorem where
                    ⟨ trans ⟩ P.cong (fold (f (suc n))) (suc-lemma 0 (suc n)) ⟩
         Σ[ k ← 0 … n ] (suc n) choose (suc k) * x ^ (suc k)
           ≈⟨ Σ.cong {f = λ k → f (suc n) (suc k)}
-                    (P.refl {x = 0 … n}) (λ _ → refl) ⟩
+                    (0 … n) P.refl (λ _ → refl) ⟩
         Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
           ≈⟨ Σ.cong {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
-                    (P.refl {x = 0 … n})
+                    (0 … n) P.refl
                     (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
         Σ[ k ← 0 … n ] (n choose k * x ^ (suc k)
                         + n choose (suc k) * x ^ (suc k))
@@ -128,7 +128,7 @@ module BinomialTheorem where
 
       ➀ : Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≈ x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
       ➀ = begin
-        Σ[ k ← 0 … n ] n choose k * x ^ (suc k)  ≈⟨ Σ.cong (P.refl {x = 0 … n}) reorder ⟩
+        Σ[ k ← 0 … n ] n choose k * x ^ (suc k)  ≈⟨ Σ.cong (0 … n) P.refl reorder ⟩
         Σ[ k ← 0 … n ] x * (n choose k * x ^ k)  ≈⟨ sym $ Σ.distrˡ (f n) x (0 … n) ⟩
         x * (Σ[ k ← 0 … n ] n choose k * x ^ k)  ∎
 
