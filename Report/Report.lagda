@@ -9,9 +9,9 @@
 \usepackage{polyglossia}
 \setmainlanguage[variant=british]{english}
 \usepackage{fontspec}
-\setmainfont{erewhon}
-\setsansfont{Gillius ADF}[Scale=MatchLowercase]
-\setmonofont{Source Code Pro}[Scale=MatchLowercase]
+% \setmainfont{erewhon}
+% \setsansfont{Gillius ADF}[Scale=MatchLowercase]
+% \setmonofont{Source Code Pro}[Scale=MatchLowercase]
 \usepackage[]{unicode-math}
 
 \usepackage{bussproofs}
