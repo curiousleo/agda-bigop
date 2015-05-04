@@ -13,8 +13,6 @@ module SquareMatrixSemiringProof where
   import Data.Nat.Base as N
   open N using (ℕ; z≤n)
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
-  import Data.Vec as V using (lookup; tabulate)
-  open import Data.Vec.Properties using (lookup∘tabulate)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
   open import Level using (_⊔_)
@@ -69,22 +67,22 @@ module SquareMatrixSemiringProof where
     -- Definitions --
     -----------------
 
-    M : ℕ → Set c
-    M n = Matrix Carrier n n
+    M : Set c
+    M = Matrix Carrier n n
 
-    _≋_ : Rel (M n) (c ⊔ ℓ)
+    _≋_ : Rel M (c ⊔ ℓ)
     _≋_ = Pointwise _≈_
 
-    _⊕_ : Op₂ (M n)
+    _⊕_ : Op₂ M
     A ⊕ B = tabulate (λ r c → A [ r , c ] + B [ r , c ])
 
-    mult : M n → M n → Fin n → Fin n → Carrier
+    mult : M → M → Fin n → Fin n → Carrier
     mult A B r c = Σ[ i ← ι n ] A [ r , i ] * B [ i , c ]
 
-    _⊗_ : Op₂ (M n)
+    _⊗_ : Op₂ M
     A ⊗ B = tabulate (mult A B)
 
-    0M : M n
+    0M : M
     0M = tabulate (λ r c → 0#)
 
     diag : {n : ℕ} → Fin n → Fin n → Carrier
@@ -93,22 +91,17 @@ module SquareMatrixSemiringProof where
     diag (sucF r) zeroF    = 0#
     diag (sucF r) (sucF c) = diag r c
 
-    1M : M n
+    1M : M
     1M = tabulate diag
 
     ----------------------
     -- Auxiliary lemmas --
     ----------------------
 
-    l∘t : ∀ {f : Fin n → Fin n → Carrier} r c →
-          lookup r c (tabulate f) ≡ f r c
-    l∘t {f} r c =
-      P.trans (P.cong (V.lookup c)
-                      (lookup∘tabulate (λ r → V.tabulate (f r)) r))
-              (lookup∘tabulate (f r) c)
+    l∘t = lookup∘tabulate
 
-    1M-diag : ∀ r c → r ≡ c → 1M [ r , c ] ≡ 1#
-    1M-diag r .r P.refl = start
+    1M-diag : ∀ {r c} → r ≡ c → 1M [ r , c ] ≡ 1#
+    1M-diag {r} {.r} P.refl = start
       1M [ r , r ]  ≣⟨ l∘t r r ⟩
       diag r r      ≣⟨ diag-lemma r ⟩
       1#            □
@@ -118,10 +111,10 @@ module SquareMatrixSemiringProof where
         diag-lemma zeroF    = P.refl
         diag-lemma (sucF r) = diag-lemma r
 
-    1M-∁-diag : ∀ r c → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
-    1M-∁-diag r c eq with r ≟F c
-    1M-∁-diag r .r ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
-    1M-∁-diag r  c ¬eq | no  _      = start
+    1M-∁-diag : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
+    1M-∁-diag {r} {c}   eq with ≟ r c
+    1M-∁-diag {r} {.r} ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
+    1M-∁-diag {r} {c}  ¬eq | no  _      = start
       1M [ r , c ]  ≣⟨ l∘t r c ⟩
       diag r c      ≣⟨ diag-lemma r c ¬eq ⟩
       0#            □
@@ -251,7 +244,7 @@ module SquareMatrixSemiringProof where
     ⊗-assoc : Associative _≋_ _⊗_
     ⊗-assoc A B C = ext assoc
       where
-        open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong; zero)
+        open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
         factorˡ : ∀ r c →
@@ -274,6 +267,16 @@ module SquareMatrixSemiringProof where
             ≈⟨ Σ.cong (ι n) P.refl (λ j → *-cong refl (reflexive (l∘t j c))) ⟩
           Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎
 
+        inner : ∀ r c j →
+                Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
+                A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
+        inner r c j = begin
+          Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → *-assoc _ _ _) ⟩
+          Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
+            ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
+          A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎
+
         assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
         assoc r c = begin
           ((A ⊗ B) ⊗ C) [ r , c ]
@@ -283,14 +286,7 @@ module SquareMatrixSemiringProof where
           Σ[ i ← ι n ] Σ[ j ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.swap _ (ι n) (ι n) ⟩
           Σ[ j ← ι n ] Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-            ≈⟨ Σ.cong (ι n) P.refl (λ j → begin
-
-              Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-                ≈⟨ Σ.cong (ι n) P.refl (λ i → *-assoc _ _ _) ⟩
-              Σ[ i ← ι n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
-                ≈⟨ sym (Σ.distrˡ _ _ (ι n)) ⟩
-              A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ]) ∎ ) ⟩
-
+            ≈⟨ Σ.cong (ι n) P.refl (inner r c) ⟩
           Σ[ j ← ι n ] A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
             ≈⟨ sym $ factorʳ r c ⟩
           (A ⊗ (B ⊗ C)) [ r , c ] ∎
@@ -316,35 +312,41 @@ module SquareMatrixSemiringProof where
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
+          using (cong-P; split-P; distrˡ)
+
+        ≡-step : ∀ r c →  Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]
+        ≡-step r c = begin
+          Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (≟ r)
+                         (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (ι n ∥ ≟ r) ⟩
+          1# * (Σ[ i ← ι n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]         ∎
+
+        ≢-step : ∀ r c → Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+        ≢-step r c = begin
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (ι n) (∁′ (≟ r))
+                         (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (ι n ∥ ∁′ (≟ r)) ⟩
+          0# * (Σ[ i ← ι n ∥ (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+          0#                                            ∎
+
+        filter : ∀ r c → ι n ∥ ≟ r ≡ L.[ r ]
+        filter r c = ordinals-filterF z≤n (bounded r)
 
         ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
         ident r c = begin
-          (1M ⊗ A) [ r , c ]
-            ≡⟨ l∘t r c ⟩
-          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.split-P _ (ι n) (_≟F_ r) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1M [ r , i ] * A [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ +-cong
-                 (Σ.cong-P (ι n) (_≟F_ r)
-                           (λ i r≡i → *-cong (reflexive (1M-diag r i r≡i)) refl))
-                 (Σ.cong-P (ι n) (∁-dec (_≟F_ r))
-                           (λ i r≢i → *-cong (reflexive (1M-∁-diag r i r≢i)) refl)) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] 1# * A [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ r) ] 0# * A [ i , c ]
-            ≈⟨ sym $ +-cong (Σ.distrˡ _ 1# (ι n ∥ (_≟F_ r)))
-                            (Σ.distrˡ _ 0# (ι n ∥ ∁-dec (_≟F_ r))) ⟩
-          1# * (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]) +
-          0# * (Σ[ i ← ι n ∥ (∁-dec (_≟F_ r)) ] A [ i , c ])
-            ≈⟨ +-cong (proj₁ *-identity _) (proj₁ zero _) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ] + 0#)
-            ≈⟨ proj₂ +-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ r) ] A [ i , c ]
-            ≡⟨ P.cong (Σ-syntax (λ i → A [ i , c ]))
-                      (ordinals-filterF z≤n (bounded r)) ⟩
-          Σ[ i ← L.[ r ] ] A [ i , c ]
-            ≈⟨ proj₂ +-identity _  ⟩
-          A [ r , c ] ∎
+          (1M ⊗ A) [ r , c ]                                     ≡⟨ l∘t r c ⟩
+          Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                ≈⟨ Σ.split-P _ (ι n) (≟ r) ⟩
+          Σ[ i ← ι n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
+          Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+                                                                            (filter r c) ⟩
+          A [ r , c ] + 0#                                       ≈⟨ proj₂ +-identity _  ⟩
+          A [ r , c ]                                            ∎
 
     ⊗-identityʳ : RightIdentity _≋_ 1M _⊗_
     ⊗-identityʳ A = ext ident
@@ -360,26 +362,26 @@ module SquareMatrixSemiringProof where
           (A ⊗ 1M) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * 1M [ i , c ]
-            ≈⟨ Σ.split-P _ (ι n) (_≟F_ c) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ] * 1M [ i , c ] +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] A [ r , i ] * 1M [ i , c ]
+            ≈⟨ Σ.split-P _ (ι n) (≟ c) ⟩
+          Σ[ i ← ι n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
+          Σ[ i ← ι n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
             ≈⟨ +-cong
-                 (Σ.cong-P (ι n) (_≟F_ c)
+                 (Σ.cong-P (ι n) (≟ c)
                            (λ i c≡i → *-cong refl
-                                             (reflexive (1M-diag i c (P.sym c≡i)))))
-                 (Σ.cong-P (ι n) (∁-dec (_≟F_ c))
+                                             (reflexive (1M-diag (P.sym c≡i)))))
+                 (Σ.cong-P (ι n) (∁′ (≟ c))
                            (λ i c≢i → *-cong refl
-                                             (reflexive (1M-∁-diag i c (∁-sym c≢i))))) ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ] * 1# +
-          Σ[ i ← ι n ∥ ∁-dec (_≟F_ c) ] A [ r , i ] * 0#
-            ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (ι n ∥ (_≟F_ c)))
-                            (Σ.distrʳ _ 0# (ι n ∥ ∁-dec (_≟F_ c))) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]) * 1# +
-          (Σ[ i ← ι n ∥ (∁-dec (_≟F_ c)) ] A [ r , i ]) * 0#
+                                             (reflexive (1M-∁-diag (∁-sym c≢i))))) ⟩
+          Σ[ i ← ι n ∥ (≟ c) ] A [ r , i ] * 1# +
+          Σ[ i ← ι n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
+            ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (ι n ∥ (≟ c)))
+                            (Σ.distrʳ _ 0# (ι n ∥ ∁′ (≟ c))) ⟩
+          (Σ[ i ← ι n ∥ (≟ c) ] A [ r , i ]) * 1# +
+          (Σ[ i ← ι n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
             ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
-          (Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]) + 0#
+          (Σ[ i ← ι n ∥ (≟ c) ] A [ r , i ]) + 0#
             ≈⟨ proj₂ +-identity _ ⟩
-          Σ[ i ← ι n ∥ (_≟F_ c) ] A [ r , i ]
+          Σ[ i ← ι n ∥ (≟ c) ] A [ r , i ]
             ≡⟨ P.cong (Σ-syntax (λ i → A [ r , i ]))
                       (ordinals-filterF z≤n (bounded c)) ⟩
           Σ[ i ← L.[ c ] ] A [ r , i ]
@@ -392,19 +394,21 @@ module SquareMatrixSemiringProof where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
+        inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
+                          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
+        inner r c i = begin
+          A [ r , i ] * (B ⊕ C) [ i , c ]
+            ≈⟨ *-cong refl (reflexive (l∘t i c)) ⟩
+          A [ r , i ] * (B [ i , c ] + C [ i , c ])
+            ≈⟨ proj₁ distrib _ _ _ ⟩
+          (A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]) ∎
+
         distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
         distr r c = begin
           (A ⊗ (B ⊕ C)) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]
-            ≈⟨ Σ.cong (ι n) P.refl (λ i → begin
-
-              A [ r , i ] * (B ⊕ C) [ i , c ]
-                ≈⟨ *-cong refl (reflexive (l∘t i c)) ⟩
-              A [ r , i ] * (B [ i , c ] + C [ i , c ])
-                ≈⟨ proj₁ distrib _ _ _ ⟩
-              (A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]) ∎)⟩
-
+            ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
           Σ[ i ← ι n ] ((A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]))
             ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
           Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
