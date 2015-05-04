@@ -41,6 +41,7 @@
 \newunicodechar{∃}{\ensuremath{∃}}
 \newunicodechar{λ}{\ensuremath{λ}}
 \newunicodechar{≡}{\ensuremath{≡}}
+\newunicodechar{≢}{\ensuremath{≢}}
 \newunicodechar{×}{\ensuremath{×}}
 \newunicodechar{⊗}{\ensuremath{⊗}}
 \newunicodechar{∣}{\ensuremath{∣}}
@@ -58,7 +59,8 @@
 \newunicodechar{≣}{\ensuremath{≣}}
 \newunicodechar{ˡ}{\ensuremath{^{l}}}
 \newunicodechar{ʳ}{\ensuremath{^{r}}}
-
+\newunicodechar{➀}{\ensuremath{➀}}
+\newunicodechar{➁}{\ensuremath{➁}}
 
 \hypersetup{
   pdftitle={Big Operators in Agda},
@@ -509,7 +511,10 @@ where
 
 \chapter{Square matrices over semirings}
 
-Square matrices of a particular size whose elements belong to the carrier of a semiring together with matrix addition and multiplication defined using the addition and multiplication of the element semiring again form a semiring.
+% XXX Things that will have to be explained for this chapter to make sense:
+% ∀-notation; open ... using notation; all the lemmas in Bigop.Properties; ℕ and Fin; pattern matching; the Matrix library (representation as Vec of Vecs; tabulate; lookup; syntax); universe levels and ⊔; REL A B ℓ; implicit arguments; records (constructors and fields); how algebraic structures publicly export / import the properties of their substructures; equational reasoning; propositional equality implies any other kind of equivalence via `reflexive`; binary operators and mixfix operators _⊕_ and _[_,_]
+
+Square matrices over semirings are again semirings. Spelling this out in more detail, square matrices of a particular size whose elements belong to the carrier of a semiring together with matrix addition and multiplication defined using the addition and multiplication of the element semiring again form a semiring.
 
 Proving this fact using the library developed in this project was the success criterion set in the project proposal. This chapter describes the proof and how it makes use of the \AgdaModule{Bigop} library.
 
@@ -552,14 +557,14 @@ The proof starts by defining an equivalence relation for matrices.\footnote{To b
 
 %TC:ignore
 \begin{code}
-  record Pointwise {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
-                   {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
+  record Pointwise  {a b ℓ} {A : Set a} {B : Set b} (_∼_ : REL A B ℓ)
+                    {m n} (x : Matrix A m n) (y : Matrix B m n) : Set (a ⊔ b ⊔ ℓ) where
     constructor ext
     field app : (r : Fin m) (c : Fin n) → x [ r , c ] ∼ y [ r , c ]
 \end{code}
 %TC:endignore
 
-This definition can be read as follows: in order to show that the \AgdaDatatype{Pointwise} relation holds between two matrices, we must give a function which for any row index \AgdaBound{r} and any column index \AgdaBound{c} and returns evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
+This definition can be read as follows: in order to show that the \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} relation holds between two matrices, we must give a function which for any row index \AgdaBound{r} and any column index \AgdaBound{c} and returns evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
 
 The remainder of the proof resides in a module that is parameterised over the size \AgdaBound{n} of the matrices and the underlying semiring.
 
@@ -569,7 +574,7 @@ The remainder of the proof resides in a module that is parameterised over the si
 \end{code}
 %TC:endignore
 
-To begin, we bring the underlying semiring with its special elements, operators, induced substructures and carrier type into scope. \emph{Induced substructures} are the weaker structures that can automatically be derived from the given structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we forget about the commutative law.
+To begin, we bring the underlying semiring with its carrier type, special elements, operators and substructures into scope. Here \emph{substructures} refers to the weaker structures that can automatically be derived from the a given algebraic structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we forget about the commutative law.
 
 Semirings contain many induced substructures. In the following, the ones we are interested in are brought into scope explicitly: the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
 
@@ -594,7 +599,6 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
 
     open import Relation.Binary.EqReasoning setoid
     open P.≡-Reasoning
-      using ()
       renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 \end{code}
 
@@ -605,12 +609,12 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
 }
 %TC:endignore
 
-\AgdaDatatype{M} \AgdaBound{n} is defined as a shortcut for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring.
+\AgdaDatatype{M} a shortcut for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring.
 
 %TC:ignore
 \begin{code}
-    M : ℕ → Set c
-    M n = Matrix Carrier n n
+    M : Set c
+    M = Matrix Carrier n n
 \end{code}
 %TC:endignore
 
@@ -618,16 +622,16 @@ We call the pointwise relation between two square matrices of the same size \Agd
 
 %TC:ignore
 \begin{code}
-    _≋_ : Rel (M n) (c ⊔ ℓ)
+    _≋_ : Rel M (c ⊔ ℓ)
     _≋_ = Pointwise _≈_
 \end{code}
 %TC:endignore
 
-We are now ready to define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
+Next, we define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix.
 
 %TC:ignore
 \begin{code}
-    _⊕_ : Op₂ (M n)
+    _⊕_ : M → M → M
     A ⊕ B = tabulate (λ r c → A [ r , c ] + B [ r , c ])
 \end{code}
 %TC:endignore
@@ -636,10 +640,10 @@ Using Σ-syntax, multiplication can be defined in a concise way.
 
 %TC:ignore
 \begin{code}
-    mult : M n → M n → Fin n → Fin n → Carrier
+    mult : M → M → Fin n → Fin n → Carrier
     mult A B r c = Σ[ i ← ι n ] A [ r , i ] * B [ i , c ]
 
-    _⊗_ : Op₂ (M n)
+    _⊗_ : M → M → M
     A ⊗ B = tabulate (mult A B)
 \end{code}
 %TC:endignore
@@ -650,7 +654,7 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 
 %TC:ignore
 \begin{code}
-    0M : M n
+    0M : M
     0M = tabulate (λ r c → 0#)
 \end{code}
 %TC:endignore
@@ -660,12 +664,12 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 %TC:ignore
 \begin{code}
     diag : {n : ℕ} → Fin n → Fin n → Carrier
-    diag  zeroF     zeroF     =  1#
-    diag  zeroF     (sucF c)  =  0#
-    diag  (sucF r)  zeroF     =  0#
-    diag  (sucF r)  (sucF c)  =  diag r c
+    diag  zeroF     zeroF     =  1#        -- r ≡ c
+    diag  zeroF     (sucF c)  =  0#        -- r ≢ c
+    diag  (sucF r)  zeroF     =  0#        -- r ≢ c
+    diag  (sucF r)  (sucF c)  =  diag r c  -- recursive case
 
-    1M : M n
+    1M : M
     1M = tabulate diag
 \end{code}
 %TC:endignore
@@ -679,15 +683,13 @@ One of the most important lemmas in this file, \AgdaFunction{l∘t}, shows that 
 %TC:ignore
 \begin{code}
     l∘t : ∀ {f : Fin n → Fin n → Carrier} r c → lookup r c (tabulate f) ≡ f r c
-    -- Proof omitted.
+    l∘t {f} r c = start
+      V.lookup c (V.lookup r (V.tabulate (V.tabulate ∘ f)))
+        ≣⟨ P.cong (V.lookup c) (lookup∘tabulate (V.tabulate ∘ f) r) ⟩
+      V.lookup c (V.tabulate (f r))
+        ≣⟨ lookup∘tabulate (f r) c ⟩
+      f r c □
 \end{code}
-\AgdaHide{
-\begin{code}
-    l∘t {f} r c = P.trans  (P.cong  (V.lookup c)
-                                    (lookup∘tabulate (λ r → V.tabulate (f r)) r))
-                           (lookup∘tabulate (f r) c)
-\end{code}
-}
 %TC:endignore
 
 The next two lemmas show that the elements of the identity matrix \AgdaFunction{1M} are equal to \AgdaFunction{1\#} on the diagonal and \AgdaFunction{0\#} everywhere else.
@@ -738,17 +740,7 @@ The next two lemmas show that the elements of the identity matrix \AgdaFunction{
 
 \minisec{\AgdaDatatype{\_≋\_} is an equivalence relation}
 
-For \AgdaDatatype{\_≋\_} to be an equivalence relation, it needs to be reflexive, symmetric and transitive. All three properties follow directly from the fact that the underlying element-wise relation \AgdaDatatype{\_≈\_} is an equivalence relation.
-
-Let us consider symmetry as an example. The property \AgdaFunction{Symmetric} \AgdaDatatype{\_≋\_} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. Now since \AgdaDatatype{\_≋\_} has only one constructor, any evidence \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} must be of the form \AgdaInductiveConstructor{ext} \AgdaBound{app} with \AgdaBound{app} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This allows us to pattern match on the argument to \AgdaFunction{≋-sym} to extract \AgdaBound{app}.
-
-In order to construct an element of \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, we must supply the constructor \AgdaInductiveConstructor{ext} with a function of type \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This can be achieved by abstracting over \AgdaBound{r} and \AgdaBound{c} and then applying \AgdaBound{app} \AgdaBound{r} \AgdaBound{c} to \AgdaFunction{sym}, the symmetry law of the underlying equivalence. Our symmetry proof for \AgdaDatatype{\_≋\_} is therefore
-
-\[\text{
-\AgdaFunction{≋-sym} \AgdaSymbol{(}\AgdaInductiveConstructor{ext} \AgdaBound{app}\AgdaSymbol{)} \AgdaSymbol{=} \AgdaInductiveConstructor{ext} \AgdaSymbol{(λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}
-}\]
-
-Reflexivity and transitivity are proved in a similar fashion.
+For \AgdaDatatype{\_≋\_} to be an equivalence relation, it needs to be reflexive, symmetric and transitive. All three properties follow directly from the fact that the underlying element-wise relation \AgdaDatatype{\_≈\_} is an equivalence.
 
 %TC:ignore
 \begin{code}
@@ -766,11 +758,31 @@ Reflexivity and transitivity are proved in a similar fashion.
 \end{code}
 %TC:endignore
 
+Let us consider symmetry in more detail. The property \AgdaFunction{Symmetric} \AgdaDatatype{\_≋\_} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. Since \AgdaDatatype{\_≋\_} has only one constructor, any evidence \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} must be of the form \AgdaInductiveConstructor{ext} \AgdaBound{app} with \AgdaBound{app} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This allows us to pattern match on the argument to \AgdaFunction{≋-sym} to extract \AgdaBound{app}.
+
+In order to construct an element of \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, we must supply the constructor \AgdaInductiveConstructor{ext} with a function of type \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This can be achieved by abstracting over \AgdaBound{r} and \AgdaBound{c} and then applying the symmetry law of the underlying equivalence \AgdaFunction{sym} to \AgdaBound{app} \AgdaBound{r} \AgdaBound{c} like so:
+\begin{align*}
+\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{app} \AgdaBound{r} \AgdaBound{c}}
+  &\;\AgdaSymbol{:}\; \text{\AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
+\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{)}}
+  &\;\AgdaSymbol{:}\; \text{\AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
+\text{\AgdaInductiveConstructor{ext} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}}
+  &\;\AgdaSymbol{:}\; \text{\AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}} \\
+\end{align*}
+Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
+
+\[\text{
+\AgdaFunction{≋-sym} \AgdaSymbol{(}\AgdaInductiveConstructor{ext} \AgdaBound{app}\AgdaSymbol{)} \AgdaSymbol{=} \AgdaInductiveConstructor{ext} \AgdaSymbol{(λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}
+}\]
+
+Reflexivity and transitivity are proved in a similar fashion.
+
+
 \minisec{Associativity of matrix addition}
 
-The first algebraic proof shows that matrix addition is associative, that is, \((A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)\). Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence is straightforward: unfold the definition of \AgdaFunction{\_⊕\_}; use associativity of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
+Our first algebraic proof shows that matrix addition is associative, that is, \((A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)\). Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence is straightforward: unfold the definition of \AgdaFunction{\_⊕\_}; use associativity of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
 
-Auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} take care of the bookkeeping.
+The auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simply unfold the nested matrix additions.
 
 %TC:ignore
 \begin{code}
@@ -802,7 +814,7 @@ Since the only law used in this proof is \AgdaFunction{+-assoc}, the semigroup o
 
 \minisec{Congruence of matrix addition}
 
-Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{preservation of equivalence} or \emph{congruence} and must be proved for each function.
+Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{congruence} or \emph{preservation of equivalence} and must be proved for each function.
 
 Here we prove that matrix addition preserves equivalence, that is, \(A ≋ A′ ∧ B ≋ B′ ⇒ A ⊕ B ≋ A′ ⊕ B′\).
 
@@ -891,7 +903,7 @@ This proof is more involved than the associativity proof for matrix addition. Th
     && \text{by the definition of ⊗}
 \end{align}
 
-Again, we use the appropriate congruence rules to replace equals by equals within terms. Steps (3.4) and (3.5) have been factored into a separate function \AgdaFunction{inner} to make the proof more readable.
+In the Agda proof, we use the appropriate congruence rules to replace subterms by equivalent subterms. Steps (3.4) and (3.5) have been factored into a separate function \AgdaFunction{inner} to make the proof more readable.
 
 %TC:ignore
 \begin{code}
@@ -899,7 +911,8 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
     ⊗-assoc A B C = ext assoc
       where
         open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
-        module Σ = Props.SemiringWithoutOne semiringWithoutOne using (cong; swap; distrˡ; distrʳ)
+        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+          using (cong; swap; distrˡ; distrʳ)
 
         inner : ∀ r c j →  Σ[ i ← ι n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
                            A [ r , j ] * (Σ[ i ← ι n ] B [ j , i ] * C [ i , c ])
@@ -938,7 +951,7 @@ Again, we use the appropriate congruence rules to replace equals by equals withi
 
 \minisec{Left-distributivity}
 
-XXX
+This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{B} \AgdaFunction{⊕} \AgdaBound{C}\AgdaSymbol{)} \AgdaDatatype{≋} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{B}\AgdaSymbol{)} \AgdaFunction{⊕} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{C}\AgdaSymbol{)}. Most of \AgdaFunction{distr} is concerned with unfolding the definition of \AgdaFunction{\_⊕\_} and \AgdaFunction{\_⊗\_}. The crucial step in the proof is the application of the left-distributivity law of the underlying semiring in \AgdaFunction{inner} (1) followed by the use of \AgdaFunction{Σ.split} in \AgdaFunction{distr} (2), splitting the sum into two.
 
 %TC:ignore
 \begin{code}
@@ -946,13 +959,14 @@ XXX
     ⊗-distrOverˡ-⊕ A B C = ext distr
       where
         open Semiring semiring using (*-cong; distrib)
-        module Σ = Props.SemiringWithoutOne semiringWithoutOne
+        module Σ = Props.CommutativeMonoid +-commutativeMonoid
+          using (cong; split)
 
         inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
                           A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
         inner r c i = begin
           A [ r , i ] * (B ⊕ C) [ i , c ]                        ≈⟨ refl ⟨ *-cong ⟩ reflexive (l∘t i c) ⟩
-          A [ r , i ] * (B [ i , c ] + C [ i , c ])              ≈⟨ proj₁ distrib _ _ _ ⟩
+{- 1 -}   A [ r , i ] * (B [ i , c ] + C [ i , c ])              ≈⟨ proj₁ distrib _ _ _ ⟩
           A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]  ∎
 
         distr : ∀ r c → (A ⊗ (B ⊕ C)) [ r , c ] ≈ ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
@@ -960,7 +974,7 @@ XXX
           (A ⊗ (B ⊕ C)) [ r , c ]                       ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
           Σ[ i ← ι n ] (  A [ r , i ] * B [ i , c ] +
-                          A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
+{- 2 -}                   A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
           Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
           Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]        ≡⟨ P.sym $ l∘t r c ⟨ P.cong₂ _+_ ⟩ l∘t r c ⟩
           (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]         ≡⟨ P.sym $ l∘t r c ⟩
@@ -973,16 +987,16 @@ XXX
 
 This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \AgdaFunction{⊗} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A} for all \AgdaBound{A}. The key idea here is that for any term involving \AgdaFunction{1M}, it makes sense to case split on whether the row \AgdaBound{r} and column \AgdaBound{c} are equal. If they are, then \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#} by \AgdaFunction{1M-diag}. If not, then by \AgdaFunction{1M-∁-diag} we have \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}.
 
-In \AgdaFunction{ident}, after unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaFunction{ι} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≈} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≉} \AgdaBound{i} separately.
+In \AgdaFunction{ident}, after unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaFunction{ι} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i} separately.
 
-\AgdaFunction{≈-step} deals with the first case. From \AgdaBound{r} \AgdaFunction{≈} \AgdaBound{i} follows \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#}. Using distributivity and the identity law for \AgdaFunction{\_*\_}, we can deduce that
+The function \AgdaFunction{≡-step} deals with the first case. From \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} follows \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#}. Using distributivity and the identity law for \AgdaFunction{\_*\_}, we can deduce that
 
 \[ \text{
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
 }\]
 
-Otherwise, \AgdaFunction{≉-step} assumes that \AgdaBound{r} \AgdaFunction{≉} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. Then by distributivity and the \AgdaFunction{zero} law of the underlying semiring, it follows that
+Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. By distributivity and the \AgdaFunction{zero} law of the underlying semiring we then have
 
 \[ \text{
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaFunction{ι} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{∁′} (\AgdaFunction{≟} \AgdaBound{r}) \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
@@ -1000,9 +1014,9 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
           using (cong-P; split-P; distrˡ)
 
-        ≈-step : ∀ r c →  Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+        ≡-step : ∀ r c →  Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
                           Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]
-        ≈-step r c = begin
+        ≡-step r c = begin
           Σ[ i ← ι n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
             ≈⟨ Σ.cong-P  (ι n) (≟ r)
                          (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
@@ -1010,8 +1024,8 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
           1# * (Σ[ i ← ι n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
           Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]         ∎
 
-        ≉-step : ∀ r c → Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
-        ≉-step r c = begin
+        ≢-step : ∀ r c → Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+        ≢-step r c = begin
           Σ[ i ← ι n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
             ≈⟨ Σ.cong-P  (ι n) (∁′ (≟ r))
                          (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
@@ -1027,7 +1041,7 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
           (1M ⊗ A) [ r , c ]                                     ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                ≈⟨ Σ.split-P _ (ι n) (≟ r) ⟩
           Σ[ i ← ι n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
-          Σ[ i ← ι n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≈-step r c ⟨ +-cong ⟩ ≉-step r c ⟩
+          Σ[ i ← ι n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
           Σ[ i ← ι n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
           Σ[ i ← ι n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
                                                                             (filter r c) ⟩
