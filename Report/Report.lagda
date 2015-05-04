@@ -507,6 +507,76 @@ where
 % ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
 % \end{verbatim}
 
+\section{Matrices}
+
+In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first. This module is independent from the rest of the project.
+
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module ReportMatrix where
+
+  open import Data.Fin using (Fin)
+  open import Data.Nat.Base using (ℕ)
+  import Data.Vec as V
+  open V using (Vec)
+  import Data.Vec.Properties as VP
+  open import Function using (_∘_)
+  import Relation.Binary.PropositionalEquality as P
+  open P using (_≡_)
+  open P.≡-Reasoning
+\end{code}
+}
+%TC:endignore
+
+A matrix is defined as a vector of row vectors over some carrier type. \AgdaFunction{Matrix} \AgdaBound{A} \AgdaBound{r} \AgdaBound{c} is the type of \(r × c\) matrices over carrier \AgdaBound{A}.
+
+%TC:ignore
+\begin{code}
+  Matrix : ∀ {a} (A : Set a) → ℕ → ℕ → Set a
+  Matrix A r c = Vec (Vec A c) r
+\end{code}
+%TC:endignore
+
+\AgdaFunction{lookup} \AgdaBound{i} \AgdaBound{j} \AgdaBound{m} returns the \(j\)th element of row \(i\) of the matrix \AgdaBound{m}, as expected. The second function allows us to write \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{j} \AgdaFunction{]} instead.
+
+%TC:ignore
+\begin{code}
+  lookup : ∀ {r c a} {A : Set a} → Fin r → Fin c → Matrix A r c → A
+  lookup i j m = V.lookup j (V.lookup i m)
+
+  _[_,_] : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
+  m [ i , j ] = lookup i j m
+\end{code}
+%TC:endignore
+
+\AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element of the matrix by applying that function to each position in the matrix. As an example, the transposition function is included too. Note how the change in the shape of the matrix is reflected in the return type of the function, where the number of rows and columns are swapped.
+
+%TC:ignore
+\begin{code}
+  tabulate : ∀ {r c a} {A : Set a} → (Fin r → Fin c → A) → Matrix A r c
+  tabulate f = V.tabulate (λ r → V.tabulate (λ c → f r c))
+
+  transpose : ∀ {r c a} {A : Set a} → Matrix A r c → Matrix A c r
+  transpose m = tabulate (λ c r → lookup r c m)
+\end{code}
+%TC:endignore
+
+Lastly, the lemma \AgdaFunction{lookup∘tabulate} shows that if a matrix was created by tabulating a function \AgdaBound{f}, then looking up the element at row \AgdaBound{i} and column \AgdaBound{j} returns \AgdaBound{f} \AgdaBound{i} \AgdaBound{j}. The proof uses a similar lemma for vectors, \AgdaFunction{VP.lookup∘tabulate}.
+
+%TC:ignore
+\begin{code}
+  lookup∘tabulate :  ∀ {a n} {A : Set a} {f : Fin n → Fin n → A} i j →
+                     lookup i j (tabulate f) ≡ f i j
+  lookup∘tabulate {f = f} i j = begin
+    V.lookup j (V.lookup i (V.tabulate (V.tabulate ∘ f)))
+      ≡⟨ P.cong (V.lookup j) (VP.lookup∘tabulate (V.tabulate ∘ f) i) ⟩
+    V.lookup j (V.tabulate (f i))
+      ≡⟨ VP.lookup∘tabulate (f i) j ⟩
+    f i j ∎
+\end{code}
+%TC:endignore
+
 \section{Differences to big operators in Coq}
 
 \chapter{Square matrices over semirings}
@@ -536,8 +606,6 @@ module SquareMatrixSemiringProof where
   import Data.Nat.Base as N
   open N using (ℕ; z≤n)
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
-  import Data.Vec as V using (lookup; tabulate)
-  open import Data.Vec.Properties using (lookup∘tabulate)
   open import Function
   open import Function.Equivalence as Equiv using (_⇔_)
   open import Level using (_⊔_)
@@ -547,6 +615,8 @@ module SquareMatrixSemiringProof where
   open import Relation.Binary
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
+
+  l∘t = lookup∘tabulate
 \end{code}
 }
 %TC:endignore
@@ -677,20 +747,6 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 This concludes the preliminary definitions.
 
 \section{Auxiliary lemmas}
-
-One of the most important lemmas in this file, \AgdaFunction{l∘t}, shows that if a matrix was created by tabulating a function \AgdaBound{f}, then looking up the element at row \AgdaBound{r} and column \AgdaBound{c} returns \AgdaBound{f} \AgdaBound{r} \AgdaBound{c}. The proof uses a similar lemma for vectors, \AgdaFunction{lookup∘tabulate}.
-
-%TC:ignore
-\begin{code}
-    l∘t : ∀ {f : Fin n → Fin n → Carrier} r c → lookup r c (tabulate f) ≡ f r c
-    l∘t {f} r c = start
-      V.lookup c (V.lookup r (V.tabulate (V.tabulate ∘ f)))
-        ≣⟨ P.cong (V.lookup c) (lookup∘tabulate (V.tabulate ∘ f) r) ⟩
-      V.lookup c (V.tabulate (f r))
-        ≣⟨ lookup∘tabulate (f r) c ⟩
-      f r c □
-\end{code}
-%TC:endignore
 
 The next two lemmas show that the elements of the identity matrix \AgdaFunction{1M} are equal to \AgdaFunction{1\#} on the diagonal and \AgdaFunction{0\#} everywhere else.
 
