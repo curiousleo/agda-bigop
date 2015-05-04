@@ -3,6 +3,7 @@ module Matrix where
 open import Data.Fin using (Fin)
 open import Data.Nat.Base using (ℕ)
 import Data.Vec as V
+open V using (Vec)
 import Data.Vec.Properties as VP
 open import Function using (_∘_)
 import Relation.Binary.PropositionalEquality as P
@@ -13,7 +14,7 @@ open P.≡-Reasoning
 -- The type of r × c matrices over carrier type A
 
 Matrix : ∀ {a} (A : Set a) → ℕ → ℕ → Set a
-Matrix A r c = V.Vec (V.Vec A c) r
+Matrix A r c = Vec (Vec A c) r
 
 ------------------------------------------------------------------------
 -- Looking up values in a matrix
