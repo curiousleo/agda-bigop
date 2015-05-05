@@ -6,7 +6,7 @@ open import Data.List.Base using (List; _∷_; [])
 open import Relation.Nullary using (yes; no)
 open import Relation.Unary using (Pred; Decidable; ∁)
 
-infix 5 _∥_
+infixl 5 _∥_
 
 _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → List I
 []       ∥ dec = []
@@ -16,11 +16,12 @@ _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → 
 
 -- equivalent to `filter (⌊_⌋ ∘ dec) is`
 
-∁-dec : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → Decidable P → Decidable (∁ P)
-∁-dec p x with p x
-∁-dec p x | yes q = no (λ ¬q → ¬q q)
-∁-dec p x | no ¬q = yes (λ q → ¬q q)
+∁′ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → Decidable P → Decidable (∁ P)
+∁′ p x with p x
+∁′ p x | yes q = no (λ ¬q → ¬q q)
+∁′ p x | no ¬q = yes (λ q → ¬q q)
 
+open import Function using (_⟨_⟩_)
 open import Data.Nat.Base using (ℕ) renaming (zero to zeroℕ; suc to sucℕ)
 open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
 open import Relation.Binary using () renaming (Decidable to BDecidable)
@@ -28,14 +29,14 @@ open import Relation.Binary.Core using (_≡_)
 import Relation.Binary.PropositionalEquality as P
 open import Relation.Nullary
 
-_≟F_ : {n : ℕ} → BDecidable {A = Fin n} _≡_
-_≟F_ {zeroℕ}  ()       ()
-_≟F_ {sucℕ n} zeroF    zeroF    = yes P.refl
-_≟F_ {sucℕ n} zeroF    (sucF q) = no (λ ())
-_≟F_ {sucℕ n} (sucF p) zeroF    = no (λ ())
-_≟F_ {sucℕ n} (sucF p) (sucF  q) with p ≟F q
-_≟F_ {sucℕ n} (sucF p) (sucF .p) | yes P.refl = yes P.refl
-_≟F_ {sucℕ n} (sucF p) (sucF  q) | no ¬eq = no (suc-lemma ¬eq)
+≟ : {n : ℕ} → BDecidable {A = Fin n} _≡_
+≟ {zeroℕ}  ()       ()
+≟ {sucℕ n} zeroF    zeroF    = yes P.refl
+≟ {sucℕ n} zeroF    (sucF q) = no (λ ())
+≟ {sucℕ n} (sucF p) zeroF    = no (λ ())
+≟ {sucℕ n} (sucF p) (sucF  q) with ≟ p q
+≟ {sucℕ n} (sucF p) (sucF .p) | yes P.refl = yes P.refl
+≟ {sucℕ n} (sucF p) (sucF  q) | no ¬eq = no (suc-lemma ¬eq)
   where
     open import Data.Empty
     suc-lemma : {n : ℕ} {p q : Fin n} →
