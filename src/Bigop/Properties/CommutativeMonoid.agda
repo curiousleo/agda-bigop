@@ -57,11 +57,10 @@ perm f (i ∷ is) = begin
       reverse (j ∷ js) ∷ʳ i □
 -}
 
-split : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
+merge : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
          fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
-       -- Σ[ k ← is $ f k ] + Σ[ k ← is $ g k ] ≡ Σ[ k ← is $ f k + g k ]
-split f g [] = proj₁ ident _
-split f g (i ∷ is) = begin
+merge f g [] = proj₁ ident _
+merge f g (i ∷ is) = begin
   (f i ∙ fold f is) ∙ (g i ∙ fold g is)
     ≈⟨ assoc (f i) (fold f is) (g i ∙ fold g is) ⟩
   f i ∙ (fold f is ∙ (g i ∙ fold g is))
@@ -80,7 +79,7 @@ split f g (i ∷ is) = begin
       (g i ∙ fold f is) ∙ fold g is
         ≈⟨ assoc (g i) (fold f is) (fold g is) ⟩
       g i ∙ (fold f is ∙ fold g is)
-        ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ split f g is ⟩
+        ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ merge f g is ⟩
       g i ∙ fold (λ i → f i ∙ g i) is ∎
 
 swap : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → R)
@@ -92,45 +91,45 @@ swap f (x ∷ xs) ys = begin
   fold (f x) ys ∙ fold (λ j → fold (f j) ys) xs
     ≈⟨ refl {fold (f x) ys} ⟨ ∙-cong ⟩ swap f xs ys ⟩
   fold (f x) ys ∙ fold (λ i → fold (flip f i) xs) ys
-    ≈⟨ split (f x) (λ i → fold (flip f i) xs) ys ⟩
+    ≈⟨ merge (f x) (λ i → fold (flip f i) xs) ys ⟩
   fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
 
-open import Bigop.Filter using (_∥_; ∁-dec)
+open import Bigop.Filter using (_∥_; ∁′)
 
 split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
           (p : Decidable P) →
-          fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p)
+          fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p)
 split-P f [] p = sym (proj₁ ident _)
 split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
   f i ∙ fold f is                                 ≈⟨ ∙-cong refl (split-P f is p) ⟩
-  f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))  ≈⌊ i ∈ p ⌋⟨ split-yes ⟩⟨ split-no ⟩
-  fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p)  ∎
+  f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))  ≈⌊ i ∈ p ⌋⟨ split-yes ⟩⟨ split-no ⟩
+  fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)  ∎
   where
     open import Bigop.Filter.PredicateReasoning
     import Relation.Binary.PropositionalEquality as P
     open import Bigop.Ordinals.Properties
     open import Relation.Nullary.Decidable
 
-    split-yes : P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
-                      ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p)
+    split-yes : P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
+                      ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
     split-yes pi = begin
-      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
         ≈⟨ sym (assoc _ _ _) ⟩
-      fold f (i ∷ (is ∥ p)) ∙ fold f (is ∥ ∁-dec p)
+      fold f (i ∷ (is ∥ p)) ∙ fold f (is ∥ ∁′ p)
         ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-yes i is p pi))
                                (P.cong (fold f) (head-∁-yes i is p pi)) ⟩
-      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
+      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
 
-    split-no : ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
-                       ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p)
+    split-no : ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
+                       ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
     split-no ¬pi = begin
-      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁-dec p))
+      f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
         ≈⟨ ∙-cong refl (comm _ _) ⟩
-      f i ∙ (fold f (is ∥ ∁-dec p) ∙ fold f (is ∥ p))
+      f i ∙ (fold f (is ∥ ∁′ p) ∙ fold f (is ∥ p))
         ≈⟨ sym (assoc _ _ _) ⟩
-      fold f (i ∷ (is ∥ ∁-dec p)) ∙ fold f (is ∥ p)
+      fold f (i ∷ (is ∥ ∁′ p)) ∙ fold f (is ∥ p)
         ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-∁-no i is p ¬pi))
                                (P.cong (fold f) (head-no i is p ¬pi)) ⟩
-      fold f (i ∷ is ∥ ∁-dec p) ∙ fold f (i ∷ is ∥ p)
+      fold f (i ∷ is ∥ ∁′ p) ∙ fold f (i ∷ is ∥ p)
         ≈⟨ comm _ _ ⟩
-      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁-dec p) ∎
+      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
