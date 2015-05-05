@@ -64,7 +64,7 @@ module BinomialTheorem where
                   + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
   split x n = begin
     Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-      ≈⟨ sym $ Σ.map (f x (suc n)) suc (λ _ → refl) (0 … n)
+      ≈⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl)
                ⟨ trans ⟩ P.cong (fold (f x (suc n))) (suc-lemma 0 (suc n)) ⟩
     Σ[ k ← 0 … n ] (suc n) choose (suc k) * x ^ (suc k)
       ≈⟨ Σ.cong {f = λ k → f x (suc n) (suc k)}
@@ -75,8 +75,8 @@ module BinomialTheorem where
                     (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
     Σ[ k ← 0 … n ] (n choose k * x ^ (suc k)
                         + n choose (suc k) * x ^ (suc k))
-      ≈⟨ sym $ Σ.split (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
-                           (0 … n) ⟩
+      ≈⟨ sym $ Σ.merge (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
+                       (0 … n) ⟩
     Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
         + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ∎
 
@@ -102,7 +102,7 @@ module BinomialTheorem where
 
   choose-suc : ∀ x n → Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≈ Σ[ k ← 1 … n ] n choose k * x ^ k
   choose-suc x n  = begin
-    Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)   ≈⟨ Σ.map (f x n) suc (λ k → refl) (0 … n) ⟩
+    Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)   ≈⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
     Σ[ k ← map suc (0 … n) ] n choose k * x ^ k     ≡⟨ P.cong (fold $ f x n) (suc-lemma 0 (suc n)) ⟩
     Σ[ k ← 1 … suc n ] n choose k * x ^ k           ≡⟨ P.cong (fold $ f x n) (suc-last-lemma 1 n) ⟩
     Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k  ≈⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
