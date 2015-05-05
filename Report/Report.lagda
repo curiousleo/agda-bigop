@@ -941,7 +941,7 @@ Using Σ-syntax, multiplication can be defined in a concise way.
 \end{code}
 %TC:endignore
 
-Note how the definition of \AgdaFunction{mult} resembles the component-wise definition of matrix multiplication in standard mathematical notation, \[(A\,B)_{r,c} = \sum_{i \leftarrow \iota\ n} A_{r,i}\,B_{i,c}\]
+Note how the definition of \AgdaFunction{mult} resembles the component-wise definition of matrix multiplication in standard mathematical notation, \[(A\,B)_{r,c} = \sum_{i ← ι\ n} A_{r,i}\,B_{i,c}\]
 
 The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihilator for matrix multiplication. All its elements are set to the zero element of the underlying semiring.
 
@@ -1230,7 +1230,7 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
 
 \minisec{Left-distributivity}
 
-This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{B} \AgdaFunction{⊕} \AgdaBound{C}\AgdaSymbol{)} \AgdaDatatype{≋} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{B}\AgdaSymbol{)} \AgdaFunction{⊕} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{C}\AgdaSymbol{)}. Most of \AgdaFunction{distr} is concerned with unfolding the definition of \AgdaFunction{\_⊕\_} and \AgdaFunction{\_⊗\_}. The crucial step in the proof is the application of the left-distributivity law of the underlying semiring in \AgdaFunction{inner} (1) followed by the use of \AgdaFunction{Σ.split} in \AgdaFunction{distr} (2), splitting the sum into two.
+This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{B} \AgdaFunction{⊕} \AgdaBound{C}\AgdaSymbol{)} \AgdaDatatype{≋} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{B}\AgdaSymbol{)} \AgdaFunction{⊕} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{C}\AgdaSymbol{)}. Most of \AgdaFunction{distr} is concerned with unfolding the definition of \AgdaFunction{\_⊕\_} and \AgdaFunction{\_⊗\_}. The crucial step in the proof is the application of the left-distributivity law of the underlying semiring in \AgdaFunction{inner} (1) followed by the use of \AgdaFunction{Σ.merge} in \AgdaFunction{distr} (2), splitting the sum into two.
 
 %TC:ignore
 \begin{code}
@@ -1239,7 +1239,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
       where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.CommutativeMonoid +-commutativeMonoid
-          using (cong; split)
+          using (cong; merge)
 
         inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
                           A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
@@ -1253,7 +1253,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
           (A ⊗ (B ⊕ C)) [ r , c ]                       ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
           Σ[ i ← ι n ] (  A [ r , i ] * B [ i , c ] +
-{- 2 -}                   A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.split _ _ (ι n) ⟩
+{- 2 -}                   A [ r , i ] * C [ i , c ])    ≈⟨ sym $ Σ.merge _ _ (ι n) ⟩
           Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
           Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]        ≡⟨ P.sym $ l∘t r c ⟨ P.cong₂ _+_ ⟩ l∘t r c ⟩
           (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]         ≡⟨ P.sym $ l∘t r c ⟩
