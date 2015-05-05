@@ -15,8 +15,8 @@ even : Decidable Even
 even 0 = yes zero-even
 even 1 = no (λ ())
 even (suc (suc n)) with even n
-even (suc (suc n)) | yes p = yes (ss-even p)
-even (suc (suc n)) | no ¬p = no (ss-odd ¬p)
+... | yes p = yes (ss-even p)
+... | no ¬p = no (ss-odd ¬p)
   where
     ss-odd : ∀ {n} → ¬ Even n → ¬ Even (suc (suc n))
     ss-odd ¬ps (ss-even p) = ⊥-elim (¬ps p)
@@ -29,8 +29,8 @@ odd : Decidable Odd
 odd 0 = no (λ ())
 odd 1 = yes one-odd
 odd (suc (suc n)) with odd n
-odd (suc (suc n)) | yes p = yes (ss-odd p)
-odd (suc (suc n)) | no ¬p = no (ss-even′ ¬p)
+... | yes p = yes (ss-odd p)
+... | no ¬p = no (ss-even′ ¬p)
   where
     ss-even′ : ∀ {n} → ¬ Odd n → ¬ Odd (suc (suc n))
     ss-even′ ¬ps (ss-odd p) = ⊥-elim (¬ps p)
