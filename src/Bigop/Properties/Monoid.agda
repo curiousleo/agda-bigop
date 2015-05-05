@@ -6,14 +6,18 @@ open import Bigop.Core
 -- open import Bigop.Filter
 
 open import Data.List.Base as L hiding (map)
+open import Data.List.Any using (here; there; module Membership)
+open Membership using (_∈_)
 open import Data.Product hiding (map)
 open import Function
-open import Relation.Unary
+open import Relation.Unary hiding (_∈_)
 
 open Monoid M renaming (Carrier to R; identity to ident)
 open import Relation.Binary.EqReasoning setoid
+import Relation.Binary.PropositionalEquality as P
+open P using (_≡_)
 
-open Fold M
+open Fold M using (crush; fold)
 
 last : ∀ {i} {I : Set i} (f : I → R) (x : I) (xs : List I) →
          fold f (xs ∷ʳ x) ≈ fold f xs ∙ f x
@@ -38,6 +42,15 @@ map {f = f} g h fx≈ghx (x ∷ xs) = begin
   f x     ∙ (crush ∘ L.map f) xs              ≈⟨ fx≈ghx x ⟨ ∙-cong ⟩ map g h fx≈ghx xs ⟩
   g (h x) ∙ (crush ∘ (L.map g ∘ L.map h)) xs  ∎
 
+map′ : ∀ {i j} {I : Set i} {J : Set j} {f : I → R} (g : J → R) (h : I → J) →
+      (xs : List I) → (∀ x → _∈_ (P.setoid I) x xs → f x ≈ g (h x)) →
+      fold f xs ≈ fold g (L.map h xs)
+map′ g h [] fx≈ghx = refl
+map′ {f = f} g h (x ∷ xs) fx≈ghx = begin
+  f x ∙ (crush ∘ L.map f) xs ≈⟨ fx≈ghx x (here P.refl) ⟨ ∙-cong ⟩
+                                map′ g h xs (λ x elt → fx≈ghx x (there elt)) ⟩
+  g (h x) ∙ (crush ∘ (L.map g ∘ L.map h)) xs ∎
+
 join : ∀ {i} → {I : Set i} (f : I → R) (xs : List I) (ys : List I) →
        fold f xs ∙ fold f ys ≈ fold f (xs ++ ys)
 join f []       ys = proj₁ ident _
@@ -46,14 +59,19 @@ join f (x ∷ xs) ys = begin
    f x ∙ (fold f xs  ∙ fold f ys)  ≈⟨ ∙-cong refl (join f xs ys) ⟩
    f x ∙  fold f (xs ++ ys)        ∎
 
-import Relation.Binary.PropositionalEquality as P
-open P using (_≡_)
-
 cong : ∀ {i} {I : Set i} {f g : I → R} (is : List I) {js : List I} →
        is ≡ js → (∀ x → f x ≈ g x) → fold f is ≈ fold g js
 cong             []       P.refl fx≈gx = refl
 cong {f = f} {g} (x ∷ xs) P.refl fx≈gx = begin
   f x ∙ fold f xs  ≈⟨ fx≈gx x ⟨ ∙-cong ⟩ cong xs P.refl fx≈gx ⟩
+  g x ∙ fold g xs  ∎
+
+cong′ : ∀ {i} {I : Set i} {f g : I → R} (is : List I) {js : List I} →
+       is ≡ js → (∀ x → _∈_ (P.setoid I) x is → f x ≈ g x) → fold f is ≈ fold g js
+cong′             []       P.refl fx≈gx = refl
+cong′ {f = f} {g} (x ∷ xs) P.refl fx≈gx = begin
+  f x ∙ fold f xs  ≈⟨ fx≈gx x (here P.refl) ⟨ ∙-cong ⟩
+                      cong′ xs P.refl (λ x elt → fx≈gx x (there elt)) ⟩
   g x ∙ fold g xs  ∎
 
 open import Bigop.Filter
