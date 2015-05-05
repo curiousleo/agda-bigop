@@ -595,14 +595,6 @@ XXX: insert table
 
 commutative monoids:
 
-\begin{align*}
-\bigodot_{i \leftarrow \textit{Idx}} \left(f(i) \odot g(i)\right)
-&\equiv
-\left(\bigodot_{i \leftarrow \textit{Idx}} f(i) \right) \odot \left(\bigodot_{i \leftarrow \textit{Idx}} g(i)\right) \\
-\bigodot_{i \leftarrow \textit{Idx}_0} \left(\bigodot_{j \leftarrow \textit{Idx}_1} f(i,j)\right)
-&\equiv
-\bigodot_{j \leftarrow \textit{Idx}_1} \left(\bigodot_{i \leftarrow \textit{Idx}_0} f(i,j)\right)
-\end{align*}
 
 + congruence lemmas.
 
@@ -668,9 +660,8 @@ module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
 \quad&\equiv\quad \text{\AgdaBound{ε}}
 \end{align*}
 
-\section{Ordinals}
-
 Since this library was created with matrix algebra in mind, the most important index type is (bounded) natural numbers, and the most important lists contain consecutive natural numbers.
+
 
 \section{Filters}
 
@@ -696,6 +687,48 @@ where
 % \begin{verbatim}
 % ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
 % \end{verbatim}
+
+\section{Monoid lemmas}
+
+Monoids are endowed with an identity and an associativity law. Based on these two properties, there are a few things we can say about what happens when the monoid's binary operator is lifted into a big operator.
+
+\minisec{Lifted identity}
+
+The identity law can be lifted to give the following equivalence for the monoid's big operator:
+
+% \[\bigodot_{i ← \textit{Idx}}ε &≡ ε\]
+
+\[
+\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{is} \AgdaFunction{]} \AgdaFunction{ε} \AgdaDatatype{≈} \AgdaFunction{ε}}
+\]
+
+\minisec{Distributivity over \AgdaFunction{\_++\_}}
+
+It follows from the monoid associativity law that the big operator distributes over the list append function \AgdaFunction{\_++\_} as follows:
+
+\[\text{
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{++} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaFunction{+} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i}
+}\]
+
+\minisec{Congruence}
+
+\section{Commutative monoid lemmas}
+
+\begin{align*}
+\bigodot_{i ← \textit{Idx}} \left(f(i) \odot g(i)\right)
+&≡
+\left(\bigodot_{i ← \textit{Idx}} f(i) \right) \odot \left(\bigodot_{i ← \textit{Idx}} g(i)\right) && \text{merge} \\
+\bigodot_{i ← \textit{Idx}_0} \left(\bigodot_{j ← \textit{Idx}_1} f(i,j)\right)
+&≡
+\bigodot_{j ← \textit{Idx}_1} \left(\bigodot_{i ← \textit{Idx}_0} f(i,j)\right) && \text{swap} \\
+\bigodot_{i ← \textit{Idx}} f(i)
+&≡
+\left( \bigodot_{\substack{i ← \textit{Idx} \\ p\ i}} f(i) \right) ⊙ \left( \bigodot_{\substack{i ← \textit{Idx} \\ ¬ p\ i}} f(i) \right) && \text{split-P}
+\end{align*}
+
+\section{\enquote{Semiring without one} lemmas}
+
+\section{Ordinals}
 
 \section{Matrices}
 
