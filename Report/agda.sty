@@ -345,6 +345,14 @@
 {\endpboxed\par\noindent%
 \ignorespacesafterend}
 
+\RequirePackage{mdframed, xcolor}
+
+\mdfdefinestyle{agdamdf}%
+{backgroundcolor=black!3!white,
+hidealllines=true}
+
+\surroundwithmdframed[style=agdamdf]{code}
+
 % Default column for polytable.
 \defaultcolumn{@{~}l@{~}}
 
