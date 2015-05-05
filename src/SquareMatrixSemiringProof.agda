@@ -26,7 +26,7 @@ module SquareMatrixSemiringProof where
   record Pointwise {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
                    {m n} (A : Matrix S m n) (B : Matrix T m n) : Set (s ⊔ t ⊔ ℓ) where
     constructor ext
-    field app : ∀ r c → lookup r c A ∼ lookup r c B
+    field app : ∀ r c → A [ r , c ] ∼ B [ r , c ]
 
   PW-equivalent : ∀ {ℓ} {S T : Set ℓ} {_~_ : REL S T ℓ} {m n}
                   {A : Matrix S m n} {B : Matrix T m n} →
@@ -36,7 +36,7 @@ module SquareMatrixSemiringProof where
       to : PW.Pointwise (PW.Pointwise _~_) A B → Pointwise _~_ A B
       to (PW.ext app) = ext cong
         where
-          cong : ∀ r c → lookup r c A ~ lookup r c B
+          cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
           cong r c with app r
           cong r c | PW.ext app′ = app′ c
 
@@ -410,7 +410,7 @@ module SquareMatrixSemiringProof where
           Σ[ i ← ι n ] A [ r , i ] * (B ⊕ C) [ i , c ]
             ≈⟨ Σ.cong (ι n) P.refl (inner r c)⟩
           Σ[ i ← ι n ] ((A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]))
-            ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
+            ≈⟨ sym (Σ.merge _ _ (ι n)) ⟩
           Σ[ i ← ι n ] A [ r , i ] * B [ i , c ] +
           Σ[ i ← ι n ] A [ r , i ] * C [ i , c ]
             ≡⟨ P.sym $ P.cong₂ _+_ (l∘t r c) (l∘t r c) ⟩
@@ -438,7 +438,7 @@ module SquareMatrixSemiringProof where
               (A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]) ∎)⟩
 
           Σ[ i ← ι n ] ((A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]))
-            ≈⟨ sym (Σ.split _ _ (ι n)) ⟩
+            ≈⟨ sym (Σ.merge _ _ (ι n)) ⟩
           Σ[ i ← ι n ] A [ r , i ] * C [ i , c ] +
           Σ[ i ← ι n ] B [ r , i ] * C [ i , c ]
             ≡⟨ P.sym $ P.cong₂ _+_ (l∘t r c) (l∘t r c) ⟩
