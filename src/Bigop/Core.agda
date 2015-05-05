@@ -2,18 +2,18 @@ module Bigop.Core where
 
 open import Algebra
 
-module Fold {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
+module Fold {c ℓ} (M : Monoid c ℓ) where
 
   open import Data.List using (List; foldr; map)
   open import Function using (_∘_)
 
   open Monoid M renaming (Carrier to R)
 
-  fold : (I → R) → List I → R
+  crush : List R → R
+  crush = foldr _∙_ ε
+
+  fold : ∀ {i} → {I : Set i} → (I → R) → List I → R
   fold f = crush ∘ map f
-    where
-      crush : List R → R
-      crush = foldr _∙_ ε
 
   -- An equivalent definition would be
   --   fold f = foldr (λ x y → (f x) ∙ y) ε
