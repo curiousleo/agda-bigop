@@ -3,13 +3,14 @@ module Bigop.Ordinals.Properties where
 open import Bigop.Ordinals
 open import Bigop.Filter
 
-open import Data.List.Base
+import Data.List.Base as L
+open L
 open import Function
 open import Data.Empty using (⊥-elim)
 open import Data.Nat.Base as N hiding (_⊔_; _<_)
 open import Data.Nat.Properties.Simple
 -- open import Data.Nat
--- open import Data.Fin hiding (_+_; _≤_)
+open import Data.Fin hiding (_+_; _≤_; lift)
 -- open import Data.Fin.Properties renaming (_≟_ to _≟F_)
 open import Relation.Nullary
 open import Relation.Nullary.Decidable hiding (map)
@@ -41,7 +42,7 @@ head-yes x _ p px | yes _  = refl
 head-yes x _ p px | no ¬px = ⊥-elim (¬px px)
 
 head-∁-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-             P x → (x ∷ xs) ∥ ∁-dec p ≡ xs ∥ ∁-dec p
+             P x → (x ∷ xs) ∥ ∁′ p ≡ xs ∥ ∁′ p
 head-∁-yes x _ p px with p x
 head-∁-yes x _ p px | yes _  = refl
 head-∁-yes x _ p px | no ¬px = ⊥-elim (¬px px)
@@ -53,7 +54,7 @@ head-no x xs p ¬px | yes px = ⊥-elim (¬px px)
 head-no x xs p ¬px | no  _  = refl
 
 head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-            ¬ P x → (x ∷ xs) ∥ ∁-dec p ≡ x ∷ (xs ∥ ∁-dec p)
+            ¬ P x → (x ∷ xs) ∥ ∁′ p ≡ x ∷ (xs ∥ ∁′ p)
 head-∁-no x xs p px with p x
 head-∁-no x xs p px | yes ¬px = ⊥-elim (px ¬px)
 head-∁-no x xs p px | no  _   = refl
@@ -119,7 +120,8 @@ open import Data.Bool.Base
 open import Data.List.All hiding (head; tail; tabulate; map; lookup)
 open import Data.Product hiding (map)
 
-open import Data.Vec hiding ([_])
+import Data.Vec as V
+open V hiding ([_])
 
 All-Vec : ∀ {a p n} → {A : Set a} (P : A → Set p) → Vec A n → Set (p ⊔ a)
 All-Vec P xs = All P (toList xs)
@@ -192,10 +194,10 @@ open import Data.Fin using (toℕ; inject+; inject≤; inject₁; fromℕ)
 
 postulate
   ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                     fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
+                     fromLenF m n ∥ (≟ k) ≡ [ k ]
 
 open import Data.Nat using () renaming (_≟_ to _≟N_)
-open import Data.Maybe hiding (map)
+open import Data.Maybe hiding (map; All)
 
 headMaybe : ∀ {a} → {A : Set a} → List A → Maybe A
 headMaybe []      = nothing
@@ -225,9 +227,9 @@ ordinals-filterℕ {n = n} m≤k k<m+n | no ¬p = {!!}
 -}
 {-
 ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                   fromLenF m n ∥ (_≟F_ k) ≡ [ k ]
+                   fromLenF m n ∥ (≟ k) ≡ [ k ]
 ordinals-filterF {m} {n} {k} m≤k k<m+n = begin
-  fromLenF m n ∥ (_≟F_ k)
+  fromLenF m n ∥ (≟ k)
     ≡⌊ m ~ toℕ k by compare ⌋⟨ filter< ⟩⟨ filter≈ ⟩⟨ filter> ⟩
   [ k ] ∎
   where
@@ -237,13 +239,13 @@ ordinals-filterF {m} {n} {k} m≤k k<m+n = begin
     open import Data.Nat.Properties using (strictTotalOrder)
     open StrictTotalOrder strictTotalOrder
 
-    filter< : m < toℕ k → ¬ m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter< : m < toℕ k → ¬ m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ ≟ k ≡ [ k ]
     filter< m<k ¬m≈k ¬m>k = {!!}
 
-    filter≈ : ¬ m < toℕ k → m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter≈ : ¬ m < toℕ k → m ≈ toℕ k → ¬ toℕ k < m → fromLenF m n ∥ ≟ k ≡ [ k ]
     filter≈ ¬m<k m≈k ¬m>k = {!m≈k!}
 
-    filter> : ¬ m < toℕ k → ¬ m ≈ toℕ k → toℕ k < m → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+    filter> : ¬ m < toℕ k → ¬ m ≈ toℕ k → toℕ k < m → fromLenF m n ∥ ≟ k ≡ [ k ]
     filter> ¬m<k ¬m≈k m>k = {!!}
 -}
 
@@ -267,7 +269,7 @@ fromLenF-head : ∀ {m n} → headMaybe (fromLenF m (suc n)) ≡ just (inject+ {
 fromLenF-head {m} {n} = {!!}
 
 ordinals-∉ : ∀ {m n k} → k N.< m → (k<m+n : k N.< (m + n)) →
-             fromLenF m n ∥ (_≟F_ (fromℕ≤ k<m+n)) ≡ []
+             fromLenF m n ∥ (≟ (fromℕ≤ k<m+n)) ≡ []
 ordinals-∉ {m} {n} {k} k<m k<m+n with fromLenF m n
 ordinals-∉ k<m k<m+n | [] = refl
 ordinals-∉ {m} k<m k<m+n | x ∷ xs = {!x!}
@@ -280,9 +282,9 @@ ordinals-uniqueF m≤k k<m+n | no ¬p = {!!}
 
 
 ordinals-filterF′ : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
-                    fromLenF m n ∥ (_≟F_ (fromℕ≤ k<m+n)) ≡ [ fromℕ≤ k<m+n ]
+                    fromLenF m n ∥ (≟ (fromℕ≤ k<m+n)) ≡ [ fromℕ≤ k<m+n ]
 ordinals-filterF′ {m} {n} {k} m≤k k<m+n = begin
-  fromLenF m n ∥ (_≟F_ k′)
+  fromLenF m n ∥ (≟ k′)
     ≡⌊ m ~ k by compare ⌋⟨ filter< ⟩⟨ filter≈ ⟩⟨ filter> ⟩
   [ k′ ] ∎
   where
@@ -294,18 +296,17 @@ ordinals-filterF′ {m} {n} {k} m≤k k<m+n = begin
 
     k′ = fromℕ≤ k<m+n
 
-    filter< : m < k → ¬ m ≈ k → ¬ k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter< : m < k → ¬ m ≈ k → ¬ k < m → fromLenF m n ∥ ≟ k′ ≡ [ k′ ]
     filter< m<k ¬m≈k ¬m>k = {!!} -- recurse
 
-    filter≈ : ¬ m < k → m ≈ k → ¬ k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter≈ : ¬ m < k → m ≈ k → ¬ k < m → fromLenF m n ∥ ≟ k′ ≡ [ k′ ]
     filter≈ ¬m<k m≈k ¬m>k = {!m≈k!} -- change tactic
 
-    filter> : ¬ m < k → ¬ m ≈ k → k < m → fromLenF m n ∥ _≟F_ k′ ≡ [ k′ ]
+    filter> : ¬ m < k → ¬ m ≈ k → k < m → fromLenF m n ∥ ≟ k′ ≡ [ k′ ]
     filter> ¬m<k ¬m≈k m>k = {!!} -- absurd
 -}
 
-open import Data.Fin
-open import Data.Vec
+open import Data.Fin hiding (compare)
 
 []=-tabulate : ∀ {n a} {A : Set a} (f : Fin n → A) i → tabulate f [ i ]= f i
 []=-tabulate f zero    = here
@@ -319,14 +320,14 @@ raise-inj₂ zero    i .i refl = refl
 raise-inj₂ (suc n) i  j eq   = raise-inj₂ n i j (suc-inj (raise n i) (raise n j) eq)
   where
     suc-inj : ∀ {k} (i j : Fin k) → Data.Fin.suc i ≡ suc j → i ≡ j
-    suc-inj i j eq with i ≟F j
+    suc-inj i j eq with ≟ i j
     suc-inj _       _        _    | yes p = p
     suc-inj zero    zero     refl | no ¬p = ⊥-elim (¬p refl)
     suc-inj zero    (suc _)  ()   | no ¬p
     suc-inj (suc _) zero     ()   | no ¬p
     suc-inj (suc _) (suc ._) refl | no ¬p = ⊥-elim (¬p refl)
 
-ι-lemma′ : ∀ from {len} n → raise from n Data.Vec.∈ ι-fin-vec from (suc len)
+ι-lemma′ : ∀ from {len} n → raise from n V.∈ ι-fin-vec from (suc len)
 ι-lemma′ from n = ∈-tabulate (raise from) n
   where
     open import Data.Vec.Properties
