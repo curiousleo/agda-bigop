@@ -118,33 +118,27 @@ module BinomialTheorem where
     1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)  ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
     1 + Σ[ k ← 1 … n ] n choose k * x ^ k              ≈⟨ refl ⟩
     Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k            ≈⟨ P.cong (fold $ f x n) (suc-head-lemma 0 n) ⟩
-      Σ[ k ← 0 … n ] n choose k * x ^ k                ∎
+    Σ[ k ← 0 … n ] n choose k * x ^ k                  ∎
 
   proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n
   proof x 0       = refl
   proof x (suc n) = begin
-    1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-      ≈⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
+    1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k        ≈⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
     1 + (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
          + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-      ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+                                                           ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
     Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-    + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-      ≈⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
+    + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))  ≈⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
       x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-    +      Σ[ k ← 0 … n ] n choose k * x ^ k
-      ≈⟨ +-cong (refl {x = x * _})
-                (sym $ proj₁ *-identity (Σ[ k ← 0 … n ] f x n k)) ⟩
+    +      Σ[ k ← 0 … n ] n choose k * x ^ k               ≈⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
       x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-    + 1 * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-      ≈⟨ sym $ distribʳ _ x 1 ⟩
-    (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-      ≈⟨ *-cong (+-comm x 1) (proof x n) ⟩
+    + 1 * (Σ[ k ← 0 … n ] n choose k * x ^ k)              ≈⟨ sym $ distribʳ _ x 1 ⟩
+    (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)          ≈⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
     (1 + x) * (1 + x) ^ n ∎
 
 module RowSum where
 
-  proof : ∀ m r → Σ[ k ← 0 …+ m ] r choose k * (r ∸ 2 * k) ≈ m * r choose m
+  proof : ∀ m r → Σ[ k ← 0 …+ m ] (2 + r) choose k * (r * k) ≈ m * (2 + r) choose m
   proof 0       r = refl
   proof (suc m) r = {!!}
 
