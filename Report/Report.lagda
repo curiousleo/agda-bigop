@@ -124,7 +124,7 @@ Truth values (booleans) can be defined in Agda as follows:
 \end{code}
 %TC:endignore
 
-\AgdaDatatype{Bool} is a type, so its type (after the colon) is \AgdaPrimitiveType{Set}, the type of (simple) types. \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{false} are the two constructors for this type.
+\AgdaDatatype{Bool} is a type, so its type (after the colon) is \AgdaPrimitiveType{Set}, the type of (simple) types. \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{false} are its constructors.
 
 Let us now write a function using this newly introduced datatype. \AgdaFunction{negate} flips the Boolean passed to it.
 
@@ -138,7 +138,7 @@ Let us now write a function using this newly introduced datatype. \AgdaFunction{
 
 Like any top-level function, \AgdaFunction{negate} must be annotated with its type. It takes a \AgdaDatatype{Bool} and returns a \AgdaDatatype{Bool}, so the type of the function as a whole is \AgdaDatatype{Bool} \AgdaSymbol{→} \AgdaDatatype{Bool}. The function is defined by pattern matching: the result of the function is the term on the right-hand side of the equality sign if its input matches the left-hand side.
 
-Note that the pattern matching must cover all possible cases. More generally speaking, all functions must be \emph{total}, that is, defined on all inputs of its argument types.
+Note that the pattern matching must cover all possible cases. More generally speaking, all Agda functions must be \emph{total}, that is, defined on all values of its argument types.
 
 %TC:ignore
 \begin{code}
@@ -214,7 +214,7 @@ Here the carrier type of the list is instantiated as \AgdaPrimitiveType{Set}, wh
 
 \minisec{Dependent types}
 
-We now turn to the classic example of a dependent datatype: fixed-length lists, or \emph{vectors}.
+We now turn to the classic example of a dependent datatype: lists of known length, or \emph{vectors}.
 
 %TC:ignore
 \begin{code}
@@ -226,7 +226,7 @@ We now turn to the classic example of a dependent datatype: fixed-length lists, 
 
 The parameters (on the left-hand side of the colon in the type declaration) are the same as for \AgdaDatatype{List}, a type level \AgdaBound{a} and a type \AgdaBound{A}. Note that we have not specified the type of \AgdaBound{a}---Agda infers that it must be a level. In addition to the parameters, the type \AgdaDatatype{Vec} is \emph{indexed} by a natural number. This is why there is a \AgdaDatatype{ℕ} on the right-hand side of the colon. While parameters are the same for all constructors, indices may differ: the constructor \AgdaInductiveConstructor{[]} returns a zero-length vector, while \AgdaInductiveConstructor{\_∷\_} takes an element and a vector of length \AgdaBound{n} and returns a vector of length \AgdaInductiveConstructor{suc} \AgdaBound{n}.
 
-The vector append function \AgdaFunction{\_++\_} demonstrates how dependent types can be used to write (partially) verified code. It takes two vectors of length \AgdaBound{m} and \AgdaBound{n}, respectively, and returns a vector of length \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}. The fact that the type checker accepts the definition of this function means that the length of the vector that is returned really is the sum of the lengths of the input vector, always. This gives us some reassurance that the function does something sensible.
+The vector append function \AgdaFunction{\_++\_} demonstrates how dependent types can be used to write (partially) verified code. It takes two vectors of length \AgdaBound{m} and \AgdaBound{n}, respectively, and returns a vector of length \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}. The fact that the type checker accepts the definition of this function means that the length of the vector that is returned always is the sum of the lengths of the input vector. This gives us some reassurance that the function does something sensible.
 
 %TC:ignore
 \begin{code}
@@ -237,50 +237,52 @@ The vector append function \AgdaFunction{\_++\_} demonstrates how dependent type
 \end{code}
 %TC:endignore
 
-The type declaration of \AgdaFunction{\_++\_} uses three implicit arguments. Their types are completely determined by the way they are used. We can thus shorten the type declaration up to the first arrow to \AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{a} \AgdaBound{m} \AgdaBound{n}\AgdaSymbol{\}} and let Agda infer the types of \AgdaBound{a}, \AgdaBound{m} and \AgdaBound{n}.
+The type declaration of \AgdaFunction{\_++\_} includes three implicit arguments whose types are determined by how they are used: \AgdaBound{a}, \AgdaBound{m} and \AgdaBound{n}. We can thus shorten the type declaration up to the first arrow to \AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{a} \AgdaBound{m} \AgdaBound{n}\AgdaSymbol{\}} and let Agda infer their types.
 
 Two more ways exist in Agda to declare new types in addition to \AgdaKeyword{data} definitions. Firstly, functions can accept types as arguments and return them too. As an example, we can define the type of three-element vectors like so:
 
 %TC:ignore
 \begin{code}
-  Triplet : ∀ {a} → (A : Set a) → Set a
+  Triplet : ∀ {a} → Set a → Set a
   Triplet A = Vec A (suc (suc (suc zero)))
 \end{code}
 %TC:endignore
 
 \minisec{Record types}
 
-The \AgdaKeyword{record} keyword lets us define product types in a convenient manner. A non-dependent pair type could be defined like this:
+The \AgdaKeyword{record} keyword lets us define product types in a convenient manner. A dependent pair type could be defined like this:
 
 %TC:ignore
 \begin{code}
-  record Pair {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
+  record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
     constructor _,_
     field
       fst  : A
-      snd  : B
+      snd  : B fst
 \end{code}
 %TC:endignore
 
-The level of this type is the least upper bound of \AgdaBound{a} and \AgdaBound{b} to accomodate fields at levels \AgdaBound{a} and \AgdaBound{b}, written as \AgdaBound{a} \AgdaFunction{⊔} \AgdaBound{b}. Giving a \AgdaKeyword{constructor} is optional but necessary for pattern matching. It also makes defining new values less verbose:
+The level of this type is the least upper bound of \AgdaBound{a} and \AgdaBound{b} (written as \AgdaBound{a} \AgdaFunction{⊔} \AgdaBound{b}) to accomodate fields at levels \AgdaBound{a} and \AgdaBound{b}. Giving a \AgdaKeyword{constructor} is optional but necessary for pattern matching. It also makes defining new values less verbose:
 
 %TC:ignore
 \begin{code}
-  pair₀ pair₁ : Pair ℕ Bool
+  pair₀ pair₁ : Σ ℕ (λ _ → Bool)
   pair₁ = record { fst = zero ; snd = false }
   pair₀ = zero , false
 \end{code}
 %TC:endignore
 
-As a \AgdaKeyword{record} type, \AgdaDatatype{Pair} can be deconstructed in many ways. The name of the type and the name of the field, separated by a dot, can be used to access that field (\AgdaFunction{fst₀}). Alternatively, \AgdaKeyword{open} followed by the name of the type can be used to bring the names of the field accessors into scope (\AgdaFunction{fst₁}). The fields themselves can be brought into scope by \AgdaKeyword{open}ing the type followed by the value whose fields we want to access (\AgdaFunction{fst₂}). Note that \AgdaKeyword{let} … \AgdaKeyword{in} \AgdaBound{x} and \AgdaBound{x} \AgdaKeyword{where} … can be used almost interchangeably. In the last example, we pattern match on the constructor of the type to extract its fields (\AgdaFunction{fst₃}).
+In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. Since the type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, it can depend on the value of \AgdaField{fst}. This is why \AgdaDatatype{Σ} is called a dependent pair. This will become important in the next section when predicates and existential quantifiers are discussed. For now we will restrict ourselves to building non-dependent pairs, which means that we will systematically ignore the \AgdaBound{A}-typed parameter to \AgdaBound{B}.
+
+As a \AgdaKeyword{record} type, \AgdaDatatype{Pair} can be deconstructed in many ways. The name of the type and the name of the field, separated by a dot, can be used to access that field (\AgdaFunction{fst₀}). Alternatively, \AgdaKeyword{open} followed by the name of the type can be used to bring the names of the field accessors into scope (\AgdaFunction{fst₁}). The fields themselves can be brought into scope by \AgdaKeyword{open}ing the type followed by the value whose fields we want to access (\AgdaFunction{fst₂}). Note that \enquote{\AgdaKeyword{let} … \AgdaKeyword{in} \AgdaBound{x}} and \enquote{\AgdaBound{x} \AgdaKeyword{where} …} can be used almost interchangeably. In the last example, we pattern match on the constructor of the type to extract its fields (\AgdaFunction{fst₃}).
 
 %TC:ignore
 \begin{code}
-  fst₀ fst₁ fst₂ fst₃ : ∀ {a b} → {A : Set a} {B : Set b} → Pair A B → A
-  fst₀ = Pair.fst
-  fst₁ = let open Pair in fst
-  fst₂ p = fst where open Pair p
-  fst₃ (fst , snd) = fst
+  fst₀ fst₁ fst₂ fst₃ : ∀ {a b} → {A : Set a} {B : Set b} → Σ A (λ _ → B) → A
+  fst₀ = Σ.fst
+  fst₁ = let open Σ in fst
+  fst₂ p = fst where open Σ p
+  fst₃ (x , _) = x
 \end{code}
 %TC:endignore
 
