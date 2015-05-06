@@ -76,6 +76,7 @@
 \setcounter{secnumdepth}{2}
 \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 \pagestyle{headings}
+\addtokomafont{pagehead}{\itshape}
 
 \begin{document}
 \setmathfont{Asana-Math.otf}
