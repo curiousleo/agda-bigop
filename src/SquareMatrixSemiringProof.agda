@@ -23,25 +23,6 @@ module SquareMatrixSemiringProof where
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
 
-  Pointwise : ∀ {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
-              {m n} → Matrix S m n → Matrix T m n → Set ℓ
-  Pointwise _~_ A B = ∀ r c → A [ r , c ] ~ B [ r , c ]
-
-  PW-equivalent : ∀ {ℓ} {S T : Set ℓ} {_~_ : REL S T ℓ} {m n}
-                  {A : Matrix S m n} {B : Matrix T m n} →
-                  PW.Pointwise (PW.Pointwise _~_) A B ⇔ Pointwise _~_ A B
-  PW-equivalent {_~_ = _~_} {A = A} {B} = Equiv.equivalence to from
-    where
-      to : PW.Pointwise (PW.Pointwise _~_) A B → Pointwise _~_ A B
-      to (PW.ext eq) = cong
-        where
-          cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
-          cong r c with eq r
-          cong r c | PW.ext eq′ = eq′ c
-
-      from : Pointwise _~_ A B → PW.Pointwise (PW.Pointwise _~_) A B
-      from eq = PW.ext (λ r → PW.ext (eq r))
-
   module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
     open Semiring semiring
@@ -52,7 +33,7 @@ module SquareMatrixSemiringProof where
              *-semigroup; *-monoid;
              semiringWithoutOne)
 
-    open Setoid setoid using (_≈_; refl; sym; trans; reflexive)
+    open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
 
     open Fold +-monoid using (Σ-syntax)
     open Props.Ordinals
@@ -131,18 +112,6 @@ module SquareMatrixSemiringProof where
     ------------
     -- Proofs --
     ------------
-
-    ≋-isEquivalence : IsEquivalence _≋_
-    ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
-      where
-        ≋-refl : Reflexive _≋_
-        ≋-refl = (λ r c → refl)
-
-        ≋-sym : Symmetric _≋_
-        ≋-sym eq = (λ r c → sym (eq r c))
-
-        ≋-trans : Transitive _≋_
-        ≋-trans eq₁ eq₂ = (λ r c → trans (eq₁ r c) (eq₂ r c))
 
     ⊕-assoc : Associative _≋_ _⊕_
     ⊕-assoc A B C = assoc
@@ -473,3 +442,6 @@ module SquareMatrixSemiringProof where
         }
       ; zero                = M-zeroˡ , M-zeroʳ
       }
+      where
+        ≋-isEquivalence : IsEquivalence _≋_
+        ≋-isEquivalence = PW-isEquivalence isEquivalence
