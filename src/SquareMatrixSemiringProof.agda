@@ -23,10 +23,9 @@ module SquareMatrixSemiringProof where
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
 
-  record Pointwise {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
-                   {m n} (A : Matrix S m n) (B : Matrix T m n) : Set (s ⊔ t ⊔ ℓ) where
-    constructor ext
-    field app : ∀ r c → A [ r , c ] ∼ B [ r , c ]
+  Pointwise : ∀ {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
+              {m n} → Matrix S m n → Matrix T m n → Set ℓ
+  Pointwise _~_ A B = ∀ r c → A [ r , c ] ~ B [ r , c ]
 
   PW-equivalent : ∀ {ℓ} {S T : Set ℓ} {_~_ : REL S T ℓ} {m n}
                   {A : Matrix S m n} {B : Matrix T m n} →
@@ -34,14 +33,14 @@ module SquareMatrixSemiringProof where
   PW-equivalent {_~_ = _~_} {A = A} {B} = Equiv.equivalence to from
     where
       to : PW.Pointwise (PW.Pointwise _~_) A B → Pointwise _~_ A B
-      to (PW.ext app) = ext cong
+      to (PW.ext eq) = cong
         where
           cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
-          cong r c with app r
-          cong r c | PW.ext app′ = app′ c
+          cong r c with eq r
+          cong r c | PW.ext eq′ = eq′ c
 
       from : Pointwise _~_ A B → PW.Pointwise (PW.Pointwise _~_) A B
-      from (ext app) = PW.ext (λ r → PW.ext (app r))
+      from eq = PW.ext (λ r → PW.ext (eq r))
 
   module SquareMatrix (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
@@ -70,7 +69,7 @@ module SquareMatrixSemiringProof where
     M : Set c
     M = Matrix Carrier n n
 
-    _≋_ : Rel M (c ⊔ ℓ)
+    _≋_ : Rel M ℓ
     _≋_ = Pointwise _≈_
 
     _⊕_ : Op₂ M
@@ -137,16 +136,16 @@ module SquareMatrixSemiringProof where
     ≋-isEquivalence = record { refl = ≋-refl ; sym = ≋-sym ; trans = ≋-trans }
       where
         ≋-refl : Reflexive _≋_
-        ≋-refl = ext (λ r c → refl)
+        ≋-refl = (λ r c → refl)
 
         ≋-sym : Symmetric _≋_
-        ≋-sym (ext app) = ext (λ r c → sym (app r c))
+        ≋-sym eq = (λ r c → sym (eq r c))
 
         ≋-trans : Transitive _≋_
-        ≋-trans (ext app₁) (ext app₂) = ext (λ r c → trans (app₁ r c) (app₂ r c))
+        ≋-trans eq₁ eq₂ = (λ r c → trans (eq₁ r c) (eq₂ r c))
 
     ⊕-assoc : Associative _≋_ _⊕_
-    ⊕-assoc A B C = ext assoc
+    ⊕-assoc A B C = assoc
       where
         open Semigroup +-semigroup using () renaming (assoc to +-assoc)
 
@@ -172,19 +171,19 @@ module SquareMatrixSemiringProof where
           (A ⊕ (B ⊕ C)) [ r , c ]                    ∎
 
     ⊕-cong : _⊕_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
-    ⊕-cong {A} {A′} {B} {B′} (ext app₁) (ext app₂) = ext cong
+    ⊕-cong {A} {A′} {B} {B′} eq₁ eq₂ = cong
       where
         open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
 
         cong : ∀ r c → (A ⊕ B) [ r , c ] ≈ (A′ ⊕ B′) [ r , c ]
         cong r c = begin
           (A ⊕ B) [ r , c ]            ≡⟨ l∘t r c ⟩
-          A [ r , c ] + B [ r , c ]    ≈⟨ +-cong (app₁ r c) (app₂ r c) ⟩
+          A [ r , c ] + B [ r , c ]    ≈⟨ +-cong (eq₁ r c) (eq₂ r c) ⟩
           A′ [ r , c ] + B′ [ r , c ]  ≡⟨ P.sym (l∘t r c) ⟩
           (A′ ⊕ B′) [ r , c ]          ∎
 
     ⊕-identityˡ : LeftIdentity _≋_ 0M _⊕_
-    ⊕-identityˡ A = ext ident
+    ⊕-identityˡ A = ident
       where
         open Monoid +-monoid using () renaming (identity to +-identity)
 
@@ -196,7 +195,7 @@ module SquareMatrixSemiringProof where
                          A [ r , c ]  ∎
 
     ⊕-comm : Commutative _≋_ _⊕_
-    ⊕-comm A B = ext comm
+    ⊕-comm A B = comm
       where
         open CommutativeMonoid +-commutativeMonoid using () renaming (comm to +-comm)
 
@@ -208,7 +207,7 @@ module SquareMatrixSemiringProof where
           (B ⊕ A) [ r , c ] ∎
 
     M-zeroˡ : LeftZero _≋_ 0M _⊗_
-    M-zeroˡ A = ext z
+    M-zeroˡ A = z
       where
         open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -225,7 +224,7 @@ module SquareMatrixSemiringProof where
           0M [ r , c ] ∎
 
     M-zeroʳ : RightZero _≋_ 0M _⊗_
-    M-zeroʳ A = ext z
+    M-zeroʳ A = z
       where
         open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -242,7 +241,7 @@ module SquareMatrixSemiringProof where
           0M [ r , c ] ∎
 
     ⊗-assoc : Associative _≋_ _⊗_
-    ⊗-assoc A B C = ext assoc
+    ⊗-assoc A B C = assoc
       where
         open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -292,7 +291,7 @@ module SquareMatrixSemiringProof where
           (A ⊗ (B ⊗ C)) [ r , c ] ∎
 
     ⊗-cong : _⊗_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
-    ⊗-cong {u} {v} {A} {B} (ext app₁) (ext app₂) = ext cong
+    ⊗-cong {u} {v} {A} {B} eq₁ eq₂ = cong
       where
         open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
         module Σ = Props.Monoid +-monoid
@@ -302,13 +301,13 @@ module SquareMatrixSemiringProof where
           (u ⊗ A) [ r , c ]
             ≡⟨ l∘t r c ⟩
           Σ[ i ← ι n ] u [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong (ι n) P.refl (λ i → *-cong (app₁ r i) (app₂ i c)) ⟩
+            ≈⟨ Σ.cong (ι n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
           Σ[ i ← ι n ] v [ r , i ] * B [ i , c ]
             ≡⟨ P.sym (l∘t r c) ⟩
           (v ⊗ B) [ r , c ] ∎
 
     ⊗-identityˡ : LeftIdentity _≋_ 1M _⊗_
-    ⊗-identityˡ A = ext ident
+    ⊗-identityˡ A = ident
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -349,7 +348,7 @@ module SquareMatrixSemiringProof where
           A [ r , c ]                                            ∎
 
     ⊗-identityʳ : RightIdentity _≋_ 1M _⊗_
-    ⊗-identityʳ A = ext ident
+    ⊗-identityʳ A = ident
       where
         open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -389,7 +388,7 @@ module SquareMatrixSemiringProof where
           A [ r , c ] ∎
 
     ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
-    ⊗-distrOverˡ-⊕ A B C = ext distr
+    ⊗-distrOverˡ-⊕ A B C = distr
       where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -419,7 +418,7 @@ module SquareMatrixSemiringProof where
           ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ] ∎
 
     ⊗-distrOverʳ-⊕ : (_≋_ DistributesOverʳ _⊗_) _⊕_
-    ⊗-distrOverʳ-⊕ C A B = ext distr
+    ⊗-distrOverʳ-⊕ C A B = distr
       where
         open Semiring semiring using (*-cong; distrib)
         module Σ = Props.SemiringWithoutOne semiringWithoutOne
