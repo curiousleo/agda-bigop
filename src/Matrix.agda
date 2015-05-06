@@ -6,9 +6,12 @@ import Data.Vec as V
 open V using (Vec)
 import Data.Vec.Properties as VP
 open import Function using (_∘_)
+open import Function.Equivalence as Equiv using (_⇔_)
+open import Relation.Binary
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
 open P.≡-Reasoning
+import Relation.Binary.Vec.Pointwise as VP
 
 ------------------------------------------------------------------------
 -- The type of r × c matrices over carrier type A
@@ -45,3 +48,49 @@ lookup∘tabulate {f = f} r c = begin
   V.lookup c (V.tabulate (f r))
     ≡⟨ VP.lookup∘tabulate (f r) c ⟩
   f r c ∎
+
+------------------------------------------------------------------------
+-- Pointwise lifting of a relation
+
+Pointwise : ∀ {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
+            {m n} → Matrix S m n → Matrix T m n → Set ℓ
+Pointwise _~_ A B = ∀ r c → A [ r , c ] ~ B [ r , c ]
+
+------------------------------------------------------------------------
+-- If _~_ is an equivalence then Pointwise _~_ is, too
+
+PW-isEquivalence : ∀ {a ℓ} {A : Set a} {_~_ : Rel A ℓ} {m n} →
+                  IsEquivalence _~_ → IsEquivalence (Pointwise _~_ {m = m} {n})
+PW-isEquivalence {_~_ = ~} eq = record { refl = PW-refl ; sym = PW-sym ; trans = PW-trans }
+  where
+    open IsEquivalence eq
+
+    PW-refl : Reflexive (Pointwise ~)
+    PW-refl = (λ r c → refl)
+
+    PW-sym : Symmetric (Pointwise ~)
+    PW-sym eq = (λ r c → sym (eq r c))
+
+    PW-trans : Transitive (Pointwise ~)
+    PW-trans eq₁ eq₂ = (λ r c → trans (eq₁ r c) (eq₂ r c))
+
+------------------------------------------------------------------------
+-- Sanity check: Pointwise is equivalent to lifting twice with
+-- VP.Pointwise, the pointwise lifting of relations into vectors
+
+private
+
+  VP-equivalent : ∀ {ℓ} {S T : Set ℓ} {_~_ : REL S T ℓ} {m n}
+                  {A : Matrix S m n} {B : Matrix T m n} →
+                  VP.Pointwise (VP.Pointwise _~_) A B ⇔ Pointwise _~_ A B
+  VP-equivalent {_~_ = _~_} {A = A} {B} = Equiv.equivalence to from
+    where
+      to : VP.Pointwise (VP.Pointwise _~_) A B → Pointwise _~_ A B
+      to (VP.ext eq) = cong
+        where
+          cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
+          cong r c with eq r
+          cong r c | VP.ext eq′ = eq′ c
+
+      from : Pointwise _~_ A B → VP.Pointwise (VP.Pointwise _~_) A B
+      from eq = VP.ext (λ r → VP.ext (eq r))
