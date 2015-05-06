@@ -1,7 +1,7 @@
 open import Algebra
 open import Data.Nat.Base using (ℕ; z≤n)
 
-module SquareMatrixSemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
+module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
 open import Bigop
 open import Matrix
