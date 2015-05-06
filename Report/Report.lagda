@@ -275,7 +275,7 @@ The level of this type is the least upper bound of \AgdaBound{a} and \AgdaBound{
 
 In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. Since the type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, it can depend on the value of \AgdaField{fst}. This is why \AgdaDatatype{Σ} is called a dependent pair. This will become important in the next section when predicates and existential quantifiers are discussed. For now we will restrict ourselves to building non-dependent pairs, which means that we will systematically ignore the \AgdaBound{A}-typed parameter to \AgdaBound{B}.
 
-As a \AgdaKeyword{record} type, \AgdaDatatype{Pair} can be deconstructed in many ways. The name of the type and the name of the field, separated by a dot, can be used to access that field (\AgdaFunction{fst₀}). Alternatively, \AgdaKeyword{open} followed by the name of the type can be used to bring the names of the field accessors into scope (\AgdaFunction{fst₁}). The fields themselves can be brought into scope by \AgdaKeyword{open}ing the type followed by the value whose fields we want to access (\AgdaFunction{fst₂}). Note that \enquote{\AgdaKeyword{let} … \AgdaKeyword{in} \AgdaBound{x}} and \enquote{\AgdaBound{x} \AgdaKeyword{where} …} can be used almost interchangeably. In the last example, we pattern match on the constructor of the type to extract its fields (\AgdaFunction{fst₃}).
+As a \AgdaKeyword{record} type, \AgdaDatatype{Pair} can be deconstructed in many ways. The name of the type and the name of the field, separated by a dot, can be used to access that field (\AgdaFunction{fst₀}). Alternatively, \AgdaKeyword{open} followed by the name of the type can be used to bring the names of the field accessors into scope (\AgdaFunction{fst₁}). The fields themselves can be brought into scope by \AgdaKeyword{open}ing the type followed by the value whose fields we want to access (\AgdaFunction{fst₂}). Note that \enquote{\AgdaKeyword{let} … \AgdaKeyword{in} \AgdaBound{x}} and \enquote{\AgdaBound{x}~\AgdaKeyword{where} …} can be used almost interchangeably. In the last example, we pattern match on the constructor of the type to extract its fields (\AgdaFunction{fst₃}).
 
 %TC:ignore
 \begin{code}
@@ -290,7 +290,16 @@ As a \AgdaKeyword{record} type, \AgdaDatatype{Pair} can be deconstructed in many
 
 \section{Relations, predicates and decidability}
 
-XXX intro blurb
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module Relations where
+  open import Data.Nat.Base
+  -- open import Relation.Binary.PropositionalEquality
+
+  infix 4 _≡_
+\end{code}
+}
 
 \minisec{Relations}
 
@@ -298,41 +307,9 @@ Usually in mathematics, a relation between two sets is defined as a subset of th
 
 We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
 
-\emph{Divisibility} is a familiar notion with a straightforward definition as a type.
+One important homogeneous binary relation is called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
 %TC:ignore
-\AgdaHide{
-\begin{code}
-module _ where
-  open import Data.Nat.Base
-  open import Relation.Binary.PropositionalEquality
-\end{code}
-}
-
-\begin{code}
-  data _∣_ : ℕ → ℕ → Set where
-    divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
-
-  1-divides-n : ∀ n → 1 ∣ n
-  1-divides-n n = divides {1} {n} n n≡n*1
-    where
-      n≡n*1 : ∀ {n} → n ≡ n * 1
-      n≡n*1 {zero}  = refl
-      n≡n*1 {suc n} = cong suc n≡n*1
-\end{code}
-%TC:endignore
-
-Its definition translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
-
-An important homogeneous binary relation is called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-module PropEq where
-\end{code}
-}
-
 \begin{code}
   data _≡_ {a} {A : Set a} (x : A) : A → Set a where
     refl : x ≡ x
@@ -342,6 +319,38 @@ module PropEq where
 The relation \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
 
 The constructor \AgdaInductiveConstructor{refl} requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
+
+XXX: explain this
+
+%TC:ignore
+\begin{code}
+  cong :  ∀ {a b} {A : Set a} {B : Set b}
+          (f : A → B) {x y} → x ≡ y → f x ≡ f y
+  cong f refl = refl
+\end{code}
+%TC:endignore
+
+As another example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
+
+\begin{code}
+  data _∣_ : ℕ → ℕ → Set where
+    divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
+\end{code}
+%TC:endignore
+
+XXX explain this
+
+%TC:ignore
+\begin{code}
+  1-divides-n : ∀ n → 1 ∣ n
+  1-divides-n n = divides {1} {n} n n≡n*1
+    where
+      n≡n*1 : ∀ {n} → n ≡ n * 1
+      n≡n*1 {zero}  = refl
+      n≡n*1 {suc n} = cong suc n≡n*1
+\end{code}
+%TC:endignore
+
 
 \minisec{Predicates}
 
@@ -364,7 +373,6 @@ We can provide evidence for this property by giving a natural number \AgdaBound{
 \AgdaHide{
 \begin{code}
 module Predicates where
-  open import Data.Empty
   open import Data.Fin
   open import Data.Nat
   open import Data.Nat.DivMod
@@ -381,8 +389,9 @@ module Predicates where
     ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
 \end{code}
 
-\begin{code}
+XXX need to explain \AgdaKeyword{with} and absurd patterns first
 
+\begin{code}
   Collatz : ℕ → Set
   Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
     where
@@ -403,6 +412,30 @@ module Predicates where
 The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \AgdaDatatype{P} \AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}, a decision procedure would be a function which for any argument \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A} returns either an inhabitant of type \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate holds) or an inhabitant of type \AgdaDatatype{¬} \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate does not hold).
 
 Considering the two example again, a decision procedure for \AgdaDatatype{Even} is not entirely trivial, but still straightforward to define. The predicate \AgdaDatatype{Collatz}, on the other hand, has been shown by Conway (XXX reference) to be undecidable---this is an instance of a predicate for which no decision procedure exists.
+
+
+\section{Truth, falsity, absurdity and type inhabitation}
+
+XXX
+
+\AgdaHide{
+\begin{code}
+module Truth where
+  open import Level
+\end{code}
+}
+
+%TC:ignore
+\begin{code}
+  record ⊤ : Set where
+    constructor tt
+
+  record ⊥ : Set where
+
+  ¬_ : ∀ {p} → Set p → Set p
+  ¬ P = P → ⊥
+\end{code}
+%TC:endignore
 
 \section{Equivalences and setoids}
 
