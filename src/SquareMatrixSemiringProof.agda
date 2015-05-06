@@ -1,12 +1,10 @@
 open import Algebra
-
-import Data.Nat.Base as N
-open N using (ℕ; z≤n)
+open import Data.Nat.Base using (ℕ; z≤n)
 
 module SquareMatrixSemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
-open import Matrix
 open import Bigop
+open import Matrix
 
 open import Algebra.FunctionProperties
 open import Algebra.Structures
