@@ -14,6 +14,7 @@
 % \setmonofont{Source Code Pro}[Scale=MatchLowercase]
 \usepackage[]{unicode-math}
 
+\usepackage{microtype}
 \usepackage{bussproofs}
 \usepackage{csquotes}
 \usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
