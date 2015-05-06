@@ -85,6 +85,8 @@
 \maketitle
 \end{titlepage}
 
+\tableofcontents
+
 \AgdaHide{
 \begin{code}
 module Report where
