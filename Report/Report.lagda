@@ -662,7 +662,7 @@ It follows from the monoid associativity law that the big operator distributes o
 
 \section{Ordinals}
 
-\section{Matrices}
+\section{\label{Impl-Matrices}Matrices}
 
 In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first. This module is independent from the rest of the project.
 
