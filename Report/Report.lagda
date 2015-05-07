@@ -986,7 +986,6 @@ The auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simp
       factorʳ : ∀ r c → (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
       factorʳ r c = l∘t r c ⟨ P.trans ⟩ P.cong₂ _+_ P.refl (l∘t r c)
 \end{code}
-}
 %TC:endignore
 
 The structure of the proof is similar to the congruence proof above. Again, a semigroup over \AgdaFunction{\_+\_} provides sufficient structure.
@@ -1149,7 +1148,6 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
       factorʳ r c = reflexive (l∘t r c) ⟨ trans ⟩
                     Σ.cong (ι n) P.refl (λ j → *-cong refl (reflexive (l∘t j c)))
 \end{code}
-}
 %TC:endignore
 
 \minisec{Congruence of matrix multiplication}
