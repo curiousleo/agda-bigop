@@ -351,26 +351,55 @@ As a record type, \AgdaDatatype{Σ} can be deconstructed in many ways. The name 
 \end{code}
 %TC:endignore
 
-\section{Relations, predicates and decidability}
+
+\section{Predicates and relations}
+
+In this section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
+
+
+\minisec{Predicates}
 
 %TC:ignore
 \AgdaHide{
 \begin{code}
-module Relations where
-  open import Data.Nat.Base
-  -- open import Relation.Binary.PropositionalEquality
+module Predicates where
+  open import Data.Fin
+  open import Data.Nat
+  open import Data.Nat.DivMod
+  open import Data.Product using (∃)
+  open import Relation.Nullary
+  open import Relation.Unary using (Pred; Decidable)
+--  open import Relation.Binary.PropositionalEquality using (_≡_)
 
   infix 4 _≡_
 \end{code}
 }
 
-\minisec{Relations}
+A predicate expresses some property of a term. The type of a predicate \AgdaFunction{P} over a type \AgdaDatatype{A} is \AgdaFunction{P}~\AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The value of a predicate \AgdaFunction{P} \AgdaBound{x} can be thought of as the \emph{evidence} that \AgdaFunction{P} holds for \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A}.
 
-Usually in mathematics, a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. Via currying, this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
+We will look at a predicate \AgdaDatatype{Even}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set} as a warm-up, followed by a discussion of propositional equality, \AgdaDatatype{\_≡\_}. Lastly we will consider a more involved predicate, \AgdaDatatype{Collatz}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
 
-We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
+\AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
 
-One important homogeneous binary relation is called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
+\begin{code}
+  data Even : ℕ → Set where
+    zero-even : Even zero
+    ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
+\end{code}
+
+Using this definition, we can now provide evidence that zero and four are indeed even numbers:
+
+\begin{code}
+  0-even : Even 0
+  0-even = zero-even
+
+  4-even : Even 4
+  4-even = ss-even (ss-even zero-even)
+\end{code}
+
+
+
+Next, we look at \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda.\footnote{Paulin equality XXX} The parameterised predicate \AgdaDatatype{\_≡\_} \AgdaBound{x} expresses the property of \enquote{being equal to \AgdaBound{x}}. Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
 %TC:ignore
 \begin{code}
@@ -379,19 +408,57 @@ One important homogeneous binary relation is called \emph{propositional equality
 \end{code}
 %TC:endignore
 
-The relation \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we must use this constructor---there is no other way.
+Note that we call \AgdaDatatype{\_≡\_} a parameterised predicate, not a relation, because it has type \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} rather than \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} (the type of homogeneous relations of \AgdaBound{A}, see next section XXX). There is an equivalent definition of propositional equality as a relation, but the one shown here is easier to use in proofs.
 
-The constructor \AgdaInductiveConstructor{refl} requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
+The parameterised predicate \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we \emph{must} use this constructor.
+It requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
 
-XXX: explain this
+Evaluation a function with equal arguments should always yield equal results. This property is called \emph{congruence}, and it can be proved for any function \AgdaBound{f} as follows:
 
 %TC:ignore
 \begin{code}
   cong :  ∀ {a b} {A : Set a} {B : Set b}
           (f : A → B) {x y} → x ≡ y → f x ≡ f y
-  cong f refl = refl
+  cong f {x} {.x} refl = refl
 \end{code}
 %TC:endignore
+
+Let us consider this proof step by step. We match the argument of type \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} with its only constructor, \AgdaInductiveConstructor{refl}. This tells the type checker that \AgdaBound{x} and \AgdaBound{y} must be equal as \AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x}, and replaces all occurrences of \AgdaBound{y} by \AgdaBound{x} for this clause. To make this clearer we also pattern match against the implicit parameters \AgdaBound{x} and \AgdaBound{y}. Argument \AgdaBound{x} is simply matched against a variable \AgdaBound{x}. The dotted pattern for \AgdaBound{y} is revealing: since the pattern \AgdaInductiveConstructor{refl} forces \AgdaBound{x} and \AgdaBound{y} to be equal, the unique value that \AgdaBound{y} can take is \AgdaBound{x}.
+
+This pattern match against \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} also has the effect of \emph{rewriting} the type of the result expected on the right-hand side of the equals sign to \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x}. But as \AgdaBound{f} \AgdaBound{x} and \AgdaBound{f} \AgdaBound{x} are literally the same thing, we can prove them equal simply using \AgdaInductiveConstructor{refl}.
+
+As an example of a more involved predicate that uses propositional equality in its definition, \AgdaDatatype{Collatz} \AgdaBound{n} provides evidence that if we keep iterating the function \AgdaFunction{f} (defined below), starting with \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}, eventually the result will be the number one.
+\[ f(n) =
+	\begin{cases}
+		n/2    & \text{if } n \equiv 0 \text{ (mod \(2\))} \\
+		3n + 1 & \text{if } n \equiv 1 \text{ (mod \(2\))}
+	\end{cases}
+\]
+We can provide evidence for this property by giving a natural number \AgdaBound{i} together with a proof that \AgdaFunction{iter} \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} \AgdaBound{i} \AgdaDatatype{≡} \AgdaNumber{1}.
+
+\begin{code}
+  Collatz : ℕ → Set
+  Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
+    where
+      f : ℕ → ℕ
+      f n with n mod 2
+      f n | zero     = n div 2
+      f n | suc zero = suc (3 * n)
+      f n | suc (suc ())
+
+      iter : ∀ {A} → (A → A) → A → ℕ → A
+      iter f x zero    = x
+      iter f x (suc n) = iter f (f x) n
+\end{code}
+%TC:endignore
+
+
+\minisec{Relations}
+
+
+Usually in mathematics, a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. Via currying, this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
+
+We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
 
 As another example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
 
@@ -415,60 +482,6 @@ XXX explain this
 %TC:endignore
 
 
-\minisec{Predicates}
-
-A predicate expresses some property of a term. In constructive logic, we often think of the values of a predicate as the \emph{evidence} that it holds. The type of a predicate over a type \AgdaDatatype{A} is \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
-
-We will consider two predicates over natural numbers as examples in this chapter, \AgdaDatatype{Even} \AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{Collatz} \AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. In words, they mean the following:
-\begin{itemize}
-\item \AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
-\item \AgdaDatatype{Collatz} \AgdaBound{n} provides evidence that if we keep iterating the function \AgdaFunction{f} (defined below), starting with \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}, eventually the result will be the number \AgdaPrimitive{1}.
-\[ f(n) =
-	\begin{cases}
-		n/2    & \text{if } n \equiv 0 \text{ (mod \(2\))} \\
-		3n + 1 & \text{if } n \equiv 1 \text{ (mod \(2\))}
-	\end{cases}
-\]
-We can provide evidence for this property by giving a natural number \AgdaBound{i} together with a proof that \AgdaFunction{iter} \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} \AgdaBound{i} \AgdaDatatype{≡} \AgdaPrimitive{1}.
-\end{itemize}
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-module Predicates where
-  open import Data.Fin
-  open import Data.Nat
-  open import Data.Nat.DivMod
-  open import Data.Product using (∃)
-  open import Relation.Nullary
-  open import Relation.Unary using (Pred; Decidable)
-  open import Relation.Binary.PropositionalEquality using (_≡_)
-\end{code}
-}
-
-\begin{code}
-  data Even : ℕ → Set where
-    zero-even : Even zero
-    ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
-\end{code}
-
-XXX need to explain \AgdaKeyword{with} and absurd patterns first
-
-\begin{code}
-  Collatz : ℕ → Set
-  Collatz n = ∃ λ m → iter f (suc n) m ≡ 1
-    where
-      f : ℕ → ℕ
-      f n with n mod 2
-      f n | zero     = n div 2
-      f n | suc zero = suc (3 * n)
-      f n | suc (suc ())
-
-      iter : ∀ {A} → (A → A) → A → ℕ → A
-      iter f x zero    = x
-      iter f x (suc n) = iter f (f x) n
-\end{code}
-%TC:endignore
 
 \minisec{Decidability}
 
