@@ -87,6 +87,7 @@
 
 \tableofcontents
 
+%TC:ignore
 \AgdaHide{
 \begin{code}
 module Report where
@@ -356,6 +357,7 @@ As a record type, \AgdaDatatype{Σ} can be deconstructed in many ways. The name 
 
 In this section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
 
+From this point on, we will call some functions \enquote{proofs} and some types \enquote{theorems}. The justification for this lies in the Curry-Howard correspondence, which is explained in XXX.
 
 \minisec{Predicates}
 
@@ -376,27 +378,32 @@ module Predicates where
   infix 4 _≡_
 \end{code}
 }
+%TC:endignore
 
 A predicate expresses some property of a term. The type of a predicate \AgdaFunction{P} over a type \AgdaDatatype{A} is \AgdaFunction{P}~\AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The value of a predicate \AgdaFunction{P} \AgdaBound{x} can be thought of as the \emph{evidence} that \AgdaFunction{P} holds for \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A}.
 We will look at a predicate \AgdaDatatype{Even}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set} as a warm-up, followed by a discussion of propositional equality, \AgdaDatatype{\_≡\_}. Lastly we will consider a more involved predicate, \AgdaDatatype{Collatz}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
 
 \AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
 
+%TC:ignore
 \begin{code}
   data Even : ℕ → Set where
     zero-even : Even zero
     ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
 \end{code}
+%TC:endignore
 
 Using this definition, we can now provide evidence that zero and four are indeed even numbers:
 
+%TC:ignore
 \begin{code}
-  0-even : Even 0
-  0-even = zero-even
+  Even‿0 : Even 0
+  Even‿0 = zero-even
 
-  4-even : Even 4
-  4-even = ss-even (ss-even zero-even)
+  Even‿4 : Even 4
+  Even‿4 = ss-even (ss-even zero-even)
 \end{code}
+%TC:endignore
 
 
 
@@ -437,13 +444,16 @@ As an example of a more involved predicate that uses propositional equality in i
 \]
 We can provide evidence for this property by giving a natural number \AgdaBound{i} together with a proof that \AgdaFunction{iter} \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} \AgdaBound{i} \AgdaDatatype{≡} \AgdaNumber{1}. Bundling a value and evidence for a property of that value together is the constructive version of the existential quantifier (more on this later XXX). The record type \AgdaDatatype{Σ} defined previously XXX is exactly what we require: \AgdaDatatype{Σ} \AgdaDatatype{ℕ} (\AgdaSymbol{λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaFunction{iter} (\AgdaInductiveConstructor{suc} \AgdaBound{n}) \AgdaBound{i} \AgdaDatatype{≡} \AgdaNumber{1}). Since the type of the value (\AgdaDatatype{ℕ}) is unambiguous from the context, we can define yet another shortcut for \AgdaDatatype{Σ} where this type is inferred by Agda:
 
+%TC:ignore
 \begin{code}
   ∃ : ∀ {a b} {A : Set a} → (A → Set b) → Set (a ⊔ b)
   ∃ = Σ _
 \end{code}
+%TC:endignore
 
 This lets us define a type \AgdaDatatype{∃} \AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{…}, which reads naturally as \enquote{there exists an \AgdaBound{x} such that …}. We now have all the building blocks to write the predicate \AgdaDatatype{Collatz}:
 
+%TC:ignore
 \begin{code}
   Collatz : ℕ → Set
   Collatz n = ∃ λ i → iter f (suc n) i ≡ 1
@@ -474,24 +484,30 @@ Let's look at a few examples of \AgdaDatatype{Collatz} \AgdaBound{n}. With \(\Ag
 
 Note that in all these examples, the second element of the pair, which represents the proof \AgdaFunction{iter} (\AgdaInductiveConstructor{suc} \AgdaBound{n}) \AgdaBound{i} \AgdaDatatype{≡} \AgdaNumber{1}, is just \AgdaInductiveConstructor{refl}: given \AgdaBound{i}, the type checker can evaluate the iteration and figure out that the equality holds.
 
+%TC:ignore
 \begin{code}
   Collatz‿0+1 : Collatz 0
   Collatz‿0+1 = 0 , refl
 \end{code}
+%TC:endignore
 
 With \(\AgdaBound{n} = \AgdaInductiveConstructor{suc}\;\AgdaNumber{1}\), the remainder after division by two is zero, so we do the division and get to \AgdaNumber{1} in one iteration: \(\AgdaBound{i} = \AgdaNumber{1}\).
 
+%TC:ignore
 \begin{code}
   Collatz‿1+1 : Collatz 1
   Collatz‿1+1 = 1 , refl
 \end{code}
+%TC:endignore
 
 For \(\AgdaBound{n} = \AgdaInductiveConstructor{suc}\;\AgdaNumber{3}\), we divide by two twice to get to \AgdaNumber{1}, giving \(\AgdaBound{i} = \AgdaNumber{2}\).
 
+%TC:ignore
 \begin{code}
   Collatz‿3+1 : Collatz 3
   Collatz‿3+1 = 2 , refl
 \end{code}
+%TC:endignore
 
 As the following diagram shows, we need to apply \AgdaFunction{f} seven times to get from \AgdaInductiveConstructor{suc} \AgdaNumber{2} to \AgdaNumber{1}:
 
@@ -500,10 +516,12 @@ As the following diagram shows, we need to apply \AgdaFunction{f} seven times to
 ⋯ &\xrightarrow[/ 2]{\mod 2 = 0} 4 \xrightarrow[/ 2]{\mod 2 = 0} 2 \xrightarrow[/ 2]{\mod 2 = 0} \mathbf{1}
 \end{align*}
 
+%TC:ignore
 \begin{code}
   Collatz‿2+1 : Collatz 2
   Collatz‿2+1 = 7 , refl
 \end{code}
+%TC:endignore
 
 
 \minisec{Relations}
@@ -519,11 +537,13 @@ module Relations where
   open import Data.Product hiding (∃; curry; uncurry)
   open import Relation.Binary.PropositionalEquality
 \end{code}
+%TC:endignore
 }
 
 Usually in mathematics a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
 We now show that this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:
 
+%TC:ignore
 \begin{code}
   curry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → B → C) → (A × B → C)
   curry f (x , y) = f x y
@@ -531,9 +551,11 @@ We now show that this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \
   uncurry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A × B → C) → (A → B → C)
   uncurry f x y = f (x , y)
 \end{code}
+%TC:endignore
 
 In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute an isomorphism, we prove that they are inverses of each other:
 
+%TC:ignore
 \begin{code}
   uncurry∘curry :  ∀ {a b c} {A : Set a} {B : Set b} {C : Set c}
                    (f : A → B → C) (x : A) (y : B) →
@@ -545,19 +567,23 @@ In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute
                    f (x , y) ≡ curry (uncurry f) (x , y)
   curry∘uncurry f x y = refl
 \end{code}
+%TC:endignore
 
 Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
 
 We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
 
+%TC:ignore
 \begin{code}
   _*_ : ℕ → ℕ → ℕ
   zero   * n = zero
   suc m  * n = n + m * n
 \end{code}
+%TC:endignore
 
 Now we can give a definition for the divisibility relation, which translates to \enquote{\(m\) divides \(n\) if you can provide a \(q\) such that \(n \equiv q m\)}.
 
+%TC:ignore
 \begin{code}
   data _∣_ : ℕ → ℕ → Set where
     divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
@@ -583,35 +609,73 @@ The equality \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \Ag
 The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} proves that \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}. Our goal in the inductive step is show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}). The latter follows from the former by \AgdaFunction{cong}ruence (see XXX).
 
 
+\section{Truth and decidability}
+
+In this section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous section as examples.
+
+\AgdaHide{
+%TC:ignore
+\begin{code}
+module Truth where
+  open import Data.Nat
+
+  data Even : ℕ → Set where
+    zero-even : Even zero
+    ss-even   : {n : ℕ} → Even n → Even (suc (suc n))
+\end{code}
+%TC:endignore
+}
+
+\minisec{Type inhabitation}
+
+We proved in the previous section that four is an even number by giving a term of type \AgdaDatatype{Even} \AgdaNumber{4}. The term we wrote down, \AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaInductiveConstructor{zero-even}\AgdaSymbol{)}, explicitly constructs an element of \AgdaDatatype{Even} \AgdaNumber{4}. The fact the we were able to define a term of this type means that the type is \emph{inhabited}, that is, it has at least one element.
+
+Type inhabitation translates to truth in the constructive logic corresponding to Agda's type system: a type is shown to be inhabited if a term of that type can be given; in a constructive logic, a proposition is considered true when a constructive proof can be given for that proposition.
+
+A proof of classical logic is admissible as a constructive proof if it does not use the law of excluded middle \((A ∨ ¬ A)\) or proof by contradiction / double negation elimination \((¬ ¬ A → A)\). The law of contradiction \(((A → B) → (A → ¬ B) → ¬ A)\) and \emph{ex falso quodlibet} \((¬ A → A → B)\) are allowed.
+
+One consequence of disallowing proof by contradiction is that in constructive logic, \(¬ (∀ x. P(x)) → (∃ x. ¬ P(x))\) is not a theorem. In order to prove that there exists some element with a certain property, we must construct that element explicitly.
+
+Let us consider the following two definitions:
+
+%TC:ignore
+\begin{code}
+  data ⊥ : Set where
+\end{code}
+%TC:endignore
+
+The type \AgdaDatatype{⊥} (pronounced \enquote{bottom}) has no constructors, so we cannot create an element of this type. It is therefore not inhabited, or \emph{empty}.
+
+A type with no elements is useless from a computational perspective: it can neither be constructed nor deconstructed, so we cannot write functions which operate on it. It does, however, make for a useful definition of emptiness. We said just now that it is impossible to create an element of type \AgdaDatatype{⊥}. But \emph{ex falso quodlibet} means that we can derive anything, even \AgdaDatatype{⊥}, from an absurd assumption:
+
+%TC:ignore
+\begin{code}
+  ¬Even‿1 : Even 1 → ⊥
+  ¬Even‿1 ()
+\end{code}
+%TC:endignore
+
+Here the \emph{only} pattern is an absurd pattern. One is neither zero nor the successor of the successor of any natural number, so an argument of type \AgdaDatatype{Even} \AgdaNumber{1} is absurd. We do not need to supply a right-hand side of the definition because it an argument of type \AgdaDatatype{Even} \AgdaNumber{1} can never be given.
+
+We are allowed to give this undefined return value any type we like. Setting this return type to \AgdaDatatype{⊥} carries a special meaning: only function where the arguments are empty types can return the empty type, so the fact that we can define a function \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{⊥} for some type \AgdaBound{A} means that \AgdaBound{A} must be empty.
+
+The following definition is simply a shortcut for the type of empty types:
+
+%TC:ignore
+\begin{code}
+  ¬_ : ∀ {p} → Set p → Set p
+  ¬ P = P → ⊥
+\end{code}
+%TC:endignore
+
+This lets us write the type of \AgdaFunction{¬Even‿1} more succinctly as \AgdaFunction{¬}~\AgdaDatatype{Even}~\AgdaNumber{1}.
+
 \minisec{Decidability}
 
 The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \AgdaDatatype{P} \AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}, a decision procedure would be a function which for any argument \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A} returns either an inhabitant of type \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate holds) or an inhabitant of type \AgdaDatatype{¬} \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate does not hold).
 
 Considering the two example again, a decision procedure for \AgdaDatatype{Even} is not entirely trivial, but still straightforward to define. The predicate \AgdaDatatype{Collatz}, on the other hand, has been shown by Conway (XXX reference) to be undecidable---this is an instance of a predicate for which no decision procedure exists.
 
-
-\section{Truth, falsity, absurdity and type inhabitation}
-
-XXX
-
-\AgdaHide{
-\begin{code}
-module Truth where
-  open import Level
-\end{code}
-}
-
-%TC:ignore
-\begin{code}
-  record ⊤ : Set where
-    constructor tt
-
-  record ⊥ : Set where
-
-  ¬_ : ∀ {p} → Set p → Set p
-  ¬ P = P → ⊥
-\end{code}
-%TC:endignore
 
 \section{Equivalences and setoids}
 
