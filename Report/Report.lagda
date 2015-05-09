@@ -368,7 +368,7 @@ module Predicates where
   open import Data.Fin
   open import Data.Nat hiding (_⊔_)
   open import Data.Nat.DivMod
-  open import Data.Product hiding (∃)
+  open import Data.Product hiding (∃; curry; uncurry)
   open import Relation.Nullary
   open import Relation.Unary using (Pred; Decidable)
 --  open import Relation.Binary.PropositionalEquality using (_≡_)
@@ -493,7 +493,7 @@ For \(\AgdaBound{n} = \AgdaInductiveConstructor{suc}\;\AgdaNumber{3}\), we divid
   Collatz‿3+1 = 2 , refl
 \end{code}
 
-As the following diagram shows, we need to apply \AgdaFunction{f} seven times to get from \AgdaNumber{3} to \AgdaNumber{1}:
+As the following diagram shows, we need to apply \AgdaFunction{f} seven times to get from \AgdaInductiveConstructor{suc} \AgdaNumber{2} to \AgdaNumber{1}:
 
 \begin{align*}
 \mathbf{3} \xrightarrow[× 3 + 1]{\mod 2 = 1} 10 &\xrightarrow[/ 2]{\mod 2 = 0} 5 \xrightarrow[× 3 + 1]{\mod 2 = 1} 16 \xrightarrow[/ 2]{\mod 2 = 0} 8 \\
@@ -505,14 +505,58 @@ As the following diagram shows, we need to apply \AgdaFunction{f} seven times to
   Collatz‿2+1 = 7 , refl
 \end{code}
 
+
 \minisec{Relations}
 
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module Relations where
+  open import Level using (_⊔_)
 
-Usually in mathematics, a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. Via currying, this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. A common way to think about this constructive way of defining relations is to view the resulting type as evidence that the two arguments are related.
+  open import Data.Nat hiding (_⊔_; _*_)
+  open import Data.Nat.DivMod
+  open import Data.Product hiding (∃; curry; uncurry)
+  open import Relation.Binary.PropositionalEquality
+\end{code}
+}
 
-We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations.
+Usually in mathematics a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
+We now show that this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:
 
-As another example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It translates to \enquote{\(m\) divides \(n\) if there exists a \(q\) such that \(n \equiv q m\)}.
+\begin{code}
+  curry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → B → C) → (A × B → C)
+  curry f (x , y) = f x y
+
+  uncurry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A × B → C) → (A → B → C)
+  uncurry f x y = f (x , y)
+\end{code}
+
+In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute an isomorphism, we prove that they are inverses of each other:
+
+\begin{code}
+  uncurry∘curry :  ∀ {a b c} {A : Set a} {B : Set b} {C : Set c}
+                   (f : A → B → C) (x : A) (y : B) →
+                   f x y ≡ uncurry (curry f) x y
+  uncurry∘curry f x y = refl
+  
+  curry∘uncurry :  ∀ {a b c} {A : Set a} {B : Set b} {C : Set c}
+                   (f : A × B → C) (x : A) (y : B) →
+                   f (x , y) ≡ curry (uncurry f) (x , y)
+  curry∘uncurry f x y = refl
+\end{code}
+
+Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
+
+We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
+
+\begin{code}
+  _*_ : ℕ → ℕ → ℕ
+  zero   * n = zero
+  suc m  * n = n + m * n
+\end{code}
+
+Now we can give a definition for the divisibility relation, which translates to \enquote{\(m\) divides \(n\) if you can provide a \(q\) such that \(n \equiv q m\)}.
 
 \begin{code}
   data _∣_ : ℕ → ℕ → Set where
@@ -520,19 +564,23 @@ As another example, \emph{Divisibility} is a familiar relation with a straightfo
 \end{code}
 %TC:endignore
 
-XXX explain this
+The following proof demonstrates how this relation can be instantiated. It shows that \AgdaNumber{1} divides any natural number \AgdaBound{n}:
 
 %TC:ignore
 \begin{code}
-  1-divides-n : ∀ n → 1 ∣ n
-  1-divides-n n = divides {1} {n} n n≡n*1
+  1-divides-any : ∀ n → 1 ∣ n
+  1-divides-any n = divides {1} {n} n n≡n*1
     where
       n≡n*1 : ∀ {n} → n ≡ n * 1
-      n≡n*1 {zero}  = refl
-      n≡n*1 {suc n} = cong suc n≡n*1
+      n≡n*1 {zero}   = refl
+      n≡n*1 {suc n}  = cong suc n≡n*1
 \end{code}
 %TC:endignore
 
+The equality \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} may seem rather obvious, and yet we need to prove it separately. This is because we defined multiplication by induction on its first parameter, so \AgdaNumber{1} \AgdaFunction{*} \AgdaBound{n} normalises to \AgdaBound{n} \AgdaFunction{+} \AgdaInductiveConstructor{zero} but \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} cannot be evaluated further.
+
+\AgdaFunction{n≡n*1} proves the required equality by induction. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\). By the definition of \AgdaFunction{\_*\_}, \(\AgdaInductiveConstructor{zero}\;\AgdaFunction{*}\;\AgdaNumber{1} = \AgdaInductiveConstructor{zero}\) and the equality holds. In the inductive step, we need to show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{*} \AgdaFunction{1}. The right-hand side evaluates to \AgdaNumber{1} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}, which in turn evaluates to \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}).
+The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} proves that \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}. Our goal in the inductive step is show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}). The latter follows from the former by \AgdaFunction{cong}ruence (see XXX).
 
 
 \minisec{Decidability}
