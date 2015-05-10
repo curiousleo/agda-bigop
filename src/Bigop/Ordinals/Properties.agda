@@ -6,7 +6,7 @@ open import Bigop.Filter
 import Data.List.Base as L
 open L
 open import Function
-open import Data.Empty using (⊥-elim)
+open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Nat.Base as N hiding (_⊔_; _<_)
 open import Data.Nat.Properties.Simple
 -- open import Data.Nat
@@ -25,6 +25,63 @@ suc-lemma m (suc n) = cong (_∷_ (suc m)) (suc-lemma (suc m) n)
 
 suc-head-lemma : ∀ m n → m ∷ (fromLenℕ (suc m) n) ≡ fromLenℕ m (suc n)
 suc-head-lemma m n = refl
+
+{-
+
+open import Data.Nat.Properties using (m≤m+n)
+open import Data.Nat.Properties.Simple using (+-suc; +-comm)
+open import Data.Fin.Properties using (toℕ-fromℕ≤)
+
+lift-id : ∀ m {n} → toℕ (lift m {n}) ≡ m
+lift-id m {n} = toℕ-fromℕ≤ (s≤s (m≤m+n m n))
+
+import Data.Vec as V
+
+∷ʳ-map : ∀ {a b n} → {A : Set a} {B : Set b} (f : A → B) (xs : V.Vec A n) (x : A) →
+         V.map f (xs V.∷ʳ x) ≡ V.map f xs V.∷ʳ f x
+∷ʳ-map f V.[] x = refl
+∷ʳ-map f (y V.∷ ys) x = cong (V._∷_ (f y)) (∷ʳ-map f ys x)
+
+head-lemma′ : ∀ from len → ι-nat-vec-rev from (suc len) ≡
+                           from + len V.∷ ι-nat-vec-rev (suc from) len
+head-lemma′ from zero = begin
+ V.map toℕ (lift (from + zero) V.∷ V.[])
+   ≡⟨ {!ι-fin-vec-rev from 1!} ⟩
+ from + 0 V.∷ V.[] ∎
+head-lemma′ from (suc len) = {!!}
+
+suc-last-lemma′ : ∀ from len → ι-nat-vec-rev from (suc len) ≡
+                               (ι-nat-vec-rev (suc from) len) V.∷ʳ from
+suc-last-lemma′ from len rewrite +-suc from len = begin
+  V.map toℕ (ι-fin-vec-rev (suc from) len V.∷ʳ lift from)
+    ≡⟨ ∷ʳ-map toℕ (ι-fin-vec-rev (suc from) len) (fromℕ≤ (s≤s (m≤m+n from len))) ⟩
+  V.map toℕ (ι-fin-vec-rev (suc from) len) V.∷ʳ toℕ (lift from)
+    ≡⟨ cong (V._∷ʳ_ (V.map toℕ (ι-fin-vec-rev (suc from) len))) (lift-id from) ⟩
+  V.map toℕ (ι-fin-vec-rev (suc from) len) V.∷ʳ from ∎
+
+-- REDEFINE ι-nat-list-rev : swap toList and `map toℕ`
+
+suc-last-lemma″ : ∀ from len → ι-nat-list-rev from (suc len) ≡
+                               (ι-nat-list-rev (suc from) len) ∷ʳ from
+suc-last-lemma″ from len rewrite +-suc from len = cong V.toList {!suc-last-lemma′!}
+{-
+begin
+  map toℕ (V.toList (ι-fin-vec-rev (suc from) len V.∷ʳ lift from))
+    ≡⟨ cong (map toℕ) (∷ʳ-to-∷ʳ (ι-fin-vec-rev (suc from) len) (fromℕ≤ (s≤s (m≤m+n from len)))) ⟩
+  map toℕ (V.toList (ι-fin-vec-rev (suc from) len) ∷ʳ lift from)
+    ≡⟨ {!∷ʳ-map!} ⟩
+  map toℕ (V.toList (ι-fin-vec-rev (suc from) len)) ∷ʳ toℕ (lift from)
+    ≡⟨ cong (_∷ʳ_ (map toℕ (V.toList (ι-fin-vec-rev (suc from) len)))) (lift-id from) ⟩
+  map toℕ (V.toList (ι-fin-vec-rev (suc from) len)) ∷ʳ from ∎
+  where
+    ∷ʳ-to-∷ʳ : ∀ {a n} → {A : Set a} (xs : V.Vec A n) (x : A) →
+               V.toList (xs V.∷ʳ x) ≡ V.toList xs L.∷ʳ x
+    ∷ʳ-to-∷ʳ V.[] x = refl
+    ∷ʳ-to-∷ʳ (y V.∷ ys) x = begin
+      y ∷ V.toList (ys V.∷ʳ x)  ≡⟨ cong (_∷_ y) (∷ʳ-to-∷ʳ ys x) ⟩
+      y ∷ V.toList ys ∷ʳ x      ∎
+-}
+-}
 
 suc-last-lemma : ∀ m n → fromLenℕ m (suc n) ≡ (fromLenℕ m n) ∷ʳ (m + n)
 suc-last-lemma m zero = cong (_∷ʳ_ []) $ +-comm zero m
@@ -196,6 +253,67 @@ postulate
   ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
                      fromLenF m n ∥ (≟ k) ≡ [ k ]
 
+import Relation.Binary
+
+≟N : Relation.Binary.Decidable {A = ℕ} _≡_
+≟N zero zero = yes refl
+≟N zero (suc n) = no (λ ())
+≟N (suc m) zero = no (λ ())
+≟N (suc m) (suc n) with ≟N m n
+≟N (suc m) (suc .m) | yes refl = yes refl
+≟N (suc m) (suc n) | no ¬p = no (suc-lem ¬p)
+  where
+    suc-inj : {m n : ℕ} → ℕ.suc m ≡ suc n → m ≡ n
+    suc-inj refl = refl
+
+    suc-lem : {m n : ℕ} → ¬ m ≡ n → ¬ ((suc m) ≡ (suc n))
+    suc-lem ¬m≡n sucm≡sucn rewrite suc-inj sucm≡sucn = ¬m≡n refl
+
+ordinals-suc : ∀ m n k → k N.< m → fromLenℕ m n ∥ (≟N k) ≡ []
+ordinals-suc m zero k k<m = refl
+ordinals-suc zero (suc n) k ()
+ordinals-suc (suc m) (suc n) k k<m with ≟N k (suc m)
+ordinals-suc (suc m) (suc n) .(suc m) (s≤s k<m) | yes refl = ⊥-elim (¬lt k<m)
+  where
+    ¬lt : ∀ {m} → suc m ≤ m → ⊥
+    ¬lt {zero} ()
+    ¬lt {suc m} (s≤s m+1≤m) = ¬lt m+1≤m
+
+ordinals-suc (suc m) (suc n) k (s≤s k<m) | no ¬p = ordinals-suc (suc (suc m)) n k (s≤s (lt k<m))
+  where
+    lt : ∀ {m n} → m ≤ n → m ≤ suc n
+    lt {zero} m≤n = z≤n
+    lt {suc m} {zero} ()
+    lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
+
+ordinals-filterℕ : ∀ m n k → m ≤ k → (k<m+n : k N.< (m + n)) →
+                   fromLenℕ m n ∥ (≟N k) ≡ [ k ]
+ordinals-filterℕ zero zero zero z≤n ()
+ordinals-filterℕ zero (suc n) zero z≤n (s≤s z≤n) = cong (_∷_ zero) (ordinals-suc 1 n 0 (s≤s z≤n))
+ordinals-filterℕ zero zero (suc k) z≤n ()
+ordinals-filterℕ zero (suc n) (suc k) z≤n (s≤s k<m+n) = ordinals-filterℕ 1 n (suc k) (s≤s z≤n) (s≤s k<m+n)
+ordinals-filterℕ (suc m) n zero () k<m+n
+ordinals-filterℕ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr k<m+n m≤k)
+  where
+    contr : ∀ {m k} → suc k ≤ m → m ≤ k → ⊥
+    contr {zero} {k} () m≤k
+    contr {suc m} {zero} (s≤s k+1≤m) ()
+    contr {suc m} {suc k} (s≤s k+1≤m) (s≤s m≤k) = contr k+1≤m m≤k
+
+ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) with ≟N k m
+ordinals-filterℕ (suc m) (suc n) (suc .m) (s≤s m≤k) (s≤s k<m+n) | yes refl = cong (_∷_ (suc m)) (ordinals-suc (suc (suc m)) n (suc m) (s≤s (s≤s m≤k)))
+ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) | no ¬p rewrite +-suc m n = ordinals-filterℕ (suc (suc m)) n (suc k) (s≤s (lt m k m≤k ¬p)) (s≤s k<m+n)
+  where
+    suc-lem : ∀ {m n} → ¬ suc m ≡ suc n → ¬ m ≡ n
+    suc-lem ¬eq refl = ¬eq refl
+
+    lt : ∀ m k → m ≤ k → ¬ k ≡ m → suc m ≤ k
+    lt zero zero z≤n ¬k≡m = ⊥-elim (¬k≡m refl)
+    lt (suc m) zero () ¬k≡m
+    lt zero (suc k) z≤n ¬k≡m = s≤s z≤n
+    lt (suc m) (suc k) (s≤s m≤k) ¬k≡m = s≤s (lt m k m≤k (suc-lem ¬k≡m))
+
+{-
 open import Data.Nat using () renaming (_≟_ to _≟N_)
 open import Data.Maybe hiding (map; All)
 
@@ -208,7 +326,6 @@ fromLenℕ-head = refl
 
 open import Data.Nat.Properties.Simple using (+-comm)
 
-{-
 ordinals-filterℕ : ∀ {m n k} → m ≤ k → (k<m+n : k N.< (m + n)) →
                    fromLenℕ m n ∥ (_≟N_ k) ≡ [ k ]
 ordinals-filterℕ {m} {n} {k} m≤k k<m+n with m ≟N k
@@ -306,6 +423,7 @@ ordinals-filterF′ {m} {n} {k} m≤k k<m+n = begin
     filter> ¬m<k ¬m≈k m>k = {!!} -- absurd
 -}
 
+{-
 open import Data.Fin hiding (compare)
 
 []=-tabulate : ∀ {n a} {A : Set a} (f : Fin n → A) i → tabulate f [ i ]= f i
@@ -352,13 +470,119 @@ module M = Any.Membership-≡
 ∈→lookup (Any.here px) = zero , sym (cong just px)
 ∈→lookup (Any.there x∈xs) with ∈→lookup x∈xs
 ∈→lookup (Any.there x∈xs) | i , eq = suc i , eq
-
+-}
 {-
+module _ where
+  import Relation.Binary.Vec.Pointwise as PW
+
+  open import Data.Vec.Properties
+  open import Data.Fin.Properties
+
+  _PW-≡_ : ∀ {a} {A : Set a} {n} (xs : Vec A n) (ys : Vec A n) → Set a
+  _PW-≡_ = PW.Pointwise _≡_
+
+  _PW-≡toℕ_ : ∀ {m n k} (xs : Vec (Fin m) k) (ys : Vec (Fin n) k) → Set
+  _PW-≡toℕ_ = PW.Pointwise (λ x y → toℕ x ≡ toℕ y)
+
+  ι-split : ∀ from {len} →
+            _PW-≡toℕ_ (V.tail (ι-fin-vec′ from (suc len))) (V.map suc (ι-fin-vec′ from len))
+  ι-split from {len} = PW.ext (λ i → subst₂ _≡_ (sym (left i)) (sym (right i)) refl)
+    where
+      left : ∀ i → toℕ (lookup i (V.tail (ι-fin-vec′ from (suc len)))) ≡ suc (from N.+ toℕ i)
+      left i = {!(V.replicate fin-swap ⊛ tabulate {len} (raise from ∘ suc))!}
+      right : ∀ i → toℕ (lookup i (V.map suc (ι-fin-vec′ from len))) ≡ suc (from N.+ toℕ i)
+      right i = {!!}
+
+
+  ι-next : ∀ from {len} f →
+           _PW-≡_ {A = Fin {!(V.map (f ∘ suc) (ι-fin-vec from (suc len)))!}} (V.map (f ∘ suc) (ι-fin-vec from (suc len)))
+                             (V.map f (ι-fin-vec (suc from) (suc len)))
+  ι-next from {len} f = PW.ext next
+    where
+      next : ∀ i → lookup i (V.map (f ∘ suc) (ι-fin-vec from (suc len))) ≡
+                   lookup i (V.map f (ι-fin-vec (suc from) (suc len)))
+      next i = {!lookup∘tabulate (f ∘ suc ∘ raise from) i!}
+
+      left : ∀ i → lookup i (V.map (f ∘ suc) (ι-fin-vec from (suc len))) ≡
+                   f (suc (raise from i))
+      left i {- rewrite ι-lemma″ from {len} i -} = {!!} -- lookup∘tabulate (f ∘ suc ∘ raise from) i
+
+
+  next : ∀ from {len} →
+         ι-fin-vec (suc from) len ≡ V.map suc (ι-fin-vec from len)
+  next from = tabulate-∘ suc (raise from)
+
+  fin-cong : ∀ {m n} → m ≡ n → Fin m ≡ Fin n
+  fin-cong refl = cong Fin refl
+
+
+  open import Relation.Binary.Core using (Trichotomous)
+
+  cmp : ∀ n → Trichotomous _≡_ (λ z z₁ → toℕ z N.< toℕ z₁)
+  cmp n = compare
+    where
+      open import Relation.Binary using (module StrictTotalOrder; module IsStrictTotalOrder)
+      open import Data.Fin.Properties using (strictTotalOrder)
+      open StrictTotalOrder (strictTotalOrder n) using (isStrictTotalOrder)
+      open IsStrictTotalOrder isStrictTotalOrder using (compare)
+
+  open import Data.Nat.Properties.Simple
+
+  ι-none : ∀ from len k → toℕ k N.< from → ι-fin-list from len ∥ (≟ k) ≡ []
+  ι-none zero len k ()
+  ι-none (suc from) zero k k<from = refl
+  ι-none (suc from) (suc len) zero (s≤s z≤n) = {!!}
+  ι-none (suc from) (suc len) (suc k) (s≤s k<from) with k ≟F raise from zero
+  ... | yes eq rewrite eq = {!!}
+  ... | no ¬eq = {!L.map suc (ι-fin-list from len)!}
+
+  ι-single : ∀ from len k →
+             from N.≤ toℕ k → toℕ k N.< (from N.+ len) →
+             ι-fin-list from len ∥ (≟ k) ≡ [ k ]
+  ι-single zero zero () from≤k k<from+len
+  ι-single (suc from) zero zero () (s≤s k<from+len)
+  ι-single (suc from) zero (suc k) (s≤s from≤k) (s≤s k<from+len) = ⊥-elim (lemma k from k<from+len from≤k)
+    where
+      lemma : ∀ {i} (m : Fin i) n → suc (toℕ m) N.≤ n N.+ zero → ¬ n N.≤ toℕ m
+      lemma m zero () z≤n
+      lemma zero (suc n) (s≤s 1+m≤n) ()
+      lemma (suc m) (suc n) (s≤s 1+m≤n) (s≤s n≤m) = lemma m n 1+m≤n n≤m
+  ι-single from (suc len) k from≤k k<from+len with k ≟F raise from zero
+  ... | yes eq rewrite eq = cong {!_∷_ (raise from zero)!} (ι-none (suc from) len (+-suc-fin from len k) {!k<1+from!})
+    where
+      +-suc-fin : ∀ m n → Fin (m N.+ suc n) → Fin (suc m N.+ n)
+      +-suc-fin k l = {!!}
+
+      k<1+from : toℕ k N.< suc from
+      k<1+from = {!!}
+  ... | no ¬eq = {!!}
+
+  ι-single′ : ∀ len k → toℕ k N.< len → ι-fin-list 0 len ∥ (≟ k) ≡ [ k ]
+  ι-single′ zero k ()
+  ι-single′ (suc len) zero (s≤s z≤n) = cong (_∷_ zero) {!!}
+  ι-single′ (suc len) (suc k) (s≤s k<len) = {!c!}
+
+  raise-suc : ∀ {k} m {n : Fin k} → toℕ (raise m (suc n)) ≡ toℕ (suc (raise m n))
+  raise-suc m {n} = begin
+    toℕ (raise m (suc n))  ≡⟨ toℕ-raise m (suc n) ⟩
+    m N.+ suc (toℕ n)      ≡⟨ +-suc m (toℕ n) ⟩
+    suc (m N.+ toℕ n)      ≡⟨ cong suc (sym (toℕ-raise m n)) ⟩
+    toℕ (suc (raise m n))  ∎
+
+  ι-suc : ∀ from len → L.map suc (ι-fin-list from len) ≡ ι-fin-list (suc from) len
+  ι-suc from zero = refl
+  ι-suc from (suc len) = cong (_∷_ (suc (raise from zero))) {!ι-suc (suc from) len!}
+
+ι-≥from : ∀ from {len} → All (N._≤_ from) (ι-nat-list from len)
+ι-≥from from {zero} = []
+ι-≥from from {suc len} = {!!} ∷ {!ι-≥from!}
+
+
 ι-list-lemma : ∀ from {len} i →
                lookupMaybe (toℕ i) (toList (ι-fin-vec from (suc len)))
                ≡ just (raise from i)
 ι-list-lemma from i = {!!}
--}
+
 
 ι-∃! : ∀ from {len} n →
        ∃! _≡_ λ i → lookup i (ι-fin-vec from (suc len)) ≡ raise from n
@@ -373,19 +597,20 @@ lookup→List : ∀ {a n} {A : Set a} {x : A} (i : Fin n) xs →
 lookup→List zero    (x ∷ _ ) refl = refl
 lookup→List (suc i) (_ ∷ xs) eq   = lookup→List i xs eq
 
-{-
-ι-unique : ∀ from len n → ι-fin-list from (suc len) ∥ (_≟F_ (raise from n)) ≡ Data.List.Base.[ raise from n ]
+ι-unique : ∀ from len n →
+           ι-fin-list from (suc len) ∥ (≟ (raise from n)) ≡
+           [ raise from n ]
 ι-unique zero len zero = cong (_∷_ zero) {!!}
 ι-unique (suc from) zero zero = head-yes (suc (raise from zero)) {!!} {!!} {!!}
 ι-unique (suc from) (suc len) zero = head-yes (suc (raise from zero)) {!!} {!!} {!!}
 ι-unique from len (suc n) = {!!}
--}
-{-
+
+
 ι-unique : ∀ from {len} i → from N.≤ toℕ i →
            Unique-Vec (_≡_ i) (ι-fin-vec from (suc len))
 ι-unique from i from≤i = {!!}
--}
-{-
-ι-filter : ∀ from {len} n → ι-fin-list from (suc len) ∥ (_≟F_ n) ≡ Data.List.Base.[ n ]
+
+
+ι-filter : ∀ from {len} n → ι-fin-list from (suc len) ∥ (≟ n) ≡ Data.List.Base.[ n ]
 ι-filter from n = {!!}
 -}
