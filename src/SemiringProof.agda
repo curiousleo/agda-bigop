@@ -39,7 +39,7 @@ open Props.Ordinals
 open import Relation.Binary.EqReasoning setoid
 open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 
-ι = fromLenF′ 0
+ι = upFromF 0
 
 -----------------
 -- Definitions --

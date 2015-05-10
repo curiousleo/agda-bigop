@@ -6,6 +6,7 @@ module Proofs where
 
   open import Function
 
+  open import Data.List.Base
   open import Data.Unit hiding (setoid)
 
   open import Relation.Nullary
@@ -29,6 +30,8 @@ module Proofs where
     open Fold +-monoid using (fold; Σ-syntax)
 
     open import Relation.Unary
+
+    _…+_ = upFromℕ
 
     proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
     proof zero = P.refl
@@ -95,7 +98,7 @@ module Proofs where
 
   module GaussFormula where
 
-    open import Data.Nat using (suc)
+    open import Data.Nat using (suc; _∸_)
     open import Data.Nat.Properties using (commutativeSemiring)
     open import Data.Product using (proj₁; proj₂)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
@@ -103,6 +106,8 @@ module Proofs where
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
     open Fold +-monoid using (fold; Σ-syntax)
+
+    _…_ = rangeℕ
 
     proof : ∀ (n : ℕ) → 2 * (Σ[ x ← 0 … n ] x) ≡ n * (suc n)
     proof 0 = P.refl
