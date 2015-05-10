@@ -10,6 +10,9 @@ upFromℕ : ℕ → ℕ → List ℕ
 upFromℕ from zero      = []
 upFromℕ from (suc len) = from ∷ upFromℕ (suc from) len
 
+rangeℕ : ℕ → ℕ → List ℕ
+rangeℕ m n = upFromℕ m (suc n ∸ m)
+
 upFromF : (from len : ℕ) → List (Fin (from + len))
 upFromF from zero = []
 upFromF from (suc len)
