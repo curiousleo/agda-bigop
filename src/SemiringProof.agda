@@ -48,6 +48,8 @@ open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣�
 M : Set c
 M = Matrix Carrier n n
 
+infix 4 _≋_
+
 _≋_ : Rel M ℓ
 _≋_ = Pointwise _≈_
 
@@ -126,13 +128,13 @@ l∘t = lookup∘tabulate
     factorᵣ : ∀ r c →
               (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
     factorᵣ r c = start
-      (A ⊕ (B ⊕ C)) [ r , c ]         ≣⟨ l∘t r c ⟩
+      (A ⊕ (B ⊕ C)) [ r , c ]          ≣⟨ l∘t r c ⟩
       A [ r , c ] + (B ⊕ C) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (l∘t r c) ⟩
       A [ r , c ] + (B [ r , c ] + C [ r , c ]) □
 
     assoc : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≈ (A ⊕ (B ⊕ C)) [ r , c ]
     assoc r c = begin
-      ((A ⊕ B) ⊕ C) [ r , c ]                    ≡⟨ factorₗ r c ⟩
+      ((A ⊕ B) ⊕ C) [ r , c ]                      ≡⟨ factorₗ r c ⟩
       (A [ r , c ] +  B [ r , c ]) + C [ r , c ]   ≈⟨ +-assoc _ _ _ ⟩
        A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorᵣ r c) ⟩
       (A ⊕ (B ⊕ C)) [ r , c ]                    ∎
