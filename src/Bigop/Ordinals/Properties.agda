@@ -285,9 +285,8 @@ ordinals-suc (suc m) (suc n) k (s≤s k<m) | no ¬p = ordinals-suc (suc (suc m))
 
 ordinals-filterℕ : ∀ m n k → m ≤ k → (k<m+n : k N.< (m + n)) →
                    fromLenℕ m n ∥ (≟N k) ≡ [ k ]
-ordinals-filterℕ zero zero zero z≤n ()
+ordinals-filterℕ zero zero k z≤n ()
 ordinals-filterℕ zero (suc n) zero z≤n (s≤s z≤n) = cong (_∷_ zero) (ordinals-suc 1 n 0 (s≤s z≤n))
-ordinals-filterℕ zero zero (suc k) z≤n ()
 ordinals-filterℕ zero (suc n) (suc k) z≤n (s≤s k<m+n) = ordinals-filterℕ 1 n (suc k) (s≤s z≤n) (s≤s k<m+n)
 ordinals-filterℕ (suc m) n zero () k<m+n
 ordinals-filterℕ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr k<m+n m≤k)
@@ -351,16 +350,16 @@ ordinals-filterF′ (suc m) (suc n) (suc k) m≤k k<m+n rewrite +-suc m n with �
 ordinals-filterF′ (suc m) (suc n) (suc .(fromℕ≤ (s≤s (m≤m+n m n)))) (s≤s m≤k) (s≤s (s≤s k<m+n)) | yes refl = cong (_∷_ (suc (fromℕ≤ (s≤s (m≤m+n m n))))) (ordinals-suc′ (suc (suc m)) n (suc (fromℕ≤ (s≤s (m≤m+n m n)))) (s≤s (s≤s (lt m n))))
   where
     lt : ∀ m n → toℕ (fromℕ≤ {m} (s≤s (m≤m+n m n))) ≤ m
-    lt zero n = z≤n
+    lt zero    n = z≤n
     lt (suc m) n = s≤s (lt m n)
 
 ordinals-filterF′ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s (s≤s k<m+n)) | no ¬p = ordinals-filterF′ (suc (suc m)) n (suc k) (s≤s (lt m k m≤k (s≤s (m≤m+n m n)) ¬p)) (s≤s (s≤s k<m+n))
   where
     lt : ∀ m k → m ≤ toℕ k → (le : m N.< suc m + n) → ¬ k ≡ fromℕ≤ {m} le →
          suc m ≤ toℕ k
-    lt zero zero z≤n (s≤s z≤n) ¬k≡m = ⊥-elim (¬k≡m refl)
-    lt zero (suc k) z≤n (s≤s z≤n) ¬k≡m = s≤s z≤n
-    lt (suc m) zero () (s≤s m≤m+n) ¬k≡m
+    lt zero    zero    z≤n       (s≤s z≤n)         ¬k≡m = ⊥-elim (¬k≡m refl)
+    lt zero    (suc k) z≤n       (s≤s z≤n)         ¬k≡m = s≤s z≤n
+    lt (suc m) zero    ()        m≤m+n             ¬k≡m
     lt (suc m) (suc k) (s≤s m≤k) (s≤s (s≤s m≤m+n)) ¬k≡m =
       s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
 
