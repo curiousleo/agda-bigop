@@ -256,12 +256,12 @@ postulate
 import Relation.Binary
 
 ≟N : Relation.Binary.Decidable {A = ℕ} _≡_
-≟N zero zero = yes refl
-≟N zero (suc n) = no (λ ())
-≟N (suc m) zero = no (λ ())
+≟N zero    zero    = yes refl
+≟N zero    (suc n) = no (λ ())
+≟N (suc m) zero    = no (λ ())
 ≟N (suc m) (suc n) with ≟N m n
 ≟N (suc m) (suc .m) | yes refl = yes refl
-≟N (suc m) (suc n) | no ¬p = no (suc-lem ¬p)
+≟N (suc m) (suc n)  | no ¬p    = no (suc-lem ¬p)
   where
     suc-inj : {m n : ℕ} → ℕ.suc m ≡ suc n → m ≡ n
     suc-inj refl = refl
@@ -270,8 +270,8 @@ import Relation.Binary
     suc-lem ¬m≡n sucm≡sucn rewrite suc-inj sucm≡sucn = ¬m≡n refl
 
 ordinals-suc : ∀ m n k → k N.< m → fromLenℕ m n ∥ (≟N k) ≡ []
-ordinals-suc m zero k k<m = refl
-ordinals-suc zero (suc n) k ()
+ordinals-suc m       zero    k k<m = refl
+ordinals-suc zero    (suc n) k ()
 ordinals-suc (suc m) (suc n) k k<m with ≟N k (suc m)
 ordinals-suc (suc m) (suc n) .(suc m) (s≤s k<m) | yes refl = ⊥-elim (¬lt k<m)
   where
