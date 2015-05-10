@@ -1,5 +1,6 @@
 module Bigop.Ordinals.Properties where
 
+open import Bigop.DecidableEquality
 open import Bigop.Ordinals
 open import Bigop.Filter
 
@@ -249,23 +250,6 @@ ordinals-uniqueF (s≤s m≤k) k≤m+n = {!!}
 open import Bigop.Filter
 open import Data.Fin using (toℕ; inject+; inject≤; inject₁; fromℕ)
 
-
-import Relation.Binary
-
-≟N : Relation.Binary.Decidable {A = ℕ} _≡_
-≟N zero    zero    = yes refl
-≟N zero    (suc n) = no (λ ())
-≟N (suc m) zero    = no (λ ())
-≟N (suc m) (suc n) with ≟N m n
-≟N (suc m) (suc .m) | yes refl = yes refl
-≟N (suc m) (suc n)  | no ¬p    = no (suc-lem ¬p)
-  where
-    suc-inj : {m n : ℕ} → ℕ.suc m ≡ suc n → m ≡ n
-    suc-inj refl = refl
-
-    suc-lem : {m n : ℕ} → ¬ m ≡ n → ¬ ((suc m) ≡ (suc n))
-    suc-lem ¬m≡n sucm≡sucn rewrite suc-inj sucm≡sucn = ¬m≡n refl
-
 ordinals-suc : ∀ m n k → k N.< m → upFromℕ m n ∥ (≟N k) ≡ []
 ordinals-suc m       zero    k k<m = refl
 ordinals-suc zero    (suc n) k ()
@@ -311,7 +295,7 @@ ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) | no ¬p 
 
 open import Data.Nat.Properties using (m≤m+n)
 
-ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF′ m n ∥ (≟ k) ≡ []
+ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF m n ∥ (≟ k) ≡ []
 ordinals-suc′ m zero k k<m = refl
 ordinals-suc′ zero (suc n) k ()
 ordinals-suc′ (suc m) (suc n) k k<m rewrite +-suc m n with ≟ k (fromℕ≤ {suc m} (s≤s (s≤s (m≤m+n m n))))
@@ -332,7 +316,7 @@ open import Data.Fin.Properties using (toℕ-fromℕ≤)
 
 
 ordinals-filterF′ : ∀ m n k → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                    upFromF′ m n ∥ (≟ k) ≡ [ k ]
+                    upFromF m n ∥ (≟ k) ≡ [ k ]
 ordinals-filterF′ zero zero k m≤k ()
 ordinals-filterF′ (suc m) zero zero () k<m+n
 ordinals-filterF′ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr m k k<m+n m≤k)
@@ -364,5 +348,5 @@ ordinals-filterF′ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s (s≤s k<m+n)) 
       s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
 
 ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                     upFromF′ m n ∥ (≟ k) ≡ [ k ]
+                     upFromF m n ∥ (≟ k) ≡ [ k ]
 ordinals-filterF {m} {n} {k} = ordinals-filterF′ m n k
