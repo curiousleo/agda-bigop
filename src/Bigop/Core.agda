@@ -4,7 +4,7 @@ open import Algebra
 
 module Fold {c ℓ} (M : Monoid c ℓ) where
 
-  open import Data.List using (List; foldr; map)
+  open import Data.List.Base using (List; foldr; map)
   open import Function using (_∘_)
 
   open Monoid M renaming (Carrier to R)
