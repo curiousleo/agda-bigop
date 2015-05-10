@@ -19,11 +19,11 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open ≡-Reasoning
 
-suc-lemma : ∀ m n → map suc (fromLenℕ m n) ≡ fromLenℕ (suc m) n
+suc-lemma : ∀ m n → map suc (upFromℕ m n) ≡ upFromℕ (suc m) n
 suc-lemma m zero    = refl
 suc-lemma m (suc n) = cong (_∷_ (suc m)) (suc-lemma (suc m) n)
 
-suc-head-lemma : ∀ m n → m ∷ (fromLenℕ (suc m) n) ≡ fromLenℕ m (suc n)
+suc-head-lemma : ∀ m n → m ∷ (upFromℕ (suc m) n) ≡ upFromℕ m (suc n)
 suc-head-lemma m n = refl
 
 {-
@@ -83,14 +83,14 @@ begin
 -}
 -}
 
-suc-last-lemma : ∀ m n → fromLenℕ m (suc n) ≡ (fromLenℕ m n) ∷ʳ (m + n)
+suc-last-lemma : ∀ m n → upFromℕ m (suc n) ≡ (upFromℕ m n) ∷ʳ (m + n)
 suc-last-lemma m zero = cong (_∷ʳ_ []) $ +-comm zero m
 suc-last-lemma m (suc n) = begin
-  m ∷ fromLenℕ (suc m) (suc n)
+  m ∷ upFromℕ (suc m) (suc n)
     ≡⟨ cong (_∷_ m) $ suc-last-lemma (suc m) n ⟩
-  m ∷ (fromLenℕ (suc m) n) ∷ʳ suc m + n
-    ≡⟨ cong (_∷ʳ_ $ fromLenℕ m (suc n)) $ sym $ +-suc m n ⟩
-  fromLenℕ m (suc n) ∷ʳ m + suc n ∎
+  m ∷ (upFromℕ (suc m) n) ∷ʳ suc m + n
+    ≡⟨ cong (_∷ʳ_ $ upFromℕ m (suc n)) $ sym $ +-suc m n ⟩
+  upFromℕ m (suc n) ∷ʳ m + suc n ∎
 
 head-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
            P x → (x ∷ xs) ∥ p ≡ x ∷ (xs ∥ p)
@@ -168,8 +168,8 @@ combine-filters (x ∷ xs) p q p∩q | no ¬px | no ¬qx | no ¬p∩qx = combine
 
 {-
 postulatE
-  uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → fromLenℕ m n ∥ _≟_ k ≡ [ k ]
-  uniqueF : ∀ m n k → m ≤ toℕ k → toℕ k ≤ (m + n) → fromLenF m n ∥ _≟F_ k ≡ [ k ]
+  uniqueℕ : ∀ m n k → m ≤ k → k ≤ n → upFromℕ m n ∥ _≟_ k ≡ [ k ]
+  uniqueF : ∀ m n k → m ≤ toℕ k → toℕ k ≤ (m + n) → upFromF m n ∥ _≟F_ k ≡ [ k ]
 -}
 
 open import Level using (_⊔_)
@@ -228,7 +228,7 @@ postulatE
   ordinals-unique : ∀ {m n k} → m ≤ k → k ≤ n →
                     Unique (_≡_ k) (m … n)
   ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k < (m + n)) →
-                     Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
+                     Unique (_≡_ (fromℕ≤ k<m+n)) (upFromF m n)
   ordinals-eq : ∀ {m n k} → (m≤k : m ≤ k) → (k<m+n : k < (m + n)) →
                 extract-unique (ordinals-uniqueF m≤k k<m+n) ≡ fromℕ≤ k<m+n
 -}
@@ -240,7 +240,7 @@ open IsStrictTotalOrder (StrictTotalOrder.isStrictTotalOrder strictTotalOrder)
   using (compare)
 
 ordinals-uniqueF : ∀ {m n k} → m ≤ k → (k<m+n : k < (m + n)) →
-                   Unique (_≡_ (fromℕ≤ k<m+n)) (fromLenF m n)
+                   Unique (_≡_ (fromℕ≤ k<m+n)) (upFromF m n)
 ordinals-uniqueF {zero} {k = zero} z≤n (s≤s k≤m+n) = here {!!} {!ordinals-lt!}
 ordinals-uniqueF {k = suc k} z≤n k≤m+n = {!!}
 ordinals-uniqueF (s≤s m≤k) k≤m+n = {!!}
@@ -266,7 +266,7 @@ import Relation.Binary
     suc-lem : {m n : ℕ} → ¬ m ≡ n → ¬ ((suc m) ≡ (suc n))
     suc-lem ¬m≡n sucm≡sucn rewrite suc-inj sucm≡sucn = ¬m≡n refl
 
-ordinals-suc : ∀ m n k → k N.< m → fromLenℕ m n ∥ (≟N k) ≡ []
+ordinals-suc : ∀ m n k → k N.< m → upFromℕ m n ∥ (≟N k) ≡ []
 ordinals-suc m       zero    k k<m = refl
 ordinals-suc zero    (suc n) k ()
 ordinals-suc (suc m) (suc n) k k<m with ≟N k (suc m)
@@ -284,7 +284,7 @@ ordinals-suc (suc m) (suc n) k (s≤s k<m) | no ¬p = ordinals-suc (suc (suc m))
     lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
 
 ordinals-filterℕ : ∀ m n k → m ≤ k → (k<m+n : k N.< (m + n)) →
-                   fromLenℕ m n ∥ (≟N k) ≡ [ k ]
+                   upFromℕ m n ∥ (≟N k) ≡ [ k ]
 ordinals-filterℕ zero zero k z≤n ()
 ordinals-filterℕ zero (suc n) zero z≤n (s≤s z≤n) = cong (_∷_ zero) (ordinals-suc 1 n 0 (s≤s z≤n))
 ordinals-filterℕ zero (suc n) (suc k) z≤n (s≤s k<m+n) = ordinals-filterℕ 1 n (suc k) (s≤s z≤n) (s≤s k<m+n)
@@ -311,7 +311,7 @@ ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) | no ¬p 
 
 open import Data.Nat.Properties using (m≤m+n)
 
-ordinals-suc′ : ∀ m n k → toℕ k N.< m → fromLenF′ m n ∥ (≟ k) ≡ []
+ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF′ m n ∥ (≟ k) ≡ []
 ordinals-suc′ m zero k k<m = refl
 ordinals-suc′ zero (suc n) k ()
 ordinals-suc′ (suc m) (suc n) k k<m rewrite +-suc m n with ≟ k (fromℕ≤ {suc m} (s≤s (s≤s (m≤m+n m n))))
@@ -332,7 +332,7 @@ open import Data.Fin.Properties using (toℕ-fromℕ≤)
 
 
 ordinals-filterF′ : ∀ m n k → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                    fromLenF′ m n ∥ (≟ k) ≡ [ k ]
+                    upFromF′ m n ∥ (≟ k) ≡ [ k ]
 ordinals-filterF′ zero zero k m≤k ()
 ordinals-filterF′ (suc m) zero zero () k<m+n
 ordinals-filterF′ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr m k k<m+n m≤k)
@@ -364,5 +364,5 @@ ordinals-filterF′ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s (s≤s k<m+n)) 
       s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
 
 ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                     fromLenF′ m n ∥ (≟ k) ≡ [ k ]
+                     upFromF′ m n ∥ (≟ k) ≡ [ k ]
 ordinals-filterF {m} {n} {k} = ordinals-filterF′ m n k

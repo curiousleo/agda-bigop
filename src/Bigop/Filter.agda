@@ -51,8 +51,8 @@ private
 
   open import Relation.Binary.PropositionalEquality
 
-  test-even : (1 … 6) ∥ even ≡ 2 ∷ 4 ∷ 6 ∷ []
+  test-even : (upFromℕ 1 6) ∥ even ≡ 2 ∷ 4 ∷ 6 ∷ []
   test-even = refl
 
-  test-odd : (1 … 6) ∥ odd ≡ 1 ∷ 3 ∷ 5 ∷ []
+  test-odd : (upFromℕ 1 6) ∥ odd ≡ 1 ∷ 3 ∷ 5 ∷ []
   test-odd = refl
