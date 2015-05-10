@@ -19,7 +19,7 @@ even (suc (suc n)) with even n
 ... | no ¬p = no (ss-odd ¬p)
   where
     ss-odd : ∀ {n} → ¬ Even n → ¬ Even (suc (suc n))
-    ss-odd ¬ps (ss-even p) = ⊥-elim (¬ps p)
+    ss-odd ¬ps (ss-even p) = ¬ps p
 
 data Odd : Pred ℕ Level.zero  where
   one-odd : Odd 1
