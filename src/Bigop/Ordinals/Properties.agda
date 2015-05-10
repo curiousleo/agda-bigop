@@ -4,15 +4,15 @@ open import Bigop.DecidableEquality
 open import Bigop.Ordinals
 open import Bigop.Filter
 
-import Data.List.Base as L
-open L
-open import Function
+open import Data.List.Base
 open import Data.Empty using (⊥; ⊥-elim)
-open import Data.Nat.Base as N hiding (_⊔_; _<_)
-open import Data.Nat.Properties.Simple
--- open import Data.Nat
 open import Data.Fin hiding (_+_; _≤_; lift)
--- open import Data.Fin.Properties renaming (_≟_ to _≟F_)
+open import Data.Fin.Properties using (toℕ-fromℕ≤)
+open import Data.Nat.Base as N hiding (_⊔_; _<_)
+open import Data.Nat.Properties using (m≤m+n)
+open import Data.Nat.Properties.Simple
+open import Data.Product hiding (map)
+open import Function
 open import Relation.Nullary
 open import Relation.Nullary.Decidable hiding (map)
 open import Relation.Unary
@@ -80,7 +80,6 @@ last-yes (y ∷ ys) x p tt | yes q | yes _ =
 last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p q
 last-yes xs x p px | no ¬px = ⊥-elim (¬px px)
 
-open import Data.Product hiding (map)
 
 ∥-filters : ∀ {a p} {A : Set a} {P : Pred A p} (xs : List A) (dec : Decidable P) →
             xs ∥ dec ≡ filter (⌊_⌋ ∘ dec) xs
@@ -110,8 +109,6 @@ combine-filters (x ∷ xs) p q p∩q | no ¬px | yes qx | no ¬p∩qx = combine-
 combine-filters (x ∷ xs) p q p∩q | no ¬px | no ¬qx | yes p∩qx = ⊥-elim (¬qx (proj₂ p∩qx))
 combine-filters (x ∷ xs) p q p∩q | no ¬px | no ¬qx | no ¬p∩qx = combine-filters xs p q p∩q
 
-open import Bigop.Filter
-open import Data.Fin using (toℕ; inject+; inject≤; inject₁; fromℕ)
 
 ordinals-suc : ∀ m n k → k N.< m → upFromℕ m n ∥ (≟N k) ≡ []
 ordinals-suc m       zero    k k<m = refl
@@ -156,7 +153,6 @@ ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) | no ¬p 
     lt zero (suc k) z≤n ¬k≡m = s≤s z≤n
     lt (suc m) (suc k) (s≤s m≤k) ¬k≡m = s≤s (lt m k m≤k (suc-lem ¬k≡m))
 
-open import Data.Nat.Properties using (m≤m+n)
 
 ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF m n ∥ (≟ k) ≡ []
 ordinals-suc′ m zero k k<m = refl
@@ -175,7 +171,6 @@ ordinals-suc′ (suc m) (suc n) k (s≤s k<m) | no ¬p = ordinals-suc′ (suc (s
     lt {suc m} {zero} ()
     lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
 
-open import Data.Fin.Properties using (toℕ-fromℕ≤)
 
 
 ordinals-filterF′ : ∀ m n k → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
