@@ -1088,7 +1088,6 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
   open import Bigop.DecidableEquality using () renaming (≟F to ≟)
   open import Matrix renaming (lookup∘tabulate to l∘t)
 
-  open import Algebra.FunctionProperties
   open import Algebra.Structures
   open import Data.Empty
   open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
@@ -1096,7 +1095,6 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
   import Data.List.Base as L using ([_])
   open import Data.Product using (proj₁; proj₂; _,_; uncurry)
   open import Function
-  open import Function.Equivalence as Equiv using (_⇔_)
   open import Level using (_⊔_)
   open import Relation.Nullary
   open import Relation.Unary
@@ -1266,7 +1264,7 @@ The structure of the proof is similar to the congruence proof above. Again, a se
 
 %TC:ignore
 \begin{code}
-  ⊕-identityˡ : LeftIdentity _≋_ 0M _⊕_
+  ⊕-identityˡ : ∀ A → 0M ⊕ A ≋ A
   ⊕-identityˡ A = λ r c → begin
     (0M ⊕ A) [ r , c ]           ≡⟨ l∘t r c ⟩
     0M [ r , c ] +  A [ r , c ]  ≡⟨ P.cong₂ _+_ (l∘t r c) P.refl ⟩
@@ -1281,7 +1279,7 @@ The structure of the proof is similar to the congruence proof above. Again, a se
 
 %TC:ignore
 \begin{code}
-  ⊕-comm : Commutative _≋_ _⊕_
+  ⊕-comm : ∀ A B → A ⊕ B ≋ B ⊕ A
   ⊕-comm A B = λ r c → begin
     (A ⊕ B) [ r , c ]           ≡⟨ l∘t r c ⟩
     A [ r , c ]  + B [ r , c ]  ≈⟨ +-comm _ _ ⟩
@@ -1303,7 +1301,7 @@ As described in XXX, \AgdaFunction{Σ.cong} states that if lists \AgdaBound{is} 
 
 %TC:ignore
 \begin{code}
-  M-zeroˡ : LeftZero _≋_ 0M _⊗_
+  M-zeroˡ : ∀ A → 0M ⊗ A ≋ 0M
   M-zeroˡ A = λ r c → begin
     (0M ⊗ A) [ r , c ]                       ≡⟨ l∘t r c ⟩
     Σ[ i ← ι n ] 0M [ r , i ] * A [ i , c ]
@@ -1346,7 +1344,7 @@ In the remainder of the proof, we first multiply out the \AgdaFunction{0\#} usin
 %TC:ignore
 \AgdaHide{
 \begin{code}
-  M-zeroʳ : RightZero _≋_ 0M _⊗_
+  M-zeroʳ : ∀ A → A ⊗ 0M ≋ 0M
   M-zeroʳ A = λ r c → begin
     (A ⊗ 0M) [ r , c ]               ≡⟨ l∘t r c ⟩
     Σ[ i ← ι n ] A [ r , i ] * 0M [ i , c ]
@@ -1387,7 +1385,7 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
 
 %TC:ignore
 \begin{code}
-  ⊗-assoc : Associative _≋_ _⊗_
+  ⊗-assoc : ∀ A B C → (A ⊗ B) ⊗ C ≋ A ⊗ (B ⊗ C)
   ⊗-assoc A B C = λ r c → begin
 {- 3.1 -}  ((A ⊗ B) ⊗ C) [ r , c ]                                              ≈⟨ factorˡ r c ⟩
 {- 3.2 -}  Σ[ i ← ι n ] (Σ[ j ← ι n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
@@ -1506,7 +1504,7 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
 
 %TC:ignore
 \begin{code}
-  ⊗-identityˡ : LeftIdentity _≋_ 1M _⊗_
+  ⊗-identityˡ : ∀ A → 1M ⊗ A ≋ A
   ⊗-identityˡ A = λ r c → begin
     (1M ⊗ A) [ r , c ]                                     ≡⟨ l∘t r c ⟩
     Σ[ i ← ι n ] 1M [ r , i ] * A [ i , c ]                ≈⟨ Σ.split-P _ (ι n) (≟ r) ⟩
@@ -1549,7 +1547,7 @@ XXX discuss \AgdaFunction{filter} and \AgdaFunction{ordinals-filterF}.
 %TC:ignore
 \AgdaHide{
 \begin{code}
-  ⊗-identityʳ : RightIdentity _≋_ 1M _⊗_
+  ⊗-identityʳ : ∀ A → A ⊗ 1M ≋ A
   ⊗-identityʳ A = ident
     where
       open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
@@ -1600,7 +1598,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
 
 %TC:ignore
 \begin{code}
-  ⊗-distrOverˡ-⊕ : (_≋_ DistributesOverˡ _⊗_) _⊕_
+  ⊗-distrOverˡ-⊕ : ∀ A B C → A ⊗ (B ⊕ C) ≋ (A ⊗ B) ⊕ (A ⊗ C)
   ⊗-distrOverˡ-⊕ A B C = distr
     where
       open Semiring semiring using (*-cong; distrib)
@@ -1632,33 +1630,33 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
 %TC:ignore
 \AgdaHide{
 \begin{code}
-  ⊗-distrOverʳ-⊕ : (_≋_ DistributesOverʳ _⊗_) _⊕_
-  ⊗-distrOverʳ-⊕ C A B = distr
+  ⊗-distrOverʳ-⊕ : ∀ A B C → (B ⊕ C) ⊗ A ≋ (B ⊗ A) ⊕ (C ⊗ A)
+  ⊗-distrOverʳ-⊕ A B C = distr
     where
       open Semiring semiring using (*-cong; distrib)
       module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-      distr : ∀ r c → ((A ⊕ B) ⊗ C) [ r , c ] ≈ ((A ⊗ C) ⊕ (B ⊗ C)) [ r , c ]
+      distr : ∀ r c → ((B ⊕ C) ⊗ A) [ r , c ] ≈ ((B ⊗ A) ⊕ (C ⊗ A)) [ r , c ]
       distr r c = begin
-        ((A ⊕ B) ⊗ C) [ r , c ]
+        ((B ⊕ C) ⊗ A) [ r , c ]
           ≡⟨ l∘t r c ⟩
-        Σ[ i ← ι n ] (A ⊕ B) [ r , i ] * C [ i , c ]
+        Σ[ i ← ι n ] (B ⊕ C) [ r , i ] * A [ i , c ]
           ≈⟨ Σ.cong (ι n) P.refl (λ i → begin
 
-            (A ⊕ B) [ r , i ] * C [ i , c ]
+            (B ⊕ C) [ r , i ] * A [ i , c ]
               ≈⟨ *-cong (reflexive (l∘t r i)) refl ⟩
-            (A [ r , i ] + B [ r , i ]) * C [ i , c ]
+            (B [ r , i ] + C [ r , i ]) * A [ i , c ]
               ≈⟨ proj₂ distrib _ _ _ ⟩
-            (A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]) ∎)⟩
+            (B [ r , i ] * A [ i , c ]) + (C [ r , i ] * A [ i , c ]) ∎)⟩
 
-        Σ[ i ← ι n ] ((A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]))
+        Σ[ i ← ι n ] ((B [ r , i ] * A [ i , c ]) + (C [ r , i ] * A [ i , c ]))
           ≈⟨ sym (Σ.merge _ _ (ι n)) ⟩
-        Σ[ i ← ι n ] A [ r , i ] * C [ i , c ] +
-        Σ[ i ← ι n ] B [ r , i ] * C [ i , c ]
+        Σ[ i ← ι n ] B [ r , i ] * A [ i , c ] +
+        Σ[ i ← ι n ] C [ r , i ] * A [ i , c ]
           ≡⟨ P.sym $ P.cong₂ _+_ (l∘t r c) (l∘t r c) ⟩
-        (A ⊗ C) [ r , c ] + (B ⊗ C) [ r , c ]
+        (B ⊗ A) [ r , c ] + (C ⊗ A) [ r , c ]
           ≡⟨ P.sym (l∘t r c) ⟩
-        ((A ⊗ C) ⊕ (B ⊗ C)) [ r , c ] ∎
+        ((B ⊗ A) ⊕ (C ⊗ A)) [ r , c ] ∎
 \end{code}
 }
 %TC:endignore
