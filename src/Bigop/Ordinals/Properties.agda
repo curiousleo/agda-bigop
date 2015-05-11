@@ -154,10 +154,10 @@ ordinals-filterℕ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s k<m+n) | no ¬p 
     lt (suc m) (suc k) (s≤s m≤k) ¬k≡m = s≤s (lt m k m≤k (suc-lem ¬k≡m))
 
 
-ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF m n ∥ (≟ k) ≡ []
+ordinals-suc′ : ∀ m n k → toℕ k N.< m → upFromF m n ∥ (≟F k) ≡ []
 ordinals-suc′ m zero k k<m = refl
 ordinals-suc′ zero (suc n) k ()
-ordinals-suc′ (suc m) (suc n) k k<m rewrite +-suc m n with ≟ k (fromℕ≤ {suc m} (s≤s (s≤s (m≤m+n m n))))
+ordinals-suc′ (suc m) (suc n) k k<m rewrite +-suc m n with ≟F k (fromℕ≤ {suc m} (s≤s (s≤s (m≤m+n m n))))
 ordinals-suc′ (suc m) (suc n) .(suc (fromℕ≤ (s≤s (m≤m+n m n)))) (s≤s k<m) | yes refl = ⊥-elim (¬lt m n k<m)
   where
     ¬lt : ∀ m n → suc (toℕ (fromℕ≤ (s≤s (m≤m+n m n)))) ≤ m → ⊥
@@ -174,7 +174,7 @@ ordinals-suc′ (suc m) (suc n) k (s≤s k<m) | no ¬p = ordinals-suc′ (suc (s
 
 
 ordinals-filterF′ : ∀ m n k → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                    upFromF m n ∥ (≟ k) ≡ [ k ]
+                    upFromF m n ∥ (≟F k) ≡ [ k ]
 ordinals-filterF′ zero zero k m≤k ()
 ordinals-filterF′ (suc m) zero zero () k<m+n
 ordinals-filterF′ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr m k k<m+n m≤k)
@@ -188,7 +188,7 @@ ordinals-filterF′ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-c
 ordinals-filterF′ zero (suc n) zero z≤n (s≤s z≤n) = cong (_∷_ zero) (ordinals-suc′ 1 n zero (s≤s z≤n))
 ordinals-filterF′ zero (suc n) (suc k) z≤n (s≤s k<m+n) = ordinals-filterF′ 1 n (suc k) (s≤s z≤n) (s≤s k<m+n)
 ordinals-filterF′ (suc m) (suc n) zero () k<m+n
-ordinals-filterF′ (suc m) (suc n) (suc k) m≤k k<m+n rewrite +-suc m n with ≟ k (fromℕ≤ {m} (s≤s (m≤m+n m n)))
+ordinals-filterF′ (suc m) (suc n) (suc k) m≤k k<m+n rewrite +-suc m n with ≟F k (fromℕ≤ {m} (s≤s (m≤m+n m n)))
 ordinals-filterF′ (suc m) (suc n) (suc .(fromℕ≤ (s≤s (m≤m+n m n)))) (s≤s m≤k) (s≤s (s≤s k<m+n)) | yes refl = cong (_∷_ (suc (fromℕ≤ (s≤s (m≤m+n m n))))) (ordinals-suc′ (suc (suc m)) n (suc (fromℕ≤ (s≤s (m≤m+n m n)))) (s≤s (s≤s (lt m n))))
   where
     lt : ∀ m n → toℕ (fromℕ≤ {m} (s≤s (m≤m+n m n))) ≤ m
@@ -206,5 +206,5 @@ ordinals-filterF′ (suc m) (suc n) (suc k) (s≤s m≤k) (s≤s (s≤s k<m+n)) 
       s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
 
 ordinals-filterF : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k N.< (m + n)) →
-                     upFromF m n ∥ (≟ k) ≡ [ k ]
+                     upFromF m n ∥ (≟F k) ≡ [ k ]
 ordinals-filterF {m} {n} {k} = ordinals-filterF′ m n k

@@ -59,6 +59,8 @@ module BinomialTheorem where
   f : ℕ → ℕ → ℕ → ℕ
   f x n k = n choose k * x ^ k
 
+  _…_ = rangeℕ
+
   split : ∀ x n → Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≈
                   Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
                   + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
@@ -138,11 +140,15 @@ module BinomialTheorem where
 
 module RowSum where
 
+  _…+_ = upFromℕ
+
   proof : ∀ m r → Σ[ k ← 0 …+ m ] (2 + r) choose k * (r * k) ≈ m * (2 + r) choose m
   proof 0       r = refl
   proof (suc m) r = {!!}
 
 module PascalDiagonal where
+
+  _…+_ = upFromℕ
 
   proof : ∀ n → Σ[ k ← 0 …+ n ] (n ∸ k) choose k ≡ fib n
   proof 0             = refl

@@ -21,28 +21,6 @@ _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → 
 ∁′ p x | yes q = no (λ ¬q → ¬q q)
 ∁′ p x | no ¬q = yes (λ q → ¬q q)
 
-open import Function using (_⟨_⟩_)
-open import Data.Nat.Base using (ℕ) renaming (zero to zeroℕ; suc to sucℕ)
-open import Data.Fin using (Fin) renaming (zero to zeroF; suc to sucF)
-open import Relation.Binary using () renaming (Decidable to BDecidable)
-open import Relation.Binary.Core using (_≡_)
-import Relation.Binary.PropositionalEquality as P
-open import Relation.Nullary
-
-≟ : {n : ℕ} → BDecidable {A = Fin n} _≡_
-≟ {zeroℕ}  ()       ()
-≟ {sucℕ n} zeroF    zeroF    = yes P.refl
-≟ {sucℕ n} zeroF    (sucF q) = no (λ ())
-≟ {sucℕ n} (sucF p) zeroF    = no (λ ())
-≟ {sucℕ n} (sucF p) (sucF  q) with ≟ p q
-≟ {sucℕ n} (sucF p) (sucF .p) | yes P.refl = yes P.refl
-≟ {sucℕ n} (sucF p) (sucF  q) | no ¬eq = no (suc-lemma ¬eq)
-  where
-    open import Data.Empty
-    suc-lemma : {n : ℕ} {p q : Fin n} →
-                ¬ p ≡ q → ¬ sucF p ≡ sucF q
-    suc-lemma eq P.refl = ⊥-elim (eq P.refl)
-
 private
  module Test where
 
