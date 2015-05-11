@@ -732,34 +732,76 @@ The last thing we need to consider is the meaning of the equality sign. In depen
 
 \minisec{Equivalences}
 
-Equivalences capture the essence of what it means for two things to be equal. A relation \AgdaDatatype{\_≈\_} is an equivalence if it is \emph{reflexive} (\(\forall a.\ a \approx a\)), \emph{symmetric} (\(\forall a,b.\ a \approx b \rightarrow b \approx a\)) and \emph{transitive} (\(\forall a,b,c.\ a \approx b \wedge b \approx c \rightarrow a \approx c\)).
-
-It is easy to see that the notion of equality we used in the example at the beginning of this section is an equivalence. Informally, it can be stated as \enquote{two terms are equivalent if they evaluate to the same number}. This intuition is captured by an equivalence called \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda (also called \(I\) in the literature). Two elements of the same type are propositionally equal if they can be shown to reduce to the same expression.
-
-\minisec{Setoids}
-
-A \emph{setoid} packages a type, called the \emph{carrier}, with an equivalence relation defined on that type. In the Agda standard library, the equivalence is split up into its underlying relation and a proof that this relation is an equivalence.
-
 %TC:ignore
 \AgdaHide{
 \begin{code}
 module Setoids where
-  open import Level
-  open import Relation.Binary.Core
+  open import Level using (_⊔_) renaming (suc to lsuc)
+  open import Data.Nat hiding (_⊔_)
+  open import Data.Nat.Properties.Simple
+  open import Relation.Binary.Core using (Rel)
+  import Relation.Binary.PropositionalEquality as P
+  open P using (_≡_)
+  open P.≡-Reasoning
 \end{code}
 }
 
+Equivalences capture the essence of what it means for two things to be equal. A relation \AgdaDatatype{\_≈\_} is an equivalence if it is \emph{reflexive}, \emph{symmetric} and \emph{transitive}. The \AgdaDatatype{IsEquivalence} record bundles these three properties together:
+
 \begin{code}
-  record Setoid c ℓ : Set (suc (c ⊔ ℓ)) where
-    infix 4 _≈_
+  record IsEquivalence  {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) : Set (a ⊔ ℓ) where
     field
-      Carrier       : Set c
-      _≈_           : Rel Carrier ℓ
-      isEquivalence : IsEquivalence _≈_
+      refl   : ∀ {x} → x ≈ x
+      sym    : ∀ {x y} → x ≈ y → y ≈ x
+      trans  : ∀ {x y z} → x ≈ y → y ≈ z → x ≈ z
+
+    reflexive : ∀ {x y} → x ≡ y → x ≈ y
+    reflexive P.refl = refl
+\end{code}
+
+Here, \AgdaFunction{reflexive} is not a field but a proof that is brought into scope when \AgdaDatatype{IsEquivalence} is opened. It shows that propositional equality \AgdaDatatype{\_≡\_} implies any other equivalence.
+
+\minisec{Setoids}
+
+A \emph{setoid} packages a type, called the \emph{carrier}, with a relation \AgdaDatatype{\_≈\_} defined on that type and a proof that this relation is an equivalence.
+
+\begin{code}
+  record Setoid c ℓ : Set (lsuc (c ⊔ ℓ)) where
+    field
+      Carrier        : Set c
+      _≈_            : Rel Carrier ℓ
+      isEquivalence  : IsEquivalence _≈_
 \end{code}
 %TC:endignore
 
-% Σ[ k ← 0 … n $ n choose k * x ^ k ] ≈ (suc x) ^ n
+% Setoids are at the core of all algebraic reasoning with dependent types since they provide precisely what is needed to express algebraic laws
+
+Any setoid gives rise to a preorder, which only has a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It makes long proofs more readable and will be used extensively in the next chapters.
+
+As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction(*) \AgdaBound{q}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
+
+The proofs assume that we have already shown that multiplication is commutative and associative, so the following are given:
+\begin{align*}
+\text{\AgdaFunction{*-comm}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{m} \AgdaBound{n} \AgdaSymbol{:} ℕ\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{m} \AgdaFunction{*} \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{m}} \\
+\text{\AgdaFunction{*-assoc}}\;&\AgdaSymbol{:}\;\text{(\AgdaBound{m} \AgdaBound{n} \AgdaBound{o} \AgdaSymbol{:} ℕ) \AgdaSymbol{→} (\AgdaBound{m} \AgdaFunction{*} \AgdaBound{n}) \AgdaFunction{*} \AgdaBound{o} \AgdaDatatype{≡} \AgdaBound{m} \AgdaFunction{*} (\AgdaBound{n} \AgdaFunction{*} \AgdaBound{o})}
+\end{align*}
+
+Additionally we have the transitivity law and congruence for binary functions:
+\begin{align*}
+P.trans : ∀ {a} {A : Set a} {x y z : A} → x ≡ y → y ≡ z → x ≡ z \\
+P.cong₂ : ∀ {a} {A : Set a} {x x′ y y′ : A} → (f : A → A → A) → x ≡ x′ → y ≡ y′ → f x y ≡ f x′ y′
+\end{align*}
+
+\begin{code}
+  equiv₀ : (p q r : ℕ) → (p * q) * r ≡ q * (p * r)
+  equiv₀ p q r = P.trans (P.cong₂ _*_ (*-comm p q) P.refl) (*-assoc q p r)
+
+  equiv₁ : (p q r : ℕ) → (p * q) * r ≡ q * (p * r)
+  equiv₁ p q r = begin
+    (p *  q) * r   ≡⟨ P.cong₂ _*_ (*-comm p q) P.refl ⟩
+    (q *  p) * r   ≡⟨ *-assoc q p r ⟩
+     q * (p *  r)  ∎
+\end{code}
 
 \section{Algebra}
 
