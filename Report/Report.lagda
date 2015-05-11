@@ -1085,7 +1085,8 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 \AgdaHide{
 \begin{code}
   open import Bigop
-  open import Matrix
+  open import Bigop.DecidableEquality using () renaming (≟F to ≟)
+  open import Matrix renaming (lookup∘tabulate to l∘t)
 
   open import Algebra.FunctionProperties
   open import Algebra.Structures
@@ -1104,7 +1105,7 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
   import Relation.Binary.Vec.Pointwise as PW
   import Relation.Binary.PropositionalEquality as P
 
-  l∘t = lookup∘tabulate
+  infix 4 _≋_
 \end{code}
 }
 %TC:endignore
@@ -1139,7 +1140,7 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid a
 
 \AgdaHide{
 \begin{code}
-  ι = fromLenF 0
+  ι = upFromF 0
 \end{code}
 }
 %TC:endignore
