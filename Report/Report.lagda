@@ -1220,7 +1220,7 @@ Here we prove that matrix addition preserves equivalence, that is, \(A ≋ A′ 
 
 %TC:ignore
 \begin{code}
-  ⊕-cong : ∀ {A A′ B B′} → A ≋ A′ → B ≋ B′ → (A ⊕ B) ≋ (A′ ⊕ B′)
+  ⊕-cong : ∀ {A A′ B B′} → A ≋ A′ → B ≋ B′ → A ⊕ B ≋ A′ ⊕ B′
   ⊕-cong {A} {A′} {B} {B′} eq₁ eq₂ = λ r c → begin
     (A ⊕ B) [ r , c ]             ≡⟨ l∘t r c ⟩
     A [ r , c ]   + B [ r , c ]   ≈⟨ +-cong (eq₁ r c) (eq₂ r c) ⟩
@@ -1236,13 +1236,13 @@ Since the only law used in this proof is \AgdaFunction{+-assoc}, the semigroup o
 
 \minisec{Associativity}
 
-Our first algebraic proof shows that matrix addition is associative, that is, \((A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)\). Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence is straightforward: unfold the definition of \AgdaFunction{\_⊕\_}; use associativity of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
+The next proof shows that matrix addition is associative, that is, \((A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)\). Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence is straightforward: unfold the definition of \AgdaFunction{\_⊕\_}; use associativity of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
 
 The auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simply unfold the nested matrix additions.
 
 %TC:ignore
 \begin{code}
-  ⊕-assoc : Associative _≋_ _⊕_
+  ⊕-assoc : ∀ A B C → (A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)
   ⊕-assoc A B C = λ r c → begin
     ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ factorˡ r c ⟩
     (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
