@@ -1189,7 +1189,7 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 \end{code}
 %TC:endignore
 
-\AgdaFunction{1M} is the identity for matrix multiplication. Its definition relies on the function \AgdaFunction{diag}, which returns \AgdaBound{1\#} if its arguments are equal and \AgdaBound{0\#} if they are different.
+\AgdaFunction{1M} is the identity for matrix multiplication. Its definition relies on the function \AgdaFunction{diag}, which returns \AgdaFunction{1\#} if its arguments are equal and \AgdaFunction{0\#} if they are different.
 
 %TC:ignore
 \begin{code}
@@ -1206,9 +1206,10 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 
 Note that there are many ways to define the function \AgdaFunction{diag}. One alternative would be to use an explicit equality test. The inductive definition given above turned out to be easiest to work with in proofs.
 
+
 \section{\label{Semi-Plus}Properties of matrix addition}
 
-In this section, we demonstrate that matrix addition is a commutative monoid by proving congruence, associativity and commutativity and showing that \AgdaFunction{0M} is its identity.
+In this section, we demonstrate that square matrices and matrix addition form a commutative monoid by proving congruence, associativity and commutativity and showing that \AgdaFunction{0M} is the identity for matrix addition.
 
 
 \minisec{Congruence}
