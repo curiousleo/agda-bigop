@@ -530,7 +530,7 @@ As the following diagram shows, we need to apply \AgdaFunction{f} seven times to
 \AgdaHide{
 \begin{code}
 module Relations where
-  open import Level using (_⊔_)
+  open import Level using (Level; _⊔_) renaming (zero to lzero; suc to lsuc)
 
   open import Data.Nat hiding (_⊔_; _*_)
   open import Data.Nat.DivMod
@@ -569,9 +569,19 @@ In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute
 \end{code}
 %TC:endignore
 
-Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
+Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably. Note that relations and predicates are closely related: a relation can be thought of as a predicate abstracted over some argument, and any relation can be applied to one argument to give a predicate.
 
-We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
+We will restrict our attention to the special case of relations between inhabitants of the same type, called \emph{homogeneous} relations. Formally, we can define predicates and homogeneous relations with an explicit universe parameter \AgdaBound{ℓ} as follows:
+
+\begin{code}
+  Pred : ∀ {a} → Set a → (ℓ : Level) → Set (a ⊔ lsuc ℓ)
+  Pred A ℓ = A → Set ℓ
+
+  Rel : ∀ {a} → Set a → (ℓ : Level) → Set (a ⊔ lsuc ℓ)
+  Rel A ℓ = A → A → Set ℓ
+\end{code}
+
+The evenness predicate from the previous section can now be typed as \AgdaDatatype{Even} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaDatatype{ℕ} \AgdaFunction{lzero}. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
 
 %TC:ignore
 \begin{code}
@@ -585,7 +595,7 @@ Now we can give a definition for the divisibility relation, which translates to 
 
 %TC:ignore
 \begin{code}
-  data _∣_ : ℕ → ℕ → Set where
+  data _∣_ : ℕ → ℕ → Set {- equivalently, Rel ℕ lzero -} where
     divides : {m n : ℕ} (q : ℕ) (eq : n ≡ q * m) → m ∣ n
 \end{code}
 %TC:endignore
