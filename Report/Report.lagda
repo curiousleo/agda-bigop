@@ -99,6 +99,10 @@ module Report where
 
 \section{Motivation}
 
+\section{Overview}
+
+XXX (map of report)
+
 \section{Agda basics}
 
 \AgdaHide{
@@ -619,7 +623,7 @@ The equality \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \Ag
 The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} proves that \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}. Our goal in the inductive step is show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}). The latter follows from the former by \AgdaFunction{cong}ruence (see XXX).
 
 
-\section{Truth and decidability}
+\section{Provability and decidability}
 
 In this section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous section as examples.
 
@@ -1139,7 +1143,12 @@ Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 
 Reflexivity and transitivity are proved in a similar fashion.
 
-\section{Differences to big operators in Coq}
+
+\chapter{Gauss' formula}
+
+
+\chapter{Binomial theorem}
+
 
 \chapter{Square matrices over semirings}
 
@@ -1847,13 +1856,11 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
       ≋-isEquivalence = PW-isEquivalence isEquivalence
 \end{code}
 
-\chapter{Evaluation}
+\chapter{Conclusions}
 
-\section{Theorems proved}
+\chapter{Previous work}
 
-Binomial theorem
-
-Gauss
+Coq's bigop module XXX
 
 \printbibliography
 
