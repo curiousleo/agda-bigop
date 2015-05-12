@@ -745,9 +745,11 @@ module Setoids where
   open P.≡-Reasoning
 \end{code}
 }
+%TC:endignore
 
 Equivalences capture the essence of what it means for two things to be equal. A relation \AgdaDatatype{\_≈\_} is an equivalence if it is \emph{reflexive}, \emph{symmetric} and \emph{transitive}. The \AgdaDatatype{IsEquivalence} record bundles these three properties together:
 
+%TC:ignore
 \begin{code}
   record IsEquivalence  {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) : Set (a ⊔ ℓ) where
     field
@@ -758,6 +760,7 @@ Equivalences capture the essence of what it means for two things to be equal. A 
     reflexive : ∀ {x y} → x ≡ y → x ≈ y
     reflexive P.refl = refl
 \end{code}
+%TC:endignore
 
 Here, \AgdaFunction{reflexive} is not a field but a proof that is brought into scope when \AgdaDatatype{IsEquivalence} is opened. It shows that propositional equality \AgdaDatatype{\_≡\_} implies any other equivalence.
 
@@ -765,6 +768,7 @@ Here, \AgdaFunction{reflexive} is not a field but a proof that is brought into s
 
 A \emph{setoid} packages a type, called the \emph{carrier}, with a relation \AgdaDatatype{\_≈\_} defined on that type and a proof that this relation is an equivalence.
 
+%TC:ignore
 \begin{code}
   record Setoid c ℓ : Set (lsuc (c ⊔ ℓ)) where
     field
