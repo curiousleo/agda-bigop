@@ -780,9 +780,12 @@ A \emph{setoid} packages a type, called the \emph{carrier}, with a relation \Agd
 
 % Setoids are at the core of all algebraic reasoning with dependent types since they provide precisely what is needed to express algebraic laws
 
+
+\minisec{Equational reasoning}
+
 Any setoid gives rise to a preorder, which only has a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It makes long proofs more readable and will be used extensively in the next chapters.
 
-As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction(*) \AgdaBound{q}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
+As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
 The proofs assume that we have already shown that multiplication is commutative and associative, so the following are given:
 \begin{align*}
@@ -790,22 +793,48 @@ The proofs assume that we have already shown that multiplication is commutative 
 \text{\AgdaFunction{*-assoc}}\;&\AgdaSymbol{:}\;\text{(\AgdaBound{m} \AgdaBound{n} \AgdaBound{o} \AgdaSymbol{:} ℕ) \AgdaSymbol{→} (\AgdaBound{m} \AgdaFunction{*} \AgdaBound{n}) \AgdaFunction{*} \AgdaBound{o} \AgdaDatatype{≡} \AgdaBound{m} \AgdaFunction{*} (\AgdaBound{n} \AgdaFunction{*} \AgdaBound{o})}
 \end{align*}
 
-Additionally we have the transitivity law and congruence for binary functions:
+Additionally we have the transitivity law and congruence for binary functions, both parameterised over
+\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{a}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}\AgdaSymbol{\}}:
 \begin{align*}
-P.trans : ∀ {a} {A : Set a} {x y z : A} → x ≡ y → y ≡ z → x ≡ z \\
-P.cong₂ : ∀ {a} {A : Set a} {x x′ y y′ : A} → (f : A → A → A) → x ≡ x′ → y ≡ y′ → f x y ≡ f x′ y′
+\text{\AgdaFunction{P.trans}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{\{}\AgdaBound{x} \AgdaBound{y} \AgdaBound{z} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{z} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{z}} \\
+\text{\AgdaFunction{P.cong₂}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{\{}\AgdaBound{x} \AgdaBound{x′} \AgdaBound{y} \AgdaBound{y′} \AgdaSymbol{:} A\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x′} \AgdaSymbol{→} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y′} \AgdaSymbol{→} \AgdaBound{f} \AgdaBound{x} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x′} \AgdaBound{y′}}
 \end{align*}
 
+The underlying reasoning is the same for both proofs: we first show that \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r}. It follows from \AgdaBound{p} \AgdaFunction{*} \AgdaBound{q} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaBound{p} (by commutativity), \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{r} (by reflexivity) and congruence of \AgdaFunction{\_*\_}. Then we prove \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)}, which is a direct consequence of the associativity rule. Using the lemmas specified above, the two steps can be written like this:
+\begin{align*}
+\text{\AgdaFunction{P.cong₂} \AgdaPrimitive{\_*\_} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{p} \AgdaBound{q}\AgdaSymbol{)} \AgdaInductiveConstructor{P.refl}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r}} \\
+\text{\AgdaFunction{*-assoc} \AgdaBound{q} \AgdaBound{p} \AgdaBound{r}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)}}
+\end{align*}
+
+The initial equation is proved by transitivity which links the two steps together. Using normal function application syntax to apply transitivity, we get the following proof:
+
+%TC:ignore
 \begin{code}
   equiv₀ : (p q r : ℕ) → (p * q) * r ≡ q * (p * r)
   equiv₀ p q r = P.trans (P.cong₂ _*_ (*-comm p q) P.refl) (*-assoc q p r)
-
-  equiv₁ : (p q r : ℕ) → (p * q) * r ≡ q * (p * r)
-  equiv₁ p q r = begin
-    (p *  q) * r   ≡⟨ P.cong₂ _*_ (*-comm p q) P.refl ⟩
-    (q *  p) * r   ≡⟨ *-assoc q p r ⟩
-     q * (p *  r)  ∎
 \end{code}
+%TC:endignore
+
+With equational reasoning it looks like this:
+
+%TC:ignore
+\begin{code}
+  equiv₁ : (p q r : ℕ) → (p * q) * r ≡ q * (p * r)
+  equiv₁ p q r =
+    begin
+      (p *  q) * r  ≡⟨ P.cong₂ _*_ (*-comm p q) P.refl ⟩
+      (q *  p) * r  ≡⟨ *-assoc q p r ⟩
+      q * (p  * r)
+    ∎
+\end{code}
+%TC:endignore
+
+The proof starts with \AgdaFunction{begin\_} followed by the left-hand side of the equivalence we are trying to prove. It ends with the right-hand side of the equivalence followed by \AgdaFunction{\_∎}. Intermediate steps are linked using \AgdaFunction{\_≡⟨\_⟩\_}. Transitivity is applied implicitly.
+
+Which proof style one prefers is a matter of taste. Equational reasoning is more verbose---\AgdaFunction{equiv₁} spans seven lines compared to \AgdaFunction{equiv₀}'s two---but it makes intermediate steps explicit, which helps someone reading the proof understand what is going on.
+
+In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propositional equality for our setoid. We can then freely mix steps using that equivalence relation \AgdaFunction{\_≈⟨\_⟩\_} and steps using propositional equality \AgdaFunction{\_≡⟨\_⟩\_} in an equational reasoning-style proof. Proving intermediate steps by propositional equality is allowed because by \AgdaFunction{reflexivity} (see XXX), \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≈} \AgdaBound{y} for \emph{any} equivalence relation \AgdaDatatype{\_≈\_}.
+
 
 \section{Algebra}
 
