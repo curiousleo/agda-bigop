@@ -14,6 +14,45 @@ module Proofs where
   import Relation.Binary.PropositionalEquality as P
   import Relation.Binary.EqReasoning as EqR
 
+  module GaussFormula where
+
+    open import Data.Nat using (suc; _∸_)
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Product using (proj₁; proj₂)
+    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
+
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+
+    open Fold +-monoid using (fold; Σ-syntax)
+
+    _…_ = rangeℕ
+
+    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
+    proof 0 = P.refl
+    proof (suc n) =
+      begin
+        2 * (Σ[ i ← 0 … suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
+        2 * (Σ[ i ← 0 … n ] i + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
+        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+        n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
+        2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
+        (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
+        suc n * (suc (suc n))
+      ∎
+      where
+        open P.≡-Reasoning
+        open import Data.List.Base
+
+        open Props.Ordinals
+
+        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
+        lemma =
+          begin
+            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
+            Σ[ i ← 0 … n ] i + suc n
+          ∎
+
   module OddGauss where
 
     open import Data.Nat.Properties.Simple using (+-suc)
@@ -83,42 +122,3 @@ module Proofs where
           Σ[ k ← xs ∥ p ] f k + f x  □
           where
             open EqR setoid renaming (begin_ to start_; _∎ to _□)
-
-  module GaussFormula where
-
-    open import Data.Nat using (suc; _∸_)
-    open import Data.Nat.Properties using (commutativeSemiring)
-    open import Data.Product using (proj₁; proj₂)
-    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
-
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
-
-    open Fold +-monoid using (fold; Σ-syntax)
-
-    _…_ = rangeℕ
-
-    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
-    proof 0 = P.refl
-    proof (suc n) =
-      begin
-        2 * (Σ[ i ← 0 … suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
-        2 * (Σ[ i ← 0 … n ] i + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
-        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
-        n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
-        2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
-        (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
-        suc n * (suc (suc n))
-      ∎
-      where
-        open P.≡-Reasoning
-        open import Data.List.Base
-
-        open Props.Ordinals
-
-        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
-        lemma =
-          begin
-            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
-            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
-            Σ[ i ← 0 … n ] i + suc n
-          ∎
