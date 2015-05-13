@@ -16,6 +16,7 @@ module Proofs where
 
   module OddGauss where
 
+    open import Data.Nat.Properties.Simple using (+-suc)
     open import Data.List.Base
     open import Data.Empty
     open import Relation.Nullary.Decidable
@@ -28,60 +29,59 @@ module Proofs where
     open Props.Ordinals
 
     open Fold +-monoid using (fold; Σ-syntax)
+    open P.≡-Reasoning
 
     open import Relation.Unary
 
     _…+_ = upFromℕ
 
-    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
-    proof zero = P.refl
-    proof (suc n) = begin
-      Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
-        ≡⟨ P.cong (fold id) (begin
+    2n-even : ∀ n → Even (n + n)
+    2n-even zero = zero-even
+    2n-even (suc n) rewrite +-suc n n = ss-even (2n-even n)
 
-          0 …+ suc (suc n + suc n) ∥ odd
-            ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
-          0 …+ suc (suc (suc (n + n))) ∥ odd
-            ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
-          0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
-            ≡⟨ last-no (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
-                       (even→¬odd (ss-even (2n-even n))) ⟩
-          0 …+ suc (suc (n + n)) ∥ odd
-            ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
-          0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
-
-        ∎)⟩
-      Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd ] i
-        ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
-      Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
-        ≡⟨ +-cong (proof n) refl ⟩
-
-      n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
-      n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
-      (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
-      suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
-      suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
-      suc n + n * suc n    ∎
+    inner : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd
+                ≡ 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
+    inner n =
+      begin
+        0 …+ suc (suc n + suc n) ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
+        0 …+ suc (suc (suc (n + n))) ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
+        0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
+          ≡⟨ last-no (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
+                     (even→¬odd (ss-even (2n-even n))) ⟩
+        0 …+ suc (suc (n + n)) ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
+        0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
+      ∎
       where
-        open import Data.Nat.Properties.Simple using (+-suc)
-        open P.≡-Reasoning
-
-        3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
-        3suc zero = P.refl
-        3suc (suc n) = P.cong (suc ∘ suc ∘ suc) (+-suc n (suc n))
-
-        2suc : ∀ n → suc (n + suc n) ≡ suc (suc (n + n))
-        2suc zero = P.refl
-        2suc (suc n) = P.cong (suc ∘ suc) (+-suc n (suc n))
-
-        2n-even : ∀ n → Even (n + n)
-        2n-even zero = zero-even
-        2n-even (suc n) rewrite 2suc n = ss-even (2n-even n)
-
         even→¬odd : ∀ {n} → Even n → ¬ Odd n
         even→¬odd zero-even        ()
         even→¬odd (ss-even even-n) (ss-odd odd-n) = even→¬odd even-n odd-n
 
+        3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
+        3suc n rewrite +-suc n n = P.refl
+
+
+    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
+    proof zero = P.refl
+    proof (suc n) =
+      begin
+        Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
+          ≡⟨ P.cong (fold id) (inner n)⟩
+        Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd ] i
+          ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+        Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
+          ≡⟨ +-cong (proof n) refl ⟩
+
+        n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
+        n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
+        (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
+        suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
+        suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
+        suc n + n * suc n
+      ∎
+      where
         even+1 : ∀ {n} → Even n → Odd (suc n)
         even+1 zero-even        = one-odd
         even+1 (ss-even even-n) = ss-odd (even+1 even-n)
