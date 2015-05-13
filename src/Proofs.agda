@@ -35,13 +35,9 @@ module Proofs where
 
     _…+_ = upFromℕ
 
-    2n-even : ∀ n → Even (n + n)
-    2n-even zero = zero-even
-    2n-even (suc n) rewrite +-suc n n = ss-even (2n-even n)
-
-    inner : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd
+    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd
                 ≡ 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
-    inner n =
+    lemma n =
       begin
         0 …+ suc (suc n + suc n) ∥ odd
           ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
@@ -55,10 +51,6 @@ module Proofs where
         0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
       ∎
       where
-        even→¬odd : ∀ {n} → Even n → ¬ Odd n
-        even→¬odd zero-even        ()
-        even→¬odd (ss-even even-n) (ss-odd odd-n) = even→¬odd even-n odd-n
-
         3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
         3suc n rewrite +-suc n n = P.refl
 
@@ -68,7 +60,7 @@ module Proofs where
     proof (suc n) =
       begin
         Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
-          ≡⟨ P.cong (fold id) (inner n)⟩
+          ≡⟨ P.cong (fold id) (lemma n)⟩
         Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd ] i
           ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
         Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
@@ -82,10 +74,6 @@ module Proofs where
         suc n + n * suc n
       ∎
       where
-        even+1 : ∀ {n} → Even n → Odd (suc n)
-        even+1 zero-even        = one-odd
-        even+1 (ss-even even-n) = ss-odd (even+1 even-n)
-        
         Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
                      {P : Pred I ℓ} (p : Decidable P) → P x →
                      Σ[ k ← xs ∷ʳ x ∥ p ] f k ≈ Σ[ k ← xs ∥ p ] f k + f x

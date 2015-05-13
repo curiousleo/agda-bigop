@@ -4,6 +4,7 @@ import Level
 
 open import Data.Empty
 open import Data.Nat.Base
+open import Data.Nat.Properties.Simple using (+-suc)
 open import Relation.Nullary
 open import Relation.Unary
 
@@ -34,3 +35,15 @@ odd (suc (suc n)) with odd n
   where
     ss-even′ : ∀ {n} → ¬ Odd n → ¬ Odd (suc (suc n))
     ss-even′ ¬ps (ss-odd p) = ⊥-elim (¬ps p)
+
+2n-even : ∀ n → Even (n + n)
+2n-even zero = zero-even
+2n-even (suc n) rewrite +-suc n n = ss-even (2n-even n)
+
+even+1 : ∀ {n} → Even n → Odd (suc n)
+even+1 zero-even        = one-odd
+even+1 (ss-even even-n) = ss-odd (even+1 even-n)
+
+even→¬odd : ∀ {n} → Even n → ¬ Odd n
+even→¬odd zero-even        ()
+even→¬odd (ss-even even-n) (ss-odd odd-n) = even→¬odd even-n odd-n
