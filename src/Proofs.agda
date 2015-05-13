@@ -109,24 +109,28 @@ module Proofs where
 
     _…_ = rangeℕ
 
-    proof : ∀ (n : ℕ) → 2 * (Σ[ x ← 0 … n ] x) ≡ n * (suc n)
+    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
     proof 0 = P.refl
-    proof (suc n) = begin
-        2 * (Σ[ x ← 0 … suc n ] x)          ≡⟨ P.cong (_*_ 2) lemma ⟩
-        2 * (Σ[ x ← 0 … n ] x + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ x ← 0 … n ] x) (suc n) ⟩
-        2 * (Σ[ x ← 0 … n ] x) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+    proof (suc n) =
+      begin
+        2 * (Σ[ i ← 0 … suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
+        2 * (Σ[ i ← 0 … n ] i + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
+        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
         n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
         2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
         (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
-        suc n * (suc (suc n))               ∎
+        suc n * (suc (suc n))
+      ∎
       where
         open P.≡-Reasoning
         open import Data.List.Base
 
         open Props.Ordinals
 
-        lemma : Σ[ x ← 0 … suc n ] x ≡ Σ[ x ← 0 … n ] x + suc n
-        lemma = begin
-          Σ[ x ← 0 … suc n ] x       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
-          Σ[ x ← 0 … n ∷ʳ suc n ] x  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
-          Σ[ x ← 0 … n ] x + suc n   ∎
+        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
+        lemma =
+          begin
+            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
+            Σ[ i ← 0 … n ] i + suc n
+          ∎
