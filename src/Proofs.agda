@@ -71,8 +71,8 @@ module Proofs where
 
     _…+_ = upFromℕ
 
-    lemma : ∀ n →  0 …+ suc (suc n + suc n) ∥ odd ≡
-                   0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd ≡
+                  0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
     lemma n =
       begin
         0 …+ suc (suc n + suc n) ∥ odd
@@ -109,5 +109,5 @@ module Proofs where
         (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
         suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
         suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
-        suc n + n * suc n
+        suc n * suc n
       ∎
