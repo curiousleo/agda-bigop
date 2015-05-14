@@ -1294,23 +1294,42 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
 }
 %TC:endignore
 
+A variant of the Gauss formula is the equation \[ ∀ n.\quad\sum_{\substack{i ← 0 … 2n \\ \text{\(i\) odd}}} i = n² \]
+
+which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be written as follows in Agda: \[
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\]
+
+The lemma \AgdaFunction{extract} brings the list into a form that induction can be used on. It says that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
+
+In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{suc-last-lemma} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
+\[
+\text{\AgdaFunction{even→¬odd} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{))}}\;\AgdaSymbol{:}\;\text{\AgdaFunction{¬} \AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)))}}
+\]
+to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))} is filtered out. In step (D) we again extract the last element of the list, \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)}. Lastly (E), we use \AgdaFunction{last-yes} and
+\[
+\text{\AgdaFunction{even+1} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{)}}\;\AgdaSymbol{:}\;\text{\AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}}
+\]
+to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} is odd, which allows us to take this element out of the filter.
+
 %TC:ignore
 \begin{code}
-    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd ≡
-                  0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
-    lemma n =
+    extract : ∀ n →  0 …+ suc (suc n + suc n) ∥ odd ≡
+                     0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+    extract n =
       begin
         0 …+ suc (suc n + suc n) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
+{- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
         0 …+ suc (suc (suc (n + n))) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
+{- B -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
         0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
-          ≡⟨ last-no (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
-                     (even→¬odd (ss-even (2n-even n))) ⟩
+{- C -}   ≡⟨ last-no  (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
+                      (even→¬odd (ss-even (2n-even n))) ⟩
         0 …+ suc (suc (n + n)) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
+{- D -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
         0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
-          ≡⟨ last-yes (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+{- E -}   ≡⟨ last-yes  (0 …+ suc (n + n)) (suc (n + n)) odd
+                       (even+1 (2n-even n)) ⟩
         0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
       ∎
       where
@@ -1319,10 +1338,7 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
 \end{code}
 %TC:endignore
 
-\begin{align}
-\sum_{\substack{i ← 0 … 1 + ((1 + n) + (1 + n)) \\ \text{\(i\) odd}}} i
-&= \left( \sum_{\substack{i ← 0 … 1 + (n + n) \\ \text{\(i\) odd}}} i \right) + 1 + (n + n)
-\end{align}
+The proof of the odd Gauss equation again works by natural number induction on \AgdaBound{n}, with a trivial base case for zero. In the induction step, we first rewrite the index list using \AgdaFunction{extract} (F). Then \AgdaFunction{Σ.last} is used to move the last element of the list out of the sum (G). In step (H) we use the induction hypothesis. The remainder of the proof just rewrites the algebraic expression into the required form.
 
 %TC:ignore
 \begin{code}
@@ -1331,18 +1347,18 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
     proof (suc n) =
       begin
         Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
-          ≡⟨ P.cong (fold id) (lemma n)⟩
+{- F -}   ≡⟨ P.cong (fold id) (extract n)⟩
         Σ[ i ← 0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n) ] i
-          ≡⟨ Σ.last id (suc (n + n)) (0 …+ suc (n + n) ∥ odd) ⟩
+{- G -}   ≡⟨ Σ.last id (suc (n + n)) (0 …+ suc (n + n) ∥ odd) ⟩
         Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
-          ≡⟨ +-cong (proof n) refl ⟩
+{- H -}   ≡⟨ +-cong (proof n) refl ⟩
 
         n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
         n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
         (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
         suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
         suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
-        suc n + n * suc n
+        suc n * suc n
       ∎
 \end{code}
 %TC:endignore
