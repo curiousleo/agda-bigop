@@ -22,8 +22,10 @@ module Proofs where
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    open Props.Ordinals
 
     open Fold +-monoid using (fold; Σ-syntax)
+    open P.≡-Reasoning
 
     _…_ = rangeℕ
 
@@ -40,11 +42,6 @@ module Proofs where
         suc n * (suc (suc n))
       ∎
       where
-        open P.≡-Reasoning
-        open import Data.List.Base
-
-        open Props.Ordinals
-
         lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
         lemma =
           begin
