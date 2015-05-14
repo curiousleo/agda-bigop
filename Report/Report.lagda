@@ -1296,8 +1296,8 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
 
 %TC:ignore
 \begin{code}
-    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd
-                ≡ 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
+    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd ≡
+                  0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
     lemma n =
       begin
         0 …+ suc (suc n + suc n) ∥ odd
@@ -1310,6 +1310,8 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
         0 …+ suc (suc (n + n)) ∥ odd
           ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
         0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
+          ≡⟨ last-yes (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+        0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
       ∎
       where
         3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
@@ -1330,8 +1332,8 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
       begin
         Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
           ≡⟨ P.cong (fold id) (lemma n)⟩
-        Σ[ i ← 0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd ] i
-          ≡⟨ Σ-last-yes id (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+        Σ[ i ← 0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n) ] i
+          ≡⟨ Σ.last id (suc (n + n)) (0 …+ suc (n + n) ∥ odd) ⟩
         Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
           ≡⟨ +-cong (proof n) refl ⟩
 
@@ -1342,16 +1344,6 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
         suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
         suc n + n * suc n
       ∎
-      where
-        Σ-last-yes : ∀ {ℓ} {i} {I : Set i} (f : I → ℕ) (xs : List I) (x : I) →
-                     {P : Pred I ℓ} (p : Decidable P) → P x →
-                     Σ[ k ← xs ∷ʳ x ∥ p ] f k ≈ Σ[ k ← xs ∥ p ] f k + f x
-        Σ-last-yes f xs x p px = start
-          Σ[ k ← xs ∷ʳ x ∥ p ] f k   ≈⟨ P.cong (fold f) (last-yes xs x p px) ⟩
-          Σ[ k ← xs ∥ p ∷ʳ x ] f k   ≈⟨ Σ.last f x (xs ∥ p) ⟩
-          Σ[ k ← xs ∥ p ] f k + f x  □
-          where
-            open EqR setoid renaming (begin_ to start_; _∎ to _□)
 \end{code}
 %TC:endignore
 
