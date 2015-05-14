@@ -1366,6 +1366,12 @@ The proof of the odd Gauss equation again works by natural number induction on \
 
 \chapter{Binomial theorem}
 
+In this chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
+
+\section{Definitions}
+
+Since the Agda standard library does not currently define exponentials and binomials for natural numbers, we start by writing down their inductive definitions:
+
 %TC:ignore
 \AgdaHide{
 \begin{code}
@@ -1394,6 +1400,8 @@ module BinomialTheorem where
   open Props.Ordinals
 
   infixr 8 _^_
+
+  _…_ = rangeℕ
 \end{code}
 }
 %TC:endignore
@@ -1411,6 +1419,62 @@ module BinomialTheorem where
 \end{code}
 %TC:endignore
 
+Additionally we define a shortcut \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
+
+%TC:ignore
+\begin{code}
+  f : ℕ → ℕ → ℕ → ℕ
+  f x n k = n choose k * x ^ k
+\end{code}
+%TC:endignore
+
+\section{Lemmas}
+
+In this section we prove the lemmas used in the final proof of the binomial theorem.
+
+The first two lemmas, \AgdaFunction{+-reorder} and \AgdaFunction{*-reorder}, are simple algebraic equations that follow from associativity and commutativity of the two operators:
+
+%TC:ignore
+\begin{code}
+  +-reorder : ∀ x y z → x + (y + z) ≈ y + (x + z)
+  +-reorder x y z =
+    begin
+      x + (y + z)  ≈⟨ sym $ +-assoc x y z ⟩
+      (x + y) + z  ≈⟨ +-cong (+-comm x y) refl ⟩
+      (y + x) + z  ≈⟨ +-assoc y x z ⟩
+      y + (x + z)
+    ∎
+
+  *-reorder : ∀ x y z → x * (y * z) ≈ y * (x * z)
+  *-reorder x y z =
+    begin
+      x * (y * z)  ≈⟨ sym $ *-assoc x y z ⟩
+      (x * y) * z  ≈⟨ *-cong (*-comm x y) refl ⟩
+      (y * x) * z  ≈⟨ *-assoc y x z ⟩
+      y * (x * z)
+    ∎
+\end{code}
+%TC:endignore
+
+The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum.
+
+%TC:ignore
+\begin{code}
+  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≈
+                        x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+  left-distr x n =
+    begin
+      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+        ≈⟨ Σ.cong (0 … n) P.refl (λ k → *-reorder (n choose k) x (x ^ k)) ⟩
+      Σ[ k ← 0 … n ] x * (n choose k * x ^ k)
+        ≈⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
+      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+    ∎
+\end{code}
+%TC:endignore
+
+The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but it is easier to use in this form. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to use \AgdaFunction{choose-lt′} and vice versa, making this a mutually inductive definition.
+
 %TC:ignore
 \begin{code}
   mutual
@@ -1425,12 +1489,15 @@ module BinomialTheorem where
         n choose suc (m + n)  ≣⟨ choose-lt m n ⟩
         0
       □
+\end{code}
+%TC:endignore
+% $
 
-  f : ℕ → ℕ → ℕ → ℕ
-  f x n k = n choose k * x ^ k
+\AgdaFunction{split} shifts the values of its index list down by one and splits the sum into two.
+% \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
 
-  _…_ = rangeℕ
-
+%TC:ignore
+\begin{code}
   split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≈
                    Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
                    + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
@@ -1451,36 +1518,14 @@ module BinomialTheorem where
       Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
          + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
     ∎
+\end{code}
+%TC:endignore
+% $
 
-  choose-reorder : ∀ x n k → n choose k * x ^ (suc k) ≈ x * (n choose k * x ^ k)
-  choose-reorder x n k =
-    begin
-      n choose k * (x * x ^ k)  ≈⟨ sym $ *-assoc (n choose k) _ _ ⟩
-      (n choose k * x) * x ^ k  ≈⟨ *-comm (n choose k) _ ⟨ *-cong ⟩ refl ⟩
-      (x * n choose k) * x ^ k  ≈⟨ *-assoc x _ _ ⟩
-      x * (n choose k * x ^ k)
-    ∎
+The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proof; it is an auxiliary lemma to \AgdaFunction{shift} (defined below).
 
-  +-reorder : ∀ x y z → x + (y + z) ≈ y + (x + z)
-  +-reorder x y z =
-    begin
-      x + (y + z)  ≈⟨ sym $ +-assoc x y z ⟩
-      (x + y) + z  ≈⟨ +-cong (+-comm x y) refl ⟩
-      (y + x) + z  ≈⟨ +-assoc y x z ⟩
-      y + (x + z)
-    ∎
-
-  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≈
-                        x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-  left-distr x n =
-    begin
-      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-        ≈⟨ Σ.cong (0 … n) P.refl (choose-reorder x n) ⟩
-      Σ[ k ← 0 … n ] x * (n choose k * x ^ k)
-        ≈⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
-      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-    ∎
-
+%TC:ignore
+\begin{code}
   choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≈
                         Σ[ k ← 1 … n ] n choose k * x ^ k
   choose-suc x n  =
@@ -1500,7 +1545,11 @@ module BinomialTheorem where
         ≈⟨ proj₂ +-identity _ ⟩
       Σ[ k ← 1 … n ] n choose k * x ^ k
     ∎
+\end{code}
+%TC:endignore
 
+%TC:ignore
+\begin{code}
   shift : ∀ x n →  1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
                    ≈ Σ[ k ← 0 … n ] n choose k * x ^ k
   shift x n =
@@ -1513,32 +1562,20 @@ module BinomialTheorem where
         ≈⟨ P.cong (fold $ f x n) (suc-head-lemma 0 n) ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ k
     ∎
-
-  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n
-  proof x zero    = refl
-  proof x (suc n) =
-    begin
-      1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-        ≈⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
-      1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-             + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-        ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
-      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-      + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-        ≈⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
-      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
-           (Σ[ k ← 0 … n ] n choose k * x ^ k)
-        ≈⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
-      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
-      1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
-        ≈⟨ sym $ distribʳ _ x 1 ⟩
-      (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-        ≈⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
-      (suc x) ^ (suc n)
-    ∎
 \end{code}
 %TC:endignore
+% $
 
+\section{Proof}
+
+This section discusses the proof of the odd Gauss equation, which uses the lemmas presented in the previous section.
+
+The proof works by natural number induction on \AgdaBound{n}. The base case with \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\) is trivial as
+\(
+\text{\AgdaBound{n} \AgdaFunction{choose} \AgdaNumber{0} \AgdaFunction{*} \AgdaBound{x} \AgdaFunction{^} \AgdaNumber{0} \AgdaSymbol{=} \AgdaNumber{1} \AgdaSymbol{=} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{^} \AgdaBound{n}}
+\)
+
+In mathematical notation, the induction step works as follows:
 \begin{align}
 \sum_{k ← 0 … n + 1} \binom{n + 1}{k} · x^k
 &= 1 + \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k \\
@@ -1549,6 +1586,35 @@ module BinomialTheorem where
 &= (x + 1) · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
 &= (1 + x)^{1 + n}
 \end{align}
+
+Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{n}{k} · x^k = (1 + x)^n\). The Agda following proof is annotated by the corresponding steps in the proof above.
+
+%TC:ignore
+\begin{code}
+  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n
+  proof x zero    = refl
+  proof x (suc n) =
+    begin
+      1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
+{- 4.1 -}  ≈⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
+      1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+             + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
+{- 4.2 -}  ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+      + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
+{- 4.3 -}  ≈⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
+      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
+           (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 4.4 -}  ≈⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
+      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
+      1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 4.5 -}  ≈⟨ sym $ distribʳ _ x 1 ⟩
+      (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 4.6 -}  ≈⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
+      (suc x) ^ (suc n)
+    ∎
+\end{code}
+%TC:endignore
 
 \chapter{Square matrices over semirings}
 
