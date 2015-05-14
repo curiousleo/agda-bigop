@@ -1150,9 +1150,9 @@ Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 Reflexivity and transitivity are proved in a similar fashion.
 
 
-\chapter{Gauss' formula}
+\chapter{Gauss formula}
 
-This chapter presents a proof of Gauss' formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
+This chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
 
 %TC:ignore
 \AgdaHide{
@@ -1197,13 +1197,13 @@ module Gauss where
 }
 %TC:endignore
 
-\section{Gauss' formula}
+\section{Gauss formula}
 
-In this section, we show a proof of the equation \[\sum_{i = 0}^n i = \frac{n · (n + 1)}{2}\] using definitions and lemmas from the \AgdaModule{Bigop} module.
+In this section, we show a proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] using definitions and lemmas from the \AgdaModule{Bigop} module. The proof works by natural number induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
 
-As a first step, the equation is multiplied through by two to simplify the proof, so the equation becomes \[2 · \sum_{i = 0}^n = n · (n + 1)\] The proof works by natural number induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
+The induction hypothesis is \[ 2 · \sum_{i ← 0 … n} i = n · (n + 1) \]
 
-The induction step works as follows:
+and the induction step works as follows:
 \begin{align}
 2 · \sum_{i ← 0 … 1 + n} i
 &= 2 · \left( \left( \sum_{i ← 0 … n} i \right) + 1 + n \right) \\
@@ -1213,6 +1213,26 @@ The induction step works as follows:
 &= (2 + n) · (1 + n) \\
 &= (1 + n) · (2 + n)
 \end{align}
+
+In Agda, using Σ-syntax, the theorem
+\begin{gather*}
+∀ n.\quad 2 · \sum_{i = 0}^n i = n · (n + 1) \\
+\intertext{is expressed as}
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaNumber{2} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{i} \AgdaSymbol{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}}
+\end{gather*}
+
+Proof by natural number induction over \AgdaBound{n} translates to pattern matching on this argument in Agda. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\); the induction step is given as the right-hand side of the pattern \AgdaInductiveConstructor{suc} \AgdaBound{n}.
+
+In the induction step, we use equational reasoning (see XXX) to transform the equation step by step. Each step is annotated with the corresponding equation in the proof shown above.
+The lemmas used to justify the transformation are:
+\begin{align*}
+\text{\AgdaField{proj₁} \AgdaFunction{distrib}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaBound{z} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{y} \AgdaFunction{+} \AgdaBound{z}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{z}} \\
+\text{\AgdaFunction{+-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{+} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x}} \\
+\text{\AgdaFunction{*-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{*} \AgdaBound{x}} \\
+\text{\AgdaFunction{lemma}}\;&:\;\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaFunction{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}}
+\end{align*}
+
+In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is used.
 
 %TC:ignore
 \begin{code}
@@ -1244,6 +1264,8 @@ The induction step works as follows:
           ∎
 \end{code}
 %TC:endignore
+
+\section{Odd Gauss formula}
 
 %TC:ignore
 \AgdaHide{
