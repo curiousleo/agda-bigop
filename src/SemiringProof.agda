@@ -93,9 +93,9 @@ l∘t = lookup∘tabulate
     diag-lemma (sucF r) = diag-lemma r
 
 1M-∁-diag : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
-1M-∁-diag {r} {c}   eq with ≟ r c
-1M-∁-diag {r} {.r} ¬eq | yes P.refl = ⊥-elim (¬eq P.refl)
-1M-∁-diag {r} {c}  ¬eq | no  _      = start
+1M-∁-diag {r} {c}  eq with ≟ r c
+1M-∁-diag {r} {c} ¬eq | yes eq = ⊥-elim (¬eq eq)
+1M-∁-diag {r} {c} ¬eq | no  _  = start
   1M [ r , c ]  ≣⟨ l∘t r c ⟩
   diag r c      ≣⟨ diag-lemma r c ¬eq ⟩
   0#            □
@@ -180,17 +180,17 @@ M-zeroˡ : LeftZero _≋_ 0M _⊗_
 M-zeroˡ A = z
   where
     open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Props.Monoid +-monoid using (cong; identity)
 
     z : ∀ r c → (0M ⊗ A) [ r , c ] ≈ 0M [ r , c ]
     z r c = begin
-      (0M ⊗ A) [ r , c ]              ≡⟨ l∘t r c ⟩
+      (0M ⊗ A) [ r , c ]             ≡⟨ l∘t r c ⟩
       Σ[ i ← ι n ] 0M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong (ι n) P.refl
-                  (λ i → *-cong (reflexive (l∘t r i)) refl) ⟩
-      Σ[ i ← ι n ] 0# * A [ i , c ]  ≈⟨ sym (Σ.distrˡ _ 0# (ι n)) ⟩
-      0# * (Σ[ i ← ι n ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
-      0#                               ≡⟨ P.sym (l∘t r c) ⟩
+                  (λ i → reflexive (l∘t r i) ⟨ *-cong ⟩ refl) ⟩
+      Σ[ i ← ι n ] 0# * A [ i , c ]  ≈⟨ Σ.cong (ι n) P.refl (λ i → proj₁ zero _) ⟩
+      Σ[ i ← ι n ] 0#                ≈⟨ Σ.identity (ι n) ⟩
+      0#                             ≡⟨ P.sym (l∘t r c) ⟩
       0M [ r , c ] ∎
 
 M-zeroʳ : RightZero _≋_ 0M _⊗_
