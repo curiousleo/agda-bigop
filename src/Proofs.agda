@@ -27,7 +27,8 @@ module Proofs where
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
 
-    _…_ = rangeℕ
+    _…_ : ℕ → ℕ → List ℕ
+    m … n = rangeℕ m (suc n)
 
     proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
     proof 0 = P.refl
@@ -69,39 +70,38 @@ module Proofs where
 
     open import Relation.Unary
 
-    _…+_ = upFromℕ
+    infix 6 _…_
 
-    lemma : ∀ n → 0 …+ suc (suc n + suc n) ∥ odd ≡
-                  0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+    _…_ : ℕ → ℕ → List ℕ
+    m … n = rangeℕ m (suc n)
+
+    lemma : ∀ n → 0 … suc n + suc n ∥ odd ≡
+                  0 … n + n ∥ odd ∷ʳ suc (n + n)
     lemma n =
       begin
-        0 …+ suc (suc n + suc n) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
-        0 …+ suc (suc (suc (n + n))) ∥ odd
+        0 … suc n + suc n ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
+        0 … suc (suc (n + n)) ∥ odd
           ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
-        0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
-          ≡⟨ last-no (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
+        0 … suc (n + n) ∷ʳ suc (suc (n + n)) ∥ odd
+          ≡⟨ last-no (0 … suc (n + n)) (suc (suc (n + n))) odd
                      (even→¬odd (ss-even (2n-even n))) ⟩
-        0 …+ suc (suc (n + n)) ∥ odd
+        0 … suc (n + n) ∥ odd
           ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
-        0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
-          ≡⟨ last-yes (0 …+ suc (n + n)) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
-        0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+        0 … n + n ∷ʳ suc (n + n) ∥ odd
+          ≡⟨ last-yes (0 … n + n) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
+        0 … n + n ∥ odd ∷ʳ suc (n + n)
       ∎
-      where
-        3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
-        3suc n rewrite +-suc n n = P.refl
 
-
-    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
+    proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≈ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
-        Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
+        Σ[ i ← 0 … suc n + suc n ∥ odd ] i
           ≡⟨ P.cong (fold id) (lemma n)⟩
-        Σ[ i ← 0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n) ] i
-          ≡⟨ Σ.last id (suc (n + n)) (0 …+ suc (n + n) ∥ odd) ⟩
-        Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
+        Σ[ i ← 0 … n + n ∥ odd ∷ʳ suc (n + n) ] i
+          ≡⟨ Σ.last id (suc (n + n)) (0 … n + n ∥ odd) ⟩
+        Σ[ i ← 0 … n + n ∥ odd ] i + suc (n + n)
           ≡⟨ +-cong (proof n) refl ⟩
 
         n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
