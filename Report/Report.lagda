@@ -116,7 +116,7 @@ module Basics where
 %TC:endignore
 }
 
-This project was implemented in \emph{Agda}, a functional programming language with a dependent type system. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms. We will discuss what this means in XXX.
+This project was implemented in \emph{Agda}, a functional programming language with a dependent type system \autocite{norell_dependently_2009}. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms. We will discuss what this means in XXX.
 
 In comparison to non-dependent functional languages like Haskell or ML, Agda's type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations. The downside is that type inference is undecidable, so most terms need type annotations.
 
