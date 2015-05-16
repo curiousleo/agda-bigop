@@ -17,7 +17,7 @@
 \usepackage{microtype}
 \usepackage{bussproofs}
 \usepackage{csquotes}
-\usepackage[autocite=footnote,citestyle=authoryear-comp,bibstyle=authoryear,
+\usepackage[autocite=inline,citestyle=authoryear-comp,bibstyle=authoryear,
             dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
 \usepackage[bookmarks,hidelinks]{hyperref}
 \usepackage[noabbrev,capitalise]{cleveref}
