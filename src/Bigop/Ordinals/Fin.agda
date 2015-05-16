@@ -20,6 +20,8 @@ range (suc from) to = tail (range from to)
     tail [] = []
     tail (x ∷ xs) = xs
 
+infix 6 _…<_ _…_
+
 _…<_ = range
 
 _…_ : (from to : ℕ) → List (Fin (suc to))
