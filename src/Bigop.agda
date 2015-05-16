@@ -4,14 +4,19 @@
 module Bigop where
 
 open import Bigop.Core public
-open import Bigop.Ordinals public
 open import Bigop.Filter public
 open import Bigop.Filter.Predicates public
 
 module Props where
 
-  import Bigop.Ordinals.Properties as O
-  module Ordinals = O
+  module Ordinals where
+    import Bigop.Ordinals.Properties.Nat as N
+    module Nat = N
+    import Bigop.Ordinals.Properties.Fin as F
+    module Fin = F
+
+  import Bigop.Filter.Properties as F
+  module Filter = F
 
   import Bigop.Properties.Monoid as M
   module Monoid = M
