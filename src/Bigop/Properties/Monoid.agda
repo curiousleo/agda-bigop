@@ -87,7 +87,7 @@ cong-P {f = f} {g} {P} (x ∷ xs) p eq = begin
     open import Bigop.Filter.PredicateReasoning
     open import Relation.Nullary
     open import Relation.Nullary.Decidable
-    open import Bigop.Ordinals.Properties
+    open import Bigop.Filter.Properties
 
     case-p : P x → fold f (x ∷ xs ∥ p) ≈ fold g (x ∷ xs ∥ p)
     case-p px = begin

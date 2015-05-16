@@ -107,7 +107,7 @@ split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
   where
     open import Bigop.Filter.PredicateReasoning
     import Relation.Binary.PropositionalEquality as P
-    open import Bigop.Ordinals.Properties
+    open import Bigop.Filter.Properties
     open import Relation.Nullary.Decidable
 
     split-yes : P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
