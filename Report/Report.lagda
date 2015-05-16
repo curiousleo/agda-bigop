@@ -1187,12 +1187,11 @@ module Gauss where
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open Props.Ordinals
+    open import Bigop.Ordinals.Nat
+    open Props.Ordinals.Nat
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
-
-    _…_ = rangeℕ
 \end{code}
 }
 %TC:endignore
@@ -1282,14 +1281,14 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open Props.Ordinals
+    open import Bigop.Ordinals.Nat
+    open Props.Ordinals.Nat
+    open Props.Filter
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
 
     open import Relation.Unary
-
-    _…+_ = upFromℕ
 \end{code}
 }
 %TC:endignore
@@ -1314,27 +1313,24 @@ to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFun
 
 %TC:ignore
 \begin{code}
-    extract : ∀ n →  0 …+ suc (suc n + suc n) ∥ odd ≡
-                     0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+    extract : ∀ n →  0 … (suc n + suc n) ∥ odd ≡
+                     0 … (n + n) ∥ odd ∷ʳ suc (n + n)
     extract n =
       begin
-        0 …+ suc (suc n + suc n) ∥ odd
-{- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…+_ 0) (3suc n) ⟩
-        0 …+ suc (suc (suc (n + n))) ∥ odd
+        0 … (suc n + suc n) ∥ odd
+{- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
+        0 … (suc (suc (n + n))) ∥ odd
 {- B -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
-        0 …+ suc (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
-{- C -}   ≡⟨ last-no  (0 …+ (suc (suc (n + n)))) (suc (suc (n + n))) odd
+        0 … (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
+{- C -}   ≡⟨ last-no  (0 … (suc (n + n))) (suc (suc (n + n))) odd
                       (even→¬odd (ss-even (2n-even n))) ⟩
-        0 …+ suc (suc (n + n)) ∥ odd
+        0 … (suc (n + n)) ∥ odd
 {- D -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
-        0 …+ suc (n + n) ∷ʳ suc (n + n) ∥ odd
-{- E -}   ≡⟨ last-yes  (0 …+ suc (n + n)) (suc (n + n)) odd
+        0 … (n + n) ∷ʳ suc (n + n) ∥ odd
+{- E -}   ≡⟨ last-yes  (0 … (n + n)) (suc (n + n)) odd
                        (even+1 (2n-even n)) ⟩
-        0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n)
+        0 … (n + n) ∥ odd ∷ʳ suc (n + n)
       ∎
-      where
-        3suc : ∀ n → suc (suc n + suc n) ≡ suc (suc (suc (n + n)))
-        3suc n rewrite +-suc n n = P.refl
 \end{code}
 %TC:endignore
 
@@ -1342,15 +1338,15 @@ The proof of the odd Gauss equation again works by natural number induction on \
 
 %TC:ignore
 \begin{code}
-    proof : ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
+    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd ] i ≈ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
-        Σ[ i ← 0 …+ suc (suc n + suc n) ∥ odd ] i
+        Σ[ i ← 0 … (suc n + suc n) ∥ odd ] i
 {- F -}   ≡⟨ P.cong (fold id) (extract n)⟩
-        Σ[ i ← 0 …+ suc (n + n) ∥ odd ∷ʳ suc (n + n) ] i
-{- G -}   ≡⟨ Σ.last id (suc (n + n)) (0 …+ suc (n + n) ∥ odd) ⟩
-        Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i + suc (n + n)
+        Σ[ i ← 0 … (n + n) ∥ odd ∷ʳ suc (n + n) ] i
+{- G -}   ≡⟨ Σ.last id (suc (n + n)) (0 … (n + n) ∥ odd) ⟩
+        Σ[ i ← 0 … (n + n) ∥ odd ] i + suc (n + n)
 {- H -}   ≡⟨ +-cong (proof n) refl ⟩
 
         n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
@@ -1397,11 +1393,11 @@ module BinomialTheorem where
 
   open EqR setoid
   open import Level renaming (zero to lzero; suc to lsuc)
-  open Props.Ordinals
+
+  open import Bigop.Ordinals.Nat
+  open Props.Ordinals.Nat
 
   infixr 8 _^_
-
-  _…_ = rangeℕ
 \end{code}
 }
 %TC:endignore
@@ -1691,18 +1687,13 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid o
 \begin{code}
   open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
   open Fold +-monoid using (Σ-syntax)
-  open Props.Ordinals
+  open import Bigop.Ordinals.Fin
+  open Props.Ordinals.Fin
 
   open import Relation.Binary.EqReasoning setoid
   open P.≡-Reasoning
     renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 \end{code}
-
-\AgdaHide{
-\begin{code}
-  _…_ = upFromF
-\end{code}
-}
 %TC:endignore
 
 We define \AgdaDatatype{M} as a shorthand for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring. The pointwise lifting of the equivalence relation between elements is named \AgdaFunction{\_≋\_}. \AgdaDatatype{Matrix} and \AgdaDatatype{Pointwise} are defined in \cref{Impl-Matrices}.
@@ -1734,14 +1725,14 @@ Using Σ-syntax, multiplication can be defined in a concise way:
 %TC:ignore
 \begin{code}
   mult : M → M → Fin n → Fin n → Carrier
-  mult A B r c = Σ[ i ← 0 … n ] A [ r , i ] * B [ i , c ]
+  mult A B r c = Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
 
   _⊗_ : M → M → M
   A ⊗ B = tabulate (mult A B)
 \end{code}
 %TC:endignore
 
-Note how the definition of \AgdaFunction{mult} resembles the component-wise definition of matrix multiplication in standard mathematical notation: \[(A\,B)_{r,c} = \sum_{i ← 0 …\ n} A_{r,i}\,B_{i,c}\]
+Note how the definition of \AgdaFunction{mult} resembles the component-wise definition of matrix multiplication in standard mathematical notation: \[(A\,B)_{r,c} = \sum_{i ← 0 …<\ n} A_{r,i}\,B_{i,c}\]
 
 The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihilator for matrix multiplication. All of its elements are set to the zero element of the underlying semiring.
 
@@ -1928,8 +1919,8 @@ In this section we prove that matrix multiplication is monoidal. Additionally, a
 
 In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-cong} to replace equals by equals in a multiplication wrapped in a sum. The structure of the proof is unchanged from the last section. See XXX for a description of the lemmas contained in \AgdaModule{Props.Monoid}.
 \begin{align}
-(A ⊗ B)_{r,c} &≈ \sum_{i ← 0 …\;n} A_{r,i}\;B_{i,c} \\
-             &≈ \sum_{i ← 0 …\;n} A′_{r,i}\;B′_{i,c} \\
+(A ⊗ B)_{r,c} &≈ \sum_{i ← 0 …<\;n} A_{r,i}\;B_{i,c} \\
+             &≈ \sum_{i ← 0 …<\;n} A′_{r,i}\;B′_{i,c} \\
              &≈ (A′ ⊗ B′)_{r,c}
 \end{align}
 %TC:ignore
@@ -1939,9 +1930,9 @@ In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-con
     begin
       (A ⊗ B) [ r , c ]
 {- 5.13 -}       ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ← 0 … n ] A [ r , i ] * B [ i , c ]
-{- 5.14 -}       ≈⟨ Σ.cong (0 … n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
-      Σ[ i ← 0 … n ] A′ [ r , i ] * B′ [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
+{- 5.14 -}       ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
+      Σ[ i ← 0 …< n ] A′ [ r , i ] * B′ [ i , c ]
 {- 5.15 -}       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       (A′ ⊗ B′) [ r , c ]
     ∎
@@ -1960,9 +1951,9 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
 % As described in XXX, \AgdaFunction{Σ.cong} states that if lists \AgdaBound{is} and \AgdaBound{js} are propositionally equal and functions \AgdaBound{f} and \AgdaBound{g} are extensionally equal with respect to \AgdaDatatype{\_≈\_}, then \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{is} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaBound{js} \AgdaFunction{]} \AgdaBound{g} \AgdaBound{j}.
 
 \begin{align}
-(\mathbf{0} ⊗ A)_{r,c} &≈ \sum_{i ← 0 …\;n} \mathbf{0}_{r,i}\;A_{i,c} \\
-                       &≈ \sum_{i ← 0 …\;n} 0\;A_{i,c} \\
-                       &≈ 0 · \sum_{i ← 0 …\;n} A_{i,c} \\
+(\mathbf{0} ⊗ A)_{r,c} &≈ \sum_{i ← 0 …<\;n} \mathbf{0}_{r,i}\;A_{i,c} \\
+                       &≈ \sum_{i ← 0 …<\;n} 0\;A_{i,c} \\
+                       &≈ 0 · \sum_{i ← 0 …<\;n} A_{i,c} \\
                        &≈ 0 \\
                        &≈ \mathbf{0}_{r,c}
 \end{align}
@@ -1973,13 +1964,13 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
   M-zeroˡ A = λ r c →
     begin
 {- 5.16 -}  (0M ⊗ A) [ r , c ]                       ≡⟨ lookup∘tabulate r c ⟩
-            Σ[ i ← 0 … n ] 0M [ r , i ] * A [ i , c ]
-              ≈⟨ Σ.cong  (0 … n) P.refl
+            Σ[ i ← 0 …< n ] 0M [ r , i ] * A [ i , c ]
+              ≈⟨ Σ.cong  (0 …< n) P.refl
                          (λ i → reflexive (lookup∘tabulate r i) ⟨ *-cong ⟩ refl) ⟩
-            Σ[ i ← 0 … n ] 0# * A [ i , c ]
-              ≈⟨ Σ.cong (0 … n) P.refl (λ i → proj₁ zero _) ⟩
-            Σ[ i ← 0 … n ] 0#
-              ≈⟨ Σ.identity (0 … n) ⟩
+            Σ[ i ← 0 …< n ] 0# * A [ i , c ]
+              ≈⟨ Σ.cong (0 …< n) P.refl (λ i → proj₁ zero _) ⟩
+            Σ[ i ← 0 …< n ] 0#
+              ≈⟨ Σ.identity (0 …< n) ⟩
 {- 5.20 -}  0#                                       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
             0M [ r , c ]
     ∎
@@ -1990,23 +1981,23 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
 %TC:endignore
 
 Let us consider the second step of the proof in detail. The aim is to use \AgdaFunction{Σ.cong} to show
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
 \AgdaDatatype{≈}
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
 
-On both sides of the equivalence, we take the sum over \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n}\AgdaSymbol{)}. The proof that the lists are propositionally equal is therefore just \AgdaInductiveConstructor{P.refl}.
+On both sides of the equivalence, we take the sum over \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n}\AgdaSymbol{)}. The proof that the lists are propositionally equal is therefore just \AgdaInductiveConstructor{P.refl}.
 
 We now need to prove that \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} for all \AgdaBound{i}. The outer form of this expression is a multiplication. Since our goal is to replace equal subterms by equal subterms, we need to use the appropriate congruence rule, \AgdaFunction{*-cong}. The right hand sides of the two multiplications are both \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}, so they are trivially equivalent by \AgdaFunction{refl}.
 
 \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} is propositionally equal to \AgdaFunction{0\#} by (\AgdaFunction{lookup∘tabulate} \AgdaBound{r} \AgdaBound{i}). Equivalence in \AgdaDatatype{\_≈\_} follows from propositional equality by \AgdaFunction{reflexivity}, which proves that the left hand sides of the multiplications are ≈-equivalent too.
 
 Putting this all together, we have built a term
-\[ \text{\AgdaFunction{Σ.cong} \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n}\AgdaSymbol{)} \AgdaInductiveConstructor{P.refl} \AgdaSymbol{(λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaFunction{reflexive} \AgdaSymbol{(}\AgdaFunction{lookup∘tabulate} \AgdaBound{r} \AgdaBound{i}\AgdaSymbol{)} \AgdaFunction{⟨} \AgdaFunction{*-cong} \AgdaFunction{⟩} \AgdaFunction{refl}\AgdaSymbol{)} \AgdaFunction{⟩}} \]
+\[ \text{\AgdaFunction{Σ.cong} \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n}\AgdaSymbol{)} \AgdaInductiveConstructor{P.refl} \AgdaSymbol{(λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaFunction{reflexive} \AgdaSymbol{(}\AgdaFunction{lookup∘tabulate} \AgdaBound{r} \AgdaBound{i}\AgdaSymbol{)} \AgdaFunction{⟨} \AgdaFunction{*-cong} \AgdaFunction{⟩} \AgdaFunction{refl}\AgdaSymbol{)} \AgdaFunction{⟩}} \]
 proving
 
-\[ \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+\[ \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
 \AgdaDatatype{≈}
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \]
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaFunction{0\#} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \]
 
 In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the underlying semiring and then \AgdaFunction{Σ.identity}, which shows that the sum of any number of zeros is zero. Right-distributivity is proved in a similar way. The proof is omitted here, but it is included in the Agda source files of the project.
 
@@ -2017,11 +2008,11 @@ In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the
   M-zeroʳ A = λ r c →
     begin
       (A ⊗ 0M) [ r , c ]               ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ← 0 … n ] A [ r , i ] * 0M [ i , c ]
-        ≈⟨ Σ.cong  (0 … n) P.refl
+      Σ[ i ← 0 …< n ] A [ r , i ] * 0M [ i , c ]
+        ≈⟨ Σ.cong  (0 …< n) P.refl
                    (λ i → *-cong refl (reflexive (lookup∘tabulate i c))) ⟩
-      Σ[ i ← 0 … n ] A [ r , i ] * 0#    ≈⟨ sym (Σ.distrʳ _ 0# (0 … n)) ⟩
-      (Σ[ i ← 0 … n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
+      Σ[ i ← 0 …< n ] A [ r , i ] * 0#    ≈⟨ sym (Σ.distrʳ _ 0# (0 …< n)) ⟩
+      (Σ[ i ← 0 …< n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
       0#                               ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       0M [ r , c ]
     ∎
@@ -2037,15 +2028,15 @@ In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the
 This proof is more involved than the associativity proof for matrix addition. The argument runs as follows:
 \begin{align}
 ((A ⊗ B) ⊗ C)_{r,c}
-&≈ \sum_{i\,←\,0 …\,n} \left( \sum_{j\,←\,0 …\,n} A_{r,j}\, B_{j,i} \right) C_{i,c}
+&≈ \sum_{i\,←\,0 …<\,n} \left( \sum_{j\,←\,0 …<\,n} A_{r,j}\, B_{j,i} \right) C_{i,c}
     && \text{by the definition of ⊗} \\
-&≈ \sum_{i\,←\,0 …\,n} \sum_{j\,←\,0 …\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
+&≈ \sum_{i\,←\,0 …<\,n} \sum_{j\,←\,0 …<\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
     && \text{by right-distributivity} \\
-&≈ \sum_{j\,←\,0 …\,n} \sum_{i\,←\,0 …\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
+&≈ \sum_{j\,←\,0 …<\,n} \sum_{i\,←\,0 …<\,n} (A_{r,j}\, B_{j,i}) C_{i,c}
     && \text{swapping the outer sums} \\
-&≈ \sum_{j\,←\,0 …\,n} \sum_{i\,←\,0 …\,n} A_{r,j}\, (B_{j,i}\, C_{i,c})
+&≈ \sum_{j\,←\,0 …<\,n} \sum_{i\,←\,0 …<\,n} A_{r,j}\, (B_{j,i}\, C_{i,c})
     && \text{by associativity} \\
-&≈ \sum_{j\,←\,0 …\,n} A_{r,j} \sum_{i\,←\,0 …\,n} B_{j,i}\, C_{i,c}
+&≈ \sum_{j\,←\,0 …<\,n} A_{r,j} \sum_{i\,←\,0 …<\,n} B_{j,i}\, C_{i,c}
     && \text{by left-distributivity} \\
 &≈ (A ⊗ (B ⊗ C))_{r,c}
     && \text{by the definition of ⊗}
@@ -2060,13 +2051,13 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
     begin
       ((A ⊗ B) ⊗ C) [ r , c ]
 {- 5.21 -}  ≈⟨ factorˡ r c ⟩
-      Σ[ i ← 0 … n ] (Σ[ j ← 0 … n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.22 -}  ≈⟨ Σ.cong (0 … n) P.refl (λ i → Σ.distrʳ _ _ (0 … n)) ⟩
-      Σ[ i ← 0 … n ] Σ[ j ← 0 … n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.23 -}  ≈⟨ Σ.swap _ (0 … n) (0 … n) ⟩
-      Σ[ j ← 0 … n ] Σ[ i ← 0 … n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-            ≈⟨ Σ.cong (0 … n) P.refl (inner r c) ⟩
-      Σ[ j ← 0 … n ] A [ r , j ] * (Σ[ i ← 0 … n ] B [ j , i ] * C [ i , c ])
+      Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+{- 5.22 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
+      Σ[ i ← 0 …< n ] Σ[ j ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+{- 5.23 -}  ≈⟨ Σ.swap _ (0 …< n) (0 …< n) ⟩
+      Σ[ j ← 0 …< n ] Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+            ≈⟨ Σ.cong (0 …< n) P.refl (inner r c) ⟩
+      Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
 {- 5.26 -}  ≈⟨ sym $ factorʳ r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ]
     ∎
@@ -2075,26 +2066,26 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
       module Σ = Props.SemiringWithoutOne semiringWithoutOne
         using (cong; swap; distrˡ; distrʳ)
 
-      inner : ∀ r c j →  Σ[ i ← 0 … n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
-                         A [ r , j ] * (Σ[ i ← 0 … n ] B [ j , i ] * C [ i , c ])
+      inner : ∀ r c j →  Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
+                         A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
       inner r c j =
         begin
-          Σ[ i ← 0 … n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.24 -}  ≈⟨ Σ.cong (0 … n) P.refl (λ i → *-assoc _ _ _) ⟩
-          Σ[ i ← 0 … n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
-{- 5.25 -}  ≈⟨ sym (Σ.distrˡ _ _ (0 … n)) ⟩
-          A [ r , j ] * (Σ[ i ← 0 … n ] B [ j , i ] * C [ i , c ])
+          Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+{- 5.24 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-assoc _ _ _) ⟩
+          Σ[ i ← 0 …< n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
+{- 5.25 -}  ≈⟨ sym (Σ.distrˡ _ _ (0 …< n)) ⟩
+          A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
         ∎
 
       factorˡ : ∀ r c →  ((A ⊗ B) ⊗ C) [ r , c ] ≈
-                         Σ[ i ← 0 … n ] (Σ[ j ← 0 … n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+                         Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
       factorˡ r c =  reflexive (lookup∘tabulate r c) ⟨ trans ⟩
-                     Σ.cong (0 … n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl)
+                     Σ.cong (0 …< n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl)
 
       factorʳ : ∀ r c →  (A ⊗ (B ⊗ C)) [ r , c ] ≈
-                         Σ[ j ← 0 … n ] A [ r , j ] * (Σ[ i ← 0 … n ] B [ j , i ] * C [ i , c ])
+                         Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
       factorʳ r c =  reflexive (lookup∘tabulate r c) ⟨ trans ⟩
-                     Σ.cong (0 … n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c)))
+                     Σ.cong (0 …< n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c)))
 \end{code}
 %TC:endignore
 
@@ -2136,28 +2127,28 @@ This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \Agda
 
 The justification for the identity law in mathematical notation is as follows:
 \begin{align}
-(\mathbf{1} ⊗ A)_{r,c} &≈ \sum_{i ← 0 …\;n} \mathbf{1}_{r,i}\;A_{i,c} \\
-                       &≈ \left( \sum_{\substack{i ← 0 …\;n \\ r ≡ i}} \mathbf{1}_{r,i}\;A_{i,c} \right) + \left( \sum_{\substack{i ← 0 …\;n \\ r ≢ i}} \mathbf{1}_{r,i}\;A_{i,c} \right) \\
-                       &≈ \left( \sum_{\substack{i ← 0 …\;n \\ r ≡ i}} 1 · A_{i,c} \right) + \left( \sum_{\substack{i ← 0 …\;n \\ r ≢ i}} 0 · A_{i,c} \right) \\
-                       &≈ \left( \sum_{\substack{i ← 0 …\;n \\ r ≡ i}} A_{i,c} \right) + 0 \\
-                       &≈ \sum_{\substack{i ← 0 …\;n \\ r ≡ i}} A_{i,c} \\
+(\mathbf{1} ⊗ A)_{r,c} &≈ \sum_{i ← 0 …<\;n} \mathbf{1}_{r,i}\;A_{i,c} \\
+                       &≈ \left( \sum_{\substack{i ← 0 …<\;n \\ r ≡ i}} \mathbf{1}_{r,i}\;A_{i,c} \right) + \left( \sum_{\substack{i ← 0 …<\;n \\ r ≢ i}} \mathbf{1}_{r,i}\;A_{i,c} \right) \\
+                       &≈ \left( \sum_{\substack{i ← 0 …<\;n \\ r ≡ i}} 1 · A_{i,c} \right) + \left( \sum_{\substack{i ← 0 …<\;n \\ r ≢ i}} 0 · A_{i,c} \right) \\
+                       &≈ \left( \sum_{\substack{i ← 0 …<\;n \\ r ≡ i}} A_{i,c} \right) + 0 \\
+                       &≈ \sum_{\substack{i ← 0 …<\;n \\ r ≡ i}} A_{i,c} \\
                     %  &≈ A_{r,c} + 0 \\
                        &≈ A_{r,c}
 \end{align}
 
-After unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i} separately.
+After unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i} separately.
 
 The function \AgdaFunction{≡-step} deals with the first case. From \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} follows \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#}. Using distributivity and the identity law for \AgdaFunction{\_*\_}, we can deduce that
 
 \[ \text{
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
 }\]
 
 Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. By distributivity and the \AgdaFunction{zero} law of the underlying semiring we then have
 
 \[ \text{
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{∁′} (\AgdaFunction{≟} \AgdaBound{r}) \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{∁′} (\AgdaFunction{≟} \AgdaBound{r}) \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
 \AgdaFunction{0\#}
 }\]
 
@@ -2168,14 +2159,14 @@ Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢}
     begin
       (1M ⊗ A) [ r , c ]
 {- 5.27 -}  ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ← 0 … n ] 1M [ r , i ] * A [ i , c ]
-{- 5.28 -}  ≈⟨ Σ.split-P _ (0 … n) (≟ r) ⟩
-      Σ[ i ← 0 … n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
-      Σ[ i ← 0 … n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]
+      Σ[ i ← 0 …< n ] 1M [ r , i ] * A [ i , c ]
+{- 5.28 -}  ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]
 {- 5.29 -}  ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
-      Σ[ i ← 0 … n ∥ ≟ r ] A [ i , c ] + 0#
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ] + 0#
 {- 5.30 -}  ≈⟨ proj₂ +-identity _ ⟩
-      Σ[ i ← 0 … n ∥ ≟ r ] A [ i , c ]
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
 {- 5.31 -}  ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
                        (filter r c) ⟩
       A [ r , c ] + 0#
@@ -2187,35 +2178,35 @@ Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢}
       module Σ = Props.SemiringWithoutOne semiringWithoutOne
         using (cong-P; split-P; distrˡ)
 
-      ≡-step : ∀ r c →  Σ[ i ← 0 … n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
-                        Σ[ i ← 0 … n ∥ ≟ r ] A [ i , c ]
+      ≡-step : ∀ r c →  Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                        Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
       ≡-step r c =
         begin
-          Σ[ i ← 0 … n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (0 … n) (≟ r)
+          Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (0 …< n) (≟ r)
                          (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← 0 … n ∥ ≟ r ] 1# * A [ i , c ]
-            ≈⟨ sym $ Σ.distrˡ _ 1# (0 … n ∥ ≟ r) ⟩
-          1# * (Σ[ i ← 0 … n ∥ ≟ r ] A [ i , c ])
+          Σ[ i ← 0 …< n ∥ ≟ r ] 1# * A [ i , c ]
+            ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
+          1# * (Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ])
             ≈⟨ proj₁ *-identity _ ⟩
-          Σ[ i ← 0 … n ∥ ≟ r ] A [ i , c ]
+          Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
         ∎
 
-      ≢-step : ∀ r c → Σ[ i ← 0 … n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+      ≢-step : ∀ r c → Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
       ≢-step r c =
         begin
-          Σ[ i ← 0 … n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (0 … n) (∁′ (≟ r))
+          Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+            ≈⟨ Σ.cong-P  (0 …< n) (∁′ (≟ r))
                          (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← 0 … n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]
-            ≈⟨ sym $ Σ.distrˡ _ 0# (0 … n ∥ ∁′ (≟ r)) ⟩
-          0# * (Σ[ i ← 0 … n ∥ (∁′ (≟ r)) ] A [ i , c ])
+          Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]
+            ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
+          0# * (Σ[ i ← 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])
             ≈⟨ proj₁ zero _ ⟩
           0#
         ∎
 
-      filter : ∀ r c → 0 … n ∥ ≟ r ≡ L.[ r ]
-      filter r c = ordinals-filterF z≤n (bounded r)
+      filter : ∀ r c → 0 …< n ∥ ≟ r ≡ L.[ r ]
+      filter r c = ordinals-filter z≤n (bounded r)
 \end{code}
 %TC:endignore
 
@@ -2239,29 +2230,29 @@ The proof of right-identity works in a similar way, and is omitted here. It is i
       ident r c = begin
         (A ⊗ 1M) [ r , c ]
           ≡⟨ lookup∘tabulate r c ⟩
-        Σ[ i ← 0 … n ] A [ r , i ] * 1M [ i , c ]
-          ≈⟨ Σ.split-P _ (0 … n) (≟ c) ⟩
-        Σ[ i ← 0 … n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
-        Σ[ i ← 0 … n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
+        Σ[ i ← 0 …< n ] A [ r , i ] * 1M [ i , c ]
+          ≈⟨ Σ.split-P _ (0 …< n) (≟ c) ⟩
+        Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
+        Σ[ i ← 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
           ≈⟨ +-cong
-               (Σ.cong-P (0 … n) (≟ c)
+               (Σ.cong-P (0 …< n) (≟ c)
                          (λ i c≡i → *-cong refl
                                            (reflexive (1M-diag (P.sym c≡i)))))
-               (Σ.cong-P (0 … n) (∁′ (≟ c))
+               (Σ.cong-P (0 …< n) (∁′ (≟ c))
                          (λ i c≢i → *-cong refl
                                            (reflexive (1M-∁-diag (∁-sym c≢i))))) ⟩
-        Σ[ i ← 0 … n ∥ (≟ c) ] A [ r , i ] * 1# +
-        Σ[ i ← 0 … n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
-          ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (0 … n ∥ (≟ c)))
-                          (Σ.distrʳ _ 0# (0 … n ∥ ∁′ (≟ c))) ⟩
-        (Σ[ i ← 0 … n ∥ (≟ c) ] A [ r , i ]) * 1# +
-        (Σ[ i ← 0 … n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
+        Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ] * 1# +
+        Σ[ i ← 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
+          ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (0 …< n ∥ (≟ c)))
+                          (Σ.distrʳ _ 0# (0 …< n ∥ ∁′ (≟ c))) ⟩
+        (Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]) * 1# +
+        (Σ[ i ← 0 …< n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
           ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
-        (Σ[ i ← 0 … n ∥ (≟ c) ] A [ r , i ]) + 0#
+        (Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]) + 0#
           ≈⟨ proj₂ +-identity _ ⟩
-        Σ[ i ← 0 … n ∥ (≟ c) ] A [ r , i ]
+        Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]
           ≡⟨ P.cong (Σ-syntax (λ i → A [ r , i ]))
-                    (ordinals-filterF z≤n (bounded c)) ⟩
+                    (ordinals-filter z≤n (bounded c)) ⟩
         Σ[ i ← L.[ c ] ] A [ r , i ]
           ≈⟨ proj₂ +-identity _  ⟩
         A [ r , c ] ∎
@@ -2290,9 +2281,9 @@ Here we prove that \AgdaFunction{\_⊗\_} right-distributes over \AgdaFunction{\
 This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{B} \AgdaFunction{⊕} \AgdaBound{C}\AgdaSymbol{)} \AgdaDatatype{≋} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{B}\AgdaSymbol{)} \AgdaFunction{⊕} \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊗} \AgdaBound{C}\AgdaSymbol{)}. Most of the proof is concerned with unfolding the definition of \AgdaFunction{\_⊕\_} and \AgdaFunction{\_⊗\_}. The crucial step in the proof is the application of the left-distributivity law of the underlying semiring in \AgdaFunction{inner} followed by the use of \AgdaFunction{Σ.merge} in \AgdaFunction{distr}, splitting the sum into two.
 
 \begin{align}
-(A ⊗ (B ⊕ C))_{r,c} &≈ \sum_{i ← 0 …\;n} A_{r,i} (B_{i,c} + C_{i,c}) \\
-                    &≈ \sum_{i ← 0 …\;n} (A_{r,i}\;B_{i,c}) + (A_{r,i}\;C_{i,c}) \\
-                    &≈ \left( \sum_{i ← 0 …\;n} A_{r,i}\;B_{i,c} \right) + \left( \sum_{i ← 0 …\;n} A_{r,i}\;C_{i,c} \right) \\
+(A ⊗ (B ⊕ C))_{r,c} &≈ \sum_{i ← 0 …<\;n} A_{r,i} (B_{i,c} + C_{i,c}) \\
+                    &≈ \sum_{i ← 0 …<\;n} (A_{r,i}\;B_{i,c}) + (A_{r,i}\;C_{i,c}) \\
+                    &≈ \left( \sum_{i ← 0 …<\;n} A_{r,i}\;B_{i,c} \right) + \left( \sum_{i ← 0 …<\;n} A_{r,i}\;C_{i,c} \right) \\
                     &≈ (A ⊗ B)_{r,c} + (A ⊗ C)_{r,c} \\
                     &≈ ((A ⊗ B) ⊕ (A ⊗ C))_{r,c}
 \end{align}
@@ -2304,13 +2295,13 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
     begin
       (A ⊗ (B ⊕ C)) [ r , c ]
 {- 5.33 -}  ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ← 0 … n ] A [ r , i ] * (B ⊕ C) [ i , c ]
-{- 5.34 -}  ≈⟨ Σ.cong (0 … n) P.refl (inner r c)⟩
-      Σ[ i ← 0 … n ] (  A [ r , i ] * B [ i , c ] +
+      Σ[ i ← 0 …< n ] A [ r , i ] * (B ⊕ C) [ i , c ]
+{- 5.34 -}  ≈⟨ Σ.cong (0 …< n) P.refl (inner r c)⟩
+      Σ[ i ← 0 …< n ] (  A [ r , i ] * B [ i , c ] +
                       A [ r , i ] * C [ i , c ])
-{- 5.35 -}  ≈⟨ sym $ Σ.merge _ _ (0 … n) ⟩
-      Σ[ i ← 0 … n ] A [ r , i ] * B [ i , c ] +
-      Σ[ i ← 0 … n ] A [ r , i ] * C [ i , c ]
+{- 5.35 -}  ≈⟨ sym $ Σ.merge _ _ (0 …< n) ⟩
+      Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ] +
+      Σ[ i ← 0 …< n ] A [ r , i ] * C [ i , c ]
 {- 5.36 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟨ P.cong₂ _+_ ⟩ lookup∘tabulate r c ⟩
       (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]
 {- 5.37 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟩
@@ -2347,8 +2338,8 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
       distr r c = begin
         ((B ⊕ C) ⊗ A) [ r , c ]
           ≡⟨ lookup∘tabulate r c ⟩
-        Σ[ i ← 0 … n ] (B ⊕ C) [ r , i ] * A [ i , c ]
-          ≈⟨ Σ.cong (0 … n) P.refl (λ i → begin
+        Σ[ i ← 0 …< n ] (B ⊕ C) [ r , i ] * A [ i , c ]
+          ≈⟨ Σ.cong (0 …< n) P.refl (λ i → begin
 
             (B ⊕ C) [ r , i ] * A [ i , c ]
               ≈⟨ *-cong (reflexive (lookup∘tabulate r i)) refl ⟩
@@ -2356,10 +2347,10 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
               ≈⟨ proj₂ distrib _ _ _ ⟩
             (B [ r , i ] * A [ i , c ]) + (C [ r , i ] * A [ i , c ]) ∎)⟩
 
-        Σ[ i ← 0 … n ] ((B [ r , i ] * A [ i , c ]) + (C [ r , i ] * A [ i , c ]))
-          ≈⟨ sym (Σ.merge _ _ (0 … n)) ⟩
-        Σ[ i ← 0 … n ] B [ r , i ] * A [ i , c ] +
-        Σ[ i ← 0 … n ] C [ r , i ] * A [ i , c ]
+        Σ[ i ← 0 …< n ] ((B [ r , i ] * A [ i , c ]) + (C [ r , i ] * A [ i , c ]))
+          ≈⟨ sym (Σ.merge _ _ (0 …< n)) ⟩
+        Σ[ i ← 0 …< n ] B [ r , i ] * A [ i , c ] +
+        Σ[ i ← 0 …< n ] C [ r , i ] * A [ i , c ]
           ≡⟨ P.sym $ P.cong₂ _+_ (lookup∘tabulate r c) (lookup∘tabulate r c) ⟩
         (B ⊗ A) [ r , c ] + (C ⊗ A) [ r , c ]
           ≡⟨ P.sym (lookup∘tabulate r c) ⟩
