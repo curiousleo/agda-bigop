@@ -54,12 +54,11 @@ module BinomialTheorem where
 
   open EqR setoid
   open import Level renaming (zero to lzero; suc to lsuc)
-  open Props.Ordinals
+  open Props.Ordinals.Nat
+  open import Bigop.Ordinals.Nat
 
   f : ℕ → ℕ → ℕ → ℕ
   f x n k = n choose k * x ^ k
-
-  _…_ = rangeℕ
 
   split : ∀ x n → Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≈
                   Σ[ k ← 0 … n ] n choose k * x ^ (suc k)

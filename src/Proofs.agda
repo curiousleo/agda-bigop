@@ -22,13 +22,12 @@ module Proofs where
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open Props.Ordinals
+    open import Bigop.Ordinals.Nat
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
 
-    _…_ : ℕ → ℕ → List ℕ
-    m … n = rangeℕ m (suc n)
+    open Props.Ordinals.Nat
 
     proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
     proof 0 = P.refl
@@ -63,17 +62,14 @@ module Proofs where
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open Props.Ordinals
+    open import Bigop.Ordinals.Nat
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
+    open Props.Ordinals.Nat
+    open Props.Filter
 
     open import Relation.Unary
-
-    infix 6 _…_
-
-    _…_ : ℕ → ℕ → List ℕ
-    m … n = rangeℕ m (suc n)
 
     lemma : ∀ n → 0 … suc n + suc n ∥ odd ≡
                   0 … n + n ∥ odd ∷ʳ suc (n + n)
