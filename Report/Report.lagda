@@ -1770,7 +1770,7 @@ In this section, we show that square matrices and matrix addition form a commuta
 
 % Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{congruence} or \emph{preservation of equivalence} and must be proved for each function.
 
-Here we prove that matrix addition preserves equivalence, that is, \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A′} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{B′} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{⊕} \AgdaBound{B} \AdgaDatatype{≋} \AgdaBound{A′} \AgdaFunction{⊕} \AgdaBound{B′}.
+Here we prove that matrix addition preserves equivalence, that is, \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A′} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{B′} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{⊕} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A′} \AgdaFunction{⊕} \AgdaBound{B′}.
 \begin{align}
 (A ⊕ B)_{r,c} &≈ A_{r,c} + B_{r,c} \\
               &≈ A′_{r,c} + B′_{r,c} \\
