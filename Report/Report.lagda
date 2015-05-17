@@ -97,11 +97,32 @@ module Report where
 
 \chapter{Introduction}
 
-\section{Motivation}
+\section{Aims and contributions}
+
+The \enquote{big sum} operator \(\sum\) is commonly used in various areas of mathematics. Similar big operator notation exists for unions \(\bigcup\) and least upper bounds \(\bigsqcup\).
+
+Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed in a natural way. \emph{Isabelle} and \emph{Coq}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+
+No such library exists for \emph{Agda}, another interactive theorem prover based on dependent types (like Coq). The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
+
+The main contributions of this project are:
+
+\begin{itemize}
+\item A modular syntax for writing sums and other big operators as well as intervals of natural numbers and filters in Agda that mimicks standard mathematical notation. (See XXX)
+\item Basic lemmas about big operators based on their underlying algebraic structure have been proved and packaged in a convient way. (See XXX)
+\end{itemize}
+
+Additional contributions of this project are:
+
+\begin{itemize}
+\item We argue that the essence of any big operator is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator. (See XXX)
+\end{itemize}
 
 \section{Overview}
 
-XXX (map of report)
+
+
+\chapter{Background}
 
 \section{Agda basics}
 
@@ -908,7 +929,53 @@ x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
 
 \chapter{Implementation}
 
-\section{Design}
+This chapter presents the implementation of the big operator library that was created in this project and discusses design decisions.
+
+The library consists of four mostly independent parts:
+\begin{description}
+\item[Big operator syntax.] \AgdaModule{Bigop.Core} defines a syntax for big operators. The modules in \AgdaModule{Bigop.Properties} contain various lemmas about the big operators lifted from different algebraic structures.
+\item[Filters.] \AgdaModule{Bigop.Filter} defines a function for filtering lists based on decidable predicates. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
+\item[Ordinals.] The directory \AgdaModule{Bigop.Ordinals} contains functions for creating sequences of natural numbers and lemmas about those functions.
+\item[Matrices.] \AgdaModule{Matrix} is a module that is completely independent from the rest of the source code. It defines a type of matrices and functions to populate matrices and look up values in a matrix.
+\end{description}
+
+\minisec{Source code structure}
+
+The directories and files of the library's source code are laid out as shown in \cref{fig:structure}.
+
+\begin{figure}[h]
+\begin{verbatim}
+src/
+├── Bigop.agda
+├── Bigop
+│   ├── Core.agda
+│   ├── Core
+│   │   └── Properties.agda
+│   ├── Properties
+│   │   ├── BooleanAlgebra.agda
+│   │   ├── CommutativeMonoid.agda
+│   │   ├── Monoid.agda
+│   │   └── SemiringWithoutOne.agda
+│   │
+│   ├── DecidableEquality.agda
+│   ├── Filter.agda
+│   ├── Filter
+│   │   ├── PredicateReasoning.agda
+│   │   ├── Predicates.agda
+│   │   └── Properties.agda
+│   │
+│   └── Ordinals
+│       ├── Fin.agda
+│       ├── Nat.agda
+│       └── Properties
+│           ├── Fin.agda
+│           └── Nat.agda
+│
+└── Matrix.agda
+\end{verbatim}
+\caption{Structure of the source code}
+\label{fig:structure}
+\end{figure}
 
 \section{Fold}
 
