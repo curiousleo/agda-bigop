@@ -118,6 +118,16 @@ Additional contributions of this project are:
 \item We argue that the essence of any big operator is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator. (See XXX)
 \end{itemize}
 
+\minisec{Syntax example}
+
+As a simple example for what the big operator library developed in this project allows users of Agda to do, consider the odd Gauss formula (discussed in detail in XXX). In standard mathematical notation, the equation can be written as follows:
+\[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
+
+Using the syntax definitions for sums, intervals and filters, it can be expressed in Agda as
+\[
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\]
+
 \section{Overview}
 
 
