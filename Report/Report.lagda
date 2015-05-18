@@ -945,15 +945,23 @@ x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
 
 \chapter{Implementation\label{ch:Impl}}
 
-This chapter presents the implementation of the big operator library that was created in this project and discusses design decisions.
+This Chapter presents the implementation of the big operator library that was created in this project and discusses design decisions.
 
-The library consists of four mostly independent parts:
+The library consists of three mostly independent parts which combined together allow for a large number of proofs involving big operators to be written in Agda.
+
+Taking apart the example from the introduction, we will see how the expression
+\[
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\] is assembled from the syntax definition for big operators (\AgdaFunction{Σ[\_←\_]\_}), intervals (\AgdaFunction{\_…\_}) and filters (\AgdaFunction{\_∥\_}):
+
+
 \begin{description}
-\item[Big operator syntax.] \AgdaModule{Bigop.Core} defines a syntax for big operators. The modules in \AgdaModule{Bigop.Properties} contain various lemmas about the big operators lifted from different algebraic structures.
+\item[Big operators.] \AgdaModule{Bigop.Core} defines an evaluation function and syntax for big operators. The modules in \AgdaModule{Bigop.Properties} contain various lemmas about the big operators lifted from different algebraic structures.
+\item[Intervals.] The directory \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function for filtering lists based on decidable predicates. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
-\item[Interval.] The directory \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
-\item[Matrices.] \AgdaModule{Matrix} is a module that is completely independent from the rest of the source code. It defines a type of matrices and functions to populate matrices and look up values in a matrix.
 \end{description}
+
+In addition, a module formalising \textbf{matrices} has been written as part of this project, since this is one obvious area where the notation and lemmas written in this project can be used. It is completely independent from the rest of the source code.
 
 \minisec{Source code structure}
 
@@ -993,11 +1001,8 @@ src/
 \label{fig:structure}
 \end{figure}
 
-\section{Fold}
+\section{Big operators}
 
-In section XXX, it was argued that the meaning of any big operator can be expressed as a fold over a monoid. More precisely, we take in a list of elements in some index set, evaluate an expression on every member, and combine the results using the binary operator of the monoid. If the list is empty, the fold evaluates to the monoid's unit element.
-
-One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
 
 %TC:ignore
 \AgdaHide{
@@ -1012,7 +1017,39 @@ module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
   open Monoid M renaming (Carrier to R)
 \end{code}
 }
+%TC:endignore
 
+In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator that is lifted into a big operator must possess an identity and associativity law.
+
+\minisec{The syntax}
+
+The module \AgdaModule{Bigop.Core.Fold} contains a syntax declaration equivalent to\footnote{XXX imports: explain why we have Σ-syntax = fold etc.}
+\[
+\text{\AgdaKeyword{syntax} \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs} \AgdaSymbol{=} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e}}
+\]
+
+which means that any expression of the form \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e} is rewritten into \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs}. Note that the \AgdaKeyword{syntax} keyword allows us to define new \emph{binding sites}: the variable \AgdaBound{x} is \emph{bound} within the expression \AgdaBound{e}. This effect cannot be achieved with mixfix operators.
+
+
+\minisec{Map then crush}
+
+How do we evaluate a big operator expression? We will interpret it as \enquote{let \(i\) range over the list \AgdaBound{is} of values; apply the function \(f\) to each and finally add all the results together}.
+
+In functional programming terms, the first step is called a \emph{map} and the second is a particular kind of \emph{fold}.
+
+\begin{align*}
+\text{\AgdaFunction{map}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier}} \\
+%
+\text{\AgdaFunction{foldr}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}} \\
+%
+\text{\AgdaFunction{crush}}\;&\AgdaSymbol{:}\;\text{\AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}} \\
+%
+\text{\AgdaFunction{fold}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}}
+\end{align*}
+
+The function \AgdaFunction{fold} is defined as:
+
+%TC:ignore
 \begin{code}
   fold : (I → R) → List I → R
   fold f = crush ∘ map f
@@ -1021,6 +1058,39 @@ module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
       crush = foldr _∙_ ε
 \end{code}
 %TC:endignore
+
+% This means that the running example \(
+% \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i}}
+% \)
+% translates to
+% \[\text{\AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaBound{i}\AgdaSymbol{)} \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd}\AgdaSymbol{)}}\]
+
+\minisec{Representing indices}
+
+Consider the following schematic big operator expression: \[\sum_i f(i)\]
+
+Here the domain of \(i\) was left unspecified. Often in mathematical notation, this domain is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable:
+
+\begin{itemize}
+\item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators lifted from non-commutative binary operators is not well-defined.
+
+As an example, consider some arbitrary operator \(\_⊙\_\). Then \(\bigodot_{i ∈ \{a,b\}} i\) could evaluate to either \(a ⊙ b\) or \(b ⊙ a\) since \(\{a,b\} = \{b,a\}\). But if \(\_⊙\_\) is non-commutative with \(a ⊙ b ≠ b ⊙ a\), then the two results are not equal.
+
+Using lists to specify the domain of \(i\), the problem evaporates: \(\bigodot_{i ← [a,b]} i\) evaluates to \(a ⊙ b\) only, so the result of the big operator expression is well-defined.
+
+\item Lists allow \emph{repetition}. In a set, every value is unique. Whether duplicate values are allowed does not matter only when the original binary operator is idempotent.
+
+Again considering some operator \(\_⊙\_\), it is simply impossible to write down a big operator expression that evaluates to \(a ⊙ a\) since \(\{a,a\} = \{a\}\) and thus \(\bigodot_{i ∈ \{a,a\}} i = a\).
+
+With lists, we can write \(\bigodot_{i ← [a,a]} i\).
+\end{itemize}
+
+\minisec{Monoids to the rescue}
+
+In Section XXX, it was argued that the meaning of any big operator can be expressed as a fold over a monoid. More precisely, we take in a list of elements in some index set, evaluate an expression on every member, and combine the results using the binary operator of the monoid. If the list is empty, the fold evaluates to the monoid's unit element.
+
+One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
+
 
 \begin{align*}
 \text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}}
