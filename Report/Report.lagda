@@ -157,7 +157,7 @@ This project was implemented in \emph{Agda}, a functional programming language w
 
 In comparison to non-dependent functional languages like Haskell or ML, Agda's type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations. The downside is that type inference is undecidable, so most terms need type annotations.
 
-Here we introduce the syntax of the language. The following sections explain how Agda can be used to write theorems and check proofs.
+Here we introduce the syntax of the language. The following Sections explain how Agda can be used to write theorems and check proofs.
 
 \minisec{Small types and functions}
 
@@ -365,7 +365,7 @@ The \AgdaKeyword{record} keyword lets us bundle terms and types together in a co
 
 The level of a record is the least upper bound of it fields' levels. In this case, it is the upper bound of \AgdaBound{a} and \AgdaBound{b} (written as \AgdaBound{a} \AgdaFunction{⊔} \AgdaBound{b}) to accommodate fields \AgdaField{fst} at levels \AgdaBound{a} and \AgdaField{snd} at level \AgdaBound{b}. Giving a \AgdaKeyword{constructor} is optional in general but required for pattern matching. It also makes defining new values less verbose---compare \AgdaFunction{pair₀} and \AgdaFunction{pair₁} in the next example.
 
-In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. The type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, so it \emph{depends} on the value of \AgdaField{fst}. That is why \AgdaDatatype{Σ} is called a dependent pair. This type will become important in the next sections when predicates and existential quantifiers are discussed.
+In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. The type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, so it \emph{depends} on the value of \AgdaField{fst}. That is why \AgdaDatatype{Σ} is called a dependent pair. This type will become important in the next Sections when predicates and existential quantifiers are discussed.
 
 For now we will restrict ourselves to building non-dependent pairs, which means that we will systematically ignore the \AgdaBound{A}-typed parameter to \AgdaBound{B}. We can use \AgdaDatatype{Σ} to define non-dependent pairs like this:
 
@@ -401,7 +401,7 @@ As a record type, \AgdaDatatype{Σ} can be deconstructed in many ways. The name 
 
 \section{Predicates and relations}
 
-In this section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
+In this Section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
 
 From this point on, we will call some functions \enquote{proofs} and some types \enquote{theorems}. The justification for this lies in the Curry-Howard correspondence, which is explained in XXX.
 
@@ -462,7 +462,7 @@ Next, we look at \emph{propositional equality}, written as \AgdaDatatype{\_≡\_
 \end{code}
 %TC:endignore
 
-Note that we call \AgdaDatatype{\_≡\_} a parameterised predicate, not a relation, because it has type \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} rather than \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} (the type of homogeneous relations of \AgdaBound{A}, see next section XXX). There is an equivalent definition of propositional equality as a relation, but the one shown here is easier to use in proofs.
+Note that we call \AgdaDatatype{\_≡\_} a parameterised predicate, not a relation, because it has type \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} rather than \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set} \AgdaBound{a} (the type of homogeneous relations of \AgdaBound{A}, see next Section XXX). There is an equivalent definition of propositional equality as a relation, but the one shown here is easier to use in proofs.
 
 The parameterised predicate \AgdaDatatype{\_≡\_} has only one constructor called \AgdaInductiveConstructor{refl}. In order to create an inhabitant of the propositional equality type, we \emph{must} use this constructor.
 It requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
@@ -627,7 +627,7 @@ We will restrict our attention to the special case of relations between inhabita
   Rel A ℓ = A → A → Set ℓ
 \end{code}
 
-The evenness predicate from the previous section can now be typed as \AgdaDatatype{Even} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaDatatype{ℕ} \AgdaFunction{lzero}. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
+The evenness predicate from the previous Section can now be typed as \AgdaDatatype{Even} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaDatatype{ℕ} \AgdaFunction{lzero}. As an example, \emph{Divisibility} is a familiar relation with a straightforward definition in Agda. It uses multiplication, so we define that first:
 
 %TC:ignore
 \begin{code}
@@ -667,7 +667,7 @@ The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\Ag
 
 \section{Provability and decidability}
 
-In this section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous section as examples.
+In this Section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous Section as examples.
 
 \AgdaHide{
 %TC:ignore
@@ -684,7 +684,7 @@ module Truth where
 
 \minisec{Type inhabitation}
 
-We proved in the previous section that four is an even number by giving a term of type \AgdaDatatype{Even} \AgdaNumber{4}. The term we wrote down, \AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaInductiveConstructor{zero-even}\AgdaSymbol{)}, explicitly constructs an element of \AgdaDatatype{Even} \AgdaNumber{4}. The fact the we were able to define a term of this type means that the type is \emph{inhabited}, that is, it has at least one element.
+We proved in the previous Section that four is an even number by giving a term of type \AgdaDatatype{Even} \AgdaNumber{4}. The term we wrote down, \AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaInductiveConstructor{zero-even}\AgdaSymbol{)}, explicitly constructs an element of \AgdaDatatype{Even} \AgdaNumber{4}. The fact the we were able to define a term of this type means that the type is \emph{inhabited}, that is, it has at least one element.
 
 Type inhabitation translates to \emph{provability} in the constructive logic corresponding to Agda's type system: a type is shown to be inhabited if a term of that type can be given; in a constructive logic, a proposition is considered true when a constructive proof can be given for that proposition.
 
@@ -830,7 +830,7 @@ Setoids can be used to define quotients. For example, we could represent non-neg
 
 \minisec{Equational reasoning}
 
-Any setoid gives rise to a preorder, which only has a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next chapters.
+Any setoid gives rise to a preorder, which only has a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next Chapters.
 
 As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
@@ -1235,7 +1235,7 @@ Reflexivity and transitivity are proved in a similar fashion.
 
 \chapter{Gauss formula\label{ch:Gauss}}
 
-This chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
+This Chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
 
 %TC:ignore
 \AgdaHide{
@@ -1281,7 +1281,7 @@ module Gauss where
 
 \section{Gauss formula}
 
-In this section, we show a proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] using definitions and lemmas from the \AgdaModule{Bigop} module. The proof works by natural number induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
+In this Section, we show a proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] using definitions and lemmas from the \AgdaModule{Bigop} module. The proof works by natural number induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
 
 The induction hypothesis is \[ 2 · \sum_{i ← 0 … n} i = n · (n + 1) \]
 
@@ -1445,7 +1445,7 @@ The proof of the odd Gauss equation again works by natural number induction on \
 
 \chapter{Binomial theorem\label{ch:Binom}}
 
-In this chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
+In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
 
 \section{Definitions}
 
@@ -1509,7 +1509,7 @@ Additionally we define a shortcut \AgdaFunction{f} for the general form of the f
 
 \section{Lemmas}
 
-In this section we prove the lemmas used in the final proof of the binomial theorem.
+In this Section we prove the lemmas used in the final proof of the binomial theorem.
 
 The first two lemmas, \AgdaFunction{+-reorder} and \AgdaFunction{*-reorder}, are simple algebraic equations that follow from associativity and commutativity of the two operators:
 
@@ -1648,7 +1648,7 @@ The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proo
 
 \section{Proof}
 
-This section discusses the proof of the odd Gauss equation, which uses the lemmas presented in the previous section.
+This Section discusses the proof of the odd Gauss equation, which uses the lemmas presented in the previous Section.
 
 The proof works by natural number induction on \AgdaBound{n}. The base case with \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\) is trivial as
 \(
@@ -1702,16 +1702,16 @@ Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{
 % XXX Things that will have to be explained for this chapter to make sense:
 % Fin; ∀-notation; open ... using notation; all the lemmas in Bigop.Properties; ℕ and Fin; pattern matching; the Matrix library (representation as Vec of Vecs; tabulate; lookup; syntax); universe levels and ⊔; REL A B ℓ; implicit arguments; records (constructors and fields); how algebraic structures publicly export / import the properties of their substructures; equational reasoning; propositional equality implies any other kind of equivalence via `reflexive`; binary operators and mixfix operators _⊕_ and _[_,_]
 
-In this chapter we present a proof that square matrices over a semiring themselves form a semiring.
+In this Chapter we present a proof that square matrices over a semiring themselves form a semiring.
 
 \cref{Semi-Defs} introduces various definitions. In \cref{Semi-Plus} we show that square matrices and matrix addition constitute a commutative monoid with an annihilator. \cref{Semi-Times} proves that square matrices and matrix multiplication form a monoid. In \cref{Semi-Distr} we show that matrix multiplication distributes over matrix addition.
 
 
 \section{\label{Semi-Defs}Definitions}
 
-In this section, we define matrix addition and multiplication, the zero matrix and the identity matrix.
+In this Section, we define matrix addition and multiplication, the zero matrix and the identity matrix.
 
-All the code in this chapter resides in a module that is parameterised over the underlying semiring and the size \AgdaBound{n} of the square matrices. The following declaration has the effect of fixing the variables \AgdaBound{n}, \AgdaBound{c}, \AgdaBound{ℓ} and \AgdaBound{semiring} in the module's body:
+All the code in this Chapter resides in a module that is parameterised over the underlying semiring and the size \AgdaBound{n} of the square matrices. The following declaration has the effect of fixing the variables \AgdaBound{n}, \AgdaBound{c}, \AgdaBound{ℓ} and \AgdaBound{semiring} in the module's body:
 
 %TC:ignore
 \AgdaHide{
@@ -1846,7 +1846,7 @@ Note that there are many ways to define the function \AgdaFunction{diag}. One al
 
 \section{\label{Semi-Plus}Properties of matrix addition}
 
-In this section, we show that square matrices and matrix addition form a commutative monoid.
+In this Section, we show that square matrices and matrix addition form a commutative monoid.
 
 
 \minisec{Congruence}
@@ -1976,7 +1976,7 @@ Here \AgdaFunction{\_+\_} must be a commutative operator for the proof to go thr
 
 \minisec{Matrix addition: a commutative monoid}
 
-Putting all the lemmas in this section together, we have shown that matrix addition forms a commutative monoid over square matrices with \AgdaFunction{0M} as its identity:
+Putting all the lemmas in this Section together, we have shown that matrix addition forms a commutative monoid over square matrices with \AgdaFunction{0M} as its identity:
 
 %TC:ignore
 \begin{code}
@@ -1995,12 +1995,12 @@ Putting all the lemmas in this section together, we have shown that matrix addit
 
 \section{\label{Semi-Times}Properties of matrix multiplication}
 
-In this section we prove that matrix multiplication is monoidal. Additionally, a proof is given that \AgdaFunction{0M} is a left zero for matrix multiplication.
+In this Section we prove that matrix multiplication is monoidal. Additionally, a proof is given that \AgdaFunction{0M} is a left zero for matrix multiplication.
 
 
 \minisec{Congruence of matrix multiplication}
 
-In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-cong} to replace equals by equals in a multiplication wrapped in a sum. The structure of the proof is unchanged from the last section. See XXX for a description of the lemmas contained in \AgdaModule{Props.Monoid}.
+In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-cong} to replace equals by equals in a multiplication wrapped in a sum. The structure of the proof is unchanged from the last Section. See XXX for a description of the lemmas contained in \AgdaModule{Props.Monoid}.
 \begin{align}
 (A ⊗ B)_{r,c} &≈ \sum_{i ← 0 …<\;n} A_{r,i}\;B_{i,c} \\
              &≈ \sum_{i ← 0 …<\;n} A′_{r,i}\;B′_{i,c} \\
@@ -2444,7 +2444,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
 
 \section{Summary}
 
-Taking all the lemmas in this chapter together, we have shown that square matrices over a semiring again form a semiring:
+Taking all the lemmas in this Chapter together, we have shown that square matrices over a semiring again form a semiring:
 
 %TC:ignore
 \begin{code}
