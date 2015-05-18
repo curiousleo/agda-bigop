@@ -1007,69 +1007,109 @@ src/
 %TC:ignore
 \AgdaHide{
 \begin{code}
-open import Algebra
-
-module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
-
-  open import Data.List using (List; foldr; map)
-  open import Function using (_∘_)
-
-  open Monoid M renaming (Carrier to R)
+module BigOps where
+  open import Level
+  open import Algebra.Structures
+  open import Relation.Binary.Core
 \end{code}
-}
 %TC:endignore
+}
 
 In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator that is lifted into a big operator must possess an identity and associativity law.
 
-\minisec{The syntax}
+\minisec{Crushing monoids}
 
-The module \AgdaModule{Bigop.Core.Fold} contains a syntax declaration equivalent to\footnote{XXX imports: explain why we have Σ-syntax = fold etc.}
-\[
-\text{\AgdaKeyword{syntax} \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs} \AgdaSymbol{=} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e}}
-\]
+Recall from XXX the definition of a monoid in Agda:
 
-which means that any expression of the form \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e} is rewritten into \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs}. Note that the \AgdaKeyword{syntax} keyword allows us to define new \emph{binding sites}: the variable \AgdaBound{x} is \emph{bound} within the expression \AgdaBound{e}. This effect cannot be achieved with mixfix operators.
+\begin{code}
+  record Monoid c ℓ : Set (suc (c ⊔ ℓ)) where
+    field
+      Carrier   : Set c
+      _≈_       : Rel Carrier ℓ
+      _∙_       : Carrier → Carrier → Carrier
+      ε         : Carrier
+      isMonoid  : IsMonoid _≈_ _∙_ ε
+\end{code}
 
+The record \AgdaField{isMonoid} contains proofs that \AgdaField{\_≈\_} is an equivalence relation, \AgdaField{\_∙\_} is associative and congruent and \AgdaField{ε} is the identity for \AgdaField{\_∙\_} (all with respect to \AgdaField{\_≈\_}).
 
-\minisec{Map then crush}
+One core idea of this project is that any monoid exactly specifies a big operator as follows:
 
-How do we evaluate a big operator expression? We will interpret it as \enquote{let \(i\) range over the list \AgdaBound{is} of values; apply the function \(f\) to each and finally add all the results together}.
+\begin{itemize}
+\item The binary operator \AgdaField{\_∙\_} gives us a way to combine elements of the monoid's carrier type. The associativity law guarantees that bracketing does not matter when we combine more than two elements. This means that left and right folds using \AgdaField{\_∙\_} are equivalent.
+\item The identity element \AgdaField{ε} can be used as the result of a big operator expression over an empty index list. By the identity law, this makes any big operator expression over an empty index list behave as expected.
+\end{itemize}
 
-In functional programming terms, the first step is called a \emph{map} and the second is a particular kind of \emph{fold}.
-
-\begin{align*}
-\text{\AgdaFunction{map}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier}} \\
-%
-\text{\AgdaFunction{foldr}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}} \\
-%
-\text{\AgdaFunction{crush}}\;&\AgdaSymbol{:}\;\text{\AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}} \\
-%
-\text{\AgdaFunction{fold}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}}
-\end{align*}
-
-The function \AgdaFunction{fold} is defined as:
+Given any monoid \AgdaBound{M}, we can bring its fields into scope:
 
 %TC:ignore
+\AgdaHide{
 \begin{code}
-  fold : (I → R) → List I → R
-  fold f = crush ∘ map f
-    where
-      crush : List R → R
-      crush = foldr _∙_ ε
+  module Folds {c ℓ} (M : Monoid c ℓ) {i} {I : Set i} where
+    open import Data.List using (List; foldr; map)
+    open import Function using (_∘_)
+\end{code}
+}
+\begin{code}
+    open Monoid M
 \end{code}
 %TC:endignore
 
-% This means that the running example \(
-% \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i}}
-% \)
-% translates to
-% \[\text{\AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{i} \AgdaSymbol{→} \AgdaBound{i}\AgdaSymbol{)} \AgdaSymbol{(}\AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd}\AgdaSymbol{)}}\]
+Using the carrier type, the monoid's binary operator and identity element, we can then define the function \AgdaFunction{crush} which reduces a list to an element of the carrier type using a fold over that list:
 
-\minisec{Representing indices}
+%TC:ignore
+\begin{code}
+    crush : List Carrier → Carrier
+    crush = foldr _∙_ ε
+\end{code}
+%TC:endignore
 
-Consider the following schematic big operator expression: \[\sum_i f(i)\]
+So \AgdaFunction{crush} is just an application of \AgdaFunction{foldr}, a right-fold over lists containing elements of the carrier type. This function returns its second argument if the list passed to it is empty; otherwise it combines the list elements using its first argument, a binary operator. The type of \AgdaFunction{foldr} specialised to our use case is:
+\[\text{\AgdaFunction{foldr}}\;\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}}\]
 
-Here the domain of \(i\) was left unspecified. Often in mathematical notation, this domain is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable:
+We can now define the function \AgdaFunction{fold} which evaluates a big operator expression. It first applies a function \AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier} to each element of an index list using the function \AgdaFunction{map} defined in the standard library:
+\[
+\text{\AgdaFunction{map}}\;\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier}}
+\]
+\AgdaFunction{fold} then applies \AgdaFunction{crush} to combine them into a single value of the monoid's carrier type.
+
+%TC:ignore
+\begin{code}
+    fold : (I → Carrier) → List I → Carrier
+    fold f = crush ∘ map f
+\end{code}
+%TC:endignore
+
+The following syntax declaration should make the connection between this function and big operators clearer: \[
+\text{\AgdaKeyword{syntax} \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs} \AgdaSymbol{=} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e}}
+\]
+
+It has the effect of rewriting any expression of the form \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e} into \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs}. Note that the \AgdaKeyword{syntax} keyword allows us to define new binding sites: the variable \AgdaBound{x} is \emph{bound} within the expression \AgdaBound{e}. This effect cannot be achieved with mixfix operators.
+
+The following two examples show how \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{l} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} evaluates. We first consider the case where \AgdaBound{l} \AgdaSymbol{=} \AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}:
+\begin{align*}
+\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}}
+\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaFunction{f} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaFunction{f} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{))}} \\
+\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₂}\AgdaSymbol{))}} \\
+\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₂}}
+\end{align*}
+
+In the last step, we are allowed to drop the parentheses because \AgdaFunction{\_∙\_} is associative by assumption.
+
+Next, we check what happens if \AgdaBound{l} is empty, that is, \AgdaBound{l} \AgdaSymbol{=} \AgdaInductiveConstructor{[]}:
+\begin{align*}
+\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaInductiveConstructor{[]}}
+\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaInductiveConstructor{[]}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}} \\
+\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaInductiveConstructor{[]}} \\
+\quad&\equiv\quad \text{\AgdaFunction{ε}}
+\end{align*}
+
+\minisec{Representing indices as lists}
+
+Often in mathematical notation, the domain of a big operator expression is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable for the following reasons:
 
 \begin{itemize}
 \item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators lifted from non-commutative binary operators is not well-defined.
@@ -1092,22 +1132,6 @@ In Section XXX, it was argued that the meaning of any big operator can be expres
 One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
 
 
-\begin{align*}
-\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}}
-\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}} \\
-\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaSymbol{(}\AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSymbol{)}} \\
-\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₀} \AgdaInductiveConstructor{∷} \AgdaFunction{f} \AgdaBound{l₁} \AgdaInductiveConstructor{∷} \AgdaFunction{f} \AgdaBound{l₂} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSymbol{)}} \\
-\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaSymbol{(}\AgdaFunction{f} \AgdaBound{l₂}\AgdaSymbol{)}} \\
-\quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₂}}
-\end{align*}
-
-\begin{align*}
-\text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaInductiveConstructor{[]}}
-\quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaInductiveConstructor{[]}} \\
-\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaSymbol{(}\AgdaFunction{map} \AgdaFunction{f} \AgdaInductiveConstructor{[]}\AgdaSymbol{)}} \\
-\quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaInductiveConstructor{[]}} \\
-\quad&\equiv\quad \text{\AgdaBound{ε}}
-\end{align*}
 
 Since this library was created with matrix algebra in mind, the most important index type is (bounded) natural numbers, and the most important lists contain consecutive natural numbers.
 
