@@ -95,7 +95,7 @@ module Report where
 %TC:endignore
 }
 
-\chapter{Introduction}
+\chapter{Introduction\label{ch:Intro}}
 
 \section{Aims and contributions}
 
@@ -130,9 +130,15 @@ Using the syntax definitions for sums, intervals and filters, it can be expresse
 
 \section{Overview}
 
+\begin{description}
+\item[\cref{ch:Intro}] discusses the motivation for the project and describes its main contributions.
+\item[\cref{ch:Background}] is a tutorial-style introduction to Agda and dependent types in general.
+\item[\cref{ch:Impl}] describes the big operator library in detail.
+\item[\cref{ch:Gauss}, \cref{ch:Binom} and \cref{ch:Semi}] present various proofs that showcase the definitions and lemmas developed in this project.
+\item[\cref{ch:Concl}] discusses previous work and ideas for future research.
+\end{description}
 
-
-\chapter{Background}
+\chapter{Background\label{ch:Background}}
 
 \section{Agda basics}
 
@@ -937,7 +943,7 @@ x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
 \end{align*}
 
 
-\chapter{Implementation}
+\chapter{Implementation\label{ch:Impl}}
 
 This chapter presents the implementation of the big operator library that was created in this project and discusses design decisions.
 
@@ -1227,7 +1233,7 @@ Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 Reflexivity and transitivity are proved in a similar fashion.
 
 
-\chapter{Gauss formula}
+\chapter{Gauss formula\label{ch:Gauss}}
 
 This chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
 
@@ -1437,7 +1443,7 @@ The proof of the odd Gauss equation again works by natural number induction on \
 %TC:endignore
 % $
 
-\chapter{Binomial theorem}
+\chapter{Binomial theorem\label{ch:Binom}}
 
 In this chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
 
@@ -1691,7 +1697,7 @@ Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{
 %TC:endignore
 % $
 
-\chapter{Square matrices over semirings}
+\chapter{Square matrices over semirings\label{ch:Semi}}
 
 % XXX Things that will have to be explained for this chapter to make sense:
 % Fin; ∀-notation; open ... using notation; all the lemmas in Bigop.Properties; ℕ and Fin; pattern matching; the Matrix library (representation as Vec of Vecs; tabulate; lookup; syntax); universe levels and ⊔; REL A B ℓ; implicit arguments; records (constructors and fields); how algebraic structures publicly export / import the properties of their substructures; equational reasoning; propositional equality implies any other kind of equivalence via `reflexive`; binary operators and mixfix operators _⊕_ and _[_,_]
@@ -2454,11 +2460,21 @@ Taking all the lemmas in this chapter together, we have shown that square matric
 \end{code}
 %TC:endignore
 
-\chapter{Conclusions}
+\chapter{Conclusions\label{ch:Concl}}
 
-\chapter{Previous work}
+\section{Previous work}
 
-Coq's bigop module XXX
+\minisec{Isabelle: \texttt{Set\_Interval.thy}}
+
+The \texttt{Set\_Interval} module (or \emph{theory}) provides big operator notation for sums, products and unions. Other theories in the \texttt{HOL} (Higher-order logic) package define more big operators. There are two major conceptual differences between the library developed in this project and those Isabelle modules.
+
+Firstly, the Isabelle theories deal with index \emph{sets} rather than lists. In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see XXX), we would argue that defining big operators over lists rather than sets is the more flexible approach.
+
+The second major difference is that the syntax definitions for big operators in \texttt{Set\_Interval} are only general insofar as the binary operators that are used to define them are polymorphic. There is no mechanism for supplying your own algebraic structure.
+
+\minisec{Coq: \texttt{bigop.v}}
+
+The approach taken in Coq's \texttt{bigop} module, which is part of the Mathematical Components library (and formerly of SSReflect), provided much inspiration for this project. The idea to define big operators abstractly in terms of a map over a list followed by a fold comes from here. The \texttt{bigop} module is depends on many other modules from the Mathematical Components library.
 
 \printbibliography
 
