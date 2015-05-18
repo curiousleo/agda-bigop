@@ -1,4 +1,4 @@
-module Bigop.Ordinals.Nat where
+module Bigop.Interval.Nat where
 
 open import Data.List.Base
 open import Data.Nat.Base

@@ -54,8 +54,8 @@ module BinomialTheorem where
 
   open EqR setoid
   open import Level renaming (zero to lzero; suc to lsuc)
-  open Props.Ordinals.Nat
-  open import Bigop.Ordinals.Nat
+  open Props.Interval.Nat
+  open import Bigop.Interval.Nat
 
   f : ℕ → ℕ → ℕ → ℕ
   f x n k = n choose k * x ^ k

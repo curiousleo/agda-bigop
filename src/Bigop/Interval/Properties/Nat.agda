@@ -1,7 +1,7 @@
-module Bigop.Ordinals.Properties.Nat where
+module Bigop.Interval.Properties.Nat where
 
 open import Bigop.DecidableEquality
-open import Bigop.Ordinals.Nat
+open import Bigop.Interval.Nat
 open import Bigop.Filter
 
 open import Data.List.Base

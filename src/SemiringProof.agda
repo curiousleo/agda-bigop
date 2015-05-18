@@ -35,8 +35,8 @@ open Semiring semiring
 open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
 
 open Fold +-monoid using (Σ-syntax)
-open Props.Ordinals.Fin
-open import Bigop.Ordinals.Fin
+open Props.Interval.Fin
+open import Bigop.Interval.Fin
 
 open import Relation.Binary.EqReasoning setoid
 open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)

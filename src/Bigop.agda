@@ -9,10 +9,10 @@ open import Bigop.Filter.Predicates public
 
 module Props where
 
-  module Ordinals where
-    import Bigop.Ordinals.Properties.Nat as N
+  module Interval where
+    import Bigop.Interval.Properties.Nat as N
     module Nat = N
-    import Bigop.Ordinals.Properties.Fin as F
+    import Bigop.Interval.Properties.Fin as F
     module Fin = F
 
   import Bigop.Filter.Properties as F

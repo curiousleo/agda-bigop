@@ -945,7 +945,7 @@ The library consists of four mostly independent parts:
 \begin{description}
 \item[Big operator syntax.] \AgdaModule{Bigop.Core} defines a syntax for big operators. The modules in \AgdaModule{Bigop.Properties} contain various lemmas about the big operators lifted from different algebraic structures.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function for filtering lists based on decidable predicates. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
-\item[Ordinals.] The directory \AgdaModule{Bigop.Ordinals} contains functions for creating sequences of natural numbers and lemmas about those functions.
+\item[Interval.] The directory \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Matrices.] \AgdaModule{Matrix} is a module that is completely independent from the rest of the source code. It defines a type of matrices and functions to populate matrices and look up values in a matrix.
 \end{description}
 
@@ -974,7 +974,7 @@ src/
 │   │   ├── Predicates.agda
 │   │   └── Properties.agda
 │   │
-│   └── Ordinals
+│   └── Interval
 │       ├── Fin.agda
 │       ├── Nat.agda
 │       └── Properties
@@ -1101,7 +1101,7 @@ It follows from the monoid associativity law that the big operator distributes o
 
 \section{\enquote{Semiring without one} lemmas}
 
-\section{Ordinals}
+\section{Interval}
 
 \section{\label{Impl-Matrices}Matrices}
 
@@ -1264,8 +1264,8 @@ module Gauss where
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open import Bigop.Ordinals.Nat
-    open Props.Ordinals.Nat
+    open import Bigop.Interval.Nat
+    open Props.Interval.Nat
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
@@ -1358,8 +1358,8 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open import Bigop.Ordinals.Nat
-    open Props.Ordinals.Nat
+    open import Bigop.Interval.Nat
+    open Props.Interval.Nat
     open Props.Filter
 
     open Fold +-monoid using (fold; Σ-syntax)
@@ -1471,8 +1471,8 @@ module BinomialTheorem where
   open EqR setoid
   open import Level renaming (zero to lzero; suc to lsuc)
 
-  open import Bigop.Ordinals.Nat
-  open Props.Ordinals.Nat
+  open import Bigop.Interval.Nat
+  open Props.Interval.Nat
 
   infixr 8 _^_
 \end{code}
@@ -1764,8 +1764,8 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid o
 \begin{code}
   open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
   open Fold +-monoid using (Σ-syntax)
-  open import Bigop.Ordinals.Fin
-  open Props.Ordinals.Fin
+  open import Bigop.Interval.Fin
+  open Props.Interval.Fin
 
   open import Relation.Binary.EqReasoning setoid
   open P.≡-Reasoning

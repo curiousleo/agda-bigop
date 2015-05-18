@@ -1,4 +1,4 @@
-module Bigop.Ordinals.Fin where
+module Bigop.Interval.Fin where
 
 open import Data.List.Base
 open import Data.Fin using (Fin; fromℕ≤)
