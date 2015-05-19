@@ -1469,7 +1469,7 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
         lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
         lemma =
           begin
-            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
             Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
             Σ[ i ← 0 … n ] i + suc n
           ∎
@@ -1513,7 +1513,7 @@ which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be writ
 
 The lemma \AgdaFunction{extract} brings the list into a form that induction can be used on. It says that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
 
-In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{suc-last-lemma} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
+In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{upFrom-last} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
 \[
 \text{\AgdaFunction{even→¬odd} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{))}}\;\AgdaSymbol{:}\;\text{\AgdaFunction{¬} \AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)))}}
 \]
@@ -1532,12 +1532,12 @@ to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFun
         0 … (suc n + suc n) ∥ odd
 {- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
         0 … (suc (suc (n + n))) ∥ odd
-{- B -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
+{- B -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
         0 … (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
 {- C -}   ≡⟨ last-no  (0 … (suc (n + n))) (suc (suc (n + n))) odd
                       (even→¬odd (ss-even (2n-even n))) ⟩
         0 … (suc (n + n)) ∥ odd
-{- D -}   ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
+{- D -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (n + n))) ⟩
         0 … (n + n) ∷ʳ suc (n + n) ∥ odd
 {- E -}   ≡⟨ last-yes  (0 … (n + n)) (suc (n + n)) odd
                        (even+1 (2n-even n)) ⟩
@@ -1713,7 +1713,7 @@ The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{
   split x n =
     begin
       Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-        ≈⟨ sym $ P.cong (fold (f x (suc n))) (suc-lemma 0 (suc n)) ⟩
+        ≈⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
       Σ[ k ← map suc (0 … n) ] (suc n) choose k * x ^ k
         ≈⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
       Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
@@ -1742,9 +1742,9 @@ The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proo
       Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
         ≈⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
       Σ[ k ← map suc (0 … n) ] n choose k * x ^ k
-        ≡⟨ P.cong (fold $ f x n) (suc-lemma 0 (suc n)) ⟩
+        ≡⟨ P.cong (fold $ f x n) (upFrom-suc 0 (suc n)) ⟩
       Σ[ k ← 1 … suc n ] n choose k * x ^ k
-        ≡⟨ P.cong (fold $ f x n) (suc-last-lemma 1 n) ⟩
+        ≡⟨ P.cong (fold $ f x n) (upFrom-last 1 n) ⟩
       Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k
         ≈⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
       (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
@@ -1768,7 +1768,7 @@ The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proo
       1 + Σ[ k ← 1 … n ] n choose k * x ^ k
         ≈⟨ refl ⟩
       Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k
-        ≈⟨ P.cong (fold $ f x n) (suc-head-lemma 0 n) ⟩
+        ≈⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ k
     ∎
 \end{code}

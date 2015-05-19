@@ -17,21 +17,21 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open ≡-Reasoning
 
-suc-lemma : ∀ m n → map suc (upFrom m n) ≡ upFrom (suc m) n
-suc-lemma m zero    = refl
-suc-lemma m (suc n) = cong (_∷_ (suc m)) (suc-lemma (suc m) n)
+upFrom-suc : ∀ m n → map suc (upFrom m n) ≡ upFrom (suc m) n
+upFrom-suc m zero    = refl
+upFrom-suc m (suc n) = cong (_∷_ (suc m)) (upFrom-suc (suc m) n)
 
 range-suc : ∀ m n → map suc (range m n) ≡ range (suc m) (suc n)
-range-suc m n = suc-lemma m (n ∸ m)
+range-suc m n = upFrom-suc m (n ∸ m)
 
-suc-head-lemma : ∀ m n → m ∷ (upFrom (suc m) n) ≡ upFrom m (suc n)
-suc-head-lemma m n = refl
+upFrom-head : ∀ m n → m ∷ (upFrom (suc m) n) ≡ upFrom m (suc n)
+upFrom-head m n = refl
 
-suc-last-lemma : ∀ m n → upFrom m (suc n) ≡ (upFrom m n) ∷ʳ (m + n)
-suc-last-lemma m zero = cong (_∷ʳ_ []) $ +-comm zero m
-suc-last-lemma m (suc n) = begin
+upFrom-last : ∀ m n → upFrom m (suc n) ≡ (upFrom m n) ∷ʳ (m + n)
+upFrom-last m zero = cong (_∷ʳ_ []) $ +-comm zero m
+upFrom-last m (suc n) = begin
   m ∷ upFrom (suc m) (suc n)
-    ≡⟨ cong (_∷_ m) $ suc-last-lemma (suc m) n ⟩
+    ≡⟨ cong (_∷_ m) $ upFrom-last (suc m) n ⟩
   m ∷ (upFrom (suc m) n) ∷ʳ suc m + n
     ≡⟨ cong (_∷ʳ_ $ upFrom m (suc n)) $ sym $ +-suc m n ⟩
   upFrom m (suc n) ∷ʳ m + suc n ∎

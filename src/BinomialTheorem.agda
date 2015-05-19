@@ -65,7 +65,7 @@ module BinomialTheorem where
                   + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
   split x n = begin
     Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-      ≈⟨ sym $ P.cong (fold (f x (suc n))) (suc-lemma 0 (suc n)) ⟩
+      ≈⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
     Σ[ k ← map suc (0 … n) ] (suc n) choose k * x ^ k
       ≈⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
     Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
@@ -102,8 +102,8 @@ module BinomialTheorem where
   choose-suc : ∀ x n → Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≈ Σ[ k ← 1 … n ] n choose k * x ^ k
   choose-suc x n  = begin
     Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)   ≈⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
-    Σ[ k ← map suc (0 … n) ] n choose k * x ^ k     ≡⟨ P.cong (fold $ f x n) (suc-lemma 0 (suc n)) ⟩
-    Σ[ k ← 1 … suc n ] n choose k * x ^ k           ≡⟨ P.cong (fold $ f x n) (suc-last-lemma 1 n) ⟩
+    Σ[ k ← map suc (0 … n) ] n choose k * x ^ k     ≡⟨ P.cong (fold $ f x n) (upFrom-suc 0 (suc n)) ⟩
+    Σ[ k ← 1 … suc n ] n choose k * x ^ k           ≡⟨ P.cong (fold $ f x n) (upFrom-last 1 n) ⟩
     Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k  ≈⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
     (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
       ≈⟨ +-cong (refl {x = Σ[ k ← 1 … n ] f x n k})
@@ -116,7 +116,7 @@ module BinomialTheorem where
   shift x n = begin
     1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)  ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
     1 + Σ[ k ← 1 … n ] n choose k * x ^ k              ≈⟨ refl ⟩
-    Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k            ≈⟨ P.cong (fold $ f x n) (suc-head-lemma 0 n) ⟩
+    Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k            ≈⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
     Σ[ k ← 0 … n ] n choose k * x ^ k                  ∎
 
   proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n

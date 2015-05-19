@@ -45,7 +45,7 @@ module Proofs where
         lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
         lemma =
           begin
-            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (suc-last-lemma 1 n) ⟩
+            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
             Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
             Σ[ i ← 0 … n ] i + suc n
           ∎
@@ -78,12 +78,12 @@ module Proofs where
         0 … suc n + suc n ∥ odd
           ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
         0 … suc (suc (n + n)) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (suc (n + n)))) ⟩
+          ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
         0 … suc (n + n) ∷ʳ suc (suc (n + n)) ∥ odd
           ≡⟨ last-no (0 … suc (n + n)) (suc (suc (n + n))) odd
                      (even→¬odd (ss-even (2n-even n))) ⟩
         0 … suc (n + n) ∥ odd
-          ≡⟨ P.cong (flip _∥_ odd) (suc-last-lemma 0 (suc (n + n))) ⟩
+          ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (n + n))) ⟩
         0 … n + n ∷ʳ suc (n + n) ∥ odd
           ≡⟨ last-yes (0 … n + n) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
         0 … n + n ∥ odd ∷ʳ suc (n + n)
