@@ -25,4 +25,4 @@ infix 6 _…<_ _…_
 _…<_ = range
 
 _…_ : (from to : ℕ) → List (Fin (suc to))
-from … to = from …< suc to
+from … to = range from (suc to)
