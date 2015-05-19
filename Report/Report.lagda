@@ -1125,6 +1125,54 @@ With lists, we can write \(\bigodot_{i ← [a,a]} i\).
 \end{itemize}
 
 
+\section{Intervals}
+
+Intervals of natural numbers are commonly used as indices in big operator expressions. This Section describes how intervals are defined for the two types of natural numbers introduced in XXX, \AgdaDatatype{ℕ} and \AgdaDatatype{Fin}.
+
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module Intervals where
+  open import Data.List.Base
+  open import Data.Fin using (Fin; fromℕ≤)
+  open import Data.Nat.Base
+  open import Data.Nat.Properties using (m≤m+n)
+  open import Data.Nat.Properties.Simple using (+-suc)
+\end{code}
+%TC:endignore
+}
+
+Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The entire module \AgdaModule{Bigop.Interval.Nat} consists of the following four definitions:
+
+\begin{code}
+  upFrom : ℕ → ℕ → List ℕ
+  upFrom from zero       = []
+  upFrom from (suc len)  = from ∷ upFrom (suc from) len
+
+  range : ℕ → ℕ → List ℕ
+  range m n = upFrom m (n ∸ m)
+
+  _…<_ = range
+
+  _…_ : ℕ → ℕ → List ℕ
+  m … n = range m (suc n)
+\end{code}
+
+\AgdaFunction{upFrom} \AgdaBound{m} \AgdaBound{n} evaluates to the interval containing \AgdaBound{n} consecutive natural numbers, starting with \AgdaBound{m}. \AgdaFunction{range} returns a list of natural numbers starting with \AgdaBound{m} up to but not including \AgdaBound{n}. In case \(n ≤ m\), \AgdaFunction{range} returns the empty list.
+
+The infix operator \AgdaFunction{\_…<\_} is just a synonym for \AgdaFunction{range}. The notation is meant to make it clear that the interval does not include the upper bound. On the other hand, \AgdaFunction{\_…\_} explicitly includes the upper bound, so it defines a closed interval.
+
+\AgdaModule{Bigop.Interval.Fin} contains four definitions with the same names as the module presented above. Their types are:
+\begin{align*}
+\text{\AgdaFunction{upFrom}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{len} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaSymbol{(}\AgdaBound{from} \AgdaFunction{+} \AgdaBound{len}\AgdaSymbol{)}\AgdaSymbol{)}} \\
+\text{\AgdaFunction{range}}\;\text{\AgdaFunction{\_…<\_}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaBound{to}\AgdaSymbol{)}} \\
+\text{\AgdaFunction{\_…\_}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{to}\AgdaSymbol{)}\AgdaSymbol{)}}
+\end{align*}
+
+We omit the definitions of the functions here. They are more involved than the corresponding definitions presented above because we need to convert from \AgdaDatatype{ℕ} to \AgdaDatatype{Fin} and rewrite types to make the inductive definitions work.
+
+Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than \AgdaBound{n}, we can tell from the types of the functions that their upper bounds are as expected.
+
 \section{Filters}
 
 Consider the following formula: \[ \sum_{\substack{0 \leq i < 2n+1 \\ (i\ \text{odd})}} i \equiv n^2 \]
@@ -1189,8 +1237,6 @@ It follows from the monoid associativity law that the big operator distributes o
 \end{align*}
 
 \section{\enquote{Semiring without one} lemmas}
-
-\section{Interval}
 
 \section{\label{Impl-Matrices}Matrices}
 
