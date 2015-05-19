@@ -1032,7 +1032,6 @@ Recall from XXX the definition of a monoid in Agda:
 \end{code}
 
 The record \AgdaField{isMonoid} contains proofs that \AgdaField{\_≈\_} is an equivalence relation, \AgdaField{\_∙\_} is associative and congruent and \AgdaField{ε} is the identity for \AgdaField{\_∙\_} (all with respect to \AgdaField{\_≈\_}).
-
 One core idea of this project is that any monoid exactly specifies a big operator as follows:
 
 \begin{itemize}
