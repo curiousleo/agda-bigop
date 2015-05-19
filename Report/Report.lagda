@@ -1124,16 +1124,6 @@ Again considering some operator \(\_⊙\_\), it is simply impossible to write do
 With lists, we can write \(\bigodot_{i ← [a,a]} i\).
 \end{itemize}
 
-\minisec{Monoids to the rescue}
-
-In Section XXX, it was argued that the meaning of any big operator can be expressed as a fold over a monoid. More precisely, we take in a list of elements in some index set, evaluate an expression on every member, and combine the results using the binary operator of the monoid. If the list is empty, the fold evaluates to the monoid's unit element.
-
-One way of expressing this as a computation in a functional programming language is using the functions \AgdaFunction{map} and \AgdaFunction{crush} (reference!). \AgdaFunction{map} takes a function and a list and applies the function to each element of the list. \AgdaFunction{crush} reduces a list using a binary operator.
-
-
-
-Since this library was created with matrix algebra in mind, the most important index type is (bounded) natural numbers, and the most important lists contain consecutive natural numbers.
-
 
 \section{Filters}
 
