@@ -1167,38 +1167,68 @@ The infix operator \AgdaFunction{\_…<\_} is just a synonym for \AgdaFunction{r
 \AgdaModule{Bigop.Interval.Fin} contains four definitions with the same names as the module presented above. Their types are:
 \begin{align*}
 \text{\AgdaFunction{upFrom}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{len} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaSymbol{(}\AgdaBound{from} \AgdaFunction{+} \AgdaBound{len}\AgdaSymbol{)}\AgdaSymbol{)}} \\
-\text{\AgdaFunction{range}}\;\text{\AgdaFunction{\_…<\_}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaBound{to}\AgdaSymbol{)}} \\
-\text{\AgdaFunction{\_…\_}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{from} \AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{to}\AgdaSymbol{)}\AgdaSymbol{)}}
+\text{\AgdaFunction{range}}\;\text{\AgdaFunction{\_…<\_}}\;&\AgdaSymbol{:}\;\text{\AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaBound{to}\AgdaSymbol{)}} \\
+\text{\AgdaFunction{\_…\_}}\;&\AgdaSymbol{:}\;\text{\AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{to} \AgdaSymbol{:} \AgdaDatatype{ℕ}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaSymbol{(}\AgdaDatatype{Fin} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{to}\AgdaSymbol{)}\AgdaSymbol{)}}
 \end{align*}
 
-We omit the definitions of the functions here. They are more involved than the corresponding definitions presented above because we need to convert from \AgdaDatatype{ℕ} to \AgdaDatatype{Fin} and rewrite types to make the inductive definitions work.
+We omit the definitions of those functions here. They are more involved than the corresponding definitions presented above because we need to convert from \AgdaDatatype{ℕ} to \AgdaDatatype{Fin} and rewrite types to make the inductive definitions work.
 
 Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than \AgdaBound{n}, we can tell from the types of the functions that their upper bounds are as expected.
 
 \section{Filters}
 
-Consider the following formula: \[ \sum_{\substack{0 \leq i < 2n+1 \\ (i\ \text{odd})}} i \equiv n^2 \]
+Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gaus equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in XXX.
 
-An annotation is added here that we have not come across before: the condition (\(i\) odd). What this is saying is that when evaluating the formula, out of the natural numbers from zero to \(2n\), we only consider the ones which are odd, and throw away all the others.
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module Filters where
+  open import Data.List.Base
+  open import Function using (_∘_)
+  open import Relation.Nullary
+  open import Relation.Nullary.Decidable
+  open import Relation.Unary
+  open import Relation.Binary.PropositionalEquality
+\end{code}
+}
+%TC:endignore
 
-In terms of types, \emph{odd} can be expressed as a decidable predicate. (Other option: function A -> Bool -- explain why decidable predicates are better XXX). \emph{Filtering} is the process of removing the elements that do not satisfy the predicate from the list.
+The filter operator \AgdaFunction{\_∥\_} takes a list and a decidable predicate over the list's element type, and returns the list containing only those elements of the input list which satisfy that predicate. Its definition is a straightforward inductive definition, with a case split on whether the predicate is satisfied: if \AgdaInductiveConstructor{yes}, then the element is included in the result; otherwise it is dropped:
 
-In the spirit of modularity, filters were implemented as a function taking a list and a decidable predicate without any dependency on other parts of the library. The expression that generates the list of values for the example above is
+%TC:ignore
+\begin{code}
+  _∥_ : ∀ {a p} {A : Set a} {P : Pred A p} → List A → Decidable P → List A
+  []        ∥ dec = []
+  (x ∷ xs)  ∥ dec with dec x
+  (x ∷ xs)  ∥ dec | yes  _ = x ∷ (xs ∥ dec)
+  (x ∷ xs)  ∥ dec | no   _ = xs ∥ dec
+\end{code}
+%TC:endignore
 
-% \begin{verbatim}
-% 0 …+ suc (n + n) ∥ odd
-% \end{verbatim}
+Any decidable predicate can be converted into a function from the predicate's domain to \AgdaDatatype{Bool}, mapping \AgdaInductiveConstructor{yes} to \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{no} to \AgdaInductiveConstructor{false} and dropping the evidence. This function is called \AgdaFunction{⌊\_⌋} in the Agda standard library. \AgdaFunction{⌊\_⌋} \AgdaFunction{∘} \AgdaFunction{dec} \AgdaSymbol{:} \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{Bool} can then be passed to the function \AgdaFunction{filter}, also defined in the standard library, which filters a list using a function from the list's element type to \AgdaDatatype{Bool}.
+\[ \text{\AgdaFunction{filter}}\;\AgdaSymbol{:}\;\text{\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{a}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{Bool}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{A}} \]
 
-where
-% \begin{itemize}
-% \item \texttt{0 …+ suc (n + n) : List ℕ},
-% \item \texttt{odd : Decidable Odd} and
-% \item \texttt{_∥_ : List I → Decidable P → List I}.
-% \end{itemize}
+The following proof shows that the result of filtering a list using \AgdaFunction{\_∥\_} is equal to calling \AgdaFunction{filter} with the converted decidable predicate as its first argument:
 
-% \begin{verbatim}
-% ∀ n → Σ[ i ← 0 …+ suc (n + n) ∥ odd ] i ≈ n * n
-% \end{verbatim}
+%TC:ignore
+\begin{code}
+  ∥-filters :  ∀ {a p} {A : Set a} {P : Pred A p} (xs : List A) (dec : Decidable P) →
+               xs ∥ dec ≡ filter (⌊_⌋ ∘ dec) xs
+  ∥-filters []        dec = refl
+  ∥-filters (x ∷ xs)  dec with dec x
+  ∥-filters (x ∷ xs)  dec | yes  _ = cong (_∷_ x) (∥-filters xs dec)
+  ∥-filters (x ∷ xs)  dec | no   _ = ∥-filters xs dec
+\end{code}
+%TC:endignore
+
+%TC:ignore
+\begin{code}
+  ∁′ : ∀ {i p} {I : Set i} {P : Pred I p} → Decidable P → Decidable (∁ P)
+  ∁′ p x with p x
+  ∁′ p x | yes q  = no (λ ¬q → ¬q q)
+  ∁′ p x | no ¬q  = yes (λ q → ¬q q)
+\end{code}
+%TC:endignore
 
 \section{Monoid lemmas}
 
