@@ -1144,6 +1144,7 @@ module Intervals where
 
 Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The entire module \AgdaModule{Bigop.Interval.Nat} consists of the following four definitions:
 
+%TC:ignore
 \begin{code}
   upFrom : ℕ → ℕ → List ℕ
   upFrom from zero       = []
@@ -1157,6 +1158,7 @@ Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The entire mod
   _…_ : ℕ → ℕ → List ℕ
   m … n = range m (suc n)
 \end{code}
+%TC:endignore
 
 \AgdaFunction{upFrom} \AgdaBound{m} \AgdaBound{n} evaluates to the interval containing \AgdaBound{n} consecutive natural numbers, starting with \AgdaBound{m}. \AgdaFunction{range} returns a list of natural numbers starting with \AgdaBound{m} up to but not including \AgdaBound{n}. In case \(n ≤ m\), \AgdaFunction{range} returns the empty list.
 
