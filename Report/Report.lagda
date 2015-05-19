@@ -1221,6 +1221,8 @@ The following proof shows that the result of filtering a list using \AgdaFunctio
 \end{code}
 %TC:endignore
 
+\AgdaModule{Bigop.Filter} also defines the following important utility function \AgdaFunction{∁′}, which takes a decidable predicate and returns its complement. For any \AgdaBound{x} in the domain of predicate \AgdaBound{P}, if \AgdaBound{x} satisfies \AgdaBound{P}, it returns evidence that \AgdaBound{x} does not satisfy the complement of \AgdaBound{P}, written \AgdaFunction{∁} \AgdaBound{P}, and vice versa:
+
 %TC:ignore
 \begin{code}
   ∁′ : ∀ {i p} {I : Set i} {P : Pred I p} → Decidable P → Decidable (∁ P)
@@ -1229,6 +1231,33 @@ The following proof shows that the result of filtering a list using \AgdaFunctio
   ∁′ p x | no ¬q  = yes (λ q → ¬q q)
 \end{code}
 %TC:endignore
+
+In \AgdaModule{Bigop.Filter.Properties}, we show a number of basic lemmas about filters and decidable properties defined in this way. Omitting the parameters
+\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i} \AgdaBound{ℓ}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{P} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaBound{I} \AgdaBound{ℓ}\AgdaSymbol{\}} \AgdaBound{x} \AgdaBound{xs} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)}, their types are as follows:
+\begin{align*}
+\text{\AgdaFunction{head-yes}}\;&\AgdaSymbol{:}\;
+\text{\AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaBound{xs}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{p}\AgdaSymbol{)}} \\
+%
+\text{\AgdaFunction{last-yes}}\;&\AgdaSymbol{:}\;
+\text{\AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∷ʳ} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{∷ʳ} \AgdaBound{x}} \\
+%
+\text{\AgdaFunction{head-no}}\;&\AgdaSymbol{:}\;
+\text{\AgdaFunction{¬} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaBound{xs}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{p}} \\
+%
+\text{\AgdaFunction{last-no}}\;&\AgdaSymbol{:}\;
+\text{\AgdaFunction{¬} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∷ʳ} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{p}} \\
+%
+\text{\AgdaFunction{head-∁-yes}}\;&\AgdaSymbol{:}\;
+\text{\AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaBound{xs}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{xs} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p}} \\
+%
+\text{\AgdaFunction{head-∁-no}}\;&\AgdaSymbol{:}\;
+\text{\AgdaFunction{¬} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaBound{xs}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p}\AgdaSymbol{)}}
+\end{align*}
+In addition, we prove \AgdaFunction{ordinals-filter} (see its type below). It states that the interval of length \AgdaBound{n} starting at \AgdaBound{m} contains the number \AgdaBound{k} exactly once, provided that \AgdaBound{m} \AgdaDatatype{≤} \AgdaBound{k} and \AgdaBound{k} \AgdaDatatype{<} \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}. \enquote{Containing \AgdaBound{k} exactly once} is expressed in terms of filtering by the decidable predicate \AgdaFunction{≟N} \AgdaBound{k}, which holds only for natural numbers equal to \AgdaBound{k}. If the result of applying this filter to an interval yields a singleton list containing only \AgdaBound{k}, then \AgdaBound{k} must have appeared exactly once in the interval.
+\[ \text{\AgdaFunction{ordinals-filter} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{m} \AgdaBound{n} \AgdaBound{k} \AgdaSymbol{→} \AgdaBound{m} \AgdaDatatype{≤} \AgdaBound{k} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{k<m+n} \AgdaSymbol{:} \AgdaBound{k} \AgdaDatatype{<} \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaSymbol{→}
+                  \AgdaFunction{upFrom} \AgdaBound{m} \AgdaBound{n} \AgdaFunction{∥} \AgdaSymbol{(}\AgdaFunction{≟N} \AgdaBound{k}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{k} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}} \]
+
+This lemma is used in the proof that the identity matrix really is the identity element of the semiring of square matrices (see XXX).
 
 \section{Monoid lemmas}
 
