@@ -14,6 +14,7 @@
 % \setmonofont{Source Code Pro}[Scale=MatchLowercase]
 \usepackage[]{unicode-math}
 
+\usepackage{pdfpages}
 \usepackage{microtype}
 \usepackage{bussproofs}
 \usepackage{csquotes}
@@ -81,9 +82,11 @@
 \begin{document}
 \setmathfont{Asana-Math.otf}
 
-\begin{titlepage}
-\maketitle
-\end{titlepage}
+\includepdf{Cover.pdf}
+
+% \begin{titlepage}
+% \maketitle
+% \end{titlepage}
 
 \tableofcontents
 
