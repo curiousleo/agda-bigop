@@ -1259,45 +1259,75 @@ In addition, we prove \AgdaFunction{ordinals-filter} (see its type below). It st
 
 This lemma is used in the proof that the identity matrix really is the identity element of the semiring of square matrices (see XXX).
 
-\section{Monoid lemmas}
+
+\section{Properties of big operators}
+
+In this Section, we discuss how the properties of the underlying operators \AgdaFunction{\_+\_} and \AgdaFunction{\_*\_} determine the properties of their induced big operators.
+
+The lemmas in this section reside under \AgdaModule{Bigop.Properties}. They are intended to be used as follows: assuming we have some commutative monoid \AgdaBound{CM} \AgdaSymbol{:} \AgdaDatatype{CommutativeMonoid}. Then the following line will bring the lemmas concerning commutative monoids into scope under the module name \AgdaModule{Σ}:
+\[
+\text{\AgdaKeyword{module} \AgdaModule{Σ} \AgdaSymbol{=} \AgdaModule{Bigop.Properties.CommutativeMonoid} \AgdaBound{CM}}
+\]
+For convenience, \AgdaModule{Bigop.Properties.CommutativeMonoid} re-exports all lemmas about monoids and \AgdaModule{Bigop.Properties.SemiringWithoutOne} re-exports the commutative monoid lemmas.
+
+
+\subsection{Monoid lemmas}
 
 Monoids are endowed with an identity and an associativity law. Based on these two properties, there are a few things we can say about what happens when the monoid's binary operator is lifted into a big operator.
 
-\minisec{Lifted identity}
-
+\begin{description}
+\item[Lifted identity.]
 The identity law can be lifted to give the following equivalence for the monoid's big operator:
-
-% \[\bigodot_{i ← \textit{Idx}}ε &≡ ε\]
-
 \[
-\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{is} \AgdaFunction{]} \AgdaFunction{ε} \AgdaDatatype{≈} \AgdaFunction{ε}}
+\text{(\AgdaFunction{identity})}\qquad\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{is} \AgdaFunction{]} \AgdaFunction{ε} \AgdaDatatype{≈} \AgdaFunction{ε}}
 \]
 
-\minisec{Distributivity over \AgdaFunction{\_++\_}}
-
-It follows from the monoid associativity law that the big operator distributes over the list append function \AgdaFunction{\_++\_} as follows:
-
-\[\text{
-\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{++} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaFunction{+} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i}
+\item[Distributivity over \AgdaFunction{\_++\_}.]
+It follows from the monoid associativity law that big operators distribute over the list append function \AgdaFunction{\_++\_} as follows:
+\[\text{(\AgdaFunction{join})}\qquad\text{
+\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaFunction{+} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{++} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i}
 }\]
 
-\minisec{Congruence}
+\item[Congruence.] Given \AgdaBound{xs} \AgdaDatatype{≡} \AgdaBound{ys} and \AgdaSymbol{∀} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≈} \AgdaBound{g} \AgdaBound{x}, we can show that
+\[
+\text{(\AgdaFunction{cong})}\qquad\text{\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{y} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{y}}
+\]
 
-\section{Commutative monoid lemmas}
+\end{description}
 
+\subsection{Commutative monoid lemmas}
+
+If the binary operation \AgdaFunction{\_+\_} is commutative as well as associative, the big operator lifted from it has more properties that we can use in proofs.
+
+\begin{description}
+\item[Distributivity over \AgdaFunction{\_+\_}.] Combining associativity and distributivity of \AgdaFunction{\_+\_}, we can show that big operators distribute as follows:
+\[
+\text{(\AgdaFunction{merge})}\qquad\text{\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{+} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{g} \AgdaBound{x} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{+} \AgdaBound{g} \AgdaBound{x}}
+\]
+
+\item[Swapping big operators.] If the underlying operator \AgdaFunction{\_+\_} is commutative, the order in which big operators are evaluated does not matter:
+\[
+\text{(\AgdaFunction{swap})}\qquad\text{\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{y} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaBound{y}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{y} \AgdaFunction{←} \AgdaBound{ys} \AgdaFunction{]} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaBound{y}\AgdaSymbol{)}}
+\]
+
+\item[Splitting by a predicate.] Any list can be split into two lists, one containing those elements which satisfy a decidable predicate (\AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{dec}) and one containing those which do not (\AgdaBound{xs} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{dec}). Assuming commutativity, we can split the index list of a big operator expression using any decidable predicate and add them together to get the same result as taking the sum over the original list:
+\[
+\text{(\AgdaFunction{split-P})}\qquad
+\text{\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{dec} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{+} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{dec} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}}
+\]
+
+\end{description}
+
+
+\subsection{\enquote{Semiring without one} lemmas}
+
+A \enquote{semiring without one} consists of a commutative monoid over an operation \AgdaFunction{\_+\_} and a semigroup over an operation \AgdaFunction{\_*\_} with a zero element (annihilator). Additionally, \AgdaFunction{\_*\_} distributes over \AgdaFunction{\_+\_}. This allows us to prove two distributivity laws:
 \begin{align*}
-\bigodot_{i ← \textit{Idx}} \left(f(i) \odot g(i)\right)
-&≡
-\left(\bigodot_{i ← \textit{Idx}} f(i) \right) \odot \left(\bigodot_{i ← \textit{Idx}} g(i)\right) && \text{merge} \\
-\bigodot_{i ← \textit{Idx}_0} \left(\bigodot_{j ← \textit{Idx}_1} f(i,j)\right)
-&≡
-\bigodot_{j ← \textit{Idx}_1} \left(\bigodot_{i ← \textit{Idx}_0} f(i,j)\right) && \text{swap} \\
-\bigodot_{i ← \textit{Idx}} f(i)
-&≡
-\left( \bigodot_{\substack{i ← \textit{Idx} \\ p\ i}} f(i) \right) ⊙ \left( \bigodot_{\substack{i ← \textit{Idx} \\ ¬ p\ i}} f(i) \right) && \text{split-P}
+\text{(\AgdaFunction{distrˡ})}\qquad
+&\text{\AgdaBound{a} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{a} \AgdaFunction{*} \AgdaBound{f} \AgdaBound{x}} \\
+\text{(\AgdaFunction{distrʳ})}\qquad
+&\text{\AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{a} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{a}}
 \end{align*}
-
-\section{\enquote{Semiring without one} lemmas}
 
 \section{\label{Impl-Matrices}Matrices}
 
