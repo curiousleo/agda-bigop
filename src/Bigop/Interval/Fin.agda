@@ -12,7 +12,7 @@ upFrom from (suc len)
   rewrite +-suc from len =
     fromℕ≤ {from} (s≤s (m≤m+n from len)) ∷ upFrom (suc from) len
 
-range : (from to : ℕ) → List (Fin to)
+range : ℕ → (to : ℕ) → List (Fin to)
 range zero to = upFrom zero to
 range (suc from) to = tail (range from to)
   where
@@ -24,5 +24,5 @@ infix 6 _…<_ _…_
 
 _…<_ = range
 
-_…_ : (from to : ℕ) → List (Fin (suc to))
+_…_ : ℕ → (to : ℕ) → List (Fin (suc to))
 from … to = range from (suc to)
