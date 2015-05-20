@@ -948,7 +948,7 @@ x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
 
 \chapter{Implementation\label{ch:Impl}}
 
-This Chapter presents the implementation of the big operator library that was created in this project and discusses design decisions.
+In this Chapter we discuss the implementation of our big operator library.
 
 The library consists of three mostly independent parts which combined together allow for a large number of proofs involving big operators to be written in Agda.
 
@@ -959,9 +959,9 @@ Taking apart the example from the introduction, we will see how the expression
 
 
 \begin{description}
-\item[Big operators.] \AgdaModule{Bigop.Core} defines an evaluation function and syntax for big operators. The modules in \AgdaModule{Bigop.Properties} contain various lemmas about the big operators lifted from different algebraic structures.
-\item[Intervals.] The directory \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
-\item[Filters.] \AgdaModule{Bigop.Filter} defines a function for filtering lists based on decidable predicates. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
+\item[Big operators.] \AgdaModule{Bigop.Core} defines an evaluation function and syntax for big operators. The submodules of \AgdaModule{Bigop.Properties} contain lemmas about big operators lifted from different algebraic structures such as monoids and semirings.
+\item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
+\item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
 
 In addition, a module formalising \textbf{matrices} has been written as part of this project, since this is one obvious area where the notation and lemmas written in this project can be used. It is completely independent from the rest of the source code.
