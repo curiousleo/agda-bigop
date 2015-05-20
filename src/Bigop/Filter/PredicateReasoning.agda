@@ -26,31 +26,3 @@ _≡⌊_∈_⌋⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁} {i ℓ₂}
 x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r with dec i
 x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | yes pi = x ≡⟨ y  pi ⟩ r
 x ≡⌊ i ∈ dec ⌋⟨ y ⟩⟨ n ⟩ r | no ¬pi = x ≡⟨ n ¬pi ⟩ r
-
-infixr 2 _≈⌊_~_by_⌋⟨_⟩⟨_⟩⟨_⟩_ _≡⌊_~_by_⌋⟨_⟩⟨_⟩⟨_⟩_
-
-_≈⌊_~_by_⌋⟨_⟩⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁}
-                       {i ℓ₂ ℓ₃} {I : Set i} {_~_ : Rel I ℓ₂ } {_<_ : Rel I ℓ₃}
-                       (x : Carrier S) (i j : I) (tri : Trichotomous _~_ _<_)
-                       {y z : Carrier S} →
-                       (  i < j → ¬ i ~ j → ¬ j < i → _≈_ S x y) →
-                       (¬ i < j →   i ~ j → ¬ j < i → _≈_ S x y) →
-                       (¬ i < j → ¬ i ~ j →   j < i → _≈_ S x y) →
-                       _IsRelatedTo_ S y z → _IsRelatedTo_ S x z
-x ≈⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r with t i j
-x ≈⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri< a ¬b ¬c = x ≈⟨ eq< a ¬b ¬c ⟩ r
-x ≈⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri≈ ¬a b ¬c = x ≈⟨ eq~ ¬a b ¬c ⟩ r
-x ≈⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri> ¬a ¬b c = x ≈⟨ eq> ¬a ¬b c ⟩ r
-
-_≡⌊_~_by_⌋⟨_⟩⟨_⟩⟨_⟩_ : ∀ {c ℓ₁} {S : Setoid c ℓ₁}
-                       {i ℓ₂ ℓ₃} {I : Set i} {_~_ : Rel I ℓ₂ } {_<_ : Rel I ℓ₃}
-                       (x : Carrier S) (i j : I) (tri : Trichotomous _~_ _<_)
-                       {y z : Carrier S} →
-                       (  i < j → ¬ i ~ j → ¬ j < i → _≡_ x y) →
-                       (¬ i < j →   i ~ j → ¬ j < i → _≡_ x y) →
-                       (¬ i < j → ¬ i ~ j →   j < i → _≡_ x y) →
-                       _IsRelatedTo_ S y z → _IsRelatedTo_ S x z
-x ≡⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r with t i j
-x ≡⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri< a ¬b ¬c = x ≡⟨ eq< a ¬b ¬c ⟩ r
-x ≡⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri≈ ¬a b ¬c = x ≡⟨ eq~ ¬a b ¬c ⟩ r
-x ≡⌊ i ~ j by t ⌋⟨ eq< ⟩⟨ eq~ ⟩⟨ eq> ⟩ r | tri> ¬a ¬b c = x ≡⟨ eq> ¬a ¬b c ⟩ r
