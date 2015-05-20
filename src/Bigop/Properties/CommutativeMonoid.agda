@@ -101,7 +101,7 @@ split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List 
           fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p)
 split-P f [] p = sym (proj₁ ident _)
 split-P {ℓ = ℓ} {P = P} f (i ∷ is) p = begin
-  f i ∙ fold f is                                 ≈⟨ ∙-cong refl (split-P f is p) ⟩
+  f i ∙ fold f is                              ≈⟨ ∙-cong refl (split-P f is p) ⟩
   f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))  ≈⌊ i ∈ p ⌋⟨ split-yes ⟩⟨ split-no ⟩
   fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)  ∎
   where
