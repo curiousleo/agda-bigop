@@ -104,7 +104,7 @@ module Report where
 
 The \enquote{big sum} operator \(\sum\) is commonly used in various areas of mathematics. Similar big operator notation exists for unions \(\bigcup\) and least upper bounds \(\bigsqcup\).
 
-Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed in a natural way. \emph{Isabelle} and \emph{Coq}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} and \emph{Coq}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
 
 No such library exists for \emph{Agda}, another interactive theorem prover based on dependent types (like Coq). The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
 
