@@ -103,28 +103,30 @@ module Report where
 
 \section{Aims and contributions}
 
-The \enquote{big sum} operator \(\sum\) is commonly used in various areas of mathematics. Similar big operator notation exists for unions \(\bigcup\) and least upper bounds \(\bigsqcup\).
+The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} and \emph{Coq}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} \autocite{paulson_isabelle:_1994} and \emph{Coq} \autocite{huet_coq_2015}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
 
-No such library exists for \emph{Agda}, another interactive theorem prover based on dependent types (like Coq). The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
+No such library exists for \emph{Agda} \autocite{norell_dependently_2009}, another proof assistant. The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
 
 The main contributions of this project are:
 
 \begin{itemize}
-\item A modular syntax for writing sums and other big operators as well as intervals of natural numbers and filters in Agda that mimicks standard mathematical notation. (See XXX)
-\item Basic lemmas about big operators based on their underlying algebraic structure have been proved and packaged in a convient way. (See XXX)
+\item A modular syntax for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation. (See XXX)
+\item Lemmas about big operators based on their underlying algebraic structure. (See XXX)
 \end{itemize}
+
+The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{Nils Anders Danielsson is the author of the Agda standard library, which is under active development with many other contributors. An overview of the library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and instead used definitions from the standard library wherever possible.
 
 Additional contributions of this project are:
 
 \begin{itemize}
-\item We argue that the essence of any big operator is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator. (See XXX)
+\item We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid (see XXX) followed by a fold over the list of carrier elements using the monoid's binary operator. (See XXX)
 \end{itemize}
 
 \minisec{Syntax example}
 
-As a simple example for what the big operator library developed in this project allows users of Agda to do, consider the odd Gauss formula (discussed in detail in XXX). In standard mathematical notation, the equation can be written as follows:
+As a simple example of what our big operator library permits, consider the odd Gauss formula (discussed in detail in XXX). In standard mathematical notation, the can be written as follows:
 \[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
 
 Using the syntax definitions for sums, intervals and filters, it can be expressed in Agda as
@@ -132,7 +134,11 @@ Using the syntax definitions for sums, intervals and filters, it can be expresse
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \]
 
+A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
+
 \section{Overview}
+
+We now provide a précis of the report:
 
 \begin{description}
 \item[\cref{ch:Intro}] discusses the motivation for the project and describes its main contributions.
@@ -144,7 +150,11 @@ Using the syntax definitions for sums, intervals and filters, it can be expresse
 
 \chapter{Background\label{ch:Background}}
 
-\section{Agda basics}
+In this Chapter, we provide the necessary background for the remainder of the report to make it self-contained.
+
+\cref{sc:Agda-basics} introduces Agda by example. The next three Sections cover some fundamental notions in constructive higher-order logic: we introduce predicates and relations as they are defined in Agda (\cref{sc:Pred-Rel}), discuss provability and decidability and how they correspond to type inhabitation (\cref{sc:Prov-Dec}) and present setoids and the equational reasoning style of writing proofs (\cref{sc:Setoids}). In \cref{sc:Algebra} we review some algebraic properties of binary operators and algebraic structures like monoids and semirings.
+
+\section{Agda basics\label{sc:Agda-basics}}
 
 \AgdaHide{
 %TC:ignore
@@ -157,11 +167,11 @@ module Basics where
 %TC:endignore
 }
 
-This project was implemented in \emph{Agda}, a functional programming language with a dependent type system \autocite{norell_dependently_2009}. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms. We will discuss what this means in XXX.
+This project was implemented in \emph{Agda}, a functional programming language with a dependent type system. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms. We will discuss what this means in XXX.
 
-In comparison to non-dependent functional languages like Haskell or ML, Agda's type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations. The downside is that type inference is undecidable, so most terms need type annotations.
+The advantage of a dependently type language like Agda over non-dependently typed functional languages like Haskell \autocite{marlow_haskell_2010} or ML \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
 
-Here we introduce the syntax of the language. The following Sections explain how Agda can be used to write theorems and check proofs.
+We now introduce the syntax of Agda. The following Sections explain how Agda can be used to write theorems and check proofs.
 
 \minisec{Small types and functions}
 
@@ -177,7 +187,7 @@ Truth values (Booleans) can be defined in Agda as follows:
 
 We introduce a new type \AgdaDatatype{Bool} with two constructors, \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{false}. Both construct elements of \AgdaDatatype{Bool}, so that is the type we annotate them with (after the colon). It may come as a surprise that the type \AgdaDatatype{Bool} itself needs an annotation, too. In Agda, the type of small types is called \AgdaPrimitiveType{Set}. Since \AgdaDatatype{Bool} is a small type, we declare it to be of type \AgdaPrimitiveType{Set}. [XXX forward-reference to explanation of type hierarchy]
 
-Let us now write a function using this newly introduced datatype. \AgdaFunction{not} flips the Boolean passed to it:
+Let us now write a function using this newly introduced datatype. \AgdaFunction{not} flips its Boolean argument:
 
 %TC:ignore
 \begin{code}
@@ -187,9 +197,9 @@ Let us now write a function using this newly introduced datatype. \AgdaFunction{
 \end{code}
 %TC:endignore
 
-This function takes a \AgdaDatatype{Bool} and returns a \AgdaDatatype{Bool}, so the type of the function as a whole is \AgdaDatatype{Bool} \AgdaSymbol{→} \AgdaDatatype{Bool}. It is defined by pattern matching: the result of the function is the term on the right-hand side of the equality sign if its input matches the left-hand side.
+This function takes a \AgdaDatatype{Bool} and returns a \AgdaDatatype{Bool}, so the type of the function as a whole is \AgdaDatatype{Bool} \AgdaSymbol{→} \AgdaDatatype{Bool}. The function is defined by pattern matching: the result of the function is the term on the right-hand side of the equality sign if its input matches the left-hand side.
 
-Note that the pattern matching must cover all possible cases. More generally speaking, all Agda functions must be \emph{total}, that is, defined on all values of its argument types. Partiality can be modelled either by restricting the domain of an argument using dependent types (see XXX) or using \AgdaDatatype{Maybe} \AgdaBound{A} as a return type for a partial function into type \AgdaBound{A}. It has two constructors, \AgdaInductiveConstructor{just} \AgdaSymbol{:} \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{Maybe} \AgdaBound{A} representing success and \AgdaInductiveConstructor{nothing} \AgdaSymbol{:} \AgdaDatatype{Maybe} \AgdaDatatype{A} representing failure.
+Note that the pattern matching must cover all possible cases. More generally speaking, all Agda functions must be \emph{total}, that is, defined on all values of its argument types. Partiality can be modelled either by restricting the domain of an argument using dependent types (see XXX) or using \AgdaDatatype{Maybe} \AgdaBound{A} as a return type for a partial function into type \AgdaBound{A}. \AgdaDatatype{Maybe} \AgdaBound{A} has two constructors, \AgdaInductiveConstructor{just} \AgdaSymbol{:} \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{Maybe} \AgdaBound{A} representing a successful computation of a value of type \AgdaBound{A} and \AgdaInductiveConstructor{nothing} \AgdaSymbol{:} \AgdaDatatype{Maybe} \AgdaBound{A} representing a failed computation.
 
 Agda identifiers can contain Unicode symbols, which makes it possible to use notation familiar from mathematics in Agda code. The function \AgdaFunction{\_∧\_} computes the logical conjunction of its inputs:
 
@@ -201,7 +211,7 @@ Agda identifiers can contain Unicode symbols, which makes it possible to use not
 \end{code}
 %TC:endignore
 
-An underscore (the symbol \enquote{\_}) can be interpreted in three different ways in Agda, depending on where it is used. This slightly contrived example covers them all:
+An underscore (the symbol \enquote{\_}) can be interpreted in three different ways in Agda, depending on the context of its use. This slightly contrived example covers them all:
 
 \begin{description}
 \item[In an identifier] like \AgdaFunction{\_∧\_}, the underscores indicate where the function or type expects its arguments. This allows programmers to introduce new infix and mixfix operators. As an example for a mixfix operator, the Agda standard library defines \AgdaFunction{if\_then\_else\_} which takes Boolean, a term of some type and another term of the same type and returns the appropriate value based on whether the Boolean equals \AgdaInductiveConstructor{true} or \AgdaInductiveConstructor{false}.
@@ -230,6 +240,8 @@ Addition of natural numbers can then be defined as follows:
 \end{code}
 %TC:endignore
 
+Pattern variables like \AgdaBound{m} and \AgdaBound{n} are bound in the function body. They are substituted for the values passed to the function when it is evaluated.
+
 Note that Agda functions defined on inductive types must not only be total, but also \emph{terminating}. Functions defined on \emph{coinductive} types, on the other hand, must be \emph{productive}. \textcite{altenkirch_termination_2010} discusses the issue of termination checking functions on nested inductive and coinductive types. Since termination checking is undecidable in general, Agda checks whether the arguments to the recursive call are structurally smaller than the arguments to the caller as a safe syntactic approximation to termination.
 
 This is clearly the case in the recursive case of \AgdaFunction{\_+\_}: the arguments to the caller are \AgdaInductiveConstructor{suc} \AgdaBound{m} and \AgdaBound{n} whereas those passed used in the recursive call are \AgdaBound{m} and \AgdaBound{n}. Structurally, \AgdaBound{m} is smaller than \AgdaInductiveConstructor{suc} \AgdaBound{m} so Agda can infer that the function terminates on all inputs. A formal definition of \emph{structurally smaller}, is given in \textcite{coquand_pattern_1992}.
@@ -238,7 +250,7 @@ This is clearly the case in the recursive case of \AgdaFunction{\_+\_}: the argu
 
 Both \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} as well as all the functions we have seen so far could have been written in a very similar way in Haskell or ML, modulo syntax. We will now see how Agda is different from non-dependently typed functional languages.
 
-Every type in Agda resides somewhere in a type universe with countably infinite levels. In other words, if a type \AgdaBound{A} is well-formed, then there exists some level \AgdaBound{a} such that \AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}. The reason for introducing a hierarchy of types in the first place is that allowing a typing judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} leads to an inconsistent logic, a phenomenon referred to as \emph{Girard's paradox} in the literature. (XXX reference! Stanford philo etc, System U?).
+Every type in Agda resides somewhere in a type universe with countably infinite levels. In other words, if a type \AgdaBound{A} is well-formed, then there exists some level \AgdaBound{a} such that \AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}. The reason for introducing a hierarchy of types in the first place is that allowing a typing judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} makes the system susceptible to \emph{Girard's paradox}. (XXX reference! explain! Stanford philo etc, System U?).
 
 \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} are examples of small types, which is expressed in Agda as \AgdaDatatype{Bool} \AgdaDatatype{ℕ} \AgdaSymbol{:} \AgdaPrimitiveType{Set} (note that we can give type declarations for terms of the same type in one line in this way.) \AgdaPrimitiveType{Set} is a synonym for \AgdaPrimitiveType{Set} \AgdaNumber{0}, which is itself of type \AgdaPrimitiveType{Set} \AgdaNumber{1}.\footnote{We use numbers \AgdaNumber{0}, \AgdaNumber{1}, \AgdaNumber{2} to denote universe levels for brevity here. In actual code, elements of the opaque type \AgdaPrimitiveType{Level} can only be constructed using the postulated functions \AgdaFunction{lzero} and \AgdaFunction{lsuc}.} This gives rise to an infinite predicative hierarchy of types, which approximates \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in the limit:
 
@@ -260,7 +272,7 @@ With the concept of universe levels in mind, we now look at how the Agda standar
 \end{code}
 %TC:endignore
 
-Consider two examples first. The list \AgdaFunction{bools} contains Boolean values. Here the carrier type of the list, \AgdaBound{A}, is instantiated to \AgdaDatatype{Bool}.
+Before we explain this datatype declaration in detail, we consider an examples first. The list \AgdaFunction{bools} contains Boolean values. Here the carrier type of the list, \AgdaBound{A}, is instantiated to \AgdaDatatype{Bool}.
 
 %TC:ignore
 \begin{code}
@@ -288,7 +300,8 @@ Lists defined in this way are \emph{universe polymorphic}, meaning that the univ
 
 \minisec{Dependent types and indexed type families}
 
-We now turn to the classic example of a dependent datatype (or \emph{indexed family of types}): fixed-length lists, or \emph{vectors}:
+We now turn to the classic example of a dependent datatype (or \emph{indexed family of types}): fixed-length lists, or \emph{vectors}:%
+\footnote{Lists and vectors have the same constructors, so depending on the context, \AgdaInductiveConstructor{[]} and \AgdaInductiveConstructor{\_∷\_} may create a list or a vector. If a constructor is used in a context where its type is ambiguous, the full constructor name (such as \AgdaInductiveConstructor{List.[]}) must be given.}
 
 %TC:ignore
 \begin{code}
@@ -323,13 +336,13 @@ As another example, consider a function \AgdaFunction{head} which returns the fi
 But what about totality? Earlier we said that the patterns of a function must cover all possible arguments of its type. If we look close enough, we can see that this principle is not violated here even though there is no pattern for the empty vector. The reason is that the constructor for the empty vector has type \AgdaInductiveConstructor{[]} \AgdaSymbol{:} \AgdaDatatype{Vec} \AgdaBound{A} \AgdaInductiveConstructor{zero}. Agda knows that \AgdaInductiveConstructor{suc} \AgdaBound{n} and \AgdaInductiveConstructor{zero} cannot be unified, so we do not have to (and indeed cannot) supply a pattern for the empty list, which is exactly what we wanted. This is a first example of the powerful interplay between dependent types and pattern matching.
 %Later we will see dotted patterns, absurd patterns and the \AgdaKeyword{with} construct.
 
-Lastly, we consider the type of finite sets \AgdaDatatype{Fin}, indexed by a natural number:\footnote{In the Agda standard library, the constructors for both \AgdaDatatype{ℕ} and \AgdaDatatype{Fin} are called \AgdaInductiveConstructor{zero} and \AgdaInductiveConstructor{suc}. Overloaded identifiers are allowed. If a name has multiple definitions and it is not clear from the context which one is being referred to, it must be qualified. Instead of \AgdaInductiveConstructor{zero} we may write \AgdaInductiveConstructor{ℕ.zero} or \AgdaInductiveConstructor{Fin.zero}, for example.}
+Lastly, we consider the type of finite sets \AgdaDatatype{Fin}, indexed by a natural number:
 
 %TC:ignore
 \begin{code}
   data Fin : ℕ → Set where
-    fzero  : {n : ℕ} → Fin (suc n)
-    fsuc   : {n : ℕ} → Fin n → Fin (suc n)
+    zero  : {n : ℕ} → Fin (suc n)
+    suc   : {n : ℕ} → Fin n → Fin (suc n)
 \end{code}
 %TC:endignore
 
@@ -340,9 +353,9 @@ A bounded natural number can be used as an index into a vector. This lets us lev
 %TC:ignore
 \begin{code}
   lookup : ∀ {n a} {A : Set a} → Fin n → Vec A n → A
-  lookup {.zero}  ()        []
-  lookup          fzero     (x ∷ xs) = x
-  lookup          (fsuc n)  (x ∷ xs) = lookup n xs
+  lookup {.zero}  ()       []
+  lookup          zero     (x ∷ xs) = x
+  lookup          (suc n)  (x ∷ xs) = lookup n xs
 \end{code}
 %TC:endignore
 
@@ -403,7 +416,7 @@ As a record type, \AgdaDatatype{Σ} can be deconstructed in many ways. The name 
 %TC:endignore
 
 
-\section{Predicates and relations}
+\section{Predicates and relations\label{sc:Pred-Rel}}
 
 In this Section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
 
@@ -433,7 +446,7 @@ module Predicates where
 A predicate expresses some property of a term. The type of a predicate \AgdaFunction{P} over a type \AgdaDatatype{A} is \AgdaFunction{P}~\AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The value of a predicate \AgdaFunction{P} \AgdaBound{x} can be thought of as the \emph{evidence} that \AgdaFunction{P} holds for \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A}.
 We will look at a predicate \AgdaDatatype{Even}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set} as a warm-up, followed by a discussion of propositional equality, \AgdaDatatype{\_≡\_}. Lastly we will consider a more involved predicate, \AgdaDatatype{Collatz}~\AgdaSymbol{:} \AgdaDatatype{ℕ} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
 
-\AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number.
+\AgdaDatatype{Even} \AgdaBound{n} provides evidence that \AgdaBound{n} is an even number. One way of defining this predicate is by stating that any even number is either equal to zero, or it is the successor of the successor of an even number:
 
 %TC:ignore
 \begin{code}
@@ -481,9 +494,7 @@ Evaluating a function with equal arguments should always yield equal results. Th
 \end{code}
 %TC:endignore
 
-Let us consider this proof step by step. We match the argument of type \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} with its only constructor, \AgdaInductiveConstructor{refl}. This tells the type checker that \AgdaBound{x} and \AgdaBound{y} must be equal as \AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x}, and replaces all occurrences of \AgdaBound{y} by \AgdaBound{x} for this clause. To make this clearer we also pattern match against the implicit parameters \AgdaBound{x} and \AgdaBound{y}. Argument \AgdaBound{x} is simply matched against a variable \AgdaBound{x}. The dotted pattern for \AgdaBound{y} is revealing: since the pattern \AgdaInductiveConstructor{refl} forces \AgdaBound{x} and \AgdaBound{y} to be equal, the unique value that \AgdaBound{y} can take is \AgdaBound{x}.
-
-This pattern match against \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} also has the effect of \emph{rewriting} the type of the result expected on the right-hand side of the equals sign to \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x}. But as \AgdaBound{f} \AgdaBound{x} and \AgdaBound{f} \AgdaBound{x} are trivially equal, we can close the prove by simply using \AgdaInductiveConstructor{refl}.
+Let us consider this proof step by step. We match the argument of type \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} with its only constructor, \AgdaInductiveConstructor{refl}. This tells the type checker that \AgdaBound{x} and \AgdaBound{y} must be equal as \AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x}, and replaces all occurrences of \AgdaBound{y} by \AgdaBound{x} for this clause. To make this clearer we also pattern match against the implicit parameters \AgdaBound{x} and \AgdaBound{y}. Argument \AgdaBound{x} is simply matched against a variable \AgdaBound{x}. The dotted pattern for \AgdaBound{y} is revealing: since the pattern \AgdaInductiveConstructor{refl} forces \AgdaBound{x} and \AgdaBound{y} to be equal, the unique value that \AgdaBound{y} can take is \AgdaBound{x}. This pattern match against \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} also has the effect of \emph{rewriting} the type of the result expected on the right-hand side of the equals sign to \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x}. But as \AgdaBound{f} \AgdaBound{x} and \AgdaBound{f} \AgdaBound{x} are trivially equal, we can close the prove by simply using \AgdaInductiveConstructor{refl}.
 
 As an example of a more involved predicate that uses propositional equality in its definition, \AgdaDatatype{Collatz} \AgdaBound{n} provides evidence that if we keep iterating the function \AgdaFunction{f} (defined below), starting with \AgdaFunction{f} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}, eventually the result will be the number one.
 \[ f(n) =
@@ -530,7 +541,7 @@ The function \AgdaFunction{iter} \AgdaBound{f} \AgdaBound{x} \AgdaBound{i} simpl
 
 In the definition of \AgdaFunction{f}, there is one piece of syntax that we have not come across so far: \AgdaKeyword{with} lets us pattern match against the result of evaluating an arbitrary expression and updates the local context with any new type information gleaned from that pattern match. The return value of \AgdaFunction{f} depends on whether \AgdaBound{n} is divisible by two. The expression \AgdaBound{n} \AgdaFunction{mod} \AgdaNumber{2} gives the remainder of dividing \AgdaBound{n} by two, the result of which is either \AgdaInductiveConstructor{zero} or \AgdaInductiveConstructor{suc} \AgdaInductiveConstructor{zero}. Here the absurd pattern is required---if we leave it out, the totality checker complains. It indicates that there is no \AgdaBound{m} such that \AgdaBound{n} \AgdaFunction{mod} \AgdaNumber{2} equals \AgdaInductiveConstructor{suc} (\AgdaInductiveConstructor{suc} \AgdaBound{m}).
 
-Let's look at a few examples of \AgdaDatatype{Collatz} \AgdaBound{n}. With \(\AgdaBound{n} = \AgdaNumber{0}\), we have to give an \AgdaBound{i} such that the result of applying \AgdaFunction{f} to \AgdaInductiveConstructor{suc} \AgdaNumber{0} (remember to \AgdaInductiveConstructor{suc} in the first line of the definition of \AgdaDatatype{Collatz}) evaluates to \AgdaNumber{1}. But we already have \(\AgdaInductiveConstructor{suc}\;\AgdaNumber{0} = \AgdaNumber{1}\), so we do not need to apply \AgdaFunction{f} at all and \(\AgdaBound{i} = \AgdaNumber{0}\).
+Let's look at a few examples of \AgdaDatatype{Collatz} \AgdaBound{n}. With \(\AgdaBound{n} = \AgdaNumber{0}\), we have to give an \AgdaBound{i} such that the result of applying \AgdaFunction{f} to \AgdaInductiveConstructor{suc} \AgdaNumber{0} evaluates to \AgdaNumber{1}. But we already have \(\AgdaInductiveConstructor{suc}\;\AgdaNumber{0} = \AgdaNumber{1}\), so we do not need to apply \AgdaFunction{f} at all and \(\AgdaBound{i} = \AgdaNumber{0}\).
 
 Note that in all these examples, the second element of the pair, which represents the proof \AgdaFunction{iter} (\AgdaInductiveConstructor{suc} \AgdaBound{n}) \AgdaBound{i} \AgdaDatatype{≡} \AgdaNumber{1}, is just \AgdaInductiveConstructor{refl}: given \AgdaBound{i}, the type checker can evaluate the iteration and figure out that the equality holds.
 
@@ -591,7 +602,7 @@ module Relations where
 }
 
 Usually in mathematics a relation between two sets is defined as a subset of the Cartesian product of the two sets. In a dependent type theory, a binary relation between types \AgdaDatatype{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} and \AgdaDatatype{B} \AgdaSymbol{:} \AgdaPrimitiveType{Set} has the type \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}.
-We now show that this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:
+We now show that this type is isomorphic to \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set}. The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
 
 %TC:ignore
 \begin{code}
@@ -663,13 +674,13 @@ The following proof demonstrates how this relation can be instantiated. It shows
 \end{code}
 %TC:endignore
 
-The equality \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} may seem rather obvious, and yet we need to prove it separately. This is because we defined multiplication by induction on its first parameter, so \AgdaNumber{1} \AgdaFunction{*} \AgdaBound{n} normalises to \AgdaBound{n} \AgdaFunction{+} \AgdaInductiveConstructor{zero} but \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} cannot be evaluated further.
+The equality \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} may seem rather obvious, and yet we need to prove it separately. This is because we defined multiplication by induction on its first parameter, so \AgdaNumber{1} \AgdaFunction{*} \AgdaBound{n} normalises to \AgdaBound{n} \AgdaFunction{+} \AgdaInductiveConstructor{zero} but \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1} cannot be evaluated further---it is \enquote{stuck}.
 
-\AgdaFunction{n≡n*1} proves the required equality by induction. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\). By the definition of \AgdaFunction{\_*\_}, \(\AgdaInductiveConstructor{zero}\;\AgdaFunction{*}\;\AgdaNumber{1} = \AgdaInductiveConstructor{zero}\) and the equality holds. In the inductive step, we need to show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{*} \AgdaFunction{1}. The right-hand side evaluates to \AgdaNumber{1} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}, which in turn evaluates to \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}).
+\AgdaFunction{n≡n*1} is a proof of the required equality by induction. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\). By the definition of \AgdaFunction{\_*\_}, \(\AgdaInductiveConstructor{zero}\;\AgdaFunction{*}\;\AgdaNumber{1} = \AgdaInductiveConstructor{zero}\) and the equality holds. In the inductive step, we need to show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{*} \AgdaFunction{1}. The right-hand side evaluates to \AgdaNumber{1} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}, which in turn evaluates to \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}).
 The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} proves that \AgdaBound{n} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}. Our goal in the inductive step is show that \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaDatatype{≡} \AgdaInductiveConstructor{suc} (\AgdaBound{n} \AgdaFunction{*} \AgdaNumber{1}). The latter follows from the former by \AgdaFunction{cong}ruence (see XXX).
 
 
-\section{Provability and decidability}
+\section{Provability and decidability\label{sc:Prov-Dec}}
 
 In this Section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous Section as examples.
 
@@ -694,7 +705,7 @@ Type inhabitation translates to \emph{provability} in the constructive logic cor
 
 A proof of classical logic is a constructive proof if it does not use the law of excluded middle \((A ∨ ¬ A)\) or proof by contradiction / double negation elimination \((¬ ¬ A → A)\). The law of contradiction \(((A → B) → (A → ¬ B) → ¬ A)\) and \emph{ex falso quodlibet} \((¬ A → A → B)\) are allowed.
 
-One consequence of disallowing proof by contradiction is that in constructive logic, \(¬ (∀ x. P(x)) → (∃ x. ¬ P(x))\) is not a theorem. In order to prove that there exists some element with a certain property, we must construct that element explicitly.
+One consequence of disallowing proof by contradiction is that in constructive logic, \(¬ (∀ x. P(x)) → (∃ x. ¬ P(x))\) is not a theorem. In order to prove that there exists some element with a certain property, it not sufficient to show that it is impossible for it not to exist: we must construct that element explicitly.
 
 Let us consider the following definition:
 
@@ -704,7 +715,7 @@ Let us consider the following definition:
 \end{code}
 %TC:endignore
 
-The type \AgdaDatatype{⊥} (pronounced \enquote{bottom}) has no constructors. Without termination checking, we could define a constant function that just calls itself and give it type \AgdaDatatype{⊥}. But this requires general recursion, which is not allowed in Agda because of the termination requirement. Therefore \AgdaDatatype{⊥} has no inhabitants, which is why it is often called the \emph{empty type}.
+The type \AgdaDatatype{⊥} (pronounced \enquote{bottom}) has no constructors, yet without termination checking we could define a function that just calls itself to inhabit \AgdaDatatype{⊥}. But this requires general recursion, which is not allowed in Agda because of the termination requirement. Therefore \AgdaDatatype{⊥} has no inhabitants, which is why it is often called the \emph{empty type}.
 
 A type with no elements is useless from a computational perspective: it can neither be constructed nor deconstructed, so we cannot write functions which operate on it. It does, however, make for a useful definition of emptiness. We said just now that it is impossible to create an element of type \AgdaDatatype{⊥}. But \emph{ex falso quodlibet} means that we can derive anything, even \AgdaDatatype{⊥}, from an absurd assumption:
 
@@ -769,7 +780,7 @@ Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol
 \AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Even} \AgdaBound{n}. All we need to do to derive a contradiction is to apply \AgdaBound{¬ps} to \AgdaBound{p}.
 
 
-\section{Equivalences and setoids}
+\section{Equivalences and setoids\label{sc:Setoids}}
 
 The main use case of the \AgdaModule{Bigop} library is to prove equalities. As an example, the Binomial Theorem can be stated as (Concrete Mathematics reference XXX) \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
 
@@ -887,7 +898,7 @@ Which proof style one prefers is a matter of taste. Equational reasoning is more
 In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propositional equality for our setoid. We can then freely mix steps using that equivalence relation \AgdaFunction{\_≈⟨\_⟩\_} and steps using propositional equality \AgdaFunction{\_≡⟨\_⟩\_} in an equational reasoning-style proof. Proving intermediate steps by propositional equality is allowed because by \AgdaFunction{reflexivity} (see XXX), \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≈} \AgdaBound{y} for \emph{any} equivalence relation \AgdaDatatype{\_≈\_}.
 
 
-\section{Algebra}
+\section{Algebra\label{sc:Algebra}}
 
 XXX also: can define fold for semigroups on non-empty lists (BooleanAlgebra \ldots)
 
@@ -1345,7 +1356,7 @@ The following proof shows that the result of filtering a list using \AgdaFunctio
 \end{code}
 %TC:endignore
 
-In \AgdaModule{Bigop.Filter.Properties}, we show a number of basic lemmas about filters and decidable properties defined in this way. Omitting the parameters
+In \AgdaModule{Bigop.Filter.Properties}, we show a number of lemmas about filters and decidable properties defined in this way. Omitting the parameters
 \AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i} \AgdaBound{ℓ}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{P} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaBound{I} \AgdaBound{ℓ}\AgdaSymbol{\}} \AgdaBound{x} \AgdaBound{xs} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)}, their types are as follows:
 \begin{align*}
 \text{\AgdaFunction{head-yes}}\;&\AgdaSymbol{:}\;
