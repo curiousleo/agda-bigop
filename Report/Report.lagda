@@ -783,17 +783,11 @@ Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol
 
 \section{Equivalences and setoids\label{sc:Setoids}}
 
-The main use case of the \AgdaModule{Bigop} library is to prove equalities. As an example, the Binomial Theorem can be stated as (Concrete Mathematics reference XXX) \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
+The main use case of the \AgdaModule{Bigop} library is to prove equalities like the Binomial Theorem \autocite[][Equation 5.13, page 163]{graham_concrete_1994}: \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
 
-The intended meaning of this equation seems clear---in English, the statement could be expressed as as follows: \begin{quote}For all numbers \(x\) and \(n\), let \(k\) range over all numbers from \(0\) to \(n\) and evaluate \(\binom{n}{k} \; x^k\) at each step. The sum of all those numbers is equal to the number obtained by evaluating \((1 + x)^n\).\end{quote}
+In dependently typed languages, we often use the more general notions of equivalence and setoid in place of equality. These will be discussed in this Section.
 
-Unfortunately, this description is too imprecise to be translated into a statement of formal mathematics. The first question we would have to answer is what \emph{kinds} of numbers \(x\) and \(n\) are. The notation suggests that \(n\) is an integer. It does not tell us whether the equation is supposed to hold if \(n\) is negative. The number \(x\) is less constrained by notation as exponentiation is defined even for complex and irrational numbers. Is the equation meant to cover them too?
-
-Next, we have to define the meaning of each symbol that occurs in the formula. The definition of summation, exponentiation and binomial coefficients can be found in any mathematics textbook. The \enquote{big sum} symbol has two different obvious definitions (see XXX), but in this case they both turn out to evaluate to the same result.
-
-The last thing we need to consider is the meaning of the equality sign. In dependent types based logics, this is where equivalences and setoids come in.
-
-\minisec{Equivalences}
+\subsection{Equivalences}
 
 %TC:ignore
 \AgdaHide{
