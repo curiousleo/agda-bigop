@@ -15,6 +15,7 @@
 \usepackage[]{unicode-math}
 
 \usepackage{pdfpages}
+\usepackage[all]{xy}
 \usepackage{microtype}
 \usepackage{bussproofs}
 \usepackage{csquotes}
@@ -1019,6 +1020,56 @@ module BigOps where
 }
 
 In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator that is lifted into a big operator must possess an identity and associativity law.
+
+-------------------
+
+Assuming that \AgdaBound{i} ranges over some finite collection of indices \(i_0, i_1, …, i_{n-1}, i_n\), the big operator expression \(\bigoplus_i f(i)\) is just an abbreviation for \[ f(i_0) ⊕ f(i_1) ⊕ ⋯ ⊕ f(i_{n-1}) ⊕ f(i_n) \]
+Without any further information about \(\_\!⊕\!\_\), this string of symbols represents a \emph{family} of expressions due to the lack of parentheses. Two members of that family can be written as expression trees as follows:
+
+\begin{equation*}
+\xymatrix{%
+& & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
+& & ⊕ \ar@{.}[dl] \ar@{-}[dr] & & f(i_n) \\
+& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & f(i_{n-1}) & \\
+f(i_0) & & f(i_1) & &
+}
+\end{equation*}
+
+
+\begin{equation*}
+\xymatrix{%
+& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & & & \\
+f(i_0) & & ⊕ \ar@{-}[dl] \ar@{.}[dr] & & & \\
+& f(i_1) & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & & \\
+& & f(i_{n-1}) & & f(i_n) &
+}
+\end{equation*}
+
+If \(\_\!\!⊕\!\!\_\) is associative, then all interpretations of the string of symbols representing the expanded big operator evaluate to the same value.
+
+\begin{equation*}
+\xymatrix{%
+& & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
+& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & z \\
+x & & y &
+}
+\end{equation*}
+
+==
+
+\begin{equation*}
+\xymatrix{%
+& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & \\
+x & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
+& y & & z
+}
+\end{equation*}
+
+Note that this does not resolve the ambiguity of which expression tree the string represents---it just means that any expression tree in which all elements appear in the same left-to-right order compute the same value, and are therefore propositionally equal as terms.
+
+
+
+-------------------
 
 \minisec{Crushing monoids}
 
