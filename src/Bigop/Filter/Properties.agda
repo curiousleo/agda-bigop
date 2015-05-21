@@ -14,50 +14,65 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open ≡-Reasoning
 
+∥-distrib : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs ys (p : Decidable P) →
+            (xs ++ ys) ∥ p ≡ (xs ∥ p) ++ (ys ∥ p)
+∥-distrib [] ys p = refl
+∥-distrib (x ∷ xs) ys p with p x
+... | yes px = cong (_∷_ x) (∥-distrib xs ys p)
+... | no ¬px = ∥-distrib xs ys p
+
+∥-step-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x (p : Decidable P) →
+             P x → [ x ] ∥ p ≡ [ x ]
+∥-step-yes x p px with p x
+... | yes  _ = refl
+... | no ¬px = ⊥-elim (¬px px)
+
+∥-step-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x (p : Decidable P) →
+            ¬ P x → [ x ] ∥ p ≡ []
+∥-step-no x p ¬px with p x
+... | yes px = ⊥-elim (¬px px)
+... | no  _  = refl
+
 head-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
            P x → (x ∷ xs) ∥ p ≡ x ∷ (xs ∥ p)
-head-yes x _ p px with p x
-head-yes x _ p px | yes _  = refl
-head-yes x _ p px | no ¬px = ⊥-elim (¬px px)
-
-head-∁-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-             P x → (x ∷ xs) ∥ ∁′ p ≡ xs ∥ ∁′ p
-head-∁-yes x _ p px with p x
-head-∁-yes x _ p px | yes _  = refl
-head-∁-yes x _ p px | no ¬px = ⊥-elim (¬px px)
+head-yes x xs p px = begin
+  ([ x ] ++ xs) ∥ p        ≡⟨ ∥-distrib [ x ] xs p ⟩
+  ([ x ] ∥ p) ++ (xs ∥ p)  ≡⟨ ∥-step-yes x p px ⟨ cong₂ _++_ ⟩ refl ⟩
+  x ∷ (xs ∥ p)             ∎
 
 head-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
           ¬ P x → (x ∷ xs) ∥ p ≡ xs ∥ p
-head-no x xs p ¬px with p x
-head-no x xs p ¬px | yes px = ⊥-elim (¬px px)
-head-no x xs p ¬px | no  _  = refl
-
-head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
-            ¬ P x → (x ∷ xs) ∥ ∁′ p ≡ x ∷ (xs ∥ ∁′ p)
-head-∁-no x xs p px with p x
-head-∁-no x xs p px | yes ¬px = ⊥-elim (px ¬px)
-head-∁-no x xs p px | no  _   = refl
-
-last-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
-          ¬ P x → (xs ∷ʳ x) ∥ p ≡ xs ∥ p
-last-no     xs       x p ¬px with p x
-last-no     xs       x p ¬px | yes px = ⊥-elim (¬px px)
-last-no {P} []       x p ¬px | no ¬p = head-no {P} x [] p ¬p
-last-no     (y ∷ ys) x p ¬px | no ¬p with p y
-last-no     (y ∷ ys) x p ¬px | no ¬p | yes _ =
-                               cong (_∷_ y) $ last-no ys x p ¬p
-last-no     (y ∷ ys) x p ¬px | no ¬p | no  _ = last-no ys x p ¬p
+head-no x xs p ¬px = begin
+  ([ x ] ++ xs) ∥ p        ≡⟨ ∥-distrib [ x ] xs p ⟩
+  ([ x ] ∥ p) ++ (xs ∥ p)  ≡⟨ ∥-step-no x p ¬px ⟨ cong₂ _++_ ⟩ refl ⟩
+  xs ∥ p                   ∎
 
 last-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
            P x → (xs ∷ʳ x) ∥ p ≡ (xs ∥ p) ∷ʳ x
-last-yes xs x p t with p x
-last-yes [] x p tt | yes q =               head-yes x [] p q
-last-yes (y ∷ ys) x p tt | yes q with p y
-last-yes (y ∷ ys) x p tt | yes q | yes _ =
-                            cong (_∷_ y) $ last-yes ys x p q
-last-yes (y ∷ ys) x p tt | yes q | no  _ = last-yes ys x p q
-last-yes xs x p px | no ¬px = ⊥-elim (¬px px)
+last-yes xs x p px = begin
+  (xs ++ [ x ]) ∥ p        ≡⟨ ∥-distrib xs (x ∷ []) p ⟩
+  (xs ∥ p) ++ ([ x ] ∥ p)  ≡⟨ refl {x = xs ∥ p} ⟨ cong₂ _++_ ⟩ ∥-step-yes x p px ⟩
+  (xs ∥ p) ++ [ x ]        ∎
 
+last-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs x (p : Decidable P) →
+          ¬ P x → (xs ∷ʳ x) ∥ p ≡ xs ∥ p
+last-no xs x p ¬px = begin
+  (xs ++ [ x ]) ∥ p        ≡⟨ ∥-distrib xs (x ∷ []) p ⟩
+  (xs ∥ p) ++ ([ x ] ∥ p)  ≡⟨ refl {x = xs ∥ p} ⟨ cong₂ _++_ ⟩ ∥-step-no x p ¬px ⟩
+  (xs ∥ p) ++ []           ≡⟨ xs++[]≡xs (xs ∥ p) ⟩
+  xs ∥ p                   ∎
+  where
+    xs++[]≡xs : ∀ {a} {A : Set a} (xs : List A) → xs ++ [] ≡ xs
+    xs++[]≡xs [] = refl
+    xs++[]≡xs (x ∷ xs) = cong (_∷_ x) (xs++[]≡xs xs)
+
+head-∁-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
+             P x → (x ∷ xs) ∥ ∁′ p ≡ xs ∥ ∁′ p
+head-∁-yes {P = P} x xs p px = head-no x xs (∁′ p) (λ ¬px → ¬px px)
+
+head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) →
+            ¬ P x → (x ∷ xs) ∥ ∁′ p ≡ x ∷ (xs ∥ ∁′ p)
+head-∁-no x xs p ¬px = head-yes x xs (∁′ p) ¬px
 
 ∥-filters : ∀ {a p} {A : Set a} {P : Pred A p} (xs : List A) (dec : Decidable P) →
             xs ∥ dec ≡ filter (⌊_⌋ ∘ dec) xs
