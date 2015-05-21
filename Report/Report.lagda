@@ -131,7 +131,8 @@ As a simple example of what our big operator library permits, consider the odd G
 
 Using the syntax definitions for sums, intervals and filters, it can be expressed in Agda as
 \[
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
+\label{eq:Intro-Example}
 \]
 
 A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
@@ -772,7 +773,7 @@ For example, in order to show that the predicate \AgdaDatatype{Even} is decidabl
 \end{code}
 %TC:endignore
 
-We have already covered the two base cases before: zero is clearly even and one is clearly not. The induction step is where things get interesting. Using a with-clause, we pattern match on whether \AgdaBound{n} is even. If yes, then we can easily construct a proof of \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} by applying \AgdaInductiveConstructor{ss-even} to the proof of \AgdaDatatype{Even} \AgdaBound{n}.
+We have already covered the two base cases before: zero is clearly even and one is clearly not. The induction step is where things get interesting. Using a \AgdaKeyword{with}-clause, we pattern match on whether \AgdaBound{n} is even. If yes, then we can easily construct a proof of \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} by applying \AgdaInductiveConstructor{ss-even} to the proof of \AgdaDatatype{Even} \AgdaBound{n}.
 
 Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} from a element of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaBound{n} using \AgdaFunction{ss-odd}. Since \AgdaFunction{¬} \AgdaBound{A} is just an abbreviation for \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{⊥}, the type of \AgdaFunction{ss-odd} can also be written as
 \AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaDatatype{Even} \AgdaBound{n} \AgdaSymbol{→} \AgdaDatatype{⊥}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} \AgdaSymbol{→} \AgdaDatatype{⊥}. The given pattern matches
@@ -824,9 +825,9 @@ A relation \AgdaDatatype{\_≈\_} is an equivalence if it is \emph{reflexive}, \
 \end{code}
 %TC:endignore
 
-Here, \AgdaFunction{reflexive} is not a field but a proof that is brought into scope when \AgdaDatatype{IsEquivalence} is opened. It shows that propositional equality \AgdaDatatype{\_≡\_} implies any other equivalence.
+Here, \AgdaFunction{reflexive} is not a field but a proof that is brought into scope when \AgdaDatatype{IsEquivalence} is opened. It shows that propositional equality \AgdaDatatype{\_≡\_} implies any other equivalence. In other words, \AgdaFunction{reflexive} shows that \AgdaDatatype{\_≡\_} is the smallest equivalence in Agda.
 
-\minisec{Setoids}
+\subsection{Setoids}
 
 A \emph{setoid} packages a type, called the \emph{carrier}, with a relation \AgdaDatatype{\_≈\_} defined on that type and a proof that this relation is an equivalence.
 
@@ -843,9 +844,9 @@ A \emph{setoid} packages a type, called the \emph{carrier}, with a relation \Agd
 Setoids can be used to define quotients. For example, we could represent non-negative rational numbers as the setoid with carrier type \AgdaDatatype{ℕ} \AgdaDatatype{×} \AgdaDatatype{ℕ} and equivalence relation \AgdaDatatype{\_≈\_} defined as \AgdaBound{p} \AgdaInductiveConstructor{,} \AgdaBound{q} \AgdaDatatype{≈} \AgdaBound{p′} \AgdaInductiveConstructor{,} \AgdaBound{q′} if \AgdaBound{p} \AgdaFunction{*} \AgdaBound{q′} \AgdaDatatype{≡} \AgdaBound{p′} \AgdaFunction{*} \AgdaBound{q}. Here the quotient \AgdaDatatype{\_≈\_} partitions the domain \AgdaDatatype{ℕ} \AgdaDatatype{×} \AgdaDatatype{ℕ} into equivalence classes of pairs of natural numbers representing the same rational numbers.
 
 
-\minisec{Equational reasoning}
+\subsection{Equational reasoning}
 
-Any setoid gives rise to a preorder, which only has a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next Chapters.
+Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next Chapters.
 
 As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
@@ -891,7 +892,7 @@ With equational reasoning it looks like this:
 \end{code}
 %TC:endignore
 
-The proof starts with \AgdaFunction{begin\_} followed by the left-hand side of the equivalence we are trying to prove. It ends with the right-hand side of the equivalence followed by \AgdaFunction{\_∎} (which is meant to resemble the \enquote{q.e.d.} symbol at the end of a proof). Intermediate steps are linked using \AgdaFunction{\_≡⟨\_⟩\_}; the term in angle brackets provides the justification. Transitivity is applied implicitly.
+The proof starts with \AgdaFunction{begin\_} followed by the left-hand side of the equivalence we are trying to prove. It ends with the right-hand side of the equivalence followed by \AgdaFunction{\_∎} (which is meant to resemble the \enquote{q.e.d.} symbol at the end of a proof). Intermediate steps are linked using \AgdaFunction{\_≡⟨\_⟩\_}; the term in angle brackets provides the justification. Transitivity is applied implicitly. Note that there is nothing special about \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎}---they are defined in the standard library like any other mixfix operator.
 
 Which proof style one prefers is a matter of taste. Equational reasoning is more verbose---\AgdaFunction{equiv₁} spans seven lines compared to \AgdaFunction{equiv₀}'s two---but it makes intermediate steps explicit, which helps someone reading the proof understand what is going on.
 
@@ -1019,11 +1020,7 @@ The Agda standard library contains a hierarchy of algebraic structures. Because 
 
 \chapter{Implementation\label{ch:Impl}}
 
-In this Chapter we discuss the implementation of our big operator library.
-
-The library consists of three mostly independent parts which combined together allow for a large number of proofs involving big operators to be written in Agda.
-
-Taking apart the example from the introduction, we will see how the expression
+In this Chapter we discuss the design and implementation of our big operator library. The library consists of three mostly independent parts which combined together allow for a large number of proofs involving big operators to be written in Agda. Taking apart the example from the introduction (\cref{eq:Intro-Example}), we will see how the expression
 \[
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \] is assembled from the syntax definition for big operators (\AgdaFunction{Σ[\_←\_]\_}), intervals (\AgdaFunction{\_…\_}) and filters (\AgdaFunction{\_∥\_}):
@@ -1044,34 +1041,38 @@ The directories and files of the library's source code are laid out as shown in 
 \begin{figure}[h]
 \begin{verbatim}
 src/
-├── Bigop.agda
+├── Bigop.agda                           19
 ├── Bigop
-│   ├── Core.agda
+│   ├── Core.agda                        35
 │   ├── Core
-│   │   └── Properties.agda
+│   │   └── Properties.agda              14
 │   ├── Properties
-│   │   ├── BooleanAlgebra.agda
-│   │   ├── CommutativeMonoid.agda
-│   │   ├── Monoid.agda
-│   │   └── SemiringWithoutOne.agda
+│   │   ├── BooleanAlgebra.agda          45
+│   │   ├── CommutativeMonoid.agda       92
+│   │   ├── Monoid.agda                  87
+│   │   └── SemiringWithoutOne.agda      30
 │   │
-│   ├── DecidableEquality.agda
-│   ├── Filter.agda
+│   ├── DecidableEquality.agda           29
+│   ├── Filter.agda                      14
 │   ├── Filter
-│   │   ├── PredicateReasoning.agda
-│   │   ├── Predicates.agda
-│   │   └── Properties.agda
+│   │   ├── PredicateReasoning.agda      23
+│   │   ├── Predicates.agda              40
+│   │   └── Properties.agda              89
 │   │
 │   └── Interval
-│       ├── Fin.agda
-│       ├── Nat.agda
+│       ├── Fin.agda                     23
+│       ├── Nat.agda                     12
 │       └── Properties
-│           ├── Fin.agda
-│           └── Nat.agda
+│           ├── Fin.agda                 63
+│           └── Nat.agda                 69
 │
-└── Matrix.agda
+├── Matrix.agda                          59│
+│
+├── GaussProofs.agda                     89
+├── BinomialTheorem.agda                114
+└── SemiringProof.agda                  371
 \end{verbatim}
-\caption{Structure of the source code}
+\caption{Agda source files and lines of code}
 \label{fig:structure}
 \end{figure}
 
