@@ -889,11 +889,90 @@ In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propo
 
 \section{Algebra}
 
-XXX need to explain why I'm using lists
-
 XXX also: can define fold for semigroups on non-empty lists (BooleanAlgebra \ldots)
 
 % The treatment of algebraic structures is one aspect in which the library presented here is very different from Coq's bigop module.
+
+-----------------------------
+
+In this Section, we review some properties binary operator might have, and define monoids, commutative monoids and semirings in terms of those properties.
+
+\subsection{Properties of binary operators}
+
+A binary operator \(\_\!\!⊗\!\!\_\) may have any of the following properties:
+
+\begin{description}
+\item[Associativity.] \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c)\). The order in which subterms are evaluated has no bearing on the result. If an operator is known to be associative, terms consisting of multiple applications of that operator are usually written without parentheses: \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c) ≡ a ⊗ b ⊗ c\).
+\item[Identity (or unit).] \(1 ⊗ a ≡ a\), \(a ⊗ 1 ≡ a\). Element \(1\) is called the left- or right-identity of \(\_\!\!⊗\!\!\_\) in the first and second equation, respectively.
+\item[Zero (or annihilator).] \(0 ⊗ a ≡ 0\), \(a ⊗ 0 ≡ 0\). The value \(0\) is the left- or right-identity of \(\_\!\!⊗\!\!\_\) in the first and second equation, respectively.
+\item[Commutativity.] \(a ⊗ b ≡ b ⊗ a\). Reordering operands does not change the result.
+\end{description}
+
+Binary operators may also interact in certain ways. If we add an operator \(\_\!\!⊕\!\!\_\), we may get the this property:
+
+\begin{description}
+\item[Distributivity.] \(a ⊗ (x ⊕ y) ≡ (a ⊗ x) ⊕ (a ⊗ y)\), \((x ⊕ y) ⊗ a ≡ (x ⊗ a) ⊕ (y ⊗ a)\). We say that \(\_\!\!⊗\!\!\_\) left- or right-distributes over \(\_\!\!⊕\!\!\_\), respectively.
+\end{description}
+
+\subsection{Algebraic structures}
+
+Certain combinations of the properties described in the previous Subsection arise often, so for convenience, they are given names.
+
+A \emph{semigroup} has an associative operation \(\_\!\!⊗\!\!\_\). If the operation has an identity, the structure is called a \emph{monoid}. In a \emph{commutative monoid}, the operation is also commutative.
+
+Given a monoid over \(\_\!\!⊗\!\!\_\) and a commutative monoid over \(\_\!\!⊕\!\!\_\), if the \(⊕\)-identity is a zero for \(\_\!\!⊗\!\!\_\) and \(\_\!\!⊗\!\!\_\) distributes over \(\_\!\!⊕\!\!\_\) we call the composite structure a \emph{semiring}.
+
+
+\subsection{Agda's algebraic hierarchy}
+
+The standard library defines all the properties and structures defined above.
+
+As an example from \AgdaModule{Algebra.FunctionProperties}, associativity of an operator \AgdaBound{\_∙\_} with respect to some relation \AgdaBound{\_≈\_} is defined as follows:
+
+\begin{code}
+  Associative : ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) → (A → A → A) → Set _
+  Associative _≈_ _∙_ = ∀ x y z → ((x ∙ y) ∙ z) ≈ (x ∙ (y ∙ z))
+\end{code}
+
+The definitions of algebraic structures are split into two records, one containing the properties and the other the \emph{data} of the structure. For example, here is the definition of a semigroup:
+
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module AlgebraicStructure where
+  import Algebra.FunctionProperties as FunctionProperties
+  open import Level
+  open import Relation.Binary.Core
+\end{code}
+}
+
+\begin{code}
+  record IsSemigroup {a ℓ} {A : Set a} (_≈_ : Rel A ℓ)
+                     (_∙_ : A → A → A) : Set (a ⊔ ℓ) where
+    open FunctionProperties _≈_
+    field
+      isEquivalence  : IsEquivalence _≈_
+      assoc          : Associative _∙_
+      ∙-cong         : ∀ {x x′ y y′ : A} → x ≈ x′ → y ≈ y′ → (x ∙ y) ≈ (x′ ∙ y′)
+\end{code}
+%TC:endignore
+
+\AgdaDatatype{IsSemigroup} encodes the properties of a semigroup. \AgdaBound{A} is the carrier type and \AgdaBound{\_≈\_} an equivalence relation over this type. The properties, associativity and congruence, are defined with respect to that equivalence relation.
+
+%TC:ignore
+\begin{code}
+  record Semigroup c ℓ : Set (suc (c ⊔ ℓ)) where
+    field
+      Carrier      : Set c
+      _≈_          : Rel Carrier ℓ
+      _∙_          : Carrier → Carrier → Carrier
+      isSemigroup  : IsSemigroup _≈_ _∙_
+\end{code}
+%TC:endignore
+
+The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relation \AgdaField{\_≈\_} and a binary operator \AgdaField{\_∙\_} together with the record containing the proofs that they satisfy the semigroup laws, \AgdaField{isSemigroup}.
+
+-----------------------------
 
 \minisec{Folds and monoids}
 
@@ -925,26 +1004,6 @@ Together, the solutions to the issues of empty lists and ambiguous folds mean th
 \minisec{Algebraic hierarchy in Agda}
 
 The Agda standard library contains a hierarchy of algebraic structures. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
-
-The following tables list the algebraic structures and their properties as defined in the Agda standard library's \AgdaModule{Algebra} module.
-
-XXX: insert table
-
-commutative monoids:
-
-
-+ congruence lemmas.
-
-semirings without one:
-
-\begin{align*}
-\sum_{i \leftarrow \textit{Idx}} \left(x \times f(i)\right)
-&\equiv
-x \times \left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \\
-\sum_{i \leftarrow \textit{Idx}} \left(f(i) \times x\right)
-&\equiv
-\left(\sum_{i \leftarrow \textit{Idx}} f(i)\right) \times x \\
-\end{align*}
 
 
 \chapter{Implementation\label{ch:Impl}}
