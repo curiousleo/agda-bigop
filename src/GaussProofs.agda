@@ -1,4 +1,4 @@
-module Proofs where
+module GaussProofs where
 
   open import Bigop
 
