@@ -980,6 +980,7 @@ The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relat
 
 -----------------------------
 
+%TC:ignore
 \minisec{Folds and monoids}
 
 Fundamentally, given any binary operator \(\_\!\!\odot\!\!\_\), what is the meaning of \(\bigodot_{i \leftarrow \textit{Idx}} f(i)\)? There are two main issues here: (1) the index list \(I\) may be empty; (2) in order to compute the result, we need to decide in which order the operator is applied.
@@ -1010,7 +1011,7 @@ Together, the solutions to the issues of empty lists and ambiguous folds mean th
 \minisec{Algebraic hierarchy in Agda}
 
 The Agda standard library contains a hierarchy of algebraic structures. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
-
+%TC:endignore
 
 \chapter{Implementation\label{ch:Impl}}
 
@@ -1060,7 +1061,7 @@ src/
 │           ├── Fin.agda                 63
 │           └── Nat.agda                 69
 │
-├── Matrix.agda                          59│
+├── Matrix.agda                          59
 │
 ├── GaussProofs.agda                     89
 ├── BinomialTheorem.agda                114
