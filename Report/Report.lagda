@@ -17,6 +17,7 @@
 \usepackage{pdfpages}
 \usepackage[all]{xy}
 \usepackage{microtype}
+\usepackage{booktabs}
 \usepackage{bussproofs}
 \usepackage{csquotes}
 \usepackage[autocite=inline,citestyle=authoryear-comp,bibstyle=authoryear,
@@ -136,6 +137,150 @@ Using the syntax definitions for sums, intervals and filters, it can be expresse
 \]
 
 A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
+
+\section{Motivation}
+
+The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language is was rewritten from scratch, and should be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the research institute where it was designed and implemented, INRIA\footnote{INRIA stands for Institut national de recherche en informatique et en automatique}, was published in 1991 \autocite{dowek_coq_1991}.
+
+Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. As a rough indicator, we compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size}.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l l l}
+%\toprule
+\emph{Proof assistant} & Agda (standard library) & Coq (\texttt{theories/}) & Isabelle (\texttt{HOL/}) \\
+\midrule
+\emph{Lines of code} & 20,000 & 110,000 & 310,000 \\
+%\bottomrule
+\end{tabular}
+\caption{Comparison of the size of the standard libraries or their equivalents for Agda, Coq and Isabelle. The measurements were taken using \texttt{cloc} (\url{http://cloc.sourceforge.net}) using the Haskell comments parser for Agda source files and the OCaml comments parser for Coq theories.}
+\label{tb:Size}
+\end{table}
+
+\minisec{Flexible syntax}
+
+One feature that stands out when reading Agda code is its flexible syntax. Although similar flexibility can be achieved using the \texttt{Notation} mechanism in Coq, for example, the syntax tends to be more heavyweight and verbose than Agda's. In order to be able to parse the flexible syntax they envisioned for Agda, its developers invented a new mechanism for parsing mixfix operators \autocite{danielsson_parsing_2011}.
+
+As an example, the \texttt{if … then … else …} construct, built into most languages, is defined in an Agda library as a function called \AgdaFunction{if\_then\_else\_} (the underscores indicate where it expects its arguments, see XXX). This allows the language itself to get by with few keywords and almost no built-in primitives as most constructs can be defined by the user.
+
+\minisec{Interactive editor for explicit proofs}
+
+Idiomatic Coq and Isabelle code makes heavy use of \emph{tactics}, which generate proofs on the fly. Using tactics increases productivity---in Isabelle, for example, the powerful \texttt{simp} tactic can be used to construct many proofs by simplifying their definitions. On the other hand, the use of tactics makes it harder to understand what is going on when reading a proof.
+
+Agda has no tactics language; all proofs must be written out explicitly. This can be tedious, but it also means that nothing is ever hidden from the reader's view. Most Agda code is written in an interactive editing mode for Emacs. It allows users to refine their proofs step by step by filling in \enquote{holes}. (Example XXX)
+
+\minisec{Equational reasoning}
+
+
+%TC:ignore
+\AgdaHide{
+\begin{code}
+module IntroExample where
+  open import Data.Nat.Base
+  open import Data.Nat.Properties.Simple
+  open import Relation.Binary.PropositionalEquality
+  open ≡-Reasoning
+\end{code}
+}
+%TC:endignore
+
+Agda's flexible syntax and the interactive editor allow for a proof style called \enquote{equational reasoning} which we consider a major selling point of the language.
+
+As an example, we will construct a proof of the arithmetic equality \((p · q) · r = p · (r · q)\) step by step, as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
+\begin{align}
+(p · q) · r &= p · (q · r) && \text{by associativity} \\
+&= p · (r · q) && \text{by commutativity}
+\end{align}
+We then use those steps as the skeleton of our equational reasoning proof. The question marks represent holes, i.e. proof fragments that are still missing. The comments indicate how we will go about filling those holes.
+
+\AgdaHide{
+\begin{code}
+  example : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
+  example p q r = begin
+\end{code}
+}
+\begin{code}
+    (p * q) * r  ≡⟨ {!!} ⟩  -- use associativity (1.1)
+    p * (q * r)  ≡⟨ {!!} ⟩  -- use commutativity (1.2)
+    p * (r * q)  ∎
+\end{code}
+
+Thankfully the Agda standard library already contains a proof that multiplication is associative under the name \AgdaFunction{*-assoc}. It shows that for any natural numbers \AgdaBound{x}, \AgdaBound{y} and \AgdaBound{z}, \((x · y) · z = x · (y · z)\)---instantiated with \AgdaBound{p}, \AgdaBound{q} and \AgdaBound{r}, respectively, this is exactly the first step in our handwritten proof (1.1). We use \AgdaFunction{*-assoc} to fill in the first hole in the formal proof:
+
+\AgdaHide{
+\begin{code}
+  example′ : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
+  example′ p q r = begin
+\end{code}
+}
+\begin{code}
+    (p * q) * r  ≡⟨ *-assoc p q r ⟩
+    p * (q * r)  ≡⟨ {!!} ⟩  -- use commutativity (1.2)
+    p * (r * q)  ∎
+\end{code}
+
+In the typeset proof, we wrote that \(p · (q · r) = p · (r · q)\) follows \enquote{by commutativity}. But commutativity really only states that \(q · r = r · q\). Implicitly, we are using the principle that equal subterms can be replaced by equal subterms. In a formal system like Agda, we must apply this principle, called \emph{congruence}, explicitly. This is one point where proof using equational reasoning deviate from handwritten or typeset proofs.
+
+To be exact, then, \(p · (q · r) = p · (r · q)\) holds by the following reasoning:
+\begin{enumerate}
+\item Multiplication is congruent, that is, if \(x = x′\) and \(y = y′\) then \(x · y = x′ · y′\) (in this case we instantiate \(x\) and \(x′\) with \(p\), \(y\) with \(q · r\) and \(y′\) with \(r · q\));
+\item \(p = p\) since equality is a reflexive relation (i.e. everything is equal to itself); and
+\item \(q · r = r · q\) by commutativity of multiplication.
+\end{enumerate}
+
+In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \AgdaFunction{*-comm} proves that multiplication is commutative and \AgdaFunction{cong₂} \AgdaFunction{\_*\_} shows that multiplication is congruent. They can be written as follows in proof tree notation (with assumptions above the line and the conclusion below it):
+
+\begin{figure}[h]
+\begin{minipage}[b]{1\linewidth}
+\centering
+\begin{minipage}[b]{0.15\linewidth}
+\begin{prooftree}
+    \AxiomC{}
+    \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaSymbol{=} \AgdaBound{x}}
+\end{prooftree}
+\end{minipage}
+\begin{minipage}[b]{0.365\linewidth}
+\begin{prooftree}
+    \AxiomC{}
+    \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{:} \(x · y = y · x\)}
+\end{prooftree}
+\end{minipage}
+\begin{minipage}[b]{0.365\linewidth}
+\begin{prooftree}
+    \AxiomC{\AgdaBound{f} \AgdaSymbol{:} \(x = x′\)}
+    \AxiomC{\AgdaBound{g} \AgdaSymbol{:} \(y = y′\)}
+    \BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} \AgdaSymbol{:} \(x · y = x′ · y′\)}
+\end{prooftree}
+\end{minipage}
+\end{minipage}
+\end{figure}
+
+The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\) and a proof \AgdaBound{g} of \(y = y′\), we can conclude by \AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} that \(x · y = x′ · y′\) holds}. Instantiating the three rules as appropriate, we can assemble the proof of \(p · (q · r) = p · (r · q)\) as follows:
+
+\begin{figure}[h]
+\begin{prooftree}
+\AxiomC{}
+\UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \(p = p\)}
+\AxiomC{}
+\UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} \AgdaSymbol{:} \(q · r = r · q\)}
+\BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \((p · (q · r) = p · (r · q)\)}
+\end{prooftree}
+\end{figure}
+
+That is, with \AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} as \AgdaBound{f} and \AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} as \AgdaBound{g}, the third rule constructs the proof of \(p · (q · r) = p · (r · q)\) we were looking for. We can now complete the proof of our original proposition \((p · q) · r = p · (r · q)\) as follows:
+
+\AgdaHide{
+\begin{code}
+  example″ : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
+  example″ p q r = begin
+\end{code}
+}
+\begin{code}
+    (p * q) * r  ≡⟨ *-assoc p q r ⟩
+    p * (q * r)  ≡⟨ cong₂ _*_ (refl {x = p}) (*-comm q r) ⟩
+    p * (r * q)  ∎
+\end{code}
+
 
 \section{Overview}
 
