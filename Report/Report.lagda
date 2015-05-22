@@ -1360,9 +1360,7 @@ The following two examples show how \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFuncti
 \quad&\equiv\quad \text{\AgdaFunction{f} \AgdaBound{l₀} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₁} \AgdaFunction{∙} \AgdaFunction{f} \AgdaBound{l₂}}
 \end{align*}
 
-In the last step, we are allowed to drop the parentheses because \AgdaFunction{\_∙\_} is associative by assumption.
-
-Next, we check what happens if \AgdaBound{l} is empty, that is, \AgdaBound{l} \AgdaSymbol{=} \AgdaInductiveConstructor{[]}:
+In the last step, we are allowed to drop the parentheses because \AgdaFunction{\_∙\_} is associative by assumption. Next, we check what happens if \AgdaBound{l} is empty, that is, \AgdaBound{l} \AgdaSymbol{=} \AgdaInductiveConstructor{[]}:
 \begin{align*}
 \text{\AgdaFunction{fold} \AgdaFunction{f} \AgdaInductiveConstructor{[]}}
 \quad&\equiv\quad \text{\AgdaSymbol{(}\AgdaFunction{crush} \AgdaFunction{∘} \AgdaFunction{map} \AgdaFunction{f}\AgdaSymbol{)} \AgdaInductiveConstructor{[]}} \\
@@ -1387,6 +1385,8 @@ Using lists to specify the domain of \(i\), the problem evaporates: \(\bigodot_{
 Again considering some operator \(\_⊙\_\), it is simply impossible to write down a big operator expression that evaluates to \(a ⊙ a\) since \(\{a,a\} = \{a\}\) and thus \(\bigodot_{i ∈ \{a,a\}} i = a\).
 
 With lists, we can write \(\bigodot_{i ← [a,a]} i\).
+
+\item Lists are well supported in Agda and commonly used: the standard library contains over 2000 lines of auxiliary definitions and lemmas about lists.
 \end{itemize}
 
 
@@ -1407,7 +1407,7 @@ module Intervals where
 %TC:endignore
 }
 
-Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The entire module \AgdaModule{Bigop.Interval.Nat} consists of the following four definitions:
+Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The module \AgdaModule{Bigop.Interval.Nat} consists of the following four definitions:
 
 %TC:ignore
 \begin{code}
@@ -1442,7 +1442,7 @@ Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than 
 
 \section{Filters}
 
-Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gaus equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in XXX.
+Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in XXX.
 
 %TC:ignore
 \AgdaHide{
@@ -1517,6 +1517,12 @@ In \AgdaModule{Bigop.Filter.Properties}, we show a number of lemmas about filter
 %
 \text{\AgdaFunction{head-∁-no}}\;&\AgdaSymbol{:}\;
 \text{\AgdaFunction{¬} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaBound{xs}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p} \AgdaDatatype{≡} \AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaSymbol{(}\AgdaBound{xs} \AgdaFunction{∥} \AgdaFunction{∁′} \AgdaBound{p}\AgdaSymbol{)}}
+\end{align*}
+All six of the above are proved using the following more general lemmas (all of which take the implicit parameters \AgdaSymbol{\{}\AgdaBound{i} \AgdaBound{ℓ} \AgdaSymbol{:} \AgdaDatatype{Level}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{P} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaBound{I} \AgdaBound{ℓ}\AgdaSymbol{\}}):
+\begin{align*}
+\text{\AgdaFunction{∥-distrib}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{∀} \AgdaBound{xs} \AgdaBound{ys} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)} \AgdaSymbol{→} (\AgdaBound{xs} \AgdaFunction{++} \AgdaBound{ys}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} (\AgdaBound{xs} \AgdaFunction{∥} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{++} (\AgdaBound{ys} \AgdaFunction{∥} \AgdaBound{p}\AgdaSymbol{)}} \\
+\text{\AgdaFunction{∥-step-yes}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaFunction{[} \AgdaBound{x} \AgdaFunction{]} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaFunction{[} \AgdaBound{x} \AgdaFunction{]}} \\
+\text{\AgdaFunction{∥-step-no}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaFunction{¬} \AgdaBound{P} \AgdaBound{x} \AgdaSymbol{→} \AgdaFunction{[} \AgdaBound{x} \AgdaFunction{]} \AgdaFunction{∥} \AgdaBound{p} \AgdaDatatype{≡} \AgdaInductiveConstructor{[]}} \\
 \end{align*}
 In addition, we prove \AgdaFunction{ordinals-filter} (see its type below). It states that the interval of length \AgdaBound{n} starting at \AgdaBound{m} contains the number \AgdaBound{k} exactly once, provided that \AgdaBound{m} \AgdaDatatype{≤} \AgdaBound{k} and \AgdaBound{k} \AgdaDatatype{<} \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}. \enquote{Containing \AgdaBound{k} exactly once} is expressed in terms of filtering by the decidable predicate \AgdaFunction{≟N} \AgdaBound{k}, which holds only for natural numbers equal to \AgdaBound{k}. If the result of applying this filter to an interval yields a singleton list containing only \AgdaBound{k}, then \AgdaBound{k} must have appeared exactly once in the interval.
 \[ \text{\AgdaFunction{ordinals-filter} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{m} \AgdaBound{n} \AgdaBound{k} \AgdaSymbol{→} \AgdaBound{m} \AgdaDatatype{≤} \AgdaBound{k} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{k<m+n} \AgdaSymbol{:} \AgdaBound{k} \AgdaDatatype{<} \AgdaBound{m} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaSymbol{→}
