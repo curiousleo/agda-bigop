@@ -25,8 +25,8 @@ Matrix A r c = Vec (Vec A c) r
 lookup : ∀ {r c a} {A : Set a} → Fin r → Fin c → Matrix A r c → A
 lookup i j m = V.lookup j (V.lookup i m)
 
-_[_,_] : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
-m [ i , j ] = lookup i j m
+_₍_,_₎ : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
+m ₍ i , j ₎ = lookup i j m
 
 ------------------------------------------------------------------------
 -- Creating and manipulating matrices
@@ -54,7 +54,7 @@ lookup∘tabulate {f = f} r c = begin
 
 Pointwise : ∀ {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
             {m n} → Matrix S m n → Matrix T m n → Set ℓ
-Pointwise _~_ A B = ∀ r c → A [ r , c ] ~ B [ r , c ]
+Pointwise _~_ A B = ∀ r c → A ₍ r , c ₎ ~ B ₍ r , c ₎
 
 ------------------------------------------------------------------------
 -- If _~_ is an equivalence then Pointwise _~_ is, too
@@ -88,7 +88,7 @@ private
       to : VP.Pointwise (VP.Pointwise _~_) A B → Pointwise _~_ A B
       to (VP.ext eq) = cong
         where
-          cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
+          cong : ∀ r c → A ₍ r , c ₎ ~ B ₍ r , c ₎
           cong r c with eq r
           cong r c | VP.ext eq′ = eq′ c
 
