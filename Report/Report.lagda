@@ -1352,7 +1352,7 @@ We can now define the function \AgdaFunction{fold} which evaluates a big operato
 %TC:endignore
 
 The following syntax declaration should make the connection between this function and big operators clearer: \[
-\text{\AgdaKeyword{syntax} \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs} \AgdaSymbol{=} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e}}
+\text{\AgdaKeyword{syntax} \AgdaSymbol{fold} \AgdaSymbol{(λ} \AgdaSymbol{x} \AgdaSymbol{→} \AgdaSymbol{e)} \AgdaSymbol{v} \AgdaSymbol{=} \AgdaSymbol{Σ[} \AgdaSymbol{x} \AgdaSymbol{←} \AgdaSymbol{v} \AgdaSymbol{]} \AgdaSymbol{e}}
 \]
 
 It has the effect of rewriting any expression of the form \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e} into \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs}. Note that the \AgdaKeyword{syntax} keyword allows us to define new binding sites: the variable \AgdaBound{x} is \emph{bound} within the expression \AgdaBound{e}. This effect cannot be achieved with mixfix operators.
@@ -1542,7 +1542,7 @@ This lemma is used in the proof that the identity matrix really is the identity 
 
 In this Section, we discuss how the properties of the underlying operators \AgdaFunction{\_+\_} and \AgdaFunction{\_*\_} determine the properties of their induced big operators.
 
-The lemmas in this section reside under \AgdaModule{Bigop.Properties}. They are intended to be used as follows: assuming we have some commutative monoid \AgdaBound{CM} \AgdaSymbol{:} \AgdaDatatype{CommutativeMonoid}. Then the following line will bring the lemmas concerning commutative monoids into scope under the module name \AgdaModule{Σ}:
+The lemmas in this section reside in \AgdaModule{Bigop.Properties}. They are intended to be used as follows: assuming we have some commutative monoid \AgdaBound{CM} \AgdaSymbol{:} \AgdaDatatype{CommutativeMonoid}. Then the following line will bring the lemmas concerning commutative monoids into scope under the module name \AgdaModule{Σ}:
 \[
 \text{\AgdaKeyword{module} \AgdaModule{Σ} \AgdaSymbol{=} \AgdaModule{Bigop.Properties.CommutativeMonoid} \AgdaBound{CM}}
 \]
