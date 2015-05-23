@@ -1703,7 +1703,7 @@ Lastly, the lemma \AgdaFunction{lookup∘tabulate} shows that if a matrix was cr
 
 % We begin by defining an equivalence relation between matrices.\footnote{To be precise, \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} is just a relation for now. The proof that it \emph{is} an equivalence relation provided that \AgdaDatatype{\_\sim\_} is one is given in \cref{Semi-Proofs}.} It is defined by pointwise equivalence of the elements of two matrices of the same shape.
 
-The intuition for this definition is this: in order to show that the \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} relation holds between two matrices, we must give a function which, for any row index \AgdaBound{r} and any column index \AgdaBound{c}, produces evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
+Next we define a relation between matrices based on a relation between their elements:
 
 %TC:ignore
 \begin{code}
@@ -1713,40 +1713,49 @@ The intuition for this definition is this: in order to show that the \AgdaDataty
 \end{code}
 %TC:endignore
 
+The intuition for this definition is this: in order to show that the \AgdaDatatype{Pointwise} \AgdaDatatype{\_\sim\_} relation holds between two matrices, we must give a function which, for any row index \AgdaBound{r} and any column index \AgdaBound{c}, produces evidence that the relation \AgdaDatatype{\_\sim\_} holds between the elements of the two matrices at this point.
+
+We would like to use \AgdaDatatype{Pointwise} \AgdaBound{\_∼\_} as an equivalence relation in proofs. \AgdaFunction{PW-isEquivalence} shows that if \AgdaBound{\_~\_} is an equivalence relation, then so is its pointwise lifting:
+
 %TC:ignore
 \begin{code}
-  PW-isEquivalence :  ∀ {a ℓ} {A : Set a} {_~_ : Rel A ℓ} {m n} →
-                      IsEquivalence _~_ → IsEquivalence (Pointwise _~_ {m = m} {n})
-  PW-isEquivalence {_~_ = ~} eq = record { refl = PW-refl ; sym = PW-sym ; trans = PW-trans }
+  PW-isEquivalence :  ∀ {a ℓ} {A : Set a} {_≈_ : Rel A ℓ} {m n} →
+                      IsEquivalence _≈_ → IsEquivalence (Pointwise _≈_ {m = m} {n})
+  PW-isEquivalence {_≈_ = ≈} eq = record
+    { refl = PW-refl
+    ; sym = PW-sym
+    ; trans = PW-trans
+    }
     where
       open IsEquivalence eq
 
-      PW-refl : Reflexive (Pointwise ~)
+      ≋ = Pointwise ≈
+
+      PW-refl : Reflexive ≋
       PW-refl = (λ r c → refl)
 
-      PW-sym : Symmetric (Pointwise ~)
+      PW-sym : Symmetric ≋
       PW-sym eq = (λ r c → sym (eq r c))
 
-      PW-trans : Transitive (Pointwise ~)
+      PW-trans : Transitive ≋
       PW-trans eq₁ eq₂ = (λ r c → trans (eq₁ r c) (eq₂ r c))
 \end{code}
 %TC:endignore
 
-Let us consider symmetry in more detail. The property \AgdaFunction{Symmetric} \AgdaDatatype{\_≋\_} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. Since \AgdaDatatype{\_≋\_} has only one constructor, any evidence \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} must be of the form \AgdaInductiveConstructor{ext} \AgdaBound{app} with \AgdaBound{app} \AgdaSymbol{:} \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This allows us to pattern match on the argument to \AgdaFunction{≋-sym} to extract \AgdaBound{app}.
-
-In order to construct an element of \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, we must supply the constructor \AgdaInductiveConstructor{ext} with a function of type \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}. This can be achieved by abstracting over \AgdaBound{r} and \AgdaBound{c} and then applying the symmetry law of the underlying equivalence \AgdaFunction{sym} to \AgdaBound{app} \AgdaBound{r} \AgdaBound{c} like so:
+Let us consider \AgdaFunction{PW-sym} in more detail. The property \AgdaFunction{Symmetric} \AgdaDatatype{≋} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{eq} \AgdaSymbol{:} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, which is just a synonym for \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
+In order to construct a function of this type, we abstract over \AgdaBound{r} and \AgdaBound{c} and then apply the symmetry law of the underlying equivalence \AgdaFunction{sym} to \AgdaBound{eq} \AgdaBound{r} \AgdaBound{c} like so:
 \begin{align*}
-\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{app} \AgdaBound{r} \AgdaBound{c}}
+\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{eq} \AgdaBound{r} \AgdaBound{c}}
+  &\;\AgdaSymbol{:}\; \text{\AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B}} \\
   &\;\AgdaSymbol{:}\; \text{\AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
-\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{)}}
+\text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{eq} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{)}}
   &\;\AgdaSymbol{:}\; \text{\AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
-\text{\AgdaInductiveConstructor{ext} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}}
   &\;\AgdaSymbol{:}\; \text{\AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}} \\
 \end{align*}
 Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 
 \[\text{
-\AgdaFunction{≋-sym} \AgdaSymbol{(}\AgdaInductiveConstructor{ext} \AgdaBound{app}\AgdaSymbol{)} \AgdaSymbol{=} \AgdaInductiveConstructor{ext} \AgdaSymbol{(λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{app} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{))}
+\AgdaFunction{≋-sym} \AgdaBound{eq} \AgdaSymbol{=} \AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaFunction{sym} \AgdaSymbol{(}\AgdaBound{eq} \AgdaBound{r} \AgdaBound{c}\AgdaSymbol{)}
 }\]
 
 Reflexivity and transitivity are proved in a similar fashion.
