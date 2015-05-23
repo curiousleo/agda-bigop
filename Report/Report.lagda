@@ -140,7 +140,7 @@ A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
 
 \section{Motivation}
 
-In this section, we describe how Agda users can write proofs in a style similar to handwritten proofs, assisted by a theorem prover that is integrated into the editing mode for Agda. We then give an example of a proposition that can be expressed and proved using our library, and how it fits naturally into this model of proof development.
+In this section, we describe how Agda users can write proofs in a style similar to handwritten or typeset ones, assisted by a theorem prover that is integrated into the editing mode for Agda. We then give an example of a proposition that can be expressed and proved using our library, and how it fits naturally into this model of proof development.
 
 \minisec{Agda, Coq and Isabelle}
 
@@ -162,7 +162,7 @@ Partly as a consequence of its young age, Agda's standard library is much smalle
 \end{table}
 
 
-\minisec{Equational reasoning}
+\subsection{Equational reasoning}
 
 %TC:ignore
 \AgdaHide{
@@ -222,7 +222,7 @@ To be exact, then, \(p · (q · r) = p · (r · q)\) holds by the following reas
 
 In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \AgdaFunction{*-comm} proves that multiplication is commutative and \AgdaFunction{cong₂} \AgdaFunction{\_*\_} shows that multiplication is congruent. They can be written as follows in proof tree notation (with assumptions above the line and conclusion below):
 
-\begin{figure}[h]
+\vspace{.15cm}
 \begin{minipage}[b]{1\linewidth}
 \centering
 \begin{minipage}[b]{0.15\linewidth}
@@ -245,11 +245,13 @@ In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \A
 \end{prooftree}
 \end{minipage}
 \end{minipage}
-\end{figure}
+\vspace{.05cm}
 
 The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\) and a proof \AgdaBound{g} of \(y = y′\), we can conclude by \AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} that \(x · y = x′ · y′\) holds}. Instantiating the three rules as appropriate, we can assemble the proof of \(p · (q · r) = p · (r · q)\) as follows:
 
-\begin{figure}[h]
+\vspace{.15cm}
+\begin{minipage}[b]{1\linewidth}
+\centering
 \begin{prooftree}
 \AxiomC{}
 \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \(p = p\)}
@@ -257,7 +259,8 @@ The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\
 \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} \AgdaSymbol{:} \(q · r = r · q\)}
 \BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \((p · (q · r) = p · (r · q)\)}
 \end{prooftree}
-\end{figure}
+\end{minipage}
+\vspace{.05cm}
 
 That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} and \AgdaBound{g} \AgdaSymbol{=} \AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}, the third rule constructs the proof of \(p · (q · r) = p · (r · q)\) we were looking for. We can now complete the proof of our original proposition \((p · q) · r = p · (r · q)\) as follows:
 
@@ -273,15 +276,36 @@ That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \Agda
     p * (r * q)  ∎
 \end{code}
 
-This example has demonstrated that the combination of equational reasoning and proof-by-refinement simplifies the process of translating handwritten proofs into formal proofs: we first write down the steps by which the left-hand side of the equation transforms into its right-hand side, and then provide justification for each individual step.
+This example demonstrates that the combination of equational reasoning and proof-by-refinement simplifies the process of translating handwritten proofs into formal proofs: we first write down the steps by which the left-hand side of the equation transforms into its right-hand side, and then provide justification for each individual step.
 
 We now look at combining equational reasoning and automated proof search in Agda.
 
-\minisec{Automated proof search}
+\subsection{Automated proof search}
 
-Agsy \autocite{foster_integrating_2011} is a theorem prover for Agda. Given a proposition like \((p · q) · r = p · (q · r)\), it attempts to automatically construct a proof that this proposition holds. This may fail, either because the proposition does not hold or because the proof search times out before a proof was found. Agsy is integrated into the interactive editing mode, and already very useful. Still, it must be said that Coq's and Isabelle's automation facilities are far more sophisticated than Agda's at this time.
+Agsy \autocite{foster_integrating_2011} is a theorem prover for Agda. Given a proposition, it attempts to automatically construct a proof that it holds. This may fail, either because the proposition does not hold or because the proof search times out before a proof was found. Agsy is integrated into the interactive editing mode, and already very useful. Still, it must be said that Coq's and Isabelle's automation facilities are far more sophisticated than Agda's at this time.
 
 The fewer lemmas required to prove a proposition the likelier it is for Agsy to be able to construct a proof for it. By breaking down a proof into small steps, we thereby increase the usefulness of Agsy. In fact, both intermediate steps in the proof discussed above can be discharged automatically by Agsy if we provide it with the hints \AgdaFunction{*-assoc} and \AgdaFunction{*-comm}, respectively---essentially we intuit that the first step has something to do with associativity and the second step probably involves an application of commutativity, and let Agsy figure out the details. This combination of human intuition and automated proof search can, with a little experience, lead to rapid proof development.
+
+\subsection{Big operators}
+
+How does our library fit into this picture? Big operator libraries have been implemented for Isabelle and Coq, but not for Agda. Our goal was to enable Agda users to express definitions and propositions and prove theorems involving big operators using.
+
+One theorem we wanted to prove with our library was that matrix multiplication is associative. In order to do this, we first need to define matrix multiplication. In standard mathematical notation, the definition reads as follows: \[(A\,B)_{r,c} = \sum_i A_{r,i}\,B_{i,c}\]
+
+Using the matrix library (discussed in \cref{sc:Impl-Matrices}) and syntax for intervals and big operators developed in this project (see \cref{sc:Impl-Intervals} and \cref{sc:Impl-Bigops}), the relevant part of the corresponding definition in Agda looks like this:
+\[\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}\]
+
+
+With this definition of matrix multiplication, the proposition \enquote{matrix multiplication is associative} can be expressed as follows:
+\begin{gather*}
+\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{j} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{j} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{C} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
+= \\
+\text{\AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{j} \AgdaFunction{]} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{j} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{C} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}\AgdaSymbol{)}}
+\end{gather*}
+
+We prove this proposition in \cref{Semi-Times}.
+
+As demonstrated by the proofs described in \crefrange{ch:Gauss}{ch:Semi}, our library achieves its main purpose of enabling Agda users to express propositions and write proofs with big operators.
 
 \section{Overview}
 
@@ -1217,7 +1241,7 @@ src/
 \label{fig:structure}
 \end{figure}
 
-\section{Big operators}
+\section{Big operators\label{sc:Impl-Bigops}}
 
 
 %TC:ignore
@@ -1391,7 +1415,7 @@ With lists, we can write \(\bigodot_{i ← [a,a]} i\).
 \end{itemize}
 
 
-\section{Intervals}
+\section{Intervals\label{sc:Impl-Intervals}}
 
 Intervals of natural numbers are commonly used as indices in big operator expressions. This Section describes how intervals are defined for the two types of natural numbers introduced in XXX, \AgdaDatatype{ℕ} and \AgdaDatatype{Fin}.
 
@@ -1601,7 +1625,7 @@ A \enquote{semiring without one} consists of a commutative monoid over an operat
 &\text{\AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{a} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{a}}
 \end{align*}
 
-\section{\label{Impl-Matrices}Matrices}
+\section{\label{sc:Impl-Matrices}Matrices}
 
 In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first. This module is independent from the rest of the project.
 
