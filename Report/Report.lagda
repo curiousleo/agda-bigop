@@ -140,9 +140,13 @@ A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
 
 \section{Motivation}
 
-The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language is was rewritten from scratch, and should be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the research institute where it was designed and implemented, INRIA\footnote{INRIA stands for Institut national de recherche en informatique et en automatique}, was published in 1991 \autocite{dowek_coq_1991}.
+In this section, we describe how Agda users can write proofs in a style similar to handwritten proofs, assisted by a theorem prover that is integrated into the editing mode for Agda. We then give an example of a proposition that can be expressed and proved using our library, and how it fits naturally into this model of proof development.
 
-Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. As a rough indicator, we compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size}.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
+\minisec{Agda, Coq and Isabelle}
+
+The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It shares its name and philosophy with the original implementation, but should for all intents and purposes be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the research institute where it was designed and implemented, INRIA\footnote{INRIA is the French \enquote{Institut national de recherche en informatique et en automatique}.}, was published in 1991 \autocite{dowek_coq_1991}.
+
+Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. We compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size} as a rough indicator of maturity.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
 
 \begin{table}[h]
 \centering
@@ -281,6 +285,15 @@ That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \Agda
     p * (r * q)  ∎
 \end{code}
 
+This example has demonstrated that the combination of equational reasoning and proof-by-refinement simplifies the process of translating handwritten proofs into formal proofs: we first write down the steps by which the left-hand side of the equation transforms into its right-hand side, and then provide justification for each individual step.
+
+We now look at combining equational reasoning and automated proof search in Agda.
+
+\minisec{Automated proof search}
+
+Agsy \autocite{foster_integrating_2011} is a theorem prover for Agda. Given a proposition like \((p · q) · r = p · (q · r)\), it attempts to automatically construct a proof that this proposition holds. This may fail, either because the proposition does not hold or because the proof search times out before a proof was found. Agsy is integrated into the interactive editing mode, and already very useful. Still, it must be said that Coq's and Isabelle's automation facilities are far more sophisticated than Agda's at this time.
+
+The fewer lemmas required to prove a proposition the likelier it is for Agsy to be able to construct a proof for it. By breaking down a proof into small steps, we thereby increase the usefulness of Agsy. In fact, both intermediate steps in the proof discussed above can be discharged automatically by Agsy if we provide it with the hints \AgdaFunction{*-assoc} and \AgdaFunction{*-comm}, respectively---essentially we intuit that the first step has something to do with associativity and the second step probably involves an application of commutativity, and let Agsy figure out the details. This combination of human intuition and automated proof search can, with a little experience, lead to rapid proof development.
 
 \section{Overview}
 
