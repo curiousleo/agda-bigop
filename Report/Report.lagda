@@ -125,18 +125,6 @@ Additional contributions of this project are:
 \item We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid (see XXX) followed by a fold over the list of carrier elements using the monoid's binary operator. (See XXX)
 \end{itemize}
 
-\minisec{Syntax example}
-
-As a simple example of what our big operator library permits, consider the odd Gauss formula (discussed in detail in XXX). In standard mathematical notation, the can be written as follows:
-\[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
-
-Using the syntax definitions for sums, intervals and filters, it can be expressed in Agda as
-\[
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
-\label{eq:Intro-Example}
-\]
-
-A proof of the odd Gauss formula is presented in \cref{ch:Gauss}.
 
 \section{Motivation}
 
@@ -290,22 +278,16 @@ The fewer lemmas required to prove a proposition the likelier it is for Agsy to 
 
 How does our library fit into this picture? Big operator libraries have been implemented for Isabelle and Coq, but not for Agda. Our goal was to enable Agda users to express definitions and propositions and prove theorems involving big operators using.
 
-One theorem we wanted to prove with our library was that matrix multiplication is associative. In order to do this, we first need to define matrix multiplication. In standard mathematical notation, the definition reads as follows: \[(A\,B)_{r,c} = \sum_i A_{r,i}\,B_{i,c}\]
+As a simple example of what our big operator library permits, consider the odd Gauss formula. In standard mathematical notation, the can be written as follows:
+\[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
 
-Using the matrix library (discussed in \cref{sc:Impl-Matrices}) and syntax for intervals and big operators developed in this project (see \cref{sc:Impl-Intervals} and \cref{sc:Impl-Bigops}), the relevant part of the corresponding definition in Agda looks like this:
-\[\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}\]
+Using the syntax definitions for sums, intervals and filters implemented in our project (see \cref{ch:Impl}), it can be expressed in Agda as
+\[
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
+\label{eq:Intro-Example}
+\]
 
-
-With this definition of matrix multiplication, the proposition \enquote{matrix multiplication is associative} can be expressed as follows:
-\begin{gather*}
-\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{j} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{j} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{C} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}} \\
-= \\
-\text{\AgdaFunction{Σ[} \AgdaBound{j} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{j} \AgdaFunction{]} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{j} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{C} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}\AgdaSymbol{)}}
-\end{gather*}
-
-We prove this proposition in \cref{Semi-Times}.
-
-As demonstrated by the proofs described in \crefrange{ch:Gauss}{ch:Semi}, our library achieves its main purpose of enabling Agda users to express propositions and write proofs with big operators.
+A proof of the odd Gauss formula is presented in \cref{ch:Gauss}. Further proofs using our library in \cref{ch:Binom} and \cref{ch:Semi} demonstrate that we achieve our goal of enabling Agda users to express propositions and write proofs with big operators.
 
 \section{Overview}
 
