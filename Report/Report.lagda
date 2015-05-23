@@ -106,7 +106,7 @@ module Report where
 
 The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-Providing a notation for big operators in a thereom prover is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} \autocite{paulson_isabelle:_1994} and \emph{Coq} \autocite{huet_coq_2015}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+Providing a notation for big operators in a theorem prover is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} \autocite{paulson_isabelle:_1994} and \emph{Coq} \autocite{huet_coq_2015}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
 
 No such library exists for \emph{Agda} \autocite{norell_dependently_2009}, another proof assistant. The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
 
