@@ -161,20 +161,8 @@ Partly as a consequence of its young age, Agda's standard library is much smalle
 \label{tb:Size}
 \end{table}
 
-\minisec{Flexible syntax}
-
-One feature that stands out when reading Agda code is its flexible syntax. Although similar flexibility can be achieved using the \texttt{Notation} mechanism in Coq, for example, the syntax tends to be more heavyweight and verbose than Agda's. In order to be able to parse the flexible syntax they envisioned for Agda, its developers invented a new mechanism for parsing mixfix operators \autocite{danielsson_parsing_2011}.
-
-As an example, the \texttt{if … then … else …} construct, built into most languages, is defined in an Agda library as a function called \AgdaFunction{if\_then\_else\_} (the underscores indicate where it expects its arguments, see XXX). This allows the language itself to get by with few keywords and almost no built-in primitives as most constructs can be defined by the user.
-
-\minisec{Interactive editor for explicit proofs}
-
-Idiomatic Coq and Isabelle code makes heavy use of \emph{tactics}, which generate proofs on the fly. Using tactics increases productivity---in Isabelle, for example, the powerful \texttt{simp} tactic can be used to construct many proofs by simplifying their definitions. On the other hand, the use of tactics makes it harder to understand what is going on when reading a proof.
-
-Agda has no tactics language; all proofs must be written out explicitly. This can be tedious, but it also means that nothing is ever hidden from the reader's view. Most Agda code is written in an interactive editing mode for Emacs. It allows users to refine their proofs step by step by filling in \enquote{holes}. (Example XXX)
 
 \minisec{Equational reasoning}
-
 
 %TC:ignore
 \AgdaHide{
