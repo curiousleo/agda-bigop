@@ -1809,7 +1809,7 @@ module Gauss where
 
 \section{Gauss formula}
 
-In this Section, we show a proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] using definitions and lemmas from the \AgdaModule{Bigop} module. The proof works by natural number induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
+In this Section, we show a pen-and-paper proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] followed by a formal proof using definitions and lemmas from the \AgdaModule{Bigop} module. The proof proceeds induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
 
 The induction hypothesis is \[ 2 · \sum_{i ← 0 … n} i = n · (n + 1) \]
 
@@ -1910,7 +1910,7 @@ which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be writ
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \]
 
-The lemma \AgdaFunction{extract} brings the list into a form that induction can be used on. It says that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
+The lemma \AgdaFunction{extract} brings the list into a form more amenable to induction. It states that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
 
 In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{upFrom-last} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
 \[
@@ -1949,7 +1949,7 @@ The proof of the odd Gauss equation again works by natural number induction on \
 
 %TC:ignore
 \begin{code}
-    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd ] i ≈ n * n
+    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd ] i ≡ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
@@ -1992,8 +1992,7 @@ module BinomialTheorem where
   open import Data.Nat.Properties.Simple using (+-suc)
   open import Function
   open import Relation.Binary.PropositionalEquality as P using (_≡_)
-  open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
-  import Relation.Binary.EqReasoning as EqR
+  open P.≡-Reasoning
 
   open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
   module Σ = Props.SemiringWithoutOne semiringWithoutOne
@@ -2002,7 +2001,6 @@ module BinomialTheorem where
   open import Data.List
   open import Data.Product using (proj₁; proj₂)
 
-  open EqR setoid
   open import Level renaming (zero to lzero; suc to lsuc)
 
   open import Bigop.Interval.Nat
@@ -2026,7 +2024,7 @@ module BinomialTheorem where
 \end{code}
 %TC:endignore
 
-Additionally we define a shortcut \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
+Additionally we define a shorthand \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
 
 %TC:ignore
 \begin{code}
@@ -2043,21 +2041,21 @@ The first two lemmas, \AgdaFunction{+-reorder} and \AgdaFunction{*-reorder}, are
 
 %TC:ignore
 \begin{code}
-  +-reorder : ∀ x y z → x + (y + z) ≈ y + (x + z)
+  +-reorder : ∀ x y z → x + (y + z) ≡ y + (x + z)
   +-reorder x y z =
     begin
-      x + (y + z)  ≈⟨ sym $ +-assoc x y z ⟩
-      (x + y) + z  ≈⟨ +-cong (+-comm x y) refl ⟩
-      (y + x) + z  ≈⟨ +-assoc y x z ⟩
+      x + (y + z)  ≡⟨ sym $ +-assoc x y z ⟩
+      (x + y) + z  ≡⟨ +-cong (+-comm x y) refl ⟩
+      (y + x) + z  ≡⟨ +-assoc y x z ⟩
       y + (x + z)
     ∎
 
-  *-reorder : ∀ x y z → x * (y * z) ≈ y * (x * z)
+  *-reorder : ∀ x y z → x * (y * z) ≡ y * (x * z)
   *-reorder x y z =
     begin
-      x * (y * z)  ≈⟨ sym $ *-assoc x y z ⟩
-      (x * y) * z  ≈⟨ *-cong (*-comm x y) refl ⟩
-      (y * x) * z  ≈⟨ *-assoc y x z ⟩
+      x * (y * z)  ≡⟨ sym $ *-assoc x y z ⟩
+      (x * y) * z  ≡⟨ *-cong (*-comm x y) refl ⟩
+      (y * x) * z  ≡⟨ *-assoc y x z ⟩
       y * (x * z)
     ∎
 \end{code}
@@ -2067,21 +2065,21 @@ The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-d
 
 %TC:ignore
 \begin{code}
-  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≈
+  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≡
                         x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
   left-distr x n =
     begin
       Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-        ≈⟨ Σ.cong (0 … n) P.refl (λ k → *-reorder (n choose k) x (x ^ k)) ⟩
+        ≡⟨ Σ.cong (0 … n) P.refl (λ k → *-reorder (n choose k) x (x ^ k)) ⟩
       Σ[ k ← 0 … n ] x * (n choose k * x ^ k)
-        ≈⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
+        ≡⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
       x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
     ∎
 \end{code}
 %TC:endignore
 % $
 
-The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but it is easier to use in this form. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to use \AgdaFunction{choose-lt′} and vice versa, making them mutually inductive definitions.
+The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but it is easier to use in this form. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
 
 %TC:ignore
 \begin{code}
@@ -2092,11 +2090,11 @@ The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{
 
     choose-lt′ : ∀ m n → n choose (m + suc n) ≡ 0
     choose-lt′ m n =
-      start
-        n choose (m + suc n)  ≣⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
-        n choose suc (m + n)  ≣⟨ choose-lt m n ⟩
+      begin
+        n choose (m + suc n)  ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
+        n choose suc (m + n)  ≡⟨ choose-lt m n ⟩
         0
-      □
+      ∎
 \end{code}
 %TC:endignore
 % $
@@ -2106,22 +2104,22 @@ The lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{
 
 %TC:ignore
 \begin{code}
-  split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≈
+  split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≡
                    Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
                    + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
   split x n =
     begin
       Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-        ≈⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
+        ≡⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
       Σ[ k ← map suc (0 … n) ] (suc n) choose k * x ^ k
-        ≈⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
+        ≡⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
       Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
-        ≈⟨ Σ.cong  {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
+        ≡⟨ Σ.cong  {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
                    (0 … n) P.refl
                    (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
       Σ[ k ← 0 … n ] (  n choose k * x ^ (suc k)
                         + n choose (suc k) * x ^ (suc k))
-         ≈⟨ sym $ Σ.merge  (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
+         ≡⟨ sym $ Σ.merge  (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
                            (0 … n) ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
          + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
@@ -2134,23 +2132,23 @@ The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proo
 
 %TC:ignore
 \begin{code}
-  choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≈
+  choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≡
                         Σ[ k ← 1 … n ] n choose k * x ^ k
   choose-suc x n  =
     begin
       Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-        ≈⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
+        ≡⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
       Σ[ k ← map suc (0 … n) ] n choose k * x ^ k
         ≡⟨ P.cong (fold $ f x n) (upFrom-suc 0 (suc n)) ⟩
       Σ[ k ← 1 … suc n ] n choose k * x ^ k
         ≡⟨ P.cong (fold $ f x n) (upFrom-last 1 n) ⟩
       Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k
-        ≈⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
+        ≡⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
       (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
-        ≈⟨ +-cong  (refl {x = Σ[ k ← 1 … n ] f x n k})
+        ≡⟨ +-cong  (refl {x = Σ[ k ← 1 … n ] f x n k})
                    (choose-lt 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩
       (Σ[ k ← 1 … n ] n choose k * x ^ k) + 0
-        ≈⟨ proj₂ +-identity _ ⟩
+        ≡⟨ proj₂ +-identity _ ⟩
       Σ[ k ← 1 … n ] n choose k * x ^ k
     ∎
 \end{code}
@@ -2159,15 +2157,15 @@ The following lemma, \AgdaFunction{choose-suc}, is not directly used in the proo
 %TC:ignore
 \begin{code}
   shift : ∀ x n →  1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-                   ≈ Σ[ k ← 0 … n ] n choose k * x ^ k
+                   ≡ Σ[ k ← 0 … n ] n choose k * x ^ k
   shift x n =
     begin
       1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-        ≈⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
+        ≡⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
       1 + Σ[ k ← 1 … n ] n choose k * x ^ k
-        ≈⟨ refl ⟩
+        ≡⟨ refl ⟩
       Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k
-        ≈⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
+        ≡⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ k
     ∎
 \end{code}
@@ -2199,26 +2197,26 @@ Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{
 
 %TC:ignore
 \begin{code}
-  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≈ (suc x) ^ n
+  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≡ (suc x) ^ n
   proof x zero    = refl
   proof x (suc n) =
     begin
       1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-{- 4.1 -}  ≈⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
+{- 4.1 -}  ≡⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
       1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
              + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 4.2 -}  ≈⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+{- 4.2 -}  ≡⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
       + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 4.3 -}  ≈⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
+{- 4.3 -}  ≡⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
       x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
            (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 4.4 -}  ≈⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
+{- 4.4 -}  ≡⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
       x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
       1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 4.5 -}  ≈⟨ sym $ distribʳ _ x 1 ⟩
+{- 4.5 -}  ≡⟨ sym $ distribʳ _ x 1 ⟩
       (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 4.6 -}  ≈⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
+{- 4.6 -}  ≡⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
       (suc x) ^ (suc n)
     ∎
 \end{code}
@@ -2292,7 +2290,7 @@ Semirings contain many induced substructures. The structures we are interested i
 \end{code}
 %TC:endignore
 
-Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid on \AgdaDatatype{Carrier} and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the modules containing lemmas about ordinals, equational reasoning functionality in the element setoid (\AgdaModule{EqReasoning}) and the module for equational reasoning with propositional equality (\AgdaModule{≡-Reasoning}. In order to avoid name clashes, the functions \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎} are renamed to \AgdaFunction{start\_}, \AgdaFunction{\_≣⟨\_⟩\_} and \AgdaFunction{\_□}, respectively.
+Next, the equivalence relation \AgdaDatatype{\_≡\_} of the underlying setoid on \AgdaDatatype{Carrier} and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the modules containing lemmas about ordinals, equational reasoning functionality in the element setoid (\AgdaModule{EqReasoning}) and the module for equational reasoning with propositional equality (\AgdaModule{≡-Reasoning}. In order to avoid name clashes, the functions \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎} are renamed to \AgdaFunction{start\_}, \AgdaFunction{\_≣⟨\_⟩\_} and \AgdaFunction{\_□}, respectively.
 
 %TC:ignore
 \begin{code}
@@ -2307,7 +2305,7 @@ Next, the equivalence relation \AgdaDatatype{\_≈\_} of the underlying setoid o
 \end{code}
 %TC:endignore
 
-We define \AgdaDatatype{M} as a shorthand for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring. The pointwise lifting of the equivalence relation between elements is named \AgdaFunction{\_≋\_}. \AgdaDatatype{Matrix} and \AgdaDatatype{Pointwise} are defined in \cref{Impl-Matrices}.
+We define \AgdaDatatype{M} as a shorthand for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring. The pointwise lifting of the equivalence relation between elements is named \AgdaFunction{\_≋\_}. \AgdaDatatype{Matrix} and \AgdaDatatype{Pointwise} are defined in \cref{sc:Impl-Matrices}.
 
 %TC:ignore
 \begin{code}
@@ -2322,7 +2320,7 @@ We define \AgdaDatatype{M} as a shorthand for the type of square matrices of siz
 \end{code}
 %TC:endignore
 
-Next, we define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. The function \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element by applying that function to each position in the matrix. The definition of \AgdaFunction{tabulate} is given in \cref{Impl-Matrices}.
+Next, we define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. The function \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element by applying that function to each position in the matrix. The definition of \AgdaFunction{tabulate} is given in \cref{sc:Impl-Matrices}.
 
 %TC:ignore
 \begin{code}
