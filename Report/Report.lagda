@@ -1607,9 +1607,30 @@ A \enquote{semiring without one} consists of a commutative monoid over an operat
 &\text{\AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{a} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{a}}
 \end{align*}
 
+\subsection{Boolean algebra lemmas}
+
+The lemmas about big operators lifted from monoids, commutative monoids and semirings presented above were directly relevant to the theorems we aimed to prove (see \crefrange{ch:Gauss}{ch:Semi}). To demonstrate that our approach scales to more complex algebraic structures, we proved the big operator version of the de Morgan laws for arbitrary Boolean algebras. Two examples of Boolean algebras are: Booleans with the two operators logical \emph{and} and logical \emph{or}, and sets with intersection and union.
+
+In order to make the propositions and proofs more readable, we added two syntax definitions as synonyms for \AgdaFunction{fold} (see \cref{sc:Impl-Bigops}):
+
+\begin{gather*}
+\text{\AgdaKeyword{syntax} \AgdaSymbol{fold} \AgdaSymbol{(λ} \AgdaSymbol{x} \AgdaSymbol{→} \AgdaSymbol{e)} \AgdaSymbol{v} \AgdaSymbol{=} \AgdaSymbol{⋁[} \AgdaSymbol{x} \AgdaSymbol{←} \AgdaSymbol{v} \AgdaSymbol{]} \AgdaSymbol{e}} \\
+\text{\AgdaKeyword{syntax} \AgdaSymbol{fold} \AgdaSymbol{(λ} \AgdaSymbol{x} \AgdaSymbol{→} \AgdaSymbol{e)} \AgdaSymbol{v} \AgdaSymbol{=} \AgdaSymbol{⋀[} \AgdaSymbol{x} \AgdaSymbol{←} \AgdaSymbol{v} \AgdaSymbol{]} \AgdaSymbol{e}}
+\end{gather*}
+
+Using this notation, we proved that for any Boolean algebra the following variants of the de Morgan laws hold:
+\begin{align*}
+\text{(\AgdaFunction{deMorgan₁})}\qquad&\text{%\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{R}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaSymbol{:} \AgdaDatatype{List} \AgdaBound{I}\AgdaSymbol{)} \AgdaSymbol{→}%
+            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{x}} \\
+\text{(\AgdaFunction{deMorgan₂})}\qquad&\text{%\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{R}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaSymbol{:} \AgdaDatatype{List} \AgdaBound{I}\AgdaSymbol{)} \AgdaSymbol{→}%
+            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{i}}
+\end{align*}
+
+Boolean algebras provide a rich structure, and more interesting properties of this structure could be lifted into big operators. The point here is just to demonstrate that the framework we developed is very general, for example allowing us to write proofs concerning the interaction between two big operators lifted from the same algebraic structure.
+
 \section{\label{sc:Impl-Matrices}Matrices}
 
-In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first. This module is independent from the rest of the project.
+In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first (the Agda standard library currently lacks a matrix library). This module is independent from the rest of the project.
 
 %TC:ignore
 \AgdaHide{
