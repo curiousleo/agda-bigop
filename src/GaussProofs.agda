@@ -12,7 +12,6 @@ module GaussProofs where
   open import Relation.Nullary
   open import Relation.Binary.PropositionalEquality using (_≡_)
   import Relation.Binary.PropositionalEquality as P
-  import Relation.Binary.EqReasoning as EqR
 
   module GaussFormula where
 
@@ -89,7 +88,7 @@ module GaussProofs where
         0 … n + n ∥ odd ∷ʳ suc (n + n)
       ∎
 
-    proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≈ n * n
+    proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≡ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
