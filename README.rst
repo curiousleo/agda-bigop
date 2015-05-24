@@ -38,6 +38,7 @@ Usage
 =====
 
 ::
+
     open import Data.Nat.Base
 
     open import Bigop.Core.Fold +-monoid
