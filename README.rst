@@ -24,12 +24,12 @@ In order to use the library, a monoid or some structure that contains a monoid i
 
 Here is an overview of the imports required to get started:
 
-* ``Bigop.Core.Fold`` contains syntax definitions which allow you to write sums as ``Σ[ x ← xs ] x * x`` and iterated *and* as ``⋀[ x ← xs ] x ∨ y``. The syntax is just intended to make propositions and proofs easier to read; the syntax definitions are just synonyms. It is up to the user to pick a syntax that makes sense to use with the  monoid at hand.
+* *Bigop.Core.Fold* contains syntax definitions which allow you to write sums as ``Σ[ x ← xs ] x * x`` and iterated *and* as ``⋀[ x ← xs ] x ∨ y``. The syntax is just intended to make propositions and proofs easier to read; the syntax definitions are just synonyms. It is up to the user to pick a syntax that makes sense to use with the  monoid at hand.
 
-* ``Bigop.Properties.XXX`` provides lemmas about the algebraic structure XXX. Currently, lemmas exist for monoids (``Bigop.Properties.Monoid``), commutative monoids (``Bigop.Properties.CommutativeMonoid``), "semirings without one" (``Bigop.Properties.SemiringWithoutOne``) and Boolean algebras (``Bigop.Properties.BooleanAlgebra``). All modules take an appropriate algebraic structure as their argument. Stronger structures automatically inherit all lemmas from weaker structures---that is, all monoid lemmas are available via ``Bigop.Properties.CommutativeMonoid`` also.
+* *Bigop.Properties.XXX* provides lemmas about the algebraic structure XXX. Currently, lemmas exist for monoids (*Bigop.Properties.Monoid*), commutative monoids (*Bigop.Properties.CommutativeMonoid*), "semirings without one" (*Bigop.Properties.SemiringWithoutOne*) and Boolean algebras (*Bigop.Properties.BooleanAlgebra*). All modules take an appropriate algebraic structure as their argument. Stronger structures automatically inherit all lemmas from weaker structures---that is, all monoid lemmas are available via *Bigop.Properties.CommutativeMonoid* also.
 
   The recommended way to import those lemmas is, e.g. for a monoid called "+-monoid", ``module Σ = Bigop.Properties.Monoid +-monoid``. This avoid name clashes (the lemmas use common names like ``cong`` and ``map``).
 
-* ``Bigop.Interval.[Nat|Fin]`` is usually also required in order to generate lists to iterate over. Both export the infix operators ``_…_`` and ``_…<_`` which return an interval including and excluding the second argument, respectively. The functions defined in ``Bigop.Interval.Nat`` create lists of ℕs whereas ``Bigop.Interval.Fin`` creates Fin lists.
+* *Bigop.Interval.[Nat|Fin]* is usually also required in order to generate lists to iterate over. Both export the infix operators ``_…_`` and ``_…<_`` which return an interval including and excluding the second argument, respectively. The functions defined in *Bigop.Interval.Nat* create lists of ℕs whereas *Bigop.Interval.Fin* creates Fin lists.
 
-* ``Bigop.Filter`` provides the operator ``_∥_`` which filters lists. The notation works well together with the interval and big operator syntax.
+* *Bigop.Filter* provides the operator ``_∥_`` which filters lists. The notation works well together with the interval and big operator syntax.
