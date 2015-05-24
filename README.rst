@@ -15,8 +15,8 @@ The procedure for this library is the same: in order to use it, all you need to 
 
 .. _readme: https://github.com/agda/agda/blob/2.4.2.2/README.md
 
-Usage
-=====
+Overview
+========
 
 The project contains three proofs which make use of this library and serve as examples: ``GaussProofs.agda``, ``BinomialTheorem.agda`` and ``SemiringProof.agda``.
 
@@ -30,6 +30,26 @@ Here is an overview of the imports required to get started:
 
   The recommended way to import those lemmas is, e.g. for a monoid called "+-monoid", ``module Σ = Bigop.Properties.Monoid +-monoid``. This avoid name clashes (the lemmas use common names like ``cong`` and ``map``).
 
-* *Bigop.Interval.[Nat|Fin]* is usually also required in order to generate lists to iterate over. Both export the infix operators ``_…_`` and ``_…<_`` which return an interval including and excluding the second argument, respectively. The functions defined in *Bigop.Interval.Nat* create lists of ℕs whereas *Bigop.Interval.Fin* creates Fin lists.
+* *Bigop.Interval.[Nat|Fin]* is usually also required in order to generate lists to iterate over. Both export the infix operators ``_…_`` and ``_…<_`` which return an interval including and excluding the second argument, respectively. The functions defined in *Bigop.Interval.Nat* create lists of ℕs whereas *Bigop.Interval.Fin* creates Fin lists. *Bigop.Interval.Properties.[Nat|Fin]* contains lemmas about intervals created in this way.
 
-* *Bigop.Filter* provides the operator ``_∥_`` which filters lists. The notation works well together with the interval and big operator syntax.
+* *Bigop.Filter* provides the operator ``_∥_`` which filters lists. The notation is meant to work well together with the interval and big operator syntax. *Bigop.Filter.Properties* contains lemmas about filters. *Bigop.Filter.Predicates* defines the decidable predicates ``even`` and ``odd``.
+
+Usage
+=====
+
+::
+   open import Data.Nat.Base
+
+   open import Bigop.Core.Fold +-monoid
+   open import Bigop.Filter
+   open import Bigop.Filter.Predicates
+   open import Bigop.Interval.Nat
+
+   module Σ = Bigop.Properties.Monoid +-monoid
+
+   proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≡ n * n
+   proof zero    = refl
+   proof (suc n) = begin
+     Σ[ i ← 0 … suc n + suc n ∥ odd ] i ≡ n * n
+       ≡⟨ ? ⟩ -- use Σ.last
+     suc n * suc n ∎
