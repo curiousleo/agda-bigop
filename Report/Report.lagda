@@ -131,7 +131,7 @@ In this section, we describe how Agda users can write proofs in a style similar 
 
 \minisec{Agda, Coq and Isabelle}
 
-The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It shares its name and philosophy with the original implementation, but should for all intents and purposes be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the research institute where it was designed and implemented, INRIA\footnote{INRIA is the French \enquote{Institut national de recherche en informatique et en automatique}.}, was published in 1991 \autocite{dowek_coq_1991}.
+The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It shares its name and philosophy with the original implementation, but should for all intents and purposes be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the Institut national de recherche en informatique et en automatique (INRIA), the research institute where it was designed and implemented, was published in 1991 \autocite{dowek_coq_1991}.
 
 Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. We compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size} as a rough indicator of maturity.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
 
@@ -321,7 +321,7 @@ module Basics where
 
 This project was implemented in \emph{Agda}, a functional programming language with a dependent type system. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms. We will discuss what this means in XXX.
 
-The advantage of a dependently type language like Agda over non-dependently typed functional languages like Haskell \autocite{marlow_haskell_2010} or ML \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
+The advantage of a dependently type language like Agda over non-dependently typed functional languages like \emph{Haskell} \autocite{marlow_haskell_2010} or \emph{ML} \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
 
 We now introduce the syntax of Agda. The following Sections explain how Agda can be used to write theorems and check proofs.
 
@@ -1446,7 +1446,7 @@ We omit the definitions of those functions here. They are more involved than the
 
 Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than \AgdaBound{n}, we can tell from the types of the functions that their upper bounds are as expected.
 
-\section{Filters}
+\section{Filters\label{sc:Impl-Filters}}
 
 Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in XXX.
 
@@ -1537,7 +1537,7 @@ In addition, we prove \AgdaFunction{ordinals-filter} (see its type below). It st
 This lemma is used in the proof that the identity matrix really is the identity element of the semiring of square matrices (see XXX).
 
 
-\section{Properties of big operators}
+\section{Properties of big operators\label{sc:Impl-Bigop-Props}}
 
 In this Section, we discuss how the properties of the underlying operators \AgdaFunction{\_+\_} and \AgdaFunction{\_*\_} determine the properties of their induced big operators.
 
