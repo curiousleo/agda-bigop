@@ -77,7 +77,7 @@
 \setlength{\mathindent}{\parindent}
 \setlength{\bibitemsep}{.5\baselineskip}
 \setcounter{secnumdepth}{2}
-\urlstyle{same} % normal text font (alternatives: tt, rm, sf)
+\urlstyle{tt} % normal text font (alternatives: tt, rm, sf)
 \pagestyle{headings}
 \addtokomafont{pagehead}{\itshape}
 
