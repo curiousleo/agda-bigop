@@ -38,18 +38,18 @@ Usage
 =====
 
 ::
-   open import Data.Nat.Base
+    open import Data.Nat.Base
 
-   open import Bigop.Core.Fold +-monoid
-   open import Bigop.Filter
-   open import Bigop.Filter.Predicates
-   open import Bigop.Interval.Nat
+    open import Bigop.Core.Fold +-monoid
+    open import Bigop.Filter
+    open import Bigop.Filter.Predicates
+    open import Bigop.Interval.Nat
 
-   module Σ = Bigop.Properties.Monoid +-monoid
+    module Σ = Bigop.Properties.Monoid +-monoid
 
-   proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≡ n * n
-   proof zero    = refl
-   proof (suc n) = begin
-     Σ[ i ← 0 … suc n + suc n ∥ odd ] i ≡ n * n
-       ≡⟨ ? ⟩ -- use Σ.last
-     suc n * suc n ∎
+    proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≡ n * n
+    proof zero    = refl
+    proof (suc n) = begin
+      Σ[ i ← 0 … suc n + suc n ∥ odd ] i ≡ n * n
+        ≡⟨ ? ⟩ -- use Σ.last
+      suc n * suc n ∎
