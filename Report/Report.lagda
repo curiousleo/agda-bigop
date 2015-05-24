@@ -15,10 +15,11 @@
 \usepackage[]{unicode-math}
 
 \usepackage{pdfpages}
-\usepackage[all]{xy}
+\usepackage{tikz, tikz-qtree}
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{bussproofs}
+\usepackage{subcaption}
 \usepackage{csquotes}
 \usepackage[autocite=inline,citestyle=authoryear-comp,bibstyle=authoryear,
             dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
@@ -80,6 +81,8 @@
 \urlstyle{tt} % normal text font (alternatives: tt, rm, sf)
 \pagestyle{headings}
 \addtokomafont{pagehead}{\itshape}
+\captionsetup[subfigure]{labelformat=simple}
+    \renewcommand\thesubfigure{(\alph{subfigure})}
 
 \begin{document}
 \setmathfont{Asana-Math.otf}
@@ -1238,57 +1241,86 @@ module BigOps where
 
 In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator that is lifted into a big operator must possess an identity and associativity law.
 
--------------------
 
-Assuming that \AgdaBound{i} ranges over some finite collection of indices \(i_0, i_1, …, i_{n-1}, i_n\), the big operator expression \(\bigoplus_i f(i)\) is just an abbreviation for \[ f(i_0) ⊕ f(i_1) ⊕ ⋯ ⊕ f(i_{n-1}) ⊕ f(i_n) \]
-Without any further information about \(\_\!⊕\!\_\), this string of symbols represents a \emph{family} of expressions due to the lack of parentheses. Two members of that family can be written as expression trees as follows:
+\subsection{Representing indices as lists}
 
-\begin{equation*}
-\xymatrix{%
-& & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
-& & ⊕ \ar@{.}[dl] \ar@{-}[dr] & & f(i_n) \\
-& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & f(i_{n-1}) & \\
-f(i_0) & & f(i_1) & &
-}
-\end{equation*}
+Often in mathematical notation, the domain of a big operator expression is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable for the following reasons:
+
+\begin{itemize}
+\item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators lifted from non-commutative binary operators is not well-defined.
+
+As an example, consider some arbitrary operator \(\_⊕\_\). Then \(\bigoplus_{i ∈ \{a,b\}} i\) could evaluate to either \(a ⊕ b\) or \(b ⊕ a\) since \(\{a,b\} = \{b,a\}\). But if \(\_⊕\_\) is non-commutative with \(a ⊕ b ≠ b ⊕ a\), then the two results are not equal.
+
+Using lists to specify the domain of \(i\), the problem evaporates: \(\bigoplus_{i ← [a,b]} i\) evaluates to \(a ⊕ b\) only, so the result of the big operator expression is well-defined.
+
+\item Lists allow \emph{repetition}. In a set, every value is unique. Whether duplicate values are allowed does not matter only when the original binary operator is idempotent.
+
+Again considering some operator \(\_⊕\_\), it is simply impossible to write down a big operator expression that evaluates to \(a ⊕ a\) since \(\{a,a\} = \{a\}\) and thus \(\bigoplus_{i ∈ \{a,a\}} i = a\).
+
+With lists, we can write \(\bigoplus_{i ← [a,a]} i\).
+
+\item Lists are well supported in Agda and commonly used: the standard library contains over 2000 lines of auxiliary definitions and lemmas about lists.
+\end{itemize}
+
+\subsection{Monoid structure}
+
+In this Subsection we argue that a binary operator that is to be lifted into a well-defined big operator must at least possess an identity element and satisfy associativity.
+
+\minisec{Identity}
+
+The evaluation function for big operators, \AgdaFunction{fold} (defined in XXX), must be total like any other Agda function: it must accept any value in the domain of its argument types. For the list that the operator is being iterated over, one special value is \AgdaInductiveConstructor{[]}, the empty list.
+
+What should a big operator iterated over an empty collection of indices evaluate to? Considering the term \[\bigoplus_{i ← []} ⊕\;x\] we felt that whatever \(\_\!\!⊕\!\!\_\) stands for, the result of this expression should equal \(x\). Similarly, \[x ⊕ \bigoplus_{i ← []} = x\] should hold for any binary operator \(\_\!\!⊕\!\!\_\). These two equations are exactly the left- and right-identity laws.
+
+In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires each binary operator that is to be lifted into a big operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty.
 
 
-\begin{equation*}
-\xymatrix{%
-& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & & & \\
-f(i_0) & & ⊕ \ar@{-}[dl] \ar@{.}[dr] & & & \\
-& f(i_1) & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & & \\
-& & f(i_{n-1}) & & f(i_n) &
-}
-\end{equation*}
+\minisec{Associativity}
 
-If \(\_\!\!⊕\!\!\_\) is associative, then all interpretations of the string of symbols representing the expanded big operator evaluate to the same value.
+Assuming that \AgdaBound{i} ranges over some non-empty list of indices \(i_0, i_1, …, i_{n-1}, i_n\), the big operator expression \(\bigoplus_i f(i)\) is just an abbreviation for \[ f(i_0) ⊕ f(i_1) ⊕ ⋯ ⊕ f(i_{n-1}) ⊕ f(i_n) \]
+Without any further information about \(\_\!⊕\!\_\), this string of symbols represents a \emph{family} of expressions due to the lack of parentheses. Two members of that family are the left and right fold:
+\begin{align*}
+(⋯(f(i₀) ⊕ f(i₁)) ⋯ ⊕ f(i_{n-1})) ⊕ f(i_n) && \text{(left fold)} \\
+f(i₀) ⊕ (f(i₁) ⊕ ⋯ (f(i_{n-1} ⊕ f(i_n)))⋯) && \text{(right fold)}
+\end{align*}
 
-\begin{equation*}
-\xymatrix{%
-& & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
-& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & z \\
-x & & y &
-}
-\end{equation*}
+The expression tree notation clearly shows the difference between the two folds (left fold on the left, right fold on the right):
 
-==
+\vspace{.15cm}
+%\begin{figure}[hb]
+%\begin{subfigure}[b]{.5\linewidth}
+%  \begin{center}
+\begin{minipage}{1\linewidth}
+  \begin{minipage}{.5\linewidth}
+    \centering
+    \Tree [.\(⊕\) [ .\(⊕\) \edge[dashed]; [.\(⊕\) \(f(i₀)\) \(f(i₁)\) ] \(f(i_{n-1})\) ] \(f(i_n)\) ]
+  \end{minipage}
+  \begin{minipage}{.5\linewidth}
+%  \end{center}
+%  \label{fig:left-fold}
+%  \caption{Left fold}
+%\end{subfigure}
+%\begin{subfigure}[b]{.5\linewidth}
+%  \begin{center}
+    \centering
+    \Tree [.\(⊕\) \(f(i₀)\) [ .\(⊕\) \(f(i₁)\) \edge[dashed]; [.\(⊕\) \(f(i_{n-1})\) \(f(i_n)\) ] ] ]
+  \end{minipage}
+\end{minipage}
+%  \end{center}
+%  \label{fig:right-fold}
+%  \caption{Right fold}
+%\end{subfigure}
+%\caption{Comparison between the expression trees representing a left fold \((((f(i₀) ⊕ f(i₁)) ⊕ ⋯) ⊕ f(i_{n-1})) ⊕ f(i_n)\) and a right fold \(f(i₀) ⊕ (f(i₁) ⊕ ⋯ (f(i_{n-1} ⊕ f(i_n))))\)}
+%\label{fg:Folds}
+%\end{figure}
+\vspace{.1cm}
 
-\begin{equation*}
-\xymatrix{%
-& ⊕ \ar@{-}[dl] \ar@{-}[dr] & & \\
-x & & ⊕ \ar@{-}[dl] \ar@{-}[dr] & \\
-& y & & z
-}
-\end{equation*}
-
+In order to actually compute the expression, we must decide on an order in which to add the terms. Unfortunately, the result of evaluating the left and right fold may differ. Our solution to this problem is to require \(\_\!\!⊕\!\!\_\) to be an associative operation:
+in this case, all interpretations of the string of symbols representing the expanded big operator evaluate to the same value.
 Note that this does not resolve the ambiguity of which expression tree the string represents---it just means that any expression tree in which all elements appear in the same left-to-right order compute the same value, and are therefore propositionally equal as terms.
 
 
-
--------------------
-
-\minisec{Crushing monoids}
+\subsection{Implementing big operators}
 
 Recall from XXX the definition of a monoid in Agda:
 
@@ -1334,7 +1366,7 @@ Using the carrier type, the monoid's binary operator and identity element, we ca
 \end{code}
 %TC:endignore
 
-So \AgdaFunction{crush} is just an application of \AgdaFunction{foldr}, a right-fold over lists containing elements of the carrier type. This function returns its second argument if the list passed to it is empty; otherwise it combines the list elements using its first argument, a binary operator. The type of \AgdaFunction{foldr} specialised to our use case is:
+\AgdaFunction{crush} \AgdaBound{xs} defined over \AgdaFunction{\_⊕\_} computes \(\bigoplus_{x ← xs} x\). The function itself is just an application of \AgdaFunction{foldr}, a right-fold over lists containing elements of the carrier type (as discussed in XXX, the choice of fold is arbitrary here since the operator is associative: we could just as well have defined \AgdaFunction{crush} in terms of the left-fold function \AgdaFunction{foldl}). \AgdaFunction{foldr} returns its second argument (\AgdaFunction{ε} in this case) if the list passed to it is empty; otherwise it combines the list elements using its first argument, a binary operator (\AgdaFunction{\_∙\_}). The type of \AgdaFunction{foldr} specialised to our use case is:
 \[\text{\AgdaFunction{foldr}}\;\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier} \AgdaSymbol{→} \AgdaBound{Carrier}}\]
 
 We can now define the function \AgdaFunction{fold} which evaluates a big operator expression. It first applies a function \AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier} to each element of an index list using the function \AgdaFunction{map} defined in the standard library:
@@ -1374,26 +1406,6 @@ In the last step, we are allowed to drop the parentheses because \AgdaFunction{\
 \quad&\equiv\quad \text{\AgdaFunction{crush} \AgdaInductiveConstructor{[]}} \\
 \quad&\equiv\quad \text{\AgdaFunction{ε}}
 \end{align*}
-
-\minisec{Representing indices as lists}
-
-Often in mathematical notation, the domain of a big operator expression is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable for the following reasons:
-
-\begin{itemize}
-\item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators lifted from non-commutative binary operators is not well-defined.
-
-As an example, consider some arbitrary operator \(\_⊙\_\). Then \(\bigodot_{i ∈ \{a,b\}} i\) could evaluate to either \(a ⊙ b\) or \(b ⊙ a\) since \(\{a,b\} = \{b,a\}\). But if \(\_⊙\_\) is non-commutative with \(a ⊙ b ≠ b ⊙ a\), then the two results are not equal.
-
-Using lists to specify the domain of \(i\), the problem evaporates: \(\bigodot_{i ← [a,b]} i\) evaluates to \(a ⊙ b\) only, so the result of the big operator expression is well-defined.
-
-\item Lists allow \emph{repetition}. In a set, every value is unique. Whether duplicate values are allowed does not matter only when the original binary operator is idempotent.
-
-Again considering some operator \(\_⊙\_\), it is simply impossible to write down a big operator expression that evaluates to \(a ⊙ a\) since \(\{a,a\} = \{a\}\) and thus \(\bigodot_{i ∈ \{a,a\}} i = a\).
-
-With lists, we can write \(\bigodot_{i ← [a,a]} i\).
-
-\item Lists are well supported in Agda and commonly used: the standard library contains over 2000 lines of auxiliary definitions and lemmas about lists.
-\end{itemize}
 
 
 \section{Intervals\label{sc:Impl-Intervals}}
