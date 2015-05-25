@@ -18,6 +18,7 @@
 \usepackage{tikz, tikz-qtree}
 \usepackage{microtype}
 \usepackage{booktabs}
+\usepackage{verbatim}
 \usepackage{bussproofs}
 \usepackage{subcaption}
 \usepackage{csquotes}
@@ -55,6 +56,8 @@
 \newunicodechar{∙}{\ensuremath{∙}}
 \newunicodechar{ε}{\ensuremath{ε}}
 \newunicodechar{Σ}{\ensuremath{Σ}}
+\newunicodechar{⋀}{\ensuremath{⋀}}
+\newunicodechar{⋃}{\ensuremath{⋃}}
 \newunicodechar{…}{\ensuremath{…}}
 \newunicodechar{∥}{\ensuremath{∥}}
 \newunicodechar{□}{\ensuremath{□}}
