@@ -84,8 +84,6 @@
 \urlstyle{tt} % normal text font (alternatives: tt, rm, sf)
 \pagestyle{headings}
 \addtokomafont{pagehead}{\itshape}
-\captionsetup[subfigure]{labelformat=simple}
-    \renewcommand\thesubfigure{(\alph{subfigure})}
 
 \begin{document}
 \setmathfont{Asana-Math.otf}
