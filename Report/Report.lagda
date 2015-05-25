@@ -1190,7 +1190,7 @@ In addition, a module formalising \textbf{matrices} has been written as part of 
 For an overview of the directory structure and source code files, see \cref{fig:structure}.
 
 
-\section{Design}
+\section{Design\label{sc:Design}}
 
 Our goal in this project was to produce an Agda library for reasoning about big operators. We aimed to provide definitions and lemmas that abstracted over the particular operator being iterated. In several prototypes, we explored the design space for such a library. Three related questions had to be answered:
 
@@ -2986,23 +2986,44 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
 
 \section{Previous work}
 
-\minisec{Isabelle: \texttt{Set\_Interval.thy}}
+In this section, we relate our project to previous implementations of big operators in the proof assistants Isabelle and Coq.
 
-The \texttt{Set\_Interval} module (or \emph{theory}) provides big operator notation for sums, products and unions. Other theories in the \texttt{HOL} (Higher-order logic) package define more big operators. There are two major conceptual differences between the library developed in this project and those Isabelle modules.
+\subsection{Isabelle: List.thy and Groups\_Big.thy}
 
-Firstly, the Isabelle theories deal with index \emph{sets} rather than lists. In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see XXX), we would argue that defining big operators over lists rather than sets is the more flexible approach.
+Isabelle's higher-order logic (HOL) library contains two definitions related to big operators.
 
-The second major difference is that the syntax definitions for big operators in \texttt{Set\_Interval} are only general insofar as the binary operators that are used to define them are polymorphic. There is no mechanism for supplying your own algebraic structure.
+\begin{itemize}
+\item The module \texttt{Groups\_Big} defines a Sigma-notation for big operators. Here, sets represent the collection of indices, and the underlying structure is assumed to be a commutative monoid (see \cref{sc:Design} for how the representation of the index domain and the algebraic structure are related).
+\item The \texttt{List} theory defines a function \texttt{listsum}, which exactly corresponds to the function \AgdaFunction{crush} defined in \cref{ssc:Implementing}: given a monoid, it performs a right-fold over the list, combining elements using the monoid's operator. If the list is empty, the identity element of the monoid is returned. No syntax definitions for \texttt{listsum} is provided.
+\end{itemize}
 
-\minisec{Coq: \texttt{bigop.v}}
+In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see \cref{ssc:as-lists}), we would argue that defining big operators over lists rather than sets is the more flexible approach.
 
-The approach taken in Coq's \texttt{bigop} module, which is part of the Mathematical Components library (and formerly of SSReflect), provided much inspiration for this project. The idea to define big operators abstractly in terms of a map over a list followed by a fold comes from here. The \texttt{bigop} module is depends on many other modules from the Mathematical Components library.
+\subsection{Coq: bigop.v}
+
+The approach taken in Coq's \texttt{bigop} module,%
+\footnote{A clickable version of the source code for the \texttt{bigop} module can be accessed via \url{http://ssr.msr-inria.inria.fr/doc/mathcomp-1.5/MathComp.bigop.html}.} %
+which is part of the Mathematical Components library (and formerly of SSReflect), provided much inspiration for this project.%
+\footnote{The source code and documentation of both SSReflect and the Mathematical Components library for Coq can be found here: \url{http://ssr.msr-inria.inria.fr/}.} %
+Internally, the library works in a very similar way to ours: \AgdaFunction{fold} (defined in \cref{ssc:Implementing}) is equivalent to \texttt{reducebig}, which evaluates big operators in \texttt{bigop}. One big difference is that there is no restriction on the underlying structure---\texttt{reducebig} does not require a monoid.
+
+Lemmas, on the other hand, are structured in a similar way to our project: sections of the module assume certain properties of the underlying structure, and prove lemmas about big operators based on those assumptions.
+
+The \texttt{bigop} module is more comprehensive than our library. It provides a lot of flexibility in terms of notation, and allows users to define big operators over sets, finite types and enumerable predicates (all of which are converted to lists internally).
 
 \section{Future work}
 
-Include more structures (groups, lattices, …)
+We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
-Proof by reflection?
+In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
+
+\[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 0 \]
+
+It would be interesting to see what other properties can be lifted from different underlying algebraic structures.
+
+A different but related idea would be to attempt to write a solver for big operators over some algebraic structure. Agda's standard library already contains solvers for monoids (\AgdaModule{Algebra.Monoid-solver}) and rings (\AgdaModule{Algebra.RingSolver}).%
+\footnote{Eric Mertens wrote a number of solvers for different algebraic structures in Agda, available here: \url{https://github.com/glguy/my-agda-lib/tree/master/Algebra}.} %
+The challenge here would be to find a normal form for complex big operator expressions to reduce to.
 
 \appendix
 
