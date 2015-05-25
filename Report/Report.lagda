@@ -2998,6 +2998,61 @@ The second major difference is that the syntax definitions for big operators in 
 
 The approach taken in Coq's \texttt{bigop} module, which is part of the Mathematical Components library (and formerly of SSReflect), provided much inspiration for this project. The idea to define big operators abstractly in terms of a map over a list followed by a fold comes from here. The \texttt{bigop} module is depends on many other modules from the Mathematical Components library.
 
+\section{Future work}
+
+Include more structures (groups, lattices, …)
+
+Proof by reflection?
+
+\appendix
+
 \printbibliography
+
+\chapter{Source code structure}
+
+\begin{figure}[h!]
+\begin{verbatim}
+src/
+├── Bigop.agda                           19
+├── Bigop
+│   ├── Core.agda                        35
+│   ├── Core
+│   │   └── Properties.agda              14
+│   ├── Properties
+│   │   ├── BooleanAlgebra.agda          45
+│   │   ├── CommutativeMonoid.agda       92
+│   │   ├── Monoid.agda                  87
+│   │   └── SemiringWithoutOne.agda      30
+│   │
+│   ├── DecidableEquality.agda           29
+│   ├── Filter.agda                      14
+│   ├── Filter
+│   │   ├── PredicateReasoning.agda      23
+│   │   ├── Predicates.agda              40
+│   │   └── Properties.agda              89
+│   │
+│   └── Interval
+│       ├── Fin.agda                     23
+│       ├── Nat.agda                     12
+│       └── Properties
+│           ├── Fin.agda                 63
+│           └── Nat.agda                 69
+│
+├── Matrix.agda                          59
+│
+├── GaussProofs.agda                     89
+├── BinomialTheorem.agda                114
+└── SemiringProof.agda                  371
+\end{verbatim}
+\caption{Agda source files and lines of code}
+\label{fig:structure}
+\end{figure}
+
+
+\chapter{User's guide}
+
+%\verbatiminput{../README.rst}
+
+\chapter{Contributor's guide}
 
 \end{document}
