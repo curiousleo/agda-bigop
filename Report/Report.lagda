@@ -1231,24 +1231,25 @@ The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relat
 
 \item[Semirings \enquote{without one}.] \AgdaDatatype{SemiringWithoutOne} is a structure almost like a semiring, except that it does not have a multiplicative identity. Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\_*\_} and a special element \AgdaField{0\#}.% which is simultaneously an identity for \AgdaField{\_+\_} and a zero for \AgdaField{\_*\_}.
 
-We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \crefrange{ch:Gauss}{ch:Binom}. It was one goal of this project to always assume only what is really needed.
+We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \crefrange{ch:Gauss}{ch:Semi}. It was one goal of this project to always assume only what is really needed.
 
 \AgdaDatatype{IsSemiringWithoutOne} specifies that \AgdaField{\_+\_} forms a commutative monoid with \AgdaField{0\#} as its identity elements, \AgdaField{\_*\_} forms a semigroup, \AgdaField{0\#} is a zero for \AgdaField{\_*\_} and \AgdaField{\_*\_} distributes over \AgdaField{\_+\_}.
 
 \end{description}
 
-The Agda standard library defines algebraic structures in addition to the ones presented above. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
+% The Agda standard library defines algebraic structures in addition to the ones presented above. Because of its intended use in formalising algebraic path problems, the focus of this project was on semirings.
 
 \chapter{Implementation\label{ch:Impl}}
 
-In this Chapter we discuss the design and implementation of our big operator library. The library consists of three mostly independent parts which combined together allow for a large number of proofs involving big operators to be written in Agda. Taking apart the example from the introduction (\cref{eq:Intro-Example}), we will see how the expression
+In this Chapter we discuss the design and implementation of our big operator library.
+Our library formalises three independent concepts: big operators as defined in \cref{sc:Conventions}, intervals of natural numbers, and filters. In combination, they allow for a large number of proofs involving big operators to be written in Agda. Taking apart the example from the introduction (\cref{eq:Intro-Example}), we will see how the expression
 \[
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \] is assembled from the syntax definition for big operators (\AgdaFunction{Σ[\_←\_]\_}), intervals (\AgdaFunction{\_…\_}) and filters (\AgdaFunction{\_∥\_}):
 
 
 \begin{description}
-\item[Big operators.] \AgdaModule{Bigop.Core} defines an evaluation function and syntax for big operators. The submodules of \AgdaModule{Bigop.Properties} contain lemmas about big operators lifted from different algebraic structures such as monoids and semirings.
+\item[Big operators.] The module \AgdaModule{Bigop.Core} defines an evaluation function and syntax for big operators. The submodules of \AgdaModule{Bigop.Properties} contain lemmas about big operators on different algebraic structures such as monoids and semirings.
 \item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
@@ -1262,7 +1263,7 @@ For an overview of the directory structure and source code files, see \cref{fig:
 Our goal in this project was to produce an Agda library for reasoning about big operators. We aimed to provide definitions and lemmas that abstracted over the particular operator being iterated. In several prototypes, we explored the design space for such a library. Three related questions had to be answered:
 
 \begin{itemize}
-\item What is the weakest algebraic structure that can sensibly be lifted into a big operator?
+\item What is the weakest algebraic structure that we can sensibly define a big operator on?
 \item How should the domain of indices be represented?
 \item How should a big operator expression be represented?
 \end{itemize}
@@ -1287,7 +1288,7 @@ module BigOps where
 %TC:endignore
 }
 
-In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator that is lifted into a big operator must possess an identity and associativity law.
+In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator must possess an identity and associativity law.
 
 
 \subsection{Representing indices as lists\label{ssc:as-lists}}
@@ -1295,7 +1296,7 @@ In this Section, we will see how big operators are evaluated using the \AgdaModu
 Often in mathematical notation, the domain of a big operator expression is written using set notation. For this project, we decided to use lists instead for specifying the domain of a variable for the following reasons:
 
 \begin{itemize}
-\item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators lifted from non-commutative binary operators is not well-defined.
+\item Lists are \emph{ordered}. With unordered sets, the evaluation of big operators on non-commutative binary operators is not well-defined.
 
 As an example, consider some arbitrary operator \(\_⊕\_\). Then \(\bigoplus_{i ∈ \{a,b\}} i\) could evaluate to either \(a ⊕ b\) or \(b ⊕ a\) since \(\{a,b\} = \{b,a\}\). But if \(\_⊕\_\) is non-commutative with \(a ⊕ b ≠ b ⊕ a\), then the two results are not equal.
 
@@ -1312,7 +1313,7 @@ With lists, we can write \(\bigoplus_{i ← [a,a]} i\).
 
 \subsection{Monoid structure\label{ssc:Monoid-structure}}
 
-In this Subsection we argue that a binary operator that is to be lifted into a well-defined big operator must at least possess an identity element and satisfy associativity.
+In this Subsection we argue that a binary operator used to build a well-defined big operator must at least possess an identity element and satisfy associativity.
 
 \minisec{Identity}
 
@@ -1320,7 +1321,7 @@ The evaluation function for big operators, \AgdaFunction{fold} (defined in \cref
 
 What should a big operator iterated over an empty collection of indices evaluate to? Considering the term \[\bigoplus_{i ← []} ⊕\;x\] we felt that whatever \(\_\!\!⊕\!\!\_\) stands for, the result of this expression should equal \(x\). Similarly, \[x ⊕ \bigoplus_{i ← []} = x\] should hold for any binary operator \(\_\!\!⊕\!\!\_\). These two equations are exactly the left- and right-identity laws.
 
-In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires each binary operator that is to be lifted into a big operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty.
+In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires the binary operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty.
 
 
 \minisec{Associativity}
@@ -1612,7 +1613,7 @@ For convenience, \AgdaModule{Bigop.Properties.CommutativeMonoid} re-exports all 
 
 \subsection{Monoid lemmas\label{ssc:Monoid-lemmas}}
 
-Monoids are endowed with an identity and an associativity law. Based on these two properties, there are a few things we can say about what happens when the monoid's binary operator is lifted into a big operator.
+Monoids are endowed with an identity and an associativity law. Based on these two properties, there are a few things we can say about what happens when a big operator is defined on a monoid.
 
 \begin{description}
 \item[Lifted identity.]
@@ -1636,7 +1637,7 @@ It follows from the monoid associativity law that big operators distribute over 
 
 \subsection{Commutative monoid lemmas}
 
-If the binary operation \AgdaFunction{\_+\_} is commutative as well as associative, the big operator lifted from it has more properties that we can use in proofs.
+If the binary operation \AgdaFunction{\_+\_} is commutative as well as associative, the big operator defined on it has more properties that we can use in proofs.
 
 \begin{description}
 \item[Distributivity over \AgdaFunction{\_+\_}.] Combining associativity and distributivity of \AgdaFunction{\_+\_}, we can show that big operators distribute as follows:
@@ -1670,7 +1671,7 @@ A \enquote{semiring without one} consists of a commutative monoid over an operat
 
 \subsection{Boolean algebra lemmas}
 
-The lemmas about big operators lifted from monoids, commutative monoids and semirings presented above were directly relevant to the theorems we aimed to prove (see \crefrange{ch:Gauss}{ch:Semi}). To demonstrate that our approach scales to more complex algebraic structures, we proved the big operator version of the de Morgan laws for arbitrary Boolean algebras. Two examples of Boolean algebras are: Booleans with the two operators logical \emph{and} and logical \emph{or}, and sets with intersection and union.
+The lemmas about big operators on monoids, commutative monoids and semirings presented above were directly relevant to the theorems we aimed to prove (see \crefrange{ch:Gauss}{ch:Semi}). To demonstrate that our approach scales to more complex algebraic structures, we proved the big operator version of the de Morgan laws for arbitrary Boolean algebras. Two examples of Boolean algebras are: Booleans with the two operators logical \emph{and} and logical \emph{or}, and sets with intersection and union.
 
 In order to make the propositions and proofs more readable, we added two syntax definitions as synonyms for \AgdaFunction{fold} (see \cref{sc:Impl-Bigops}):
 \begin{gather*}
@@ -1686,7 +1687,7 @@ Using this notation, we proved that for any Boolean algebra the following varian
             \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{i}}
 \end{align*}
 
-Boolean algebras provide a rich structure, and more interesting properties of this structure could be lifted into big operators. The point here is just to demonstrate that the framework we developed is very general, for example allowing us to write proofs concerning the interaction between two big operators lifted from the same algebraic structure.
+Boolean algebras provide a rich structure, and more interesting properties of this structure could be lifted into lemmas about their big operators. The point here is just to demonstrate that the framework we developed is very general, for example allowing us to write proofs concerning the interaction between two big operators defined on the same algebraic structure.
 
 \section{\label{sc:Impl-Matrices}Matrices}
 
