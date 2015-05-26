@@ -1313,7 +1313,7 @@ In this Subsection we argue that a binary operator used to build a well-defined 
 
 The evaluation function for big operators, \AgdaFunction{fold} (defined in \cref{ssc:Implementing}), must be total like any other Agda function: it must accept any value in the domain of its argument types. For the list that the operator is being iterated over, one special value is \AgdaInductiveConstructor{[]}, the empty list.
 
-What should a big operator iterated over an empty collection of indices evaluate to? Considering the term \[\bigoplus_{i ← []} ⊕\;x\] we felt that whatever \(\_\!\!⊕\!\!\_\) stands for, the result of this expression should equal \(x\). Similarly, \[x ⊕ \bigoplus_{i ← []} = x\] should hold for any binary operator \(\_\!\!⊕\!\!\_\). These two equations are exactly the left- and right-identity laws.
+What should a big operator iterated over an empty collection of indices evaluate to? Considering the term \[\bigoplus_{i ← []} f(i) ⊕ x\] we felt that whatever \(\_\!\!⊕\!\!\_\) stands for, the result of this expression should equal \(x\). Similarly, \[x ⊕ \bigoplus_{i ← []} f(i) = x\] should hold for any binary operator \(\_\!\!⊕\!\!\_\). These two equations are exactly the left- and right-identity laws.
 
 In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires the binary operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty.
 
