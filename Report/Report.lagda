@@ -172,7 +172,7 @@ The Agda code and module structure of the implementation follows the same conven
 
 %We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
 
-\section{Conventions and nomenclature}
+\section{Conventions and nomenclature\label{sc:Conventions}}
 
 We need to get two things out of the way before getting into the report: a definition of what exactly constitutes \enquote{big operator}, and what the colours in the Agda code listings stand for.
 
