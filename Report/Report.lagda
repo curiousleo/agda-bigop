@@ -234,6 +234,7 @@ Partly as a consequence of its young age, Agda's standard library is much smalle
 \label{tb:Size}
 \end{table}
 
+Among the things that make Agda stand out are mutually recursive datatype and function definitions (\emph{induction-recursion}, not supported by Coq), a more experimental and open development model compared to other proof assistants---copatterns, for example, were first implemented in Agda \parencite{abel_wellfounded_2013}, flexible syntax and a \enquote{less is more} philosophy of providing a small kernel with everything else taken care of by libraries: even the \texttt{if … then … else …} construct is defined in a library.
 
 \subsection{Equational reasoning}
 
