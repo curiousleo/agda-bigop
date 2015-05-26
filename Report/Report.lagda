@@ -346,22 +346,24 @@ That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \Agda
     p * (q * r)  ≡⟨ cong₂ _*_ (refl {x = p}) (*-comm q r) ⟩
     p * (r * q)  ∎
 \end{code}
-
 This example demonstrates that the combination of equational reasoning and proof-by-refinement simplifies the process of translating handwritten proofs into formal proofs: we first write down the steps by which the left-hand side of the equation transforms into its right-hand side, and then provide justification for each individual step.
 
 We now look at combining equational reasoning and automated proof search in Agda.
 
 \subsection{Automated proof search}
 
-Agsy \autocite{foster_integrating_2011} is a theorem prover for Agda. Given a proposition, it attempts to automatically construct a proof that it holds. This may fail, either because the proposition does not hold or because the proof search times out before a proof was found. Agsy is integrated into the interactive editing mode, and already very useful. Still, it must be said that Coq's and Isabelle's automation facilities are far more sophisticated than Agda's at this time.
+Agsy \autocite{foster_integrating_2011} is a theorem prover for Agda.
+Given a conjecture, it attempts to automatically construct a proof that it holds using all the proofs in the local context.%
+\footnote{In fact, Agsy takes a \emph{type} and tries to construct a \emph{term} that inhabits it. We discuss this relation between types and proofs in \cref{ch:Background}.} %
+This may fail, either because the conjecture does not hold or because the proof search times out before a proof was found. Agsy is integrated into the interactive editing mode for Agda.%, and already very useful. Still, it must be said that Coq's and Isabelle's automation facilities are far more sophisticated than Agda's at this time.
 
-The fewer lemmas required to prove a proposition the likelier it is for Agsy to be able to construct a proof for it. By breaking down a proof into small steps, we thereby increase the usefulness of Agsy. In fact, both intermediate steps in the proof discussed above can be discharged automatically by Agsy if we provide it with the hints \AgdaFunction{*-assoc} and \AgdaFunction{*-comm}, respectively---essentially we intuit that the first step has something to do with associativity and the second step probably involves an application of commutativity, and let Agsy figure out the details. This combination of human intuition and automated proof search can, with a little experience, lead to rapid proof development.
+The fewer lemmas required to prove a conjecture the likelier it is for Agsy to be able to construct a proof for it. By breaking down a proof into small steps, we thereby increase the usefulness of Agsy. In fact, both intermediate steps in the proof discussed above can be discharged automatically by Agsy if we provide it with the hints \AgdaFunction{*-assoc} and \AgdaFunction{*-comm}, respectively---essentially we intuit that the first step has something to do with associativity and the second step probably involves an application of commutativity, and let Agsy figure out the details. This combination of human intuition and automated proof search can, with a little experience, lead to rapid proof development.
 
 \subsection{Big operators}
 
-How does our library fit into this picture? Big operator libraries have been implemented for Isabelle and Coq, but not for Agda. Our goal was to enable Agda users to express definitions and propositions and prove theorems involving big operators using.
+How does our library fit into this picture? Big operator libraries have been implemented for Isabelle and Coq, but not for Agda. Our goal was to enable Agda users to express definitions and propositions and prove theorems involving big operators.
 
-As a simple example of what our big operator library permits, consider the odd Gauss formula. In standard mathematical notation, the can be written as follows:
+As a simple example of what our big operator library permits, consider the \enquote{odd Gauss formula}. In standard mathematical notation, can be written as follows:
 \[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
 
 Using the syntax definitions for sums, intervals and filters implemented in our project (see \cref{ch:Impl}), it can be expressed in Agda as
