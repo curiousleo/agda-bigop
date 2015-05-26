@@ -135,13 +135,6 @@ Work completed.
 None.
 
 \newpage
-
-
-
-
-\chapter*{Acknowledgements}
-\label{ch:acknowledgements}
-
 \tableofcontents
 
 \chapter{Introduction\label{ch:Intro}}
