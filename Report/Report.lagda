@@ -17,6 +17,7 @@
 \usepackage{pdfpages}
 \usepackage{tikz, tikz-qtree}
 \usepackage{microtype}
+\usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{verbatim}
 \usepackage{bussproofs}
@@ -90,11 +91,60 @@
 
 \includepdf{Cover.pdf}
 
-% \begin{titlepage}
-% \maketitle
-% \end{titlepage}
+\pagenumbering{roman}
+
+\chapter*{Proforma}
+\label{ch:proforma}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.5}%
+\begin{tabularx}{419pt}{rX}
+\textbf{Name and College} & Leonhard Markert, Emmanuel College \\
+\textbf{Project Title} & Big operators in Agda \\
+\textbf{Examination} & Computer Science Tripos, Part \textsc{iii} (June 2015) \\
+\textbf{Word Count} & XXX words \\
+\textbf{Project Originator} & Timothy Griffin, Dominic Mulligan and Leonhard Markert \\
+\textbf{Project Supervisors} & Timothy Griffin and Dominic Mulligan
+\end{tabularx}}
+\end{center}
+
+\section*{Declaration of Originality}
+\label{sc:declaration-of-originality}
+
+I, Leonhard Markert of Emmanuel College, being a candidate for Part~\textsc{iii} of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose.
+
+\vspace{0.3in}
+Signed
+
+\vspace{0.2in}
+Date \hspace{0.4in} \today
+
+\section*{Original aims of the project}
+\label{sc:original-aims}
+
+Original aims.
+
+\section*{Work completed}
+\label{sc:work-completed}
+
+Work completed.
+
+\section*{Special Difficulties}
+\label{sc:special-difficulties}
+
+None.
+
+\newpage
+
+
+
+
+\chapter*{Acknowledgements}
+\label{ch:acknowledgements}
 
 \tableofcontents
+
+\chapter{Introduction\label{ch:Intro}}
 
 %TC:ignore
 \AgdaHide{
@@ -104,7 +154,7 @@ module Report where
 %TC:endignore
 }
 
-\chapter{Introduction\label{ch:Intro}}
+\pagenumbering{arabic}
 
 \section{Aims and contributions}
 
