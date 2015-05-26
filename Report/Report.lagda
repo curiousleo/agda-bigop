@@ -172,6 +172,44 @@ The Agda code and module structure of the implementation follows the same conven
 
 %We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
 
+\section{Conventions and nomenclature}
+
+We need to get two things out of the way before getting into the report: a definition of what exactly constitutes \enquote{big operator}, and what the colours in the Agda code listings stand for.
+
+\minisec{Big operators}
+
+For the purposes of this report, a \emph{big operator} is defined by
+
+\begin{itemize}
+\item an \emph{underlying structure} at least containing a \emph{carrier} set (or type), an associative binary operator \(\_\!\!⊕\!\!\_\) and an identity element \(ε\);
+\item a list of indices \textit{is}; and
+\item a function \(f\) from the type of indices into the carrier.
+\end{itemize}
+
+The reasons for choosing this particular representation are discussed in \cref{sc:Impl-Bigops}. We will write the big operator corresponding to the structure described above as \[ \bigoplus_{i ← \textit{is}} f(i) \] Here \(i ← \textit{is}\) indicates that \(i\) ranges over \textit{is}, the list of indices.
+
+\minisec{Code listings}
+
+This report contains Agda code listings. Syntax highlighting is used to make them easier to read. \Cref{tb:Colours} lists the different syntactic categories and how they are typeset in this report.%
+\footnote{In fact, this report is a \emph{literal Agda file}, which means that every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l}
+%\toprule
+\emph{Notation} & \emph{Role} \\
+\midrule
+\AgdaInductiveConstructor{refl}\quad \AgdaInductiveConstructor{[]}\quad \AgdaInductiveConstructor{\_∷\_} & Datatype constructors \\
+\AgdaDatatype{List}\quad \AgdaDatatype{\_≡\_}\quad \AgdaDatatype{Pred} & Datatype names \\
+\AgdaFunction{fold}\quad \AgdaFunction{*-comm}\quad \AgdaFunction{∙-cong} & Functions \\
+\AgdaBound{x}\quad \AgdaBound{ys}\quad \AgdaBound{A}\quad \AgdaBound{f} & Bound variables \\
+  \AgdaKeyword{open}\quad \AgdaKeyword{with}\quad \AgdaKeyword{where} & Reserved keywords \\
+\bottomrule
+\end{tabular}
+\caption{Colours used in Agda code listings.}
+\label{tb:Colours}
+\end{table}
+
 
 \section{Motivation}
 
