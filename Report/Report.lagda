@@ -250,14 +250,15 @@ module IntroExample where
 }
 %TC:endignore
 
-Agda's flexible syntax and the interactive editor allow for a proof style called \enquote{equational reasoning} which we consider a major selling point of the language.
+In our view, a proof style called \emph{equational reasoning}, made possible by Agda's flexible syntax and used pervasively in the standard library, is another major selling point of the language.
 
-As an example, we will construct a proof of the arithmetic equality \((p · q) · r = p · (r · q)\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
+As an example, we will construct a proof of the arithmetic equality \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
 \begin{align}
-(p · q) · r &= p · (q · r) && \text{by associativity} \\
-&= p · (r · q) && \text{by commutativity}
+(p · q) · r &= && \text{(associativity)} \\
+p · (q · r) &= && \text{(commutativity)} \\
+p · (r · q)
 \end{align}
-We then use those steps as the skeleton of our equational reasoning proof. The places marked \AgdaSymbol{\{!!\}} represent holes, i.e. proof fragments that are still missing. The comments indicate how we will go about filling those holes.
+We then use those steps as the skeleton of our equational reasoning proof (see \cref{ssc:Equational-reasoning} for details on equational reasoning). The places marked \AgdaSymbol{\{!!\}} represent holes, i.e. justifications that are still missing. The comments indicate how we will go about filling those holes.
 
 \AgdaHide{
 \begin{code}
@@ -266,12 +267,11 @@ We then use those steps as the skeleton of our equational reasoning proof. The p
 \end{code}
 }
 \begin{code}
-    (p * q) * r  ≡⟨ {!!} ⟩  -- use associativity (1.1)
-    p * (q * r)  ≡⟨ {!!} ⟩  -- use commutativity (1.2)
+    (p * q) * r  ≡⟨ {! associativity !} ⟩
+    p * (q * r)  ≡⟨ {! commutativity !} ⟩
     p * (r * q)  ∎
 \end{code}
-
-Thankfully the Agda standard library already contains a proof that multiplication is associative under the name \AgdaFunction{*-assoc}. It shows that for any natural numbers \AgdaBound{x}, \AgdaBound{y} and \AgdaBound{z}, \((x · y) · z = x · (y · z)\)---instantiated with \AgdaBound{p}, \AgdaBound{q} and \AgdaBound{r}, respectively, this is exactly the first step in our handwritten proof (1.1). We use \AgdaFunction{*-assoc} to fill in the first hole in the formal proof:
+Thankfully the Agda standard library already contains a proof that multiplication of natural numbers is associative under the name \AgdaFunction{*-assoc}. It shows that for any natural numbers \AgdaBound{p}, \AgdaBound{q} and \AgdaBound{r}, \((p · q) · r = p · (q · r)\)---this is exactly the first step in our handwritten proof (1.1). We use \AgdaFunction{*-assoc} to fill in the first hole in the formal proof:
 
 \AgdaHide{
 \begin{code}
@@ -281,37 +281,36 @@ Thankfully the Agda standard library already contains a proof that multiplicatio
 }
 \begin{code}
     (p * q) * r  ≡⟨ *-assoc p q r ⟩
-    p * (q * r)  ≡⟨ {!!} ⟩  -- use commutativity (1.2)
+    p * (q * r)  ≡⟨ {! commutativity !} ⟩
     p * (r * q)  ∎
 \end{code}
-
 In the typeset proof, we wrote that \(p · (q · r) = p · (r · q)\) follows \enquote{by commutativity}. But commutativity really only states that \(q · r = r · q\). Implicitly, we are using the principle that equal subterms can be replaced by equal subterms. In Agda, we must apply this principle, called \emph{congruence}, explicitly. This is one point where formal proofs using equational reasoning deviate from handwritten or typeset proofs.
 
 To be exact, then, \(p · (q · r) = p · (r · q)\) holds by the following reasoning:
 \begin{itemize}
-\item Multiplication is congruent in both arguments, that is, if \(x = x′\) and \(y = y′\) then \(x · y = x′ · y′\) (in this case we instantiate \(x\) and \(x′\) with \(p\), \(y\) with \(q · r\) and \(y′\) with \(r · q\));
-\item \(p = p\) since equality is a reflexive relation (i.e. everything is equal to itself); and
-\item \(q · r = r · q\) by commutativity of multiplication.
+\item Multiplication is \emph{congruent} in both arguments, that is, if \(x = x′\) and \(y = y′\) then \(x · y = x′ · y′\) (in this case we instantiate \(x\) and \(x′\) with \(p\), \(y\) with \(q · r\) and \(y′\) with \(r · q\));
+\item \(p = p\) since equality is a \emph{reflexive} relation (i.e. anything is equal to itself); and
+\item \(q · r = r · q\) by \emph{commutativity} of multiplication.
 \end{itemize}
 
-In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \AgdaFunction{*-comm} proves that multiplication is commutative and \AgdaFunction{cong₂} \AgdaFunction{\_*\_} shows that multiplication is congruent. They can be written as follows in proof tree notation (with assumptions above the line and conclusion below):
+In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \AgdaFunction{*-comm} proves that multiplication of natural numbers is commutative and \AgdaFunction{cong₂} \AgdaFunction{\_*\_} shows that it is congruent. They can be written as follows in proof tree notation (with assumptions above the line and conclusion below):
 
 \vspace{.15cm}
 \begin{minipage}[b]{1\linewidth}
 \centering
-\begin{minipage}[b]{0.15\linewidth}
+\begin{minipage}[b]{0.25\linewidth}
 \begin{prooftree}
     \AxiomC{}
-    \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaSymbol{=} \AgdaBound{x}}
+    \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \AgdaBound{p} \AgdaSymbol{=} \AgdaBound{p}}
 \end{prooftree}
 \end{minipage}
-\begin{minipage}[b]{0.365\linewidth}
+\begin{minipage}[b]{0.374\linewidth}
 \begin{prooftree}
     \AxiomC{}
     \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{:} \(x · y = y · x\)}
 \end{prooftree}
 \end{minipage}
-\begin{minipage}[b]{0.365\linewidth}
+\begin{minipage}[b]{0.374\linewidth}
 \begin{prooftree}
     \AxiomC{\AgdaBound{f} \AgdaSymbol{:} \(x = x′\)}
     \AxiomC{\AgdaBound{g} \AgdaSymbol{:} \(y = y′\)}
@@ -319,8 +318,7 @@ In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \A
 \end{prooftree}
 \end{minipage}
 \end{minipage}
-\vspace{.05cm}
-
+\vspace{.15cm}
 The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\) and a proof \AgdaBound{g} of \(y = y′\), we can conclude by \AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} that \(x · y = x′ · y′\) holds}. Instantiating the three rules as appropriate, we can assemble the proof of \(p · (q · r) = p · (r · q)\) as follows:
 
 \vspace{.15cm}
@@ -331,11 +329,10 @@ The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\
 \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \(p = p\)}
 \AxiomC{}
 \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} \AgdaSymbol{:} \(q · r = r · q\)}
-\BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \((p · (q · r) = p · (r · q)\)}
+\BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \(p · (q · r) = p · (r · q)\)}
 \end{prooftree}
 \end{minipage}
-\vspace{.05cm}
-
+\vspace{.15cm}
 That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} and \AgdaBound{g} \AgdaSymbol{=} \AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}, the third rule constructs the proof of \(p · (q · r) = p · (r · q)\) we were looking for. We can now complete the proof of our original proposition \((p · q) · r = p · (r · q)\) as follows:
 
 \AgdaHide{
