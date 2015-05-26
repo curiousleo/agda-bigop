@@ -1338,7 +1338,7 @@ Given any monoid \AgdaBound{M}, we can bring its fields into scope:
 \end{code}
 %TC:endignore
 
-Using the carrier type, the monoid's binary operator and identity element, we can then define the function \AgdaFunction{crush} which reduces a list to an element of the carrier type using a fold over that list:
+Using the carrier type, the monoid's binary operator and identity element, we can then define the function \AgdaFunction{crush} which reduces a list to an element of the carrier type using a fold over that list:\footnote{The name \AgdaFunction{crush} for this particular fold originated in \autocite{meertens_calculate_1996} and is combined in \autocite{gibbons_essence_2009} with a monoidal constraint.}
 
 %TC:ignore
 \begin{code}
