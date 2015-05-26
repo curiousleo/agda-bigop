@@ -153,11 +153,12 @@ module Report where
 
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-\enquote{SUMS ARE EVERYWHERE}: with these words, Graham starts Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. He is referring to sums written in Sigma-notation, such as \(\sum_i i²\). \emph{Big operators} generalise Sigma-notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like logical conjunction (\(∧\)), set union (\(∪\)), max, and so on \autocite{bertot_canonical_2008}.
+\enquote{SUMS ARE EVERYWHERE}: with these words, Graham starts Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. He is referring to sums written in Sigma-notation, such as \[\sum_{i ∈ \{1,2,3\}} i² = 1² + 2² +3³\]
+\emph{Big operators} generalise Sigma-notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like logical conjunction (\(∧\)), set union (\(∪\)), max, and so on \autocite{bertot_canonical_2008}.
 
-Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. \emph{Isabelle} \autocite{paulson_isabelle:_1994} and \emph{Coq} \autocite{huet_coq_2015}, two widely used interactive proof assistants, both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators.
 
-No such library currently exists for \emph{Agda} \autocite{norell_dependently_2009}, another proof assistant. The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
+No such library currently exists for Agda. The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
 
 The main contributions of this project are:
 
