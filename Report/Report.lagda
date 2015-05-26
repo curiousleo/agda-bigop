@@ -1073,7 +1073,7 @@ Setoids can be used to define quotients. For example, we could represent non-neg
 
 \subsection{Equational reasoning\label{ssc:Equational-reasoning}}
 
-Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next Chapters.
+Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next chapters.
 
 As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
