@@ -1300,12 +1300,6 @@ Often in mathematical notation, the domain of a big operator expression is writt
 
 As an example, consider some arbitrary binary operator \(\_\!\!⊕\!\!\_\). Then \(\bigoplus_{i ∈ \{1,2\}} a_i\) could evaluate to either \(a_1 ⊕ a_2\) or \(a_2 ⊕ a_1\) since \(\{1,2\} = \{2,1\}\). But if \(\_⊕\_\) is non-commutative with \(a_1 ⊕ a_2 ≠ a_2 ⊕ a_1\), then the two results are not equal.
 
-
-\item Lists allow \emph{repetition}. In a set, every value is unique. Whether duplicate values are allowed does not matter only when the original binary operator is idempotent.
-
-Again considering some operator \(\_⊕\_\), it is simply impossible to write down a big operator expression that evaluates to \(a ⊕ a\) since \(\{a,a\} = \{a\}\) and thus \(\bigoplus_{i ∈ \{a,a\}} i = a\).
-
-With lists, we can write \(\bigoplus_{i ← [a,a]} i\).
 Using lists to specify the domain of \(i\), the problem evaporates: \(\bigoplus_{i ← [1,2]} a_i\) (note the square brackets indicating that the domain of indices is a list) evaluates to \(a_1 ⊕ a_2\) only, so the result of the big operator expression is well-defined.
 
 \item Lists are well supported in Agda and commonly used: the standard library contains over 2000 lines of auxiliary definitions and lemmas about lists.
