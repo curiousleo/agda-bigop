@@ -371,20 +371,15 @@ Using the syntax definitions for sums, intervals and filters implemented in our 
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
 \label{eq:Intro-Example}
 \]
-
-A proof of the odd Gauss formula is presented in \cref{ch:Gauss}. Further proofs using our library in \cref{ch:Binom} and \cref{ch:Semi} demonstrate that we achieve our goal of enabling Agda users to express propositions and write proofs with big operators.
+A proof of the \enquote{odd Gauss formula} is presented in \cref{ch:Gauss}. Further proofs using our library in \cref{ch:Binom} and \cref{ch:Semi} demonstrate that we achieve our goal of enabling Agda users to express propositions and write proofs with big operators.
 
 \section{Overview}
 
-We now provide a précis of the report:
-
-\begin{description}
-\item[\cref{ch:Intro}] discusses the motivation for the project and describes its main contributions.
-\item[\cref{ch:Background}] is a tutorial-style introduction to Agda and dependent types in general.
-\item[\cref{ch:Impl}] describes the big operator library in detail.
-\item[\cref{ch:Gauss}, \cref{ch:Binom} and \cref{ch:Semi}] present various proofs that showcase the definitions and lemmas developed in this project.
-\item[\cref{ch:Concl}] discusses previous work and ideas for future research.
-\end{description}
+In \textbf{\cref{ch:Intro}} we discuss the motivation for the project and describes its main contributions.
+\textbf{\cref{ch:Background}} is a tutorial-style introduction to Agda and dependent types in general.
+A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
+In \textbf{\crefrange{ch:Gauss}{ch:Semi}} we present proofs that showcase the definitions and lemmas developed in this project.
+Finally in \textbf{\cref{ch:Concl}} we discuss previous work and ideas for future research.
 
 \chapter{Background\label{ch:Background}}
 
