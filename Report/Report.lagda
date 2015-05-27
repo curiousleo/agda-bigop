@@ -3060,13 +3060,14 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
 
 \chapter{Conclusions\label{ch:Concl}}
 
-The success criterion of this project as described in the project proposal was to build up a set of reusable libraries that allow proving the theorem \enquote{square matrices over a semiring form a semiring}.%
+The success criterion of this project as described in the project proposal was to build a set of reusable libraries that make it possible to write a readable proof of the theorem \enquote{square matrices over a semiring form a semiring} in Agda.%
 \footnote{The wording in the proposal was \enquote{any square matrix over a semiring is a semiring}, which is incorrect: one square matrix by itself does not constitute a semiring. The intended meaning was \enquote{square matrices over a semiring form a semiring}.} %
 This criterion has been met:
 \begin{itemize}
-\item We have implemented a library for expressing and reasoning about big operators in a generic way.
+\item We have implemented a library for expressing and reasoning about big operators in an algebra-centric way.
 \item Additionally, modules for expressing and reasoning about matrices, intervals of natural numbers and filters have been implemented.
-\item The four parts of the library (big operators, matrices, intervals and filters) are independent but can easily be combined. All four are written in idiomatic Agda, and have been designed to interoperate with the Agda standard library.
+\item The four components of the library (big operators, matrices, intervals and filters) are independent but can easily be combined. All four are written in idiomatic Agda, and have been designed to interoperate with the Agda standard library.
+\item Propositions involving big operators can be written in a notation that resembles pen-and-paper mathematics using special syntax defined in each component.
 \item We have proved that square matrices over a semiring form a semiring (see \cref{ch:Semi}). The proof demonstrates the use of all four components of our library.
 \end{itemize}
 
@@ -3100,7 +3101,7 @@ Lemmas, on the other hand, are structured in a similar way to our project: secti
 
 The \texttt{bigop} module is more comprehensive than our library. It provides a lot of flexibility in terms of notation, and allows users to define big operators over sets, finite types and enumerable predicates (all of which are converted to lists internally).
 
-\section{Future work}
+\section{Future work\label{sc:Future}}
 
 We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
@@ -3161,8 +3162,6 @@ src/
 \chapter{User's guide}
 
 %\verbatiminput{../README.rst}
-
-\chapter{Contributor's guide}
 
 \chapter{Additional proofs}
 
