@@ -1454,7 +1454,7 @@ In the last step, we are allowed to drop the parentheses because \AgdaFunction{\
 
 \section{Intervals\label{sc:Impl-Intervals}}
 
-Intervals of natural numbers are commonly used as indices in big operator expressions. This Section describes how intervals are defined for the two types of natural numbers introduced in \cref{ssc:Small}, \AgdaDatatype{ℕ} and \AgdaDatatype{Fin}.
+Intervals of natural numbers are commonly used as indices in big operator expressions. This Section describes how intervals are defined for two types introduced in \cref{ssc:Small}: natural numbers (\AgdaDatatype{ℕ}) and \AgdaDatatype{Fin}, which can be put into correspondence with some prefix of the natural numbers.
 
 %TC:ignore
 \AgdaHide{
@@ -1504,7 +1504,7 @@ Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than 
 
 \section{Filters\label{sc:Impl-Filters}}
 
-Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in \cref{ssc:Implementing}.
+Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in \cref{ssc:Implementing}. Note that although the filter module was implemented as part of our big operators library, it does not depend on big operators or intervals, and could in the future be spun off into a separate library.
 
 %TC:ignore
 \AgdaHide{
