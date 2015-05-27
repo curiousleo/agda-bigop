@@ -1,3 +1,6 @@
+%TC:newcounter fwords Words in footnotes
+%TC:macro \footnote [fwords]
+
 \nonstopmode
 \documentclass[12pt,chapterprefix=true,toc=bibliography,numbers=noendperiod,
                footnotes=multiple,twoside]{scrreprt}
