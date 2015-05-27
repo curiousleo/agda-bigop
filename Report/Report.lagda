@@ -375,7 +375,7 @@ A proof of the \enquote{odd Gauss formula} is presented in \cref{ch:Gauss}. Furt
 In \textbf{\cref{ch:Intro}} we discuss the motivation for the project and describes its main contributions.
 \textbf{\cref{ch:Background}} is a tutorial-style introduction to Agda and dependent types in general.
 A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
-In \textbf{\crefrange{ch:Gauss}{ch:Semi}} we present proofs that showcase the definitions and lemmas developed in this project.
+In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
 Finally in \textbf{\cref{ch:Concl}} we discuss previous work and ideas for future research.
 
 \chapter{Background\label{ch:Background}}
@@ -1175,7 +1175,7 @@ The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relat
 \item[Commutative monoids.] \AgdaDatatype{CommutativeMonoid} contains the same data as \AgdaDatatype{Monoid}: an equivalence relation, an operator, and an identity. \AgdaDatatype{IsCommutativeMonoid}  extends \AgdaDatatype{IsSemigroup} in as similar way as \AgdaDatatype{IsMonoid} by adding an identity and a commutativity law.
 
 \item[Semirings \enquote{without one}.] \AgdaDatatype{SemiringWithoutOne} is a structure almost like a semiring, except that it does not have a multiplicative identity.%
-\footnote{We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \crefrange{ch:Gauss}{ch:Semi}. It was one goal of this project to always assume only what is really needed.} %
+\footnote{We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \cref{ch:Semi} as well as \cref{ch:Gauss} and \cref{ch:Binom}. It was one goal of this project to always assume only what is really needed.} %
 Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\_*\_} and a special element \AgdaField{0\#}.% which is simultaneously an identity for \AgdaField{\_+\_} and a zero for \AgdaField{\_*\_}.
 
 \AgdaDatatype{IsSemiringWithoutOne} specifies that \AgdaField{\_+\_} forms a commutative monoid with \AgdaField{0\#} as its identity elements, \AgdaField{\_*\_} forms a semigroup, \AgdaField{0\#} is a zero for \AgdaField{\_*\_} and \AgdaField{\_*\_} distributes over \AgdaField{\_+\_}.
@@ -1595,7 +1595,7 @@ A \enquote{semiring without one} consists of a commutative monoid over an operat
 
 \subsection{Boolean algebra lemmas}
 
-The lemmas about big operators on monoids, commutative monoids and semirings presented above were directly relevant to the theorems we aimed to prove (see \crefrange{ch:Gauss}{ch:Semi}). To demonstrate that our approach scales to more complex algebraic structures, we proved the big operator version of the de Morgan laws for arbitrary Boolean algebras. Two examples of Boolean algebras are: Booleans with the two operators logical \emph{and} and logical \emph{or}, and sets with intersection and union.
+The lemmas about big operators on monoids, commutative monoids and semirings presented above were directly relevant to the theorems we aimed to prove (see \cref{ch:Semi} as well as \cref{ch:Gauss} and \cref{ch:Binom}). To demonstrate that our approach scales to more complex algebraic structures, we proved the big operator version of the de Morgan laws for arbitrary Boolean algebras. Two examples of Boolean algebras are: Booleans with the two operators logical \emph{and} and logical \emph{or}, and sets with intersection and union.
 
 In order to make the propositions and proofs more readable, we added two syntax definitions as synonyms for \AgdaFunction{fold} (see \cref{sc:Impl-Bigops}):
 \begin{gather*}
@@ -1735,470 +1735,6 @@ Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 Reflexivity and transitivity are proved in a similar fashion.
 
 
-\chapter{Gauss formula\label{ch:Gauss}}
-
-This Chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-module Gauss where
-
-  open import Bigop
-
-  open import Algebra
-
-  open import Function
-
-  open import Data.List.Base
-  open import Data.Unit hiding (setoid)
-
-  open import Relation.Nullary
-  open import Relation.Binary.PropositionalEquality using (_≡_)
-  import Relation.Binary.PropositionalEquality as P
-  import Relation.Binary.EqReasoning as EqR
-\end{code}
-}
-%TC:endignore
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-  module GaussFormula where
-
-    open import Data.Nat.Base using (zero; suc; _∸_)
-    open import Data.Nat.Properties using (commutativeSemiring)
-    open import Data.Product using (proj₁; proj₂)
-    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
-
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open import Bigop.Interval.Nat
-    open Props.Interval.Nat
-
-    open Fold +-monoid using (fold; Σ-syntax)
-    open P.≡-Reasoning
-\end{code}
-}
-%TC:endignore
-
-\section{Gauss formula}
-
-In this Section, we show a pen-and-paper proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] followed by a formal proof using definitions and lemmas from the \AgdaModule{Bigop} module. The proof proceeds induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
-
-The induction hypothesis is \[ 2 · \sum_{i ← 0 … n} i = n · (n + 1) \]
-
-and the induction step works as follows:
-\begin{align}
-2 · \sum_{i ← 0 … 1 + n} i
-&= 2 · \left( \left( \sum_{i ← 0 … n} i \right) + 1 + n \right) \\
-&= \left( 2 · \sum_{i ← 0 … n} i \right) + \left( 2 · (1 + n) \right) \\
-&= n · (1 + n) + 2 · (1 + n) \\
-&= 2 · (1 + n) + n · (1 + n) \\
-&= (2 + n) · (1 + n) \\
-&= (1 + n) · (2 + n)
-\end{align}
-
-In Agda, using Σ-syntax, the theorem
-\begin{gather*}
-∀ n.\quad 2 · \sum_{i = 0}^n i = n · (n + 1) \\
-\intertext{is expressed as}
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaNumber{2} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{i} \AgdaSymbol{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}}
-\end{gather*}
-
-Proof by natural number induction over \AgdaBound{n} translates to pattern matching on this argument in Agda. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\); the induction step is given as the right-hand side of the pattern \AgdaInductiveConstructor{suc} \AgdaBound{n}.
-
-In the induction step, we use equational reasoning (see \cref{ssc:Equational-reasoning}) to transform the equation step by step. Each step is annotated with the corresponding equation in the proof shown above.
-The lemmas used to justify the transformation are:
-\begin{align*}
-\text{\AgdaField{proj₁} \AgdaFunction{distrib}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaBound{z} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{y} \AgdaFunction{+} \AgdaBound{z}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{z}} \\
-\text{\AgdaFunction{+-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{+} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x}} \\
-\text{\AgdaFunction{*-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{*} \AgdaBound{x}} \\
-\text{\AgdaFunction{lemma}}\;&:\;\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaFunction{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}}
-\end{align*}
-
-In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is used.
-
-%TC:ignore
-\begin{code}
-    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
-    proof zero = P.refl -- trivial base case
-    proof (suc n) =
-      begin
-        2 * (Σ[ i ← 0 … suc n ] i)
-{- 3.1 -}  ≡⟨ P.cong (_*_ 2) lemma ⟩
-        2 * (Σ[ i ← 0 … n ] i + suc n)
-{- 3.2 -}  ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
-        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n
-{- 3.3 -}  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
-        n * suc n + 2 * suc n
-{- 3.4 -}  ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
-        2 * suc n + n * suc n
-{- 3.5 -}  ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
-        (2 + n) * suc n
-{- 3.6 -}  ≡⟨ *-comm (2 + n) (suc n) ⟩
-        suc n * (suc (suc n))
-      ∎
-      where
-        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
-        lemma =
-          begin
-            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
-            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
-            Σ[ i ← 0 … n ] i + suc n
-          ∎
-\end{code}
-%TC:endignore
-
-\section{Odd Gauss formula}
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-  module OddGauss where
-
-    open import Data.Nat.Properties.Simple using (+-suc)
-    open import Data.List.Base
-    open import Data.Empty
-    open import Relation.Nullary.Decidable
-
-    open import Data.Nat.Base hiding (fold)
-    open import Data.Nat.Properties using (commutativeSemiring)
-    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
-
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
-    open import Bigop.Interval.Nat
-    open Props.Interval.Nat
-    open Props.Filter
-
-    open Fold +-monoid using (fold; Σ-syntax)
-    open P.≡-Reasoning
-
-    open import Relation.Unary
-\end{code}
-}
-%TC:endignore
-
-A variant of the Gauss formula is the equation \[ ∀ n.\quad\sum_{\substack{i ← 0 … 2n \\ \text{\(i\) odd}}} i = n² \]
-
-which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be written as follows in Agda: \[
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
-\]
-
-The lemma \AgdaFunction{extract} brings the list into a form more amenable to induction. It states that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
-
-In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{upFrom-last} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
-\[
-\text{\AgdaFunction{even→¬odd} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{))}}\;\AgdaSymbol{:}\;\text{\AgdaFunction{¬} \AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)))}}
-\]
-to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))} is filtered out. In step (D) we again extract the last element of the list, \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)}. Lastly (E), we use \AgdaFunction{last-yes} and
-\[
-\text{\AgdaFunction{even+1} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{)}}\;\AgdaSymbol{:}\;\text{\AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}}
-\]
-to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} is odd, which allows us to take this element out of the filter.
-
-%TC:ignore
-\begin{code}
-    extract : ∀ n →  0 … (suc n + suc n) ∥ odd ≡
-                     0 … (n + n) ∥ odd ∷ʳ suc (n + n)
-    extract n =
-      begin
-        0 … (suc n + suc n) ∥ odd
-{- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
-        0 … (suc (suc (n + n))) ∥ odd
-{- B -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
-        0 … (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
-{- C -}   ≡⟨ last-no  (0 … (suc (n + n))) (suc (suc (n + n))) odd
-                      (even→¬odd (ss-even (2n-even n))) ⟩
-        0 … (suc (n + n)) ∥ odd
-{- D -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (n + n))) ⟩
-        0 … (n + n) ∷ʳ suc (n + n) ∥ odd
-{- E -}   ≡⟨ last-yes  (0 … (n + n)) (suc (n + n)) odd
-                       (even+1 (2n-even n)) ⟩
-        0 … (n + n) ∥ odd ∷ʳ suc (n + n)
-      ∎
-\end{code}
-%TC:endignore
-
-The proof of the odd Gauss equation again works by natural number induction on \AgdaBound{n}, with a trivial base case for zero. In the induction step, we first rewrite the index list using \AgdaFunction{extract} (F). Then \AgdaFunction{Σ.last} is used to move the last element of the list out of the sum (G). In step (H) we use the induction hypothesis. The remainder of the proof just rewrites the algebraic expression into the required form.
-
-%TC:ignore
-\begin{code}
-    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd ] i ≡ n * n
-    proof zero = P.refl
-    proof (suc n) =
-      begin
-        Σ[ i ← 0 … (suc n + suc n) ∥ odd ] i
-{- F -}   ≡⟨ P.cong (fold id) (extract n)⟩
-        Σ[ i ← 0 … (n + n) ∥ odd ∷ʳ suc (n + n) ] i
-{- G -}   ≡⟨ Σ.last id (suc (n + n)) (0 … (n + n) ∥ odd) ⟩
-        Σ[ i ← 0 … (n + n) ∥ odd ] i + suc (n + n)
-{- H -}   ≡⟨ +-cong (proof n) refl ⟩
-
-        n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
-        n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
-        (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
-        suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
-        suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
-        suc n * suc n
-      ∎
-\end{code}
-%TC:endignore
-% $
-
-\chapter{Binomial theorem\label{ch:Binom}}
-
-In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
-
-We present a pen-and-paper proof first and then translate it into Agda.
-
-\section{Pen-and-paper proof}
-
-The proof works by natural number induction on \AgdaBound{n}. The base case with \(n = 0\) is trivial as \(\binom{n}{0} · x^0 = 1 = (1 + x)^n\). The induction step proceeds as follows:
-\begin{align}
-\sum_{k ← 0 … n + 1} \binom{n + 1}{k} · x^k
-&= 1 + \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k \\
-&= 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) \\
-&= \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) \\
-&= x · \sum_{k ← 0 … n} \binom{n}{k} · x^k + \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
-&= x · \sum_{k ← 0 … n} \binom{n}{k} · x^k + 1 · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
-&= (x + 1) · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
-&= (1 + x)^{1 + n}
-\end{align}
-
-Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{n}{k} · x^k = (1 + x)^n\).
-
-\section{Definitions}
-
-Since the Agda standard library does not currently define exponentials and binomials for natural numbers, we start by writing down their inductive definitions:
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-module BinomialTheorem where
-
-  open import Bigop
-
-  open import Algebra
-  open import Data.Nat.Base using (_∸_; zero; suc)
-  open import Data.Nat.Properties using (commutativeSemiring)
-  open import Data.Nat.Properties.Simple using (+-suc)
-  open import Function
-  open import Relation.Binary.PropositionalEquality as P using (_≡_)
-  open P.≡-Reasoning
-
-  open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
-  module Σ = Props.SemiringWithoutOne semiringWithoutOne
-  open Fold +-monoid using (fold; Σ-syntax)
-
-  open import Data.List
-  open import Data.Product using (proj₁; proj₂)
-
-  open import Level renaming (zero to lzero; suc to lsuc)
-
-  open import Bigop.Interval.Nat
-  open Props.Interval.Nat
-
-  infixr 8 _^_
-\end{code}
-}
-%TC:endignore
-
-%TC:ignore
-\begin{code}
-  _^_ : ℕ → ℕ → ℕ
-  x ^ 0      = 1
-  x ^ suc n  = x * x ^ n
-
-  _choose_ : ℕ → ℕ → ℕ
-  _      choose  0      = 1
-  0      choose  suc k  = 0
-  suc n  choose  suc k  = n choose k + n choose (suc k)
-\end{code}
-%TC:endignore
-
-Additionally we define a shorthand \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
-
-%TC:ignore
-\begin{code}
-  f : ℕ → ℕ → ℕ → ℕ
-  f x n k = n choose k * x ^ k
-\end{code}
-%TC:endignore
-
-\section{Lemmas}
-
-In this Section we prove the lemmas used in the final proof of the binomial theorem.
-
-\AgdaFunction{split} justifies the step from (5.1) to (5.2):
-\[ \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k = \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
-\] by shifting the values of its index list down by one and splitting the sum into two. In the actual proof, the addition with \(1\) is taken care of using reflexivity and congruence of addition.
-% \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
-
-%TC:ignore
-\begin{code}
-  split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≡
-                   Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-                   + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-  split x n =
-    begin
-      Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-        ≡⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
-      Σ[ k ← map suc (0 … n) ] (suc n) choose k * x ^ k
-        ≡⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
-      Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
-        ≡⟨ Σ.cong  {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
-                   (0 … n) P.refl
-                   (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
-      Σ[ k ← 0 … n ] (  n choose k * x ^ (suc k)
-                        + n choose (suc k) * x ^ (suc k))
-         ≡⟨ sym $ Σ.merge  (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
-                           (0 … n) ⟩
-      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-         + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-    ∎
-\end{code}
-%TC:endignore
-% $
-
-\AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (5.2) and (5.3):
-\[ 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
-\] We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
-
-%TC:ignore
-\begin{code}
-  +-reorder : ∀ x y z → x + (y + z) ≡ y + (x + z)
-  +-reorder x y z =
-    begin
-      x + (y + z)  ≡⟨ sym $ +-assoc x y z ⟩
-      (x + y) + z  ≡⟨ +-cong (+-comm x y) refl ⟩
-      (y + x) + z  ≡⟨ +-assoc y x z ⟩
-      y + (x + z)
-    ∎
-
-  *-reorder : ∀ x y z → x * (y * z) ≡ y * (x * z)
-  *-reorder x y z =
-    begin
-      x * (y * z)  ≡⟨ sym $ *-assoc x y z ⟩
-      (x * y) * z  ≡⟨ *-cong (*-comm x y) refl ⟩
-      (y * x) * z  ≡⟨ *-assoc y x z ⟩
-      y * (x * z)
-    ∎
-\end{code}
-%TC:endignore
-
-The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum. It provides justification for going from the left-hand side of the outer addition in (5.3) to the left-hand side of the addition in (5.4):
-\[ \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} = x · \sum_{k ← 0 … n} \binom{n}{k} · x^k
-\]
-
-%TC:ignore
-\begin{code}
-  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≡
-                        x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-  left-distr x n =
-    begin
-      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-        ≡⟨ Σ.cong (0 … n) P.refl (λ k → *-reorder (n choose k) x (x ^ k)) ⟩
-      Σ[ k ← 0 … n ] x * (n choose k * x ^ k)
-        ≡⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
-      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-    ∎
-\end{code}
-%TC:endignore
-% $
-
-The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but this is the form in which it is used in \AgdaFunction{choose-suc}. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
-\AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
-
-%TC:ignore
-\begin{code}
-  mutual
-    choose-lt : ∀ m n → n choose (suc m + n) ≡ 0
-    choose-lt m zero     = P.refl
-    choose-lt m (suc n)  = choose-lt′ m n ⟨ +-cong ⟩ choose-lt′ (suc m) n
-
-    choose-lt′ : ∀ m n → n choose (m + suc n) ≡ 0
-    choose-lt′ m n =
-      begin
-        n choose (m + suc n)  ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
-        n choose suc (m + n)  ≡⟨ choose-lt m n ⟩
-        0
-      ∎
-
-  choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≡
-                        Σ[ k ← 1 … n ] n choose k * x ^ k
-  choose-suc x n  =
-    begin
-      Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-        ≡⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
-      Σ[ k ← map suc (0 … n) ] n choose k * x ^ k
-        ≡⟨ P.cong (fold $ f x n) (upFrom-suc 0 (suc n)) ⟩
-      Σ[ k ← 1 … suc n ] n choose k * x ^ k
-        ≡⟨ P.cong (fold $ f x n) (upFrom-last 1 n) ⟩
-      Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k
-        ≡⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
-      (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
-        ≡⟨ +-cong  (refl {x = Σ[ k ← 1 … n ] f x n k})
-                   (choose-lt 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩
-      (Σ[ k ← 1 … n ] n choose k * x ^ k) + 0
-        ≡⟨ proj₂ +-identity _ ⟩
-      Σ[ k ← 1 … n ] n choose k * x ^ k
-    ∎
-\end{code}
-%TC:endignore
-
-Our final lemma \AgdaFunction{shift} justifies the equality between the right-hand side of the outer addition in (5.3) and the right-hand side of the outer addition in (5.4):
-\[ \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^k
-\]
-
-%TC:ignore
-\begin{code}
-  shift : ∀ x n →  1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-                   ≡ Σ[ k ← 0 … n ] n choose k * x ^ k
-  shift x n =
-    begin
-      1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
-        ≡⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
-      1 + Σ[ k ← 1 … n ] n choose k * x ^ k
-        ≡⟨ refl ⟩
-      Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k
-        ≡⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
-      Σ[ k ← 0 … n ] n choose k * x ^ k
-    ∎
-\end{code}
-%TC:endignore
-% $
-
-\section{Proof}
-
-The following Agda proof is annotated by the corresponding steps in the pen-and-paper proof presented at the beginning of the chapter.
-
-%TC:ignore
-\begin{code}
-  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≡ (suc x) ^ n
-  proof x zero    = refl
-  proof x (suc n) =
-    begin
-      1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-{- 5.1 -}  ≡⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
-      1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-             + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 5.2 -}  ≡⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
-      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
-      + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 5.3 -}  ≡⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
-      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
-           (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.4 -}  ≡⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
-      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
-      1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.5 -}  ≡⟨ sym $ distribʳ _ x 1 ⟩
-      (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.6 -}  ≡⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
-      (suc x) ^ (suc n)
-    ∎
-\end{code}
-%TC:endignore
-% $
 
 \chapter{Square matrices over semirings\label{ch:Semi}}
 
@@ -3079,6 +2615,455 @@ src/
 
 %\verbatiminput{../README.rst}
 
+
+
+
+
+
+
+
+\chapter{Gauss formula\label{ch:Gauss}}
+
+This Chapter presents a proof of the Gauss formula and a variation thereof for odd natural numbers. Both proofs use Σ-syntax and lemmas from the \AgdaModule{Bigop} module. In the second proof, the predicate \AgdaDatatype{Odd} and filters are used.
+
+\AgdaHide{
+\begin{code}
+module Gauss where
+
+  open import Bigop
+
+  open import Algebra
+
+  open import Function
+
+  open import Data.List.Base
+  open import Data.Unit hiding (setoid)
+
+  open import Relation.Nullary
+  open import Relation.Binary.PropositionalEquality using (_≡_)
+  import Relation.Binary.PropositionalEquality as P
+  import Relation.Binary.EqReasoning as EqR
+\end{code}
+}
+
+\AgdaHide{
+\begin{code}
+  module GaussFormula where
+
+    open import Data.Nat.Base using (zero; suc; _∸_)
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Product using (proj₁; proj₂)
+    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
+
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    open import Bigop.Interval.Nat
+    open Props.Interval.Nat
+
+    open Fold +-monoid using (fold; Σ-syntax)
+    open P.≡-Reasoning
+\end{code}
+}
+
+\section{Gauss formula}
+
+In this Section, we show a pen-and-paper proof of the equation \[2 · \sum_{i = 0}^n i = n · (n + 1)\] followed by a formal proof using definitions and lemmas from the \AgdaModule{Bigop} module. The proof proceeds induction over \AgdaBound{n}. The base case holds trivially as \[2 · \sum_{i = 0}^0 i = 0 = 0 · (0 + 1)\]
+
+The induction hypothesis is \[ 2 · \sum_{i ← 0 … n} i = n · (n + 1) \]
+
+and the induction step works as follows:
+\begin{align}
+2 · \sum_{i ← 0 … 1 + n} i
+&= 2 · \left( \left( \sum_{i ← 0 … n} i \right) + 1 + n \right) \\
+&= \left( 2 · \sum_{i ← 0 … n} i \right) + \left( 2 · (1 + n) \right) \\
+&= n · (1 + n) + 2 · (1 + n) \\
+&= 2 · (1 + n) + n · (1 + n) \\
+&= (2 + n) · (1 + n) \\
+&= (1 + n) · (2 + n)
+\end{align}
+
+In Agda, using Σ-syntax, the theorem
+\begin{gather*}
+∀ n.\quad 2 · \sum_{i = 0}^n i = n · (n + 1) \\
+\intertext{is expressed as}
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaNumber{2} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{i} \AgdaSymbol{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)}}
+\end{gather*}
+
+Proof by natural number induction over \AgdaBound{n} translates to pattern matching on this argument in Agda. The base case is \(\AgdaBound{n} = \AgdaInductiveConstructor{zero}\); the induction step is given as the right-hand side of the pattern \AgdaInductiveConstructor{suc} \AgdaBound{n}.
+
+In the induction step, we use equational reasoning (see \cref{ssc:Equational-reasoning}) to transform the equation step by step. Each step is annotated with the corresponding equation in the proof shown above.
+The lemmas used to justify the transformation are:
+\begin{align*}
+\text{\AgdaField{proj₁} \AgdaFunction{distrib}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaBound{z} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{y} \AgdaFunction{+} \AgdaBound{z}\AgdaSymbol{)} \AgdaDatatype{≡} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{z}} \\
+\text{\AgdaFunction{+-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{+} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{+} \AgdaBound{x}} \\
+\text{\AgdaFunction{*-comm}}\;&:\;\text{\AgdaSymbol{∀} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaFunction{*} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y} \AgdaFunction{*} \AgdaBound{x}} \\
+\text{\AgdaFunction{lemma}}\;&:\;\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaFunction{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}}
+\end{align*}
+
+In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is used.
+
+\begin{code}
+    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
+    proof zero = P.refl -- trivial base case
+    proof (suc n) =
+      begin
+        2 * (Σ[ i ← 0 … suc n ] i)
+{- 3.1 -}  ≡⟨ P.cong (_*_ 2) lemma ⟩
+        2 * (Σ[ i ← 0 … n ] i + suc n)
+{- 3.2 -}  ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
+        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n
+{- 3.3 -}  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+        n * suc n + 2 * suc n
+{- 3.4 -}  ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
+        2 * suc n + n * suc n
+{- 3.5 -}  ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
+        (2 + n) * suc n
+{- 3.6 -}  ≡⟨ *-comm (2 + n) (suc n) ⟩
+        suc n * (suc (suc n))
+      ∎
+      where
+        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
+        lemma =
+          begin
+            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
+            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
+            Σ[ i ← 0 … n ] i + suc n
+          ∎
+\end{code}
+
+\section{Odd Gauss formula}
+
+\AgdaHide{
+\begin{code}
+  module OddGauss where
+
+    open import Data.Nat.Properties.Simple using (+-suc)
+    open import Data.List.Base
+    open import Data.Empty
+    open import Relation.Nullary.Decidable
+
+    open import Data.Nat.Base hiding (fold)
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
+
+    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    open import Bigop.Interval.Nat
+    open Props.Interval.Nat
+    open Props.Filter
+
+    open Fold +-monoid using (fold; Σ-syntax)
+    open P.≡-Reasoning
+
+    open import Relation.Unary
+\end{code}
+}
+
+A variant of the Gauss formula is the equation \[ ∀ n.\quad\sum_{\substack{i ← 0 … 2n \\ \text{\(i\) odd}}} i = n² \]
+
+which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be written as follows in Agda: \[
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\]
+
+The lemma \AgdaFunction{extract} brings the list into a form more amenable to induction. It states that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
+
+In the first step (A) the auxiliary lemma \AgdaFunction{3suc} is applied to rewrite \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaPrimitive{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{)} to \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaPrimitive{+} \AgdaBound{n}\AgdaSymbol{)))}. Next (B) \AgdaFunction{upFrom-last} extracts the last element of the list \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}. Step (C) uses \AgdaFunction{last-no} and
+\[
+\text{\AgdaFunction{even→¬odd} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{))}}\;\AgdaSymbol{:}\;\text{\AgdaFunction{¬} \AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)))}}
+\]
+to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))} is filtered out. In step (D) we again extract the last element of the list, \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)}. Lastly (E), we use \AgdaFunction{last-yes} and
+\[
+\text{\AgdaFunction{even+1} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{)}}\;\AgdaSymbol{:}\;\text{\AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}}
+\]
+to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} is odd, which allows us to take this element out of the filter.
+
+\begin{code}
+    extract : ∀ n →  0 … (suc n + suc n) ∥ odd ≡
+                     0 … (n + n) ∥ odd ∷ʳ suc (n + n)
+    extract n =
+      begin
+        0 … (suc n + suc n) ∥ odd
+{- A -}   ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
+        0 … (suc (suc (n + n))) ∥ odd
+{- B -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
+        0 … (suc (n + n)) ∷ʳ suc (suc (n + n)) ∥ odd
+{- C -}   ≡⟨ last-no  (0 … (suc (n + n))) (suc (suc (n + n))) odd
+                      (even→¬odd (ss-even (2n-even n))) ⟩
+        0 … (suc (n + n)) ∥ odd
+{- D -}   ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (n + n))) ⟩
+        0 … (n + n) ∷ʳ suc (n + n) ∥ odd
+{- E -}   ≡⟨ last-yes  (0 … (n + n)) (suc (n + n)) odd
+                       (even+1 (2n-even n)) ⟩
+        0 … (n + n) ∥ odd ∷ʳ suc (n + n)
+      ∎
+\end{code}
+
+The proof of the odd Gauss equation again works by natural number induction on \AgdaBound{n}, with a trivial base case for zero. In the induction step, we first rewrite the index list using \AgdaFunction{extract} (F). Then \AgdaFunction{Σ.last} is used to move the last element of the list out of the sum (G). In step (H) we use the induction hypothesis. The remainder of the proof just rewrites the algebraic expression into the required form.
+
+\begin{code}
+    proof : ∀ n → Σ[ i ← 0 … (n + n) ∥ odd ] i ≡ n * n
+    proof zero = P.refl
+    proof (suc n) =
+      begin
+        Σ[ i ← 0 … (suc n + suc n) ∥ odd ] i
+{- F -}   ≡⟨ P.cong (fold id) (extract n)⟩
+        Σ[ i ← 0 … (n + n) ∥ odd ∷ʳ suc (n + n) ] i
+{- G -}   ≡⟨ Σ.last id (suc (n + n)) (0 … (n + n) ∥ odd) ⟩
+        Σ[ i ← 0 … (n + n) ∥ odd ] i + suc (n + n)
+{- H -}   ≡⟨ +-cong (proof n) refl ⟩
+
+        n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩
+        n * n + (n + suc n)  ≡⟨ sym $ +-assoc (n * n) n (suc n) ⟩
+        (n * n + n) + suc n  ≡⟨ +-cong (+-comm (n * n) _) refl ⟩
+        suc n * n + suc n    ≡⟨ +-comm (suc n * n) _ ⟩
+        suc n + suc n * n    ≡⟨ +-cong (refl {x = suc n}) (*-comm (suc n) n) ⟩
+        suc n * suc n
+      ∎
+\end{code}
+% $
+
+\chapter{Binomial theorem\label{ch:Binom}}
+
+In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
+
+We present a pen-and-paper proof first and then translate it into Agda.
+
+\section{Pen-and-paper proof}
+
+The proof works by natural number induction on \AgdaBound{n}. The base case with \(n = 0\) is trivial as \(\binom{n}{0} · x^0 = 1 = (1 + x)^n\). The induction step proceeds as follows:
+\begin{align}
+\sum_{k ← 0 … n + 1} \binom{n + 1}{k} · x^k
+&= 1 + \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k \\
+&= 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) \\
+&= \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) \\
+&= x · \sum_{k ← 0 … n} \binom{n}{k} · x^k + \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
+&= x · \sum_{k ← 0 … n} \binom{n}{k} · x^k + 1 · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
+&= (x + 1) · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
+&= (1 + x)^{1 + n}
+\end{align}
+
+Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{n}{k} · x^k = (1 + x)^n\).
+
+\section{Definitions}
+
+Since the Agda standard library does not currently define exponentials and binomials for natural numbers, we start by writing down their inductive definitions:
+
+\AgdaHide{
+\begin{code}
+module BinomialTheorem where
+
+  open import Bigop
+
+  open import Algebra
+  open import Data.Nat.Base using (_∸_; zero; suc)
+  open import Data.Nat.Properties using (commutativeSemiring)
+  open import Data.Nat.Properties.Simple using (+-suc)
+  open import Function
+  open import Relation.Binary.PropositionalEquality as P using (_≡_)
+  open P.≡-Reasoning
+
+  open CommutativeSemiring commutativeSemiring hiding (Carrier)
+  module Σ = Props.SemiringWithoutOne semiringWithoutOne
+  open Fold +-monoid using (fold; Σ-syntax)
+
+  open import Data.List
+  open import Data.Product using (proj₁; proj₂)
+
+  open import Level renaming (zero to lzero; suc to lsuc)
+
+  open import Bigop.Interval.Nat
+  open Props.Interval.Nat
+
+  infixr 8 _^_
+\end{code}
+}
+
+\begin{code}
+  _^_ : ℕ → ℕ → ℕ
+  x ^ 0      = 1
+  x ^ suc n  = x * x ^ n
+
+  _choose_ : ℕ → ℕ → ℕ
+  _      choose  0      = 1
+  0      choose  suc k  = 0
+  suc n  choose  suc k  = n choose k + n choose (suc k)
+\end{code}
+
+Additionally we define a shorthand \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
+
+\begin{code}
+  f : ℕ → ℕ → ℕ → ℕ
+  f x n k = n choose k * x ^ k
+\end{code}
+
+\section{Lemmas}
+
+In this Section we prove the lemmas used in the final proof of the binomial theorem.
+
+\AgdaFunction{split} justifies the step from (5.1) to (5.2):
+\[ \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k = \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
+\] by shifting the values of its index list down by one and splitting the sum into two. In the actual proof, the addition with \(1\) is taken care of using reflexivity and congruence of addition.
+% \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
+
+\begin{code}
+  split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≡
+                   Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+                   + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+  split x n =
+    begin
+      Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
+        ≡⟨ sym $ P.cong (fold (f x (suc n))) (upFrom-suc 0 (suc n)) ⟩
+      Σ[ k ← map suc (0 … n) ] (suc n) choose k * x ^ k
+        ≡⟨ sym $ Σ.map′ (f x (suc n)) suc (0 … n) (λ _ _ → refl) ⟩
+      Σ[ k ← 0 … n ] (n choose k + n choose (suc k)) * x ^ (suc k)
+        ≡⟨ Σ.cong  {f = λ k → (n choose k + n choose (suc k)) * x ^ (suc k)}
+                   (0 … n) P.refl
+                   (λ k → distribʳ (x ^ (suc k)) (n choose k) _) ⟩
+      Σ[ k ← 0 … n ] (  n choose k * x ^ (suc k)
+                        + n choose (suc k) * x ^ (suc k))
+         ≡⟨ sym $ Σ.merge  (λ k → n choose k * x ^ (suc k)) (λ k → f x n (suc k))
+                           (0 … n) ⟩
+      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+         + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+    ∎
+\end{code}
+% $
+
+\AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (5.2) and (5.3):
+\[ 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
+\] We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
+
+\begin{code}
+  +-reorder : ∀ x y z → x + (y + z) ≡ y + (x + z)
+  +-reorder x y z =
+    begin
+      x + (y + z)  ≡⟨ sym $ +-assoc x y z ⟩
+      (x + y) + z  ≡⟨ +-cong (+-comm x y) refl ⟩
+      (y + x) + z  ≡⟨ +-assoc y x z ⟩
+      y + (x + z)
+    ∎
+
+  *-reorder : ∀ x y z → x * (y * z) ≡ y * (x * z)
+  *-reorder x y z =
+    begin
+      x * (y * z)  ≡⟨ sym $ *-assoc x y z ⟩
+      (x * y) * z  ≡⟨ *-cong (*-comm x y) refl ⟩
+      (y * x) * z  ≡⟨ *-assoc y x z ⟩
+      y * (x * z)
+    ∎
+\end{code}
+
+The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum. It provides justification for going from the left-hand side of the outer addition in (5.3) to the left-hand side of the addition in (5.4):
+\[ \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} = x · \sum_{k ← 0 … n} \binom{n}{k} · x^k
+\]
+
+\begin{code}
+  left-distr : ∀ x n →  Σ[ k ← 0 … n ] n choose k * x ^ (suc k) ≡
+                        x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+  left-distr x n =
+    begin
+      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+        ≡⟨ Σ.cong (0 … n) P.refl (λ k → *-reorder (n choose k) x (x ^ k)) ⟩
+      Σ[ k ← 0 … n ] x * (n choose k * x ^ k)
+        ≡⟨ sym $ Σ.distrˡ (f x n) x (0 … n) ⟩
+      x * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+    ∎
+\end{code}
+% $
+
+The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but this is the form in which it is used in \AgdaFunction{choose-suc}. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
+\AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
+
+\begin{code}
+  mutual
+    choose-lt : ∀ m n → n choose (suc m + n) ≡ 0
+    choose-lt m zero     = P.refl
+    choose-lt m (suc n)  = choose-lt′ m n ⟨ +-cong ⟩ choose-lt′ (suc m) n
+
+    choose-lt′ : ∀ m n → n choose (m + suc n) ≡ 0
+    choose-lt′ m n =
+      begin
+        n choose (m + suc n)  ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
+        n choose suc (m + n)  ≡⟨ choose-lt m n ⟩
+        0
+      ∎
+
+  choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≡
+                        Σ[ k ← 1 … n ] n choose k * x ^ k
+  choose-suc x n  =
+    begin
+      Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+        ≡⟨ Σ.map′ (f x n) suc (0 … n) (λ _ _ → refl) ⟩
+      Σ[ k ← map suc (0 … n) ] n choose k * x ^ k
+        ≡⟨ P.cong (fold $ f x n) (upFrom-suc 0 (suc n)) ⟩
+      Σ[ k ← 1 … suc n ] n choose k * x ^ k
+        ≡⟨ P.cong (fold $ f x n) (upFrom-last 1 n) ⟩
+      Σ[ k ← (1 … n) ∷ʳ (suc n) ] n choose k * x ^ k
+        ≡⟨ Σ.last (f x n) (suc n) (1 … n) ⟩
+      (Σ[ k ← 1 … n ] n choose k * x ^ k) + n choose (suc n) * x ^ (suc n)
+        ≡⟨ +-cong  (refl {x = Σ[ k ← 1 … n ] f x n k})
+                   (choose-lt 0 n ⟨ *-cong ⟩ refl ⟨ trans ⟩ zeroˡ n) ⟩
+      (Σ[ k ← 1 … n ] n choose k * x ^ k) + 0
+        ≡⟨ proj₂ +-identity _ ⟩
+      Σ[ k ← 1 … n ] n choose k * x ^ k
+    ∎
+\end{code}
+
+Our final lemma \AgdaFunction{shift} justifies the equality between the right-hand side of the outer addition in (5.3) and the right-hand side of the outer addition in (5.4):
+\[ \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^k
+\]
+
+\begin{code}
+  shift : ∀ x n →  1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+                   ≡ Σ[ k ← 0 … n ] n choose k * x ^ k
+  shift x n =
+    begin
+      1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k)
+        ≡⟨ (refl {x = 1}) ⟨ +-cong ⟩  (choose-suc x n) ⟩
+      1 + Σ[ k ← 1 … n ] n choose k * x ^ k
+        ≡⟨ refl ⟩
+      Σ[ k ← 0 ∷ (1 … n) ] n choose k * x ^ k
+        ≡⟨ P.cong (fold $ f x n) (upFrom-head 0 n) ⟩
+      Σ[ k ← 0 … n ] n choose k * x ^ k
+    ∎
+\end{code}
+% $
+
+\section{Proof}
+
+The following Agda proof is annotated by the corresponding steps in the pen-and-paper proof presented at the beginning of the chapter.
+
+\begin{code}
+  proof : ∀ x n → Σ[ k ← 0 … n ] n choose k * x ^ k ≡ (suc x) ^ n
+  proof x zero    = refl
+  proof x (suc n) =
+    begin
+      1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
+{- 5.1 -}  ≡⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
+      1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+             + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
+{- 5.2 -}  ≡⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+      Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
+      + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
+{- 5.3 -}  ≡⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
+      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
+           (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 5.4 -}  ≡⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
+      x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
+      1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 5.5 -}  ≡⟨ sym $ distribʳ _ x 1 ⟩
+      (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
+{- 5.6 -}  ≡⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
+      (suc x) ^ (suc n)
+    ∎
+\end{code}
+% $
+
+
+
+
+
+
+
+
 \chapter{Additional proofs}
 
 \section{Currying\label{sc:Curry}}
@@ -3097,7 +3082,6 @@ module Curry where
 
 The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
 
-%TC:ignore
 \begin{code}
   curry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → B → C) → (A × B → C)
   curry f (x , y) = f x y
@@ -3105,11 +3089,9 @@ The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→
   uncurry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A × B → C) → (A → B → C)
   uncurry f x y = f (x , y)
 \end{code}
-%TC:endignore
 
 In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute an isomorphism, we prove that they are inverses of each other:
 
-%TC:ignore
 \begin{code}
   uncurry∘curry :  ∀ {a b c} {A : Set a} {B : Set b} {C : Set c}
                    (f : A → B → C) (x : A) (y : B) →
@@ -3121,7 +3103,6 @@ In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute
                    f (x , y) ≡ curry (uncurry f) (x , y)
   curry∘uncurry f x y = refl
 \end{code}
-%TC:endignore
 
 Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
 
