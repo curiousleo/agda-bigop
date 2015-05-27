@@ -3103,9 +3103,7 @@ The \texttt{bigop} module is more comprehensive than our library. It provides a 
 We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
 In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
-
 \[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 0 \]
-
 It would be interesting to see what other properties can be lifted from different underlying algebraic structures.
 
 A different but related idea would be to attempt to write a solver for big operators over some algebraic structure. Agda's standard library already contains solvers for monoids (\AgdaModule{Algebra.Monoid-solver}) and rings (\AgdaModule{Algebra.RingSolver}).%
