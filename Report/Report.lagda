@@ -213,7 +213,7 @@ This report contains Agda code listings. Syntax highlighting is used to make the
 
 \section{Motivation\label{sc:Motivation}}
 
-\Autocite{dynerowicz_forwarding_2013} present an algebraic approach to path problems such as computing the shortest path from one vertex to another in a weighted graph. Each path problem is modelled as a semiring, and its solution is calculated by repeatedly multiplying a matrix representing the weighted graph with itself. We realised that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda. One critical dependency of such a formalisation effort is a big operator module, which would also be useful in a large range of contexts.
+\Textcite{dynerowicz_forwarding_2013} presents an algebraic approach to path problems such as computing the shortest path from one vertex to another in a weighted graph. Each path problem is modelled as a semiring, and its solution is calculated by repeatedly multiplying a matrix representing the weighted graph with itself. We realised that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda. One critical dependency of such a formalisation effort is a big operator module, which would also be useful in a large range of other contexts.
 
 In this section, we describe how Agda users can write proofs in a style similar to handwritten or typeset ones, assisted by a theorem prover that is integrated into the editing mode for Agda. We then give an example of a proposition that can be expressed and proved using our library, and how it fits naturally into this model of proof development.
 
