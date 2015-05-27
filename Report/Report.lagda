@@ -3058,7 +3058,20 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
 
 \chapter{Conclusions\label{ch:Concl}}
 
-\section{Previous work}
+The success criterion of this project as described in the project proposal was to build up a set of reusable libraries that allow proving the theorem \enquote{square matrices over a semiring form a semiring}.%
+\footnote{The wording in the proposal was \enquote{any square matrix over a semiring is a semiring}, which is incorrect: one square matrix by itself does not constitute a semiring. The intended meaning was \enquote{square matrices over a semiring form a semiring}.} %
+This criterion has been met:
+\begin{itemize}
+\item We have implemented a library for expressing and reasoning about big operators in a generic way.
+\item Additionally, modules for expressing and reasoning about matrices, intervals of natural numbers and filters have been implemented.
+\item The four parts of the library (big operators, matrices, intervals and filters) are independent but can easily be combined. All four are written in idiomatic Agda, and have been designed to interoperate with the Agda standard library.
+\item We have proved that square matrices over a semiring form a semiring (see \cref{ch:Semi}). The proof demonstrates the use of all four components of our library.
+\end{itemize}
+
+In our project proposal we claimed that any implementation of big operators would depend on \enquote{a notion of enumerable finite sets}. Experiments with prototype implementations using finite sets showed that this additional layer of abstraction only complicated the implementation with no tangible benefits. In \cref{ssc:as-lists} we argue that lists are the most idiomatic way to represent the collection of indices of a big operator.
+
+
+\section{Related work}
 
 In this section, we relate our project to previous implementations of big operators in the proof assistants Isabelle and Coq.
 
