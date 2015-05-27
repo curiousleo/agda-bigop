@@ -3162,7 +3162,9 @@ src/
 
 \chapter{Contributor's guide}
 
-\chapter{Equality of left and right fold\label{ch:foldl-foldr}}
+\chapter{Additional proofs}
+
+\section{Equality of left and right fold\label{ch:foldl-foldr}}
 
 \AgdaHide{
 \begin{code}
@@ -3210,6 +3212,38 @@ module FoldlFoldr where
       x ∙ foldr _∙_ ε xs    ≈⟨ ∙-cong refl (foldr≡foldl xs) ⟩
       x ∙ foldl _∙_ ε xs    ≈⟨ foldl-step x xs ⟩
       foldl _∙_ (ε ∙ x) xs  ∎
+\end{code}
+
+
+\section{Extensional equality with reducebig\label{sc:Reducebig}}
+
+\AgdaHide{
+\begin{code}
+module Reducebig where
+  open import Data.List
+  open import Data.Product using (proj₁; proj₂)
+  import Relation.Binary.PropositionalEquality as P
+  open P using (_≡_)
+
+  open import Algebra
+  import Bigop.Core as Core
+\end{code}
+}
+
+\begin{code}
+  module Fold {c ℓ} (M : Monoid c ℓ) where
+    open Monoid M renaming (Carrier to R)
+    open Core.Fold M using (fold)
+
+    -- Big operator evaluation function in Coq's bigop.v
+    reducebig : ∀ {i} {I : Set i} → (I → R) → List I → R
+    reducebig f = foldr (λ i acc → f i ∙ acc) ε
+
+    -- `reducebig` and Bigop.Core.Fold.fold are extensionally equal
+    equivalent :  ∀ {i} {I : Set i} → (f : I → R) → (is : List I) →
+                  reducebig f is ≡ fold f is
+    equivalent f []       = P.refl
+    equivalent f (i ∷ is) = P.cong (_∙_ (f i)) (equivalent f is)
 \end{code}
 
 %TC:endignore
