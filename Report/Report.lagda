@@ -3099,6 +3099,7 @@ A different but related idea would be to attempt to write a solver for big opera
 \footnote{Eric Mertens wrote a number of solvers for different algebraic structures in Agda, available here: \url{https://github.com/glguy/my-agda-lib/tree/master/Algebra}.} %
 The challenge here would be to find a normal form for complex big operator expressions to reduce to.
 
+%TC:ignore
 \appendix
 
 \printbibliography
@@ -3200,4 +3201,5 @@ module FoldlFoldr where
       foldl _∙_ (ε ∙ x) xs  ∎
 \end{code}
 
+%TC:endignore
 \end{document}
