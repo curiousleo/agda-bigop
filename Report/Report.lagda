@@ -1313,15 +1313,16 @@ In this Subsection we argue that a binary operator used to build a well-defined 
 
 The evaluation function for big operators, \AgdaFunction{fold} (defined in \cref{ssc:Implementing}), must be total like any other Agda function: it must accept any value in the domain of its argument types. For the list that the operator is being iterated over, one special value is \AgdaInductiveConstructor{[]}, the empty list.
 
-What should a big operator iterated over an empty collection of indices evaluate to? Considering the term \[\bigoplus_{i ← []} f(i) ⊕ x\] we felt that whatever \(\_\!\!⊕\!\!\_\) stands for, the result of this expression should equal \(x\). Similarly, \[x ⊕ \bigoplus_{i ← []} f(i) = x\] should hold for any binary operator \(\_\!\!⊕\!\!\_\). These two equations are exactly the left- and right-identity laws.
+What should a big operator iterated over an empty collection of indices evaluate to?
+By convention, for any binary operator \(\_\!\!⊕\!\!\_\), \[\bigoplus_{i ← []} f(i) ⊕ x = x \qquad \text{and} \qquad x ⊕ \bigoplus_{i ← []} = x\] These two equations are exactly the left- and right-identity laws.
 
-In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires the binary operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty.
+In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires the binary operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty: \[\bigoplus_{i ← []} f(i) = ε\]
 
 
 \minisec{Associativity}
 
 Assuming that \AgdaBound{i} ranges over some non-empty list of indices \(i_0, i_1, …, i_{n-1}, i_n\), the big operator expression \(\bigoplus_i f(i)\) is just an abbreviation for \[ f(i_0) ⊕ f(i_1) ⊕ ⋯ ⊕ f(i_{n-1}) ⊕ f(i_n) \]
-Without any further information about \(\_\!⊕\!\_\), this string of symbols represents a \emph{family} of expressions due to the lack of parentheses. Two members of that family are the left and right fold:
+Without any further information about \(\_\!⊕\!\_\), this string of symbols represents a \emph{family} of expressions due to the lack of parentheses. Two members of that family are the left and right fold over the index list with \(f\) applied to each element:
 \begin{align*}
 (⋯(f(i₀) ⊕ f(i₁)) ⋯ ⊕ f(i_{n-1})) ⊕ f(i_n) && \text{(left fold)} \\
 f(i₀) ⊕ (f(i₁) ⊕ ⋯ (f(i_{n-1} ⊕ f(i_n)))⋯) && \text{(right fold)}
@@ -1360,7 +1361,7 @@ The expression tree notation clearly shows the difference between the two folds 
 
 In order to actually compute the expression, we must decide on an order in which to add the terms. Unfortunately, the result of evaluating the left and right fold may differ. Our solution to this problem is to require \(\_\!\!⊕\!\!\_\) to be an associative operation:
 in this case, all interpretations of the string of symbols representing the expanded big operator evaluate to the same value.
-Note that this does not resolve the ambiguity of which expression tree the string represents---it just means that any expression tree in which all elements appear in the same left-to-right order compute the same value, and are therefore propositionally equal as terms.
+Note that this does not resolve the ambiguity of which expression tree the string represents---it just means that any expression tree in which all elements appear in the same left-to-right order compute the same value, and are therefore propositionally equal as terms (see \cref{ch:foldl-foldr} for a formal proof).
 
 
 \subsection{Implementing big operators\label{ssc:Implementing}}
@@ -1378,7 +1379,7 @@ Recall from \cref{sc:Algebra} the definition of a monoid in Agda:
 \end{code}
 
 The record \AgdaField{isMonoid} contains proofs that \AgdaField{\_≈\_} is an equivalence relation, \AgdaField{\_∙\_} is associative and congruent and \AgdaField{ε} is the identity for \AgdaField{\_∙\_} (all with respect to \AgdaField{\_≈\_}).
-One core idea of this project is that any monoid exactly specifies a big operator as follows:
+One core idea of this project is that any monoid exactly specifies a big operator (see \cref{ssc:Monoid-structure}) as follows:
 
 \begin{itemize}
 \item The binary operator \AgdaField{\_∙\_} gives us a way to combine elements of the monoid's carrier type. The associativity law guarantees that bracketing does not matter when we combine more than two elements. This means that left and right folds using \AgdaField{\_∙\_} are equivalent.
@@ -3137,5 +3138,55 @@ src/
 %\verbatiminput{../README.rst}
 
 \chapter{Contributor's guide}
+
+\chapter{Equality of left and right fold\label{ch:foldl-foldr}}
+
+\AgdaHide{
+\begin{code}
+module FoldlFoldr where
+  open import Data.List
+  open import Data.Product using (proj₁; proj₂)
+  import Relation.Binary.EqReasoning as EqR
+  import Relation.Binary.PropositionalEquality as P
+  open P using (_≡_)
+
+  open import Algebra
+  import Bigop.Core as Core
+\end{code}
+}
+
+\begin{code}
+  module Fold {c ℓ} (M : Monoid c ℓ) where
+    open Monoid M renaming (Carrier to R)
+    open Core.Fold M using (fold)
+    open EqR setoid
+
+    -- Lemmas
+    foldl-cong : ∀ x y xs → x ≈ y → foldl _∙_ x xs ≈ foldl _∙_ y xs
+    foldl-cong x y []        x≈y = x≈y
+    foldl-cong x y (z ∷ zs)  x≈y = foldl-cong (x ∙ z) (y ∙ z) zs (∙-cong x≈y refl)
+
+    foldl-step : ∀ x xs → x ∙ foldl _∙_ ε xs ≈ foldl _∙_ (ε ∙ x) xs
+    foldl-step x [] = begin
+      x ∙ ε  ≈⟨ proj₂ identity x ⟩
+      x      ≈⟨ sym (proj₁ identity x) ⟩
+      ε ∙ x  ∎
+    foldl-step x (y ∷ ys) = begin
+      x ∙ foldl _∙_ (ε ∙ y) ys    ≈⟨ ∙-cong refl (sym (foldl-step y ys)) ⟩
+      x ∙ (y ∙ foldl _∙_ ε ys)    ≈⟨ sym (assoc x y _) ⟩
+      (x ∙ y) ∙ foldl _∙_ ε ys    ≈⟨ foldl-step (x ∙ y) ys ⟩
+      foldl _∙_ (ε ∙ (x ∙ y)) ys  ≈⟨ foldl-cong  (ε ∙ (x ∙ y)) (ε ∙ x ∙ y) ys
+                                                 (sym (assoc ε x y)) ⟩
+      foldl _∙_ (ε ∙ x ∙ y) ys    ∎
+
+    -- The left- and right-fold over a list using a monoidal binary
+    -- operator are equal.
+    foldr≡foldl : (xs : List R) → foldr _∙_ ε xs ≈ foldl _∙_ ε xs
+    foldr≡foldl []        = refl
+    foldr≡foldl (x ∷ xs)  = begin
+      x ∙ foldr _∙_ ε xs    ≈⟨ ∙-cong refl (foldr≡foldl xs) ⟩
+      x ∙ foldl _∙_ ε xs    ≈⟨ foldl-step x xs ⟩
+      foldl _∙_ (ε ∙ x) xs  ∎
+\end{code}
 
 \end{document}
