@@ -2188,7 +2188,7 @@ The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-d
 %TC:endignore
 % $
 
-The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but it is easier to use in this form. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
+The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but this is the form in which it is used in \AgdaFunction{choose-suc}. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
 \AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
 
 %TC:ignore
@@ -3041,6 +3041,17 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
       ; distrib                = ⊗-distrOverˡ-⊕ , ⊗-distrOverʳ-⊕
       }
     ; zero                     = M-zeroˡ , M-zeroʳ
+    }
+
+  M-Semiring : Semiring c ℓ
+  M-Semiring = record
+    { Carrier     = M
+    ; _≈_         = _≋_
+    ; _+_         = _⊕_
+    ; _*_         = _⊗_
+    ; 0#          = 0M
+    ; 1#          = 1M
+    ; isSemiring  = M-isSemiring
     }
 \end{code}
 %TC:endignore
