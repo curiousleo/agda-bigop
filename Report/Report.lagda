@@ -3084,7 +3084,7 @@ Isabelle's higher-order logic (HOL) library contains two definitions related to 
 \item The \texttt{List} theory defines a function \texttt{listsum}, which exactly corresponds to the function \AgdaFunction{crush} defined in \cref{ssc:Implementing}: given a monoid, it performs a right-fold over the list, combining elements using the monoid's operator. If the list is empty, the identity element of the monoid is returned. No syntax definitions for \texttt{listsum} is provided.
 \end{itemize}
 
-In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see \cref{ssc:as-lists}), we would argue that defining big operators over lists rather than sets is the more flexible approach.
+In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see \cref{ssc:as-lists}), we would argue that defining big operators over lists rather than sets is the more flexible, unifying approach.
 
 \subsection{Coq: bigop.v}
 
@@ -3092,7 +3092,7 @@ The approach taken in Coq's \texttt{bigop} module,%
 \footnote{A clickable version of the source code for the \texttt{bigop} module can be accessed via \url{http://ssr.msr-inria.inria.fr/doc/mathcomp-1.5/MathComp.bigop.html}.} %
 which is part of the Mathematical Components library (and formerly of SSReflect), provided much inspiration for this project.%
 \footnote{The source code and documentation of both SSReflect and the Mathematical Components library for Coq can be found here: \url{http://ssr.msr-inria.inria.fr/}.} %
-Internally, the library works in a very similar way to ours: \AgdaFunction{fold} (defined in \cref{ssc:Implementing}) is equivalent to \texttt{reducebig}, which evaluates big operators in \texttt{bigop}. One big difference is that there is no restriction on the underlying structure---\texttt{reducebig} does not require a monoid.
+Internally, the library works in a very similar way to ours: in a monoid, \AgdaFunction{fold} (defined in \cref{ssc:Implementing}) is equivalent to \texttt{reducebig}, the big operator evaluation function in \texttt{bigop} (see \cref{sc:Reducebig} for a formal proof). One big difference is that there is no restriction on the underlying structure---\texttt{reducebig} does not require a monoid.
 
 Lemmas, on the other hand, are structured in a similar way to our project: sections of the module assume certain properties of the underlying structure, and prove lemmas about big operators based on those assumptions.
 
