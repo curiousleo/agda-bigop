@@ -1262,19 +1262,19 @@ For an overview of the directory structure and source code files, see \cref{fig:
 
 \section{Design\label{sc:Design}}
 
-Our goal in this project was to produce an Agda library for reasoning about big operators. We aimed to provide definitions and lemmas that abstracted over the particular operator being iterated. In several prototypes, we explored the design space for such a library. Three related questions had to be answered:
+Our goal in this project was to produce an Agda library for reasoning about big operators. We aimed to provide definitions and lemmas that abstracted over the particular operator being iterated. In several prototypes, we explored the design space for such a library. Two related questions had to be answered:
 
 \begin{itemize}
 \item What is the weakest algebraic structure that we can sensibly define a big operator on?
-\item How should the domain of indices be represented?
-\item How should a big operator expression be represented?
+\item How should the domain of indices of a big operator be represented?
 \end{itemize}
 
-The representation of the index domain and the minimal requirements on the algebraic structure depend on each other: the weaker the structure of the domain representation, the stronger the algebra has to be and vice versa. For example, the difference between lists and multisets is that lists are ordered. But in order to compute the iterated big operator over a multiset, the elements of the carrier must be combined using the underlying binary operator in \emph{some} order, which in this case is arbitrary. To get a well-defined result, the operator must consequently be immune to a re-ordering of its operands, in other words: removing the order from the domain adds commutativity to the properties required of the underlying operator.
+The representation of the index domain and the minimal requirements on the algebraic structure depend on each other: the weaker the structure of the domain representation, the stronger the algebra has to be and vice versa. For example, the difference between lists and multisets is that lists are ordered. But in order to compute the iterated big operator over a multiset, the elements of the carrier must be combined using the underlying binary operator in \emph{some} order, which in this case is arbitrary.
 
+To get a well-defined result, the operator must consequently be immune to a re-ordering of its operands, in other words: removing the order from the domain adds commutativity to the properties required of the underlying operator.
 In \cref{ssc:as-lists} and \cref{ssc:Monoid-structure} we argue that at least an identity and associativity law (that is, a monoid) is required, and that the appropriate index domain representation in this case is a list.
 
-As for representing big operator expression, we experimented with wrapping them in a record type or building an expression language. In the end, simply representing a big operator by the result it evaluates to, and proving lemmas with respect to the underlying structure's equivalence relation turned out to be sufficient (see \cref{ssc:Implementing}).
+We built prototypes of alternative implementations, including a small finite sets library to represent the index domain (which added much complexity without tangible benefits) and an expression language for big operators---this idea may be worth reconsidering as part of an automated solver for big operator expressions (see \cref{sc:Future}). But for the use case of this library, representing a big operator by the result it evaluates to, and proving lemmas with respect to the underlying structure's equivalence relation turned out to be the best option (see \cref{ssc:Implementing}).
 
 \section{Big operators\label{sc:Impl-Bigops}}
 
