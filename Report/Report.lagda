@@ -96,6 +96,7 @@
 
 \pagenumbering{roman}
 
+%TC:ignore
 \chapter*{Proforma}
 \label{ch:proforma}
 
@@ -139,6 +140,7 @@ None.
 
 \newpage
 \tableofcontents
+%TC:endignore
 
 \chapter{Introduction\label{ch:Intro}}
 
