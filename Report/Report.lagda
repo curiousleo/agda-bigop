@@ -107,7 +107,7 @@
 \textbf{Project Title} & Big operators in Agda \\
 \textbf{Examination} & Computer Science Tripos, Part \textsc{iii} (June 2015) \\
 \textbf{Word Count} & XXX words \\
-\textbf{Project Originator} & Timothy Griffin, Dominic Mulligan and Leonhard Markert \\
+\textbf{Project Originators} & Timothy Griffin, Dominic Mulligan and Leonhard Markert \\
 \textbf{Project Supervisors} & Timothy Griffin and Dominic Mulligan
 \end{tabularx}}
 \end{center}
@@ -123,20 +123,12 @@ Signed
 \vspace{0.2in}
 Date \hspace{0.4in} \today
 
-\section*{Original aims of the project}
+\section*{Abstract}
 \label{sc:original-aims}
 
-Original aims.
+We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
 
-\section*{Work completed}
-\label{sc:work-completed}
-
-Work completed.
-
-\section*{Special Difficulties}
-\label{sc:special-difficulties}
-
-None.
+In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula, the Binomial Theorem and the theorem \enquote{square matrices over a semiring form a semiring}.
 
 \newpage
 \tableofcontents
