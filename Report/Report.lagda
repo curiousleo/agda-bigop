@@ -3081,6 +3081,8 @@ module FoldlFoldr where
 \end{code}
 }
 
+\AgdaFunction{foldr≡foldl} shows that for any list, the right- and left-fold over that list evaluate to the same value if the binary operator and identity of a monoid are supplied as the first and second argument in either case.
+
 \begin{code}
   module Fold {c ℓ} (M : Monoid c ℓ) where
     open Monoid M renaming (Carrier to R)
