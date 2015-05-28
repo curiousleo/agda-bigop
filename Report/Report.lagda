@@ -1795,7 +1795,7 @@ In this Section, we show that square matrices and matrix addition form a commuta
 
 % Usually in mathematical reasoning, we expect that replacing a subterm \(S\) by an equivalent subterm \(S′\) within a term \(T\) gives a term \(T[S′/S]\) that is equivalent to the original term, so \(S ≈ S′ ⇒ T ≈ T[S′/S]\). A special case of this is \(T = f(S)\) for some function \(f\). In a formal system like Agda, the \(f\)-property \(S ≈ S′ ⇒ f(S) ≈ f(S′)\) is called \emph{congruence} or \emph{preservation of equivalence} and must be proved for each function.
 
-Here we prove that matrix addition preserves equivalence, that is, \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A′} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{B′} \AgdaSymbol{→} \AgdaBound{A} \AgdaFunction{⊕} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A′} \AgdaFunction{⊕} \AgdaBound{B′}.
+Here we prove that matrix addition preserves equivalence, that is, \AgdaBound{A}~\AgdaDatatype{≋}~\AgdaBound{A′}~\AgdaSymbol{→} \AgdaBound{B}~\AgdaDatatype{≋}~\AgdaBound{B′}~\AgdaSymbol{→} \AgdaBound{A}~\AgdaFunction{⊕}~\AgdaBound{B}~\AgdaDatatype{≋}~\AgdaBound{A′}~\AgdaFunction{⊕}~\AgdaBound{B′}.
 \begin{align}
 (A ⊕ B)_{r,c} &≈ A_{r,c} + B_{r,c} \\
               &≈ A′_{r,c} + B′_{r,c} \\
@@ -1832,27 +1832,30 @@ In standard mathematical notation, associativity of matrix addition can be prove
 &≈ A_{r,c} + (B_{r,c} + C_{r,c}) \\
 &≈ (A ⊕ (B ⊕ C))_{r,c}
 \end{align}
-The auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simply unfold the nested matrix additions.
+The auxiliary functions \AgdaFunction{⟨⊕⟩⊕-expand} and \AgdaFunction{⊕⟨⊕⟩-expand} simply unfold the nested matrix additions.
 
 %TC:ignore
 \begin{code}
   ⊕-assoc : ∀ A B C → (A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)
   ⊕-assoc A B C = λ r c → begin
-{- 4.4 -}  ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ factorˡ r c ⟩
+{- 4.4 -}  ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ ⟨⊕⟩⊕-expand r c ⟩
 {- 4.5 -}  (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
-{- 4.6 -}  A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorʳ r c) ⟩
+{- 4.6 -}  A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (⊕⟨⊕⟩-expand r c) ⟩
            (A ⊕ (B ⊕ C)) [ r , c ]                     ∎
            where
              open Semigroup +-semigroup using () renaming (assoc to +-assoc)
-
-             factorˡ : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
-             factorˡ r c =
+\end{code}
+\AgdaHide{
+\begin{code}
+             ⟨⊕⟩⊕-expand : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
+             ⟨⊕⟩⊕-expand r c =
                lookup∘tabulate r c ⟨ P.trans ⟩ P.cong₂ _+_ (lookup∘tabulate r c) P.refl
 
-             factorʳ : ∀ r c → (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
-             factorʳ r c =
+             ⊕⟨⊕⟩-expand : ∀ r c → (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
+             ⊕⟨⊕⟩-expand r c =
                lookup∘tabulate r c ⟨ P.trans ⟩ P.cong₂ _+_ P.refl (lookup∘tabulate r c)
 \end{code}
+}
 %TC:endignore
 Again, a semigroup over \AgdaFunction{\_+\_} provides sufficient structure to allow the proof to go through.
 
@@ -2054,7 +2057,7 @@ This proof is more involved than the associativity proof for matrix addition. Th
 &≈ (A ⊗ (B ⊗ C))_{r,c}
     && \text{by the definition of ⊗}
 \end{align}
-In the Agda proof, we use the appropriate congruence rules to replace subterms by equivalent subterms. Steps (3.4) and (3.5) have been factored into a separate function \AgdaFunction{inner} to make the proof more readable. \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simply unfold nested matrix multiplications.
+In the Agda proof, we use the appropriate congruence rules to replace subterms by equivalent subterms. Steps (3.4) and (3.5) have been factored into a separate function \AgdaFunction{inner} to make the proof more readable. \AgdaFunction{⟨⊗⟩⊗-expand} and \AgdaFunction{⊗⟨⊗⟩-expand} unfold the nested matrix multiplications.
 
 %TC:ignore
 \begin{code}
@@ -2062,7 +2065,7 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
   ⊗-assoc A B C = λ r c →
     begin
       ((A ⊗ B) ⊗ C) [ r , c ]
-{- 4.21 -}  ≈⟨ factorˡ r c ⟩
+{- 4.21 -}  ≈⟨ ⟨⊗⟩⊗-expand r c ⟩
       Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
 {- 4.22 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
       Σ[ i ← 0 …< n ] Σ[ j ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
@@ -2070,14 +2073,19 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
       Σ[ j ← 0 …< n ] Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.cong (0 …< n) P.refl (inner r c) ⟩
       Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
-{- 4.26 -}  ≈⟨ sym $ factorʳ r c ⟩
+{- 4.26 -}  ≈⟨ sym $ ⊗⟨⊗⟩-expand r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ]
     ∎
     where
       open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
       module Σ = Props.SemiringWithoutOne semiringWithoutOne
         using (cong; swap; distrˡ; distrʳ)
+\end{code}
+%TC:endignore
+Within \AgdaFunction{⊗-assoc}, \AgdaFunction{inner} is used which proves steps (4.24) and (4.23):
 
+%TC:ignore
+\begin{code}
       inner : ∀ r c j →  Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
                          A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
       inner r c j =
@@ -2088,19 +2096,22 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
 {- 4.25 -}  ≈⟨ sym (Σ.distrˡ _ _ (0 …< n)) ⟩
           A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
         ∎
-
-      factorˡ : ∀ r c →  ((A ⊗ B) ⊗ C) [ r , c ] ≈
-                         Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
-      factorˡ r c =
+\end{code}
+\AgdaHide{
+\begin{code}
+      ⟨⊗⟩⊗-expand : ∀ r c →  ((A ⊗ B) ⊗ C) [ r , c ] ≈
+                             Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+      ⟨⊗⟩⊗-expand r c =
         reflexive (lookup∘tabulate r c) ⟨ trans ⟩
         Σ.cong (0 …< n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl)
 
-      factorʳ : ∀ r c →  (A ⊗ (B ⊗ C)) [ r , c ] ≈
-                         Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
-      factorʳ r c =
+      ⊗⟨⊗⟩-expand : ∀ r c →  (A ⊗ (B ⊗ C)) [ r , c ] ≈
+                             Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
+      ⊗⟨⊗⟩-expand r c =
         reflexive (lookup∘tabulate r c) ⟨ trans ⟩
         Σ.cong (0 …< n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c)))
 \end{code}
+}
 %TC:endignore
 % $
 
@@ -2116,10 +2127,9 @@ This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \Agda
     1M [ r , r ]  ≣⟨ lookup∘tabulate r r ⟩
     diag r r      ≣⟨ diag-lemma r ⟩
     1#            □
-      where
-        diag-lemma  : ∀ {n} (r : Fin n) → diag r r ≡ 1#
-        diag-lemma  zeroF     =  P.refl
-        diag-lemma  (sucF r)  =  diag-lemma r
+      where  diag-lemma  : ∀ {n} (r : Fin n) → diag r r ≡ 1#
+             diag-lemma  zeroF     =  P.refl
+             diag-lemma  (sucF r)  =  diag-lemma r
 
   1M-∁-diag : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
   1M-∁-diag {r} {c} eq with ≟ r c
@@ -2150,9 +2160,7 @@ The justification for the identity law in mathematical notation is as follows:
                        &≈ A_{r,c}
 \end{align}
 After unfolding the definition of \AgdaFunction{⊗}, we split the list (\AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n}) that is being summed over by the decidable predicate (\AgdaFunction{≟} \AgdaBound{r}) using \AgdaFunction{Σ.split-P}. This lets us consider the cases \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} and \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i} separately.
-
 The function \AgdaFunction{≡-step} deals with the first case. From \AgdaBound{r} \AgdaFunction{≡} \AgdaBound{i} follows \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#}. Using distributivity and the identity law for \AgdaFunction{\_*\_}, we can deduce that
-
 \[ \text{
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
