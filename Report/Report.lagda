@@ -150,8 +150,8 @@ module Report where
 
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-\enquote{SUMS ARE EVERYWHERE}: with these words, Graham starts Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. He is referring to sums written in Sigma-notation, such as \[\sum_{i ∈ \{1,2,3\}} i² = 1² + 2² +3³\]
-\emph{Big operators} generalise Sigma-notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like logical conjunction (\(∧\)), set union (\(∪\)), max, and so on \autocite{bertot_canonical_2008}.
+\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as \[\sum_{i ∈ \{1,2,3\}} i² = 1² + 2² +3³\]
+\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}.
 
 Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators.
 
@@ -160,12 +160,13 @@ No such library currently exists for Agda. The aim of this project was to implem
 The main contributions of this project are:
 
 \begin{itemize}
-\item A modular syntax for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item Modular syntax for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item A formalisation of matrices in Agda.
 \item Lemmas about big operators based on their underlying algebraic structure (see \cref{sc:Impl-Bigop-Props}).
-\item A formal proof of the Binomial theorem (see \cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (see \cref{ch:Semi}) in Agda.
+\item A formal proof of two identities attributed to Gauss (see \cref{ch:Gauss}), the Binomial theorem (see \cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (see \cref{ch:Semi}) in Agda.
 \end{itemize}
 
-The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{Nils Anders Danielsson is the author of the Agda standard library, which is under active development with many other contributors. An overview of the library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and instead used definitions from the standard library wherever possible.
+The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and instead used definitions from the standard library wherever possible.
 
 %We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
 
@@ -178,17 +179,16 @@ We need to get two things out of the way before getting into the report: a defin
 For the purposes of this report, a \emph{big operator} is defined by
 
 \begin{itemize}
-\item an \emph{underlying structure} at least containing a \emph{carrier} set (or type), an associative binary operator \(\_\!\!⊕\!\!\_\) and an identity element \(ε\);
+\item an \emph{underlying structure} at least containing a \emph{carrier} set (or type), a binary operator \(\_\!\!⊕\!\!\_\) and an element of the carrier, \(ε\);
 \item a list of indices \textit{is}; and
-\item a function \(f\) from the type of indices into the carrier.
+\item a function \(f\) from the set (or type) of indices into the carrier.
 \end{itemize}
-
 The reasons for choosing this particular representation are discussed in \cref{sc:Impl-Bigops}. We will write the big operator corresponding to the structure described above as \[ \bigoplus_{i ← \textit{is}} f(i) \] Here \(i ← \textit{is}\) indicates that \(i\) ranges over \textit{is}, the list of indices.
 
 \minisec{Code listings}
 
 This report contains Agda code listings. Syntax highlighting is used to make them easier to read. \Cref{tb:Colours} lists the different syntactic categories and how they are typeset in this report.%
-\footnote{In fact, this report is a \emph{literal Agda file}, which means that every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
+\footnote{This report is a \emph{literal Agda file}: every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
 
 \begin{table}[h]
 \centering
@@ -207,6 +207,7 @@ This report contains Agda code listings. Syntax highlighting is used to make the
 \label{tb:Colours}
 \end{table}
 
+\newpage
 
 \section{Motivation\label{sc:Motivation}}
 
@@ -251,7 +252,7 @@ module IntroExample where
 
 In our view, a proof style called \emph{equational reasoning}, made possible by Agda's flexible syntax and used pervasively in the standard library, is another major selling point of the language.
 
-As an example, we will construct a proof of the arithmetic equality \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
+As an example, we will construct a proof of the identity \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
 \begin{align}
 (p · q) · r &= && \text{(associativity)} \\
 p · (q · r) &= && \text{(commutativity)} \\
@@ -285,7 +286,7 @@ Thankfully the Agda standard library already contains a proof that multiplicatio
 \end{code}
 In the typeset proof, we wrote that \(p · (q · r) = p · (r · q)\) follows \enquote{by commutativity}. But commutativity really only states that \(q · r = r · q\). Implicitly, we are using the principle that equal subterms can be replaced by equal subterms. In Agda, we must apply this principle, called \emph{congruence}, explicitly. This is one point where formal proofs using equational reasoning deviate from handwritten or typeset proofs.
 
-To be exact, then, \(p · (q · r) = p · (r · q)\) holds by the following reasoning:
+To be exact, \(p · (q · r) = p · (r · q)\) holds by the following reasoning:
 \begin{itemize}
 \item Multiplication is \emph{congruent} in both arguments, that is, if \(x = x′\) and \(y = y′\) then \(x · y = x′ · y′\) (in this case we instantiate \(x\) and \(x′\) with \(p\), \(y\) with \(q · r\) and \(y′\) with \(r · q\));
 \item \(p = p\) since equality is a \emph{reflexive} relation (i.e. anything is equal to itself); and
@@ -297,32 +298,32 @@ In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \A
 \vspace{.15cm}
 \begin{minipage}[b]{1\linewidth}
 \centering
-\begin{minipage}[b]{0.25\linewidth}
+\begin{minipage}[b]{0.2\linewidth}
 \begin{prooftree}
     \AxiomC{}
     \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \AgdaBound{p} \AgdaSymbol{=} \AgdaBound{p}}
 \end{prooftree}
 \end{minipage}
-\begin{minipage}[b]{0.374\linewidth}
+\begin{minipage}[b]{0.36\linewidth}
 \begin{prooftree}
     \AxiomC{}
     \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{:} \(x · y = y · x\)}
 \end{prooftree}
 \end{minipage}
-\begin{minipage}[b]{0.374\linewidth}
+\begin{minipage}[b]{0.36\linewidth}
 \begin{prooftree}
     \AxiomC{\AgdaBound{f} \AgdaSymbol{:} \(x = x′\)}
     \AxiomC{\AgdaBound{g} \AgdaSymbol{:} \(y = y′\)}
     \BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} \AgdaSymbol{:} \(x · y = x′ · y′\)}
 \end{prooftree}
 \end{minipage}
+\vspace{.5cm}
 \end{minipage}
-\vspace{.15cm}
 The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\) and a proof \AgdaBound{g} of \(y = y′\), we can conclude by \AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} that \(x · y = x′ · y′\) holds}. Instantiating the three rules as appropriate, we can assemble the proof of \(p · (q · r) = p · (r · q)\) as follows:
 
-\vspace{.15cm}
 \begin{minipage}[b]{1\linewidth}
 \centering
+\vspace{.15cm}
 \begin{prooftree}
 \AxiomC{}
 \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \(p = p\)}
@@ -330,8 +331,8 @@ The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\
 \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} \AgdaSymbol{:} \(q · r = r · q\)}
 \BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \(p · (q · r) = p · (r · q)\)}
 \end{prooftree}
+\vspace{.1cm}
 \end{minipage}
-\vspace{.15cm}
 That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} and \AgdaBound{g} \AgdaSymbol{=} \AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}, the third rule constructs the proof of \(p · (q · r) = p · (r · q)\) we were looking for. We can now complete the proof of our original proposition \((p · q) · r = p · (r · q)\) as follows:
 
 \AgdaHide{
@@ -354,7 +355,6 @@ How does our library fit into this picture? Big operator libraries have been imp
 
 As a simple example of what our big operator library permits, consider the \enquote{odd Gauss formula}. In standard mathematical notation, can be written as follows:
 \[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
-
 Using the syntax definitions for sums, intervals and filters implemented in our project (see \cref{ch:Impl}), it can be expressed in Agda as
 \[
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
@@ -594,11 +594,10 @@ The \AgdaKeyword{record} keyword lets us bundle terms and types together in a co
       snd  : B fst
 \end{code}
 %TC:endignore
-The level of a record is the least upper bound of it fields' levels. In this case, it is the upper bound of \AgdaBound{a} and \AgdaBound{b} (written as \AgdaBound{a} \AgdaFunction{⊔} \AgdaBound{b}) to accommodate fields \AgdaField{fst} at levels \AgdaBound{a} and \AgdaField{snd} at level \AgdaBound{b}. Giving a \AgdaKeyword{constructor} is optional in general but required for pattern matching. It also makes defining new values less verbose---compare \AgdaFunction{pair₀} and \AgdaFunction{pair₁} in the next example.
+The level of a record is the least upper bound \AgdaBound{a} \AgdaFunction{⊔} \AgdaBound{b} of it fields' levels. Giving a \AgdaKeyword{constructor} is optional in general but required for pattern matching. It also makes defining new values less verbose---compare \AgdaFunction{pair₀} and \AgdaFunction{pair₁} in the next example.
 
-In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. The type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, so it \emph{depends} on the value of \AgdaField{fst}. That is why \AgdaDatatype{Σ} is called a dependent pair. This type will become important in the next sections when predicates and existential quantifiers are discussed.
-
-For now we will restrict ourselves to building non-dependent pairs, which means that we will systematically ignore the \AgdaBound{A}-typed parameter to \AgdaBound{B}. We can use \AgdaDatatype{Σ} to define non-dependent pairs like this:
+In the type declaration of \AgdaDatatype{Σ}, the name \AgdaBound{B} is given to a function which takes a \emph{value} of type \AgdaBound{A} and returns a \emph{type} at level \AgdaBound{b}. The type of \AgdaField{snd} is defined as \AgdaBound{B} \AgdaBound{fst}, so it \emph{depends} on the value of \AgdaField{fst}. That is why \AgdaDatatype{Σ} is called a dependent pair.% This type will become important in the next sections when predicates and existential quantifiers are discussed.
+For now we will restrict ourselves to building non-dependent pairs, which means that we will ignore the \AgdaBound{A}-typed parameter to \AgdaBound{B}. We can use \AgdaDatatype{Σ} to define non-dependent pairs like this:
 
 %TC:ignore
 \begin{code}
