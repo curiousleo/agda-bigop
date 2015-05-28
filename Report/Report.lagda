@@ -666,7 +666,7 @@ We will look at a predicate \AgdaDatatype{Even}~\AgdaSymbol{:} \AgdaDatatype{ℕ
     ss-even    : {n : ℕ} → Even n → Even (suc (suc n))
 \end{code}
 %TC:endignore
-Using this definition, we can now provide evidence that zero and four are indeed even numbers:
+Using this definition, we can now provide evidence that zero and four are even numbers:
 
 %TC:ignore
 \begin{code}
@@ -692,7 +692,7 @@ The parameterised predicate \AgdaDatatype{\_≡\_} has only one constructor call
 In order to create an inhabitant of the propositional equality type, we \emph{must} use this constructor.
 It requires that its two arguments have the same value. Therefore, in order to obtain an inhabitant of \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y}, \AgdaBound{x} and \AgdaBound{y} must be shown to reduce to the same value.
 
-Evaluating a function with equal arguments should always yield equal results. This property is called \emph{congruence}, and it can be proved for any single argument function \AgdaBound{f} as follows:
+Evaluating a function with equal arguments should always yield equal results. This property of a homogeneous relation is called \emph{congruence}, and it can be proved for any single argument function \AgdaBound{f} as follows:
 
 %TC:ignore
 \begin{code}
@@ -868,7 +868,6 @@ Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol
 \section{Equivalences and setoids\label{sc:Setoids}}
 
 The main use case of the \AgdaModule{Bigop} library is to prove equalities like the Binomial Theorem \autocite[][Equation 5.13, page 163]{graham_concrete_1994}: \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
-
 In dependently typed languages, we often use the more general notions of equivalence and setoid in place of equality. These will be discussed in this Section.
 
 \subsection{Equivalences\label{ssc:Equivalences}}
@@ -923,7 +922,7 @@ Setoids can be used to define quotients. For example, we could represent non-neg
 
 \subsection{Equational reasoning\label{ssc:Equational-reasoning}}
 
-Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder, in turn, can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make long proofs in Agda look more like handwritten or typeset proofs and will be used extensively in the next chapters.
+Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make Agda proofs look more like pen-and-paper proofs and will be used extensively in the next chapters.
 
 As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
@@ -938,7 +937,7 @@ Additionally we have the transitivity law and congruence for binary functions, b
 \text{\AgdaFunction{P.trans}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{\{}\AgdaBound{x} \AgdaBound{y} \AgdaBound{z} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{z} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{z}} \\
 \text{\AgdaFunction{P.cong₂}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{\{}\AgdaBound{x} \AgdaBound{x′} \AgdaBound{y} \AgdaBound{y′} \AgdaSymbol{:} A\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x′} \AgdaSymbol{→} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{y′} \AgdaSymbol{→} \AgdaBound{f} \AgdaBound{x} \AgdaBound{y} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x′} \AgdaBound{y′}}
 \end{align*}
-The underlying reasoning is the same for both proofs: we first show that \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r}. It follows from \AgdaBound{p} \AgdaFunction{*} \AgdaBound{q} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaBound{p} (by commutativity), \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{r} (by reflexivity) and congruence of \AgdaFunction{\_*\_}. Then we prove \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)}, which is a direct consequence of the associativity rule. Using the lemmas specified above, the two steps can be written like this:
+The underlying reasoning is the same for both proofs: we first show \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r}. It follows from \AgdaBound{p} \AgdaFunction{*} \AgdaBound{q} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaBound{p} (by commutativity), \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{r} (by reflexivity) and congruence of \AgdaFunction{\_*\_}. Then we prove \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)}, which is a direct consequence of the associativity rule. Using the lemmas specified above, the two steps can be written like this:
 \begin{align*}
 \text{\AgdaFunction{P.cong₂} \AgdaPrimitive{\_*\_} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{p} \AgdaBound{q}\AgdaSymbol{)} \AgdaInductiveConstructor{P.refl}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r}} \\
 \text{\AgdaFunction{*-assoc} \AgdaBound{q} \AgdaBound{p} \AgdaBound{r}}\;&\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{q} \AgdaFunction{*} \AgdaBound{p}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)}}
@@ -966,9 +965,9 @@ With equational reasoning it looks like this:
 %TC:endignore
 The proof starts with \AgdaFunction{begin\_} followed by the left-hand side of the equivalence we are trying to prove. It ends with the right-hand side of the equivalence followed by \AgdaFunction{\_∎} (which is meant to resemble the \enquote{q.e.d.} symbol at the end of a proof). Intermediate steps are linked using \AgdaFunction{\_≡⟨\_⟩\_}; the term in angle brackets provides the justification. Transitivity is applied implicitly. Note that there is nothing special about \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎}---they are defined in the standard library like any other mixfix operator.
 
-Which proof style one prefers is a matter of taste. Equational reasoning is more verbose---\AgdaFunction{equiv₁} spans seven lines compared to \AgdaFunction{equiv₀}'s two---but it makes intermediate steps explicit, which helps someone reading the proof understand what is going on.
+Which proof style one prefers is a matter of taste. Equational reasoning is more verbose---\AgdaFunction{equiv₁} spans seven lines compared to \AgdaFunction{equiv₀}'s two---but it makes intermediate steps explicit, which improves readability.
 
-In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propositional equality for our setoid. We can then freely mix steps using that equivalence relation \AgdaFunction{\_≈⟨\_⟩\_} and steps using propositional equality \AgdaFunction{\_≡⟨\_⟩\_} in an equational reasoning-style proof. Proving intermediate steps by propositional equality is allowed because by \AgdaFunction{reflexivity} (see \cref{ssc:Equivalences}), \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} \AgdaSymbol{→} \AgdaBound{x} \AgdaDatatype{≈} \AgdaBound{y} for \emph{any} equivalence relation \AgdaDatatype{\_≈\_}.
+In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propositional equality for our setoid. We can then freely mix steps using that equivalence relation \AgdaFunction{\_≈⟨\_⟩\_} and steps using propositional equality \AgdaFunction{\_≡⟨\_⟩\_} in an equational reasoning-style proof. Proving intermediate steps by propositional equality is allowed because by \AgdaFunction{reflexivity} (see \cref{ssc:Equivalences}), \AgdaBound{x}~\AgdaDatatype{≡}~\AgdaBound{y}~\AgdaSymbol{→} \AgdaBound{x}~\AgdaDatatype{≈}~\AgdaBound{y} for \emph{any} equivalence relation \AgdaDatatype{\_≈\_}.
 
 
 \section{Algebra\label{sc:Algebra}}
@@ -981,8 +980,6 @@ A binary operator \(\_\!\!⊗\!\!\_\) may have any of the following properties:
 
 \begin{description}
 \item[Associativity.] \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c)\). The order in which subterms are evaluated has no bearing on the result. If an operator is known to be associative, terms consisting of multiple applications of that operator are usually written without parentheses: \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c) ≡ a ⊗ b ⊗ c\).
-
-
 In \AgdaModule{Algebra.FunctionProperties}, associativity of an operator \AgdaBound{\_∙\_} with respect to some relation \AgdaBound{\_≈\_} is defined as follows:
 
 \begin{code}
@@ -991,19 +988,25 @@ In \AgdaModule{Algebra.FunctionProperties}, associativity of an operator \AgdaBo
 \end{code}
 
 \item[Identity (or unit).] \(1 ⊗ a ≡ a\), \(a ⊗ 1 ≡ a\). Element \(1\) is called the left- or right-identity of \(\_\!\!⊗\!\!\_\) in the first and second equation, respectively.
-
 In Agda's standard library, this property is encoded as a pair of predicates, \AgdaFunction{LeftIdentity} and \AgdaFunction{RightIdentity}:
 
+%TC:ignore
+\begin{code}
+  LeftIdentity : ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) → A → (A → A → A) → Set _
+  LeftIdentity _≈_ e _∙_ = ∀ x → (e ∙ x) ≈ x
+
+  RightIdentity : ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) → A → (A → A → A) → Set _
+  RightIdentity _≈_ e _∙_ = ∀ x → (x ∙ e) ≈ x
+\end{code}
+%TC:endignore
+\AgdaDatatype{Identity} uses the non-dependent pair type \AgdaDatatype{\_×\_} to bundle the left- and right-identity laws together:
+
+%TC:ignore
 \begin{code}
   Identity : ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) → A → (A → A → A) → Set _
-  Identity {A = A} _≈_ e ∙ = LeftIdentity e ∙ × RightIdentity e ∙
-    where
-     LeftIdentity : A → (A → A → A) → Set _
-     LeftIdentity e _∙_ = ∀ x → (_∙_ e x) ≈ x
-
-     RightIdentity : A → (A → A → A) → Set _
-     RightIdentity e _∙_ = ∀ x → (_∙_ x e) ≈ x
+  Identity _≈_ e ∙ = LeftIdentity _≈_ e ∙ × RightIdentity _≈_ e ∙
 \end{code}
+%TC:endignore
 
 \item[Zero (or annihilator).] \(0 ⊗ a ≡ 0\), \(a ⊗ 0 ≡ 0\). The value \(0\) is the left- or right-identity of \(\_\!\!⊗\!\!\_\) in the first and second equation, respectively. This property is again encoded as pair of predicates in the same way as \AgdaFunction{Identity}. The left zero property is written as follows (\AgdaFunction{RightZero} is similar, and \AgdaFunction{Zero} is simply the pair of the two properties):
 
@@ -1035,10 +1038,12 @@ Binary operators may also interact in certain ways. If we add an operator \(\_\!
 
 Certain combinations of the properties described in the previous subsection arise often, so for convenience, they are given names.
 
-A \emph{semigroup} has an associative operation \(\_\!\!⊗\!\!\_\). If the operation has an identity, the structure is called a \emph{monoid}. In a \emph{commutative monoid}, the operation is also commutative.
-Given a monoid over \(\_\!\!⊗\!\!\_\) and a commutative monoid over \(\_\!\!⊕\!\!\_\), if the \(⊕\)-identity is a zero for \(\_\!\!⊗\!\!\_\) and \(\_\!\!⊗\!\!\_\) distributes over \(\_\!\!⊕\!\!\_\) we call the composite structure a \emph{semiring}.
+A \emph{semigroup} packages a carrier type together with an associative operation \(\_\!\!⊗\!\!\_\). If the operation has an identity \(ε\), the structure is called a \emph{monoid}. In a \emph{commutative monoid}, the operation is also commutative.
+Given a monoid over \(\_\!\!⊗\!\!\_\) and a commutative monoid over \(\_\!\!⊕\!\!\_\), if the \(⊕\)-identity (this element is called \AgdaBound{0\#} in the standard library definition) is a zero for \(\_\!\!⊗\!\!\_\) and \(\_\!\!⊗\!\!\_\) distributes over \(\_\!\!⊕\!\!\_\) we call the composite structure a \emph{semiring}.
 
 In the Agda standard library, the definitions of algebraic structures are split into two records, one containing the \emph{properties} and the other the \emph{data} of the structure.
+
+\newpage
 
 \begin{description}
 \item[Semigroups.] The complete definition of a semigroup in Agda's standard library consists of the record types \AgdaDatatype{IsSemigroup} and \AgdaDatatype{Semigroup}:
@@ -1085,9 +1090,7 @@ The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relat
 
 \item[Semirings \enquote{without one}.] \AgdaDatatype{SemiringWithoutOne} is a structure almost like a semiring, except that it does not have a multiplicative identity.%
 \footnote{We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \cref{ch:Semi} as well as \cref{ch:Gauss} and \cref{ch:Binom}. It was one goal of this project to always assume only what is really needed.} %
-Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\_*\_} and a special element \AgdaField{0\#}.% which is simultaneously an identity for \AgdaField{\_+\_} and a zero for \AgdaField{\_*\_}.
-
-\AgdaDatatype{IsSemiringWithoutOne} specifies that \AgdaField{\_+\_} forms a commutative monoid with \AgdaField{0\#} as its identity elements, \AgdaField{\_*\_} forms a semigroup, \AgdaField{0\#} is a zero for \AgdaField{\_*\_} and \AgdaField{\_*\_} distributes over \AgdaField{\_+\_}.
+Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\_*\_} and a special element \AgdaField{0\#}.% which is simultaneously an identity for \AgdaField{\_+\_} and a zero for \AgdaField{\_*\_}. \AgdaDatatype{IsSemiringWithoutOne} specifies that \AgdaField{\_+\_} forms a commutative monoid with \AgdaField{0\#} as its identity elements, \AgdaField{\_*\_} forms a semigroup, \AgdaField{0\#} is a zero for \AgdaField{\_*\_} and \AgdaField{\_*\_} distributes over \AgdaField{\_+\_}.
 
 \end{description}
 
