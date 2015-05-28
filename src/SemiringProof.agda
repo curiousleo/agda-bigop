@@ -107,6 +107,51 @@ diag (sucF r) (sucF c) = diag r c
     diag-lemma (sucF r) zeroF    ¬eq = P.refl
     diag-lemma (sucF r) (sucF c) ¬eq = diag-lemma r c (suc-¬-lemma ¬eq)
 
+
+------------
+-- Lemmas --
+------------
+
+⟨⊕⟩⊕-expand : ∀ {A B C} r c →
+              ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
+⟨⊕⟩⊕-expand {A} {B} {C} r c = start
+  ((A ⊕ B) ⊕ C) [ r , c ]          ≣⟨ lookup∘tabulate r c ⟩
+  (A ⊕ B) [ r , c ] + C [ r , c ]  ≣⟨ P.cong₂ _+_ (lookup∘tabulate r c) P.refl ⟩
+  (A [ r , c ] + B [ r , c ]) + C [ r , c ] □
+
+⊕⟨⊕⟩-expand : ∀ {A B C} r c →
+              (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
+⊕⟨⊕⟩-expand {A} {B} {C} r c = start
+  (A ⊕ (B ⊕ C)) [ r , c ]          ≣⟨ lookup∘tabulate r c ⟩
+  A [ r , c ] + (B ⊕ C) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (lookup∘tabulate r c) ⟩
+  A [ r , c ] + (B [ r , c ] + C [ r , c ]) □
+
+⟨⊗⟩⊗-expand : ∀ {A B C} r c →
+              ((A ⊗ B) ⊗ C) [ r , c ] ≈
+              Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+⟨⊗⟩⊗-expand {A} {B} {C} r c = begin
+  ((A ⊗ B) ⊗ C) [ r , c ]
+    ≡⟨ lookup∘tabulate r c ⟩
+  Σ[ i ← 0 …< n ] (A ⊗ B) [ r , i ] * C [ i , c ]
+    ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl) ⟩
+  Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
+  where
+    open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
+    module Σ = Props.Monoid +-monoid using (cong)
+
+⊗⟨⊗⟩-expand : ∀ {A B C} r c →
+              (A ⊗ (B ⊗ C)) [ r , c ] ≈
+              Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
+⊗⟨⊗⟩-expand {A} {B} {C} r c = begin
+  (A ⊗ (B ⊗ C)) [ r , c ]
+     ≡⟨ lookup∘tabulate r c ⟩
+  Σ[ j ← 0 …< n ] A [ r , j ] * (B ⊗ C) [ j , c ]
+     ≈⟨ Σ.cong (0 …< n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c))) ⟩
+  Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
+  where
+    open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
+    module Σ = Props.Monoid +-monoid using (cong)
+
 ------------
 -- Proofs --
 ------------
@@ -116,25 +161,11 @@ diag (sucF r) (sucF c) = diag r c
   where
     open Semigroup +-semigroup using () renaming (assoc to +-assoc)
 
-    factorₗ : ∀ r c →
-              ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
-    factorₗ r c = start
-      ((A ⊕ B) ⊕ C) [ r , c ]          ≣⟨ lookup∘tabulate r c ⟩
-      (A ⊕ B) [ r , c ] + C [ r , c ]  ≣⟨ P.cong₂ _+_ (lookup∘tabulate r c) P.refl ⟩
-      (A [ r , c ] + B [ r , c ]) + C [ r , c ] □
-
-    factorᵣ : ∀ r c →
-              (A ⊕ (B ⊕ C)) [ r , c ] ≡ A [ r , c ] + (B [ r , c ] + C [ r , c ])
-    factorᵣ r c = start
-      (A ⊕ (B ⊕ C)) [ r , c ]          ≣⟨ lookup∘tabulate r c ⟩
-      A [ r , c ] + (B ⊕ C) [ r , c ]  ≣⟨ P.cong₂ _+_ P.refl (lookup∘tabulate r c) ⟩
-      A [ r , c ] + (B [ r , c ] + C [ r , c ]) □
-
     assoc : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≈ (A ⊕ (B ⊕ C)) [ r , c ]
     assoc r c = begin
-      ((A ⊕ B) ⊕ C) [ r , c ]                      ≡⟨ factorₗ r c ⟩
+      ((A ⊕ B) ⊕ C) [ r , c ]                      ≡⟨ ⟨⊕⟩⊕-expand r c ⟩
       (A [ r , c ] +  B [ r , c ]) + C [ r , c ]   ≈⟨ +-assoc _ _ _ ⟩
-       A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorᵣ r c) ⟩
+       A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (⊕⟨⊕⟩-expand r c) ⟩
       (A ⊕ (B ⊕ C)) [ r , c ]                      ∎
 
 ⊕-cong : _⊕_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
@@ -213,26 +244,6 @@ M-zeroʳ A = z
     open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
-    factorˡ : ∀ r c →
-              ((A ⊗ B) ⊗ C) [ r , c ] ≈
-              Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
-    factorˡ r c = begin
-      ((A ⊗ B) ⊗ C) [ r , c ]
-        ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ← 0 …< n ] (A ⊗ B) [ r , i ] * C [ i , c ]
-        ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl) ⟩
-      Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
-
-    factorʳ : ∀ r c →
-              (A ⊗ (B ⊗ C)) [ r , c ] ≈
-              Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
-    factorʳ r c = begin
-      (A ⊗ (B ⊗ C)) [ r , c ]
-        ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ j ← 0 …< n ] A [ r , j ] * (B ⊗ C) [ j , c ]
-        ≈⟨ Σ.cong (0 …< n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c))) ⟩
-      Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
-
     inner : ∀ r c j →
             Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
             A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
@@ -246,7 +257,7 @@ M-zeroʳ A = z
     assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
     assoc r c = begin
       ((A ⊗ B) ⊗ C) [ r , c ]
-        ≈⟨ factorˡ r c ⟩
+        ≈⟨ ⟨⊗⟩⊗-expand r c ⟩
       Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
       Σ[ i ← 0 …< n ] Σ[ j ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
@@ -254,7 +265,7 @@ M-zeroʳ A = z
       Σ[ j ← 0 …< n ] Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (inner r c) ⟩
       Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
-        ≈⟨ sym $ factorʳ r c ⟩
+        ≈⟨ sym $ ⊗⟨⊗⟩-expand r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ] ∎
 
 ⊗-cong : _⊗_ Preserves₂ _≋_ ⟶ _≋_ ⟶ _≋_
