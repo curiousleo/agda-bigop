@@ -1110,7 +1110,6 @@ We formalise four independent concepts: big operators as defined in \cref{sc:Con
 \item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
-
 In addition, a module formalising \textbf{matrices} has been written as part of this project, since this is one obvious area where the notation and lemmas written in this project can be used. It is completely independent from the rest of the source code.
 For an overview of the directory structure and source code files, see \cref{fig:structure}.
 
@@ -2464,7 +2463,6 @@ The challenge here would be to find a normal form for complex big operator expre
 
 \begin{figure}[h!]
 \begin{verbatim}
-src/
 ├── Bigop.agda                           19
 ├── Bigop
 │   ├── Core.agda                        35
@@ -2475,28 +2473,24 @@ src/
 │   │   ├── CommutativeMonoid.agda       92
 │   │   ├── Monoid.agda                  87
 │   │   └── SemiringWithoutOne.agda      30
-│   │
 │   ├── DecidableEquality.agda           29
 │   ├── Filter.agda                      14
 │   ├── Filter
 │   │   ├── PredicateReasoning.agda      23
 │   │   ├── Predicates.agda              40
 │   │   └── Properties.agda              89
-│   │
 │   └── Interval
 │       ├── Fin.agda                     23
 │       ├── Nat.agda                     12
 │       └── Properties
 │           ├── Fin.agda                 63
 │           └── Nat.agda                 69
-│
 ├── Matrix.agda                          59
-│
 ├── GaussProofs.agda                     89
 ├── BinomialTheorem.agda                114
 └── SemiringProof.agda                  371
 \end{verbatim}
-\caption{Agda source files and lines of code}
+\caption{Agda source files and lines of code. The module structure uses conventions of the Agda standard library.}
 \label{fig:structure}
 \end{figure}
 
@@ -2795,7 +2789,6 @@ The proof of the odd Gauss equation again works by natural number induction on \
 \chapter{Binomial Theorem\label{ch:Binom}}
 
 In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
-
 We present a pen-and-paper proof first and then translate it into Agda.
 
 \section{Pen-and-paper proof}
@@ -2811,7 +2804,6 @@ The proof works by natural number induction on \AgdaBound{n}. The base case with
 &= (x + 1) · \sum_{k ← 0 … n} \binom{n}{k} · x^k \\
 &= (1 + x)^{1 + n}
 \end{align}
-
 Here the last step uses the induction hypothesis, \(\sum_{k ← 0 … n} \binom{n}{k} · x^k = (1 + x)^n\).
 
 \section{Definitions}
@@ -2858,7 +2850,6 @@ module BinomialTheorem where
   0      choose  suc k  = 0
   suc n  choose  suc k  = n choose k + n choose (suc k)
 \end{code}
-
 Additionally we define a shorthand \AgdaFunction{f} for the general form of the function we will be manipulating within the sum:
 
 \begin{code}
@@ -2898,7 +2889,6 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
     ∎
 \end{code}
 % $
-
 \AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (5.2) and (5.3):
 \[ 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
 \] We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
@@ -2922,7 +2912,6 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
       y * (x * z)
     ∎
 \end{code}
-
 The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum. It provides justification for going from the left-hand side of the outer addition in (5.3) to the left-hand side of the addition in (5.4):
 \[ \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} = x · \sum_{k ← 0 … n} \binom{n}{k} · x^k
 \]
@@ -2940,7 +2929,6 @@ The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-d
     ∎
 \end{code}
 % $
-
 The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but this is the form in which it is used in \AgdaFunction{choose-suc}. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
 \AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
 
@@ -2978,7 +2966,6 @@ The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \Agd
       Σ[ k ← 1 … n ] n choose k * x ^ k
     ∎
 \end{code}
-
 Our final lemma \AgdaFunction{shift} justifies the equality between the right-hand side of the outer addition in (5.3) and the right-hand side of the outer addition in (5.4):
 \[ \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^k
 \]
@@ -3038,7 +3025,7 @@ The following Agda proof is annotated by the corresponding steps in the pen-and-
 
 \chapter{Additional proofs}
 
-\section{Currying\label{sc:Curry}}
+\section{Arrow-pair isomorphism\label{sc:Curry}}
 
 \AgdaHide{
 \begin{code}
@@ -3051,7 +3038,6 @@ module Curry where
   open import Relation.Binary.PropositionalEquality
 \end{code}
 }
-
 The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
 
 \begin{code}
@@ -3061,7 +3047,6 @@ The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→
   uncurry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A × B → C) → (A → B → C)
   uncurry f x y = f (x , y)
 \end{code}
-
 In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute an isomorphism, we prove that they are inverses of each other:
 
 \begin{code}
@@ -3075,8 +3060,9 @@ In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute
                    f (x , y) ≡ curry (uncurry f) (x , y)
   curry∘uncurry f x y = refl
 \end{code}
-
 Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
+
+\newpage
 
 \section{Equality of left and right fold\label{ch:foldl-foldr}}
 
@@ -3128,6 +3114,7 @@ module FoldlFoldr where
       foldl _∙_ (ε ∙ x) xs  ∎
 \end{code}
 
+\newpage
 
 \section{Extensional equality with reducebig\label{sc:Reducebig}}
 
