@@ -3,9 +3,14 @@ open import Algebra
 module Bigop.Core.Properties {c ℓ} (M : Monoid c ℓ) where
 
 import Bigop.Core as Core
+open import Bigop.Filter
 
+open import Data.Bool.Base
 open import Data.List
 open import Data.Product using (proj₁; proj₂)
+open import Relation.Nullary using (yes; no)
+open import Relation.Nullary.Decidable using (⌊_⌋)
+open import Relation.Unary using (Pred; Decidable)
 import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
@@ -17,14 +22,16 @@ open EqR setoid
 ------------------------------------------------------------------------
 -- `reducebig` is how big operators are evaluated in Coq's bigop module.
 
-reducebig : ∀ {i} {I : Set i} → (I → R) → List I → R
-reducebig f = foldr (λ i acc → f i ∙ acc) ε
+reducebig : ∀ {i p} {I : Set i} {P : Pred I p} → (I → R) → Decidable P → List I → R
+reducebig f p = foldr (λ i acc → if ⌊ p i ⌋ then f i ∙ acc else acc) ε
 
 -- `reducebig` and Bigop.Core.Fold.fold are extensionally equal
-equivalent : ∀ {i} {I : Set i} → (f : I → R) → (is : List I) →
-             reducebig f is ≡ fold f is
-equivalent f []       = P.refl
-equivalent f (i ∷ is) = P.cong (_∙_ (f i)) (equivalent f is)
+equivalent : ∀ {i p} {I : Set i} {P : Pred I p} → (f : I → R) (p : Decidable P)
+             (is : List I) → reducebig f p is ≡ fold f (is ∥ p)
+equivalent f p []       = P.refl
+equivalent f p (i ∷ is) with p i
+... | yes pi = P.cong (_∙_ (f i)) (equivalent f p is)
+... | no ¬pi = equivalent f p is
 
 
 ------------------------------------------------------------------------
