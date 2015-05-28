@@ -1810,9 +1810,9 @@ In the inner proof, we first expand the definitions of \AgdaFunction{\_⊕\_} an
   ⊕-cong : ∀ {A A′ B B′} → A ≋ A′ → B ≋ B′ → A ⊕ B ≋ A′ ⊕ B′
   ⊕-cong {A} {A′} {B} {B′} eq₀ eq₁ = λ r c →
     begin
-{- 5.1 -}  (A ⊕ B) [ r , c ]             ≡⟨ lookup∘tabulate r c ⟩
-{- 5.2 -}  A [ r , c ]   + B [ r , c ]   ≈⟨ eq₀ r c ⟨ +-cong ⟩ eq₁ r c ⟩
-{- 5.3 -}  A′ [ r , c ]  + B′ [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
+{- 4.1 -}  (A ⊕ B) [ r , c ]             ≡⟨ lookup∘tabulate r c ⟩
+{- 4.2 -}  A [ r , c ]   + B [ r , c ]   ≈⟨ eq₀ r c ⟨ +-cong ⟩ eq₁ r c ⟩
+{- 4.3 -}  A′ [ r , c ]  + B′ [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
            (A′ ⊕ B′) [ r , c ]
     ∎
     where
@@ -1838,9 +1838,9 @@ The auxiliary functions \AgdaFunction{factorˡ} and \AgdaFunction{factorʳ} simp
 \begin{code}
   ⊕-assoc : ∀ A B C → (A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)
   ⊕-assoc A B C = λ r c → begin
-{- 5.4 -}  ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ factorˡ r c ⟩
-{- 5.5 -}  (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
-{- 5.6 -}  A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorʳ r c) ⟩
+{- 4.4 -}  ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ factorˡ r c ⟩
+{- 4.5 -}  (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
+{- 4.6 -}  A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (factorʳ r c) ⟩
            (A ⊕ (B ⊕ C)) [ r , c ]                     ∎
            where
              open Semigroup +-semigroup using () renaming (assoc to +-assoc)
@@ -1872,9 +1872,9 @@ Using equational reasoning, the corresponding Agda proof looks like this:
   ⊕-identityˡ : ∀ A → 0M ⊕ A ≋ A
   ⊕-identityˡ A = λ r c →
     begin
-{- 5.7 -}  (0M ⊕ A) [ r , c ]           ≡⟨ lookup∘tabulate r c ⟩
-{- 5.8 -}  0M [ r , c ] +  A [ r , c ]  ≡⟨ P.cong₂ _+_ (lookup∘tabulate r c) P.refl ⟩
-{- 5.9 -}            0# +  A [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
+{- 4.7 -}  (0M ⊕ A) [ r , c ]           ≡⟨ lookup∘tabulate r c ⟩
+{- 4.8 -}  0M [ r , c ] +  A [ r , c ]  ≡⟨ P.cong₂ _+_ (lookup∘tabulate r c) P.refl ⟩
+{- 4.9 -}            0# +  A [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
                            A [ r , c ]
     ∎
     where
@@ -1899,9 +1899,9 @@ Again, we present the proof in standard mathematical notation and then in Agda:
   ⊕-comm : ∀ A B → A ⊕ B ≋ B ⊕ A
   ⊕-comm A B = λ r c →
     begin
-{- 5.10 -}  (A ⊕ B) [ r , c ]           ≡⟨ lookup∘tabulate r c ⟩
-{- 5.11 -}  A [ r , c ]  + B [ r , c ]  ≈⟨ +-comm _ _ ⟩
-{- 5.12 -}  B [ r , c ]  + A [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
+{- 4.10 -}  (A ⊕ B) [ r , c ]           ≡⟨ lookup∘tabulate r c ⟩
+{- 4.11 -}  A [ r , c ]  + B [ r , c ]  ≈⟨ +-comm _ _ ⟩
+{- 4.12 -}  B [ r , c ]  + A [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
             (B ⊕ A) [ r , c ]
     ∎
     where
@@ -1949,11 +1949,11 @@ In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-con
   ⊗-cong {A} {A′} {B} {B′} eq₁ eq₂ = λ r c →
     begin
       (A ⊗ B) [ r , c ]
-{- 5.13 -}       ≡⟨ lookup∘tabulate r c ⟩
+{- 4.13 -}       ≡⟨ lookup∘tabulate r c ⟩
       Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
-{- 5.14 -}       ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
+{- 4.14 -}       ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
       Σ[ i ← 0 …< n ] A′ [ r , i ] * B′ [ i , c ]
-{- 5.15 -}       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
+{- 4.15 -}       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       (A′ ⊗ B′) [ r , c ]
     ∎
     where
@@ -1982,7 +1982,7 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
   M-zeroˡ : ∀ A → 0M ⊗ A ≋ 0M
   M-zeroˡ A = λ r c →
     begin
-{- 5.16 -}  (0M ⊗ A) [ r , c ]                       ≡⟨ lookup∘tabulate r c ⟩
+{- 4.16 -}  (0M ⊗ A) [ r , c ]                       ≡⟨ lookup∘tabulate r c ⟩
             Σ[ i ← 0 …< n ] 0M [ r , i ] * A [ i , c ]
               ≈⟨ Σ.cong  (0 …< n) P.refl
                          (λ i → reflexive (lookup∘tabulate r i) ⟨ *-cong ⟩ refl) ⟩
@@ -1990,7 +1990,7 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
               ≈⟨ Σ.cong (0 …< n) P.refl (λ i → proj₁ zero _) ⟩
             Σ[ i ← 0 …< n ] 0#
               ≈⟨ Σ.identity (0 …< n) ⟩
-{- 5.20 -}  0#                                       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
+{- 4.20 -}  0#                                       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
             0M [ r , c ]
     ∎
     where
@@ -2062,15 +2062,15 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
   ⊗-assoc A B C = λ r c →
     begin
       ((A ⊗ B) ⊗ C) [ r , c ]
-{- 5.21 -}  ≈⟨ factorˡ r c ⟩
+{- 4.21 -}  ≈⟨ factorˡ r c ⟩
       Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.22 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
+{- 4.22 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
       Σ[ i ← 0 …< n ] Σ[ j ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.23 -}  ≈⟨ Σ.swap _ (0 …< n) (0 …< n) ⟩
+{- 4.23 -}  ≈⟨ Σ.swap _ (0 …< n) (0 …< n) ⟩
       Σ[ j ← 0 …< n ] Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
             ≈⟨ Σ.cong (0 …< n) P.refl (inner r c) ⟩
       Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
-{- 5.26 -}  ≈⟨ sym $ factorʳ r c ⟩
+{- 4.26 -}  ≈⟨ sym $ factorʳ r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ]
     ∎
     where
@@ -2083,9 +2083,9 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
       inner r c j =
         begin
           Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
-{- 5.24 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-assoc _ _ _) ⟩
+{- 4.24 -}  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-assoc _ _ _) ⟩
           Σ[ i ← 0 …< n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
-{- 5.25 -}  ≈⟨ sym (Σ.distrˡ _ _ (0 …< n)) ⟩
+{- 4.25 -}  ≈⟨ sym (Σ.distrˡ _ _ (0 …< n)) ⟩
           A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
         ∎
 
@@ -2169,19 +2169,19 @@ Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢}
   ⊗-identityˡ A = λ r c →
     begin
       (1M ⊗ A) [ r , c ]
-{- 5.27 -}  ≡⟨ lookup∘tabulate r c ⟩
+{- 4.27 -}  ≡⟨ lookup∘tabulate r c ⟩
       Σ[ i ← 0 …< n ] 1M [ r , i ] * A [ i , c ]
-{- 5.28 -}  ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
+{- 4.28 -}  ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
       Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]
-{- 5.29 -}  ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
+{- 4.29 -}  ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ] + 0#
-{- 5.30 -}  ≈⟨ proj₂ +-identity _ ⟩
+{- 4.30 -}  ≈⟨ proj₂ +-identity _ ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
-{- 5.31 -}  ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+{- 4.31 -}  ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
                        (filter r c) ⟩
       A [ r , c ] + 0#
-{- 5.32 -}  ≈⟨ proj₂ +-identity _  ⟩
+{- 4.32 -}  ≈⟨ proj₂ +-identity _  ⟩
       A [ r , c ]
     ∎
     where
@@ -2304,17 +2304,17 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
   ⊗-distrOverˡ-⊕ A B C = λ r c →
     begin
       (A ⊗ (B ⊕ C)) [ r , c ]
-{- 5.33 -}  ≡⟨ lookup∘tabulate r c ⟩
+{- 4.33 -}  ≡⟨ lookup∘tabulate r c ⟩
       Σ[ i ← 0 …< n ] A [ r , i ] * (B ⊕ C) [ i , c ]
-{- 5.34 -}  ≈⟨ Σ.cong (0 …< n) P.refl (inner r c)⟩
+{- 4.34 -}  ≈⟨ Σ.cong (0 …< n) P.refl (inner r c)⟩
       Σ[ i ← 0 …< n ] (  A [ r , i ] * B [ i , c ] +
                       A [ r , i ] * C [ i , c ])
-{- 5.35 -}  ≈⟨ sym $ Σ.merge _ _ (0 …< n) ⟩
+{- 4.35 -}  ≈⟨ sym $ Σ.merge _ _ (0 …< n) ⟩
       Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ] +
       Σ[ i ← 0 …< n ] A [ r , i ] * C [ i , c ]
-{- 5.36 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟨ P.cong₂ _+_ ⟩ lookup∘tabulate r c ⟩
+{- 4.36 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟨ P.cong₂ _+_ ⟩ lookup∘tabulate r c ⟩
       (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]
-{- 5.37 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟩
+{- 4.37 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟩
       ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
     ∎
     where
@@ -2666,7 +2666,7 @@ The lemmas used to justify the transformation are:
 \text{\AgdaFunction{lemma}}\;&:\;\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaInductiveConstructor{suc} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{i} \AgdaFunction{+} \AgdaInductiveConstructor{suc} \AgdaBound{n}}
 \end{align*}
 
-In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is used.
+In step (C.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is used.
 
 \begin{code}
     proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
@@ -2674,17 +2674,17 @@ In step (3.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
     proof (suc n) =
       begin
         2 * (Σ[ i ← 0 … suc n ] i)
-{- 3.1 -}  ≡⟨ P.cong (_*_ 2) lemma ⟩
+{- C.1 -}  ≡⟨ P.cong (_*_ 2) lemma ⟩
         2 * (Σ[ i ← 0 … n ] i + suc n)
-{- 3.2 -}  ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
+{- C.2 -}  ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
         2 * (Σ[ i ← 0 … n ] i) + 2 * suc n
-{- 3.3 -}  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+{- C.3 -}  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
         n * suc n + 2 * suc n
-{- 3.4 -}  ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
+{- C.4 -}  ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
         2 * suc n + n * suc n
-{- 3.5 -}  ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
+{- C.5 -}  ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
         (2 + n) * suc n
-{- 3.6 -}  ≡⟨ *-comm (2 + n) (suc n) ⟩
+{- C.6 -}  ≡⟨ *-comm (2 + n) (suc n) ⟩
         suc n * (suc (suc n))
       ∎
       where
@@ -2862,7 +2862,7 @@ Additionally we define a shorthand \AgdaFunction{f} for the general form of the 
 
 In this Section we prove the lemmas used in the final proof of the binomial theorem.
 
-\AgdaFunction{split} justifies the step from (5.1) to (5.2):
+\AgdaFunction{split} justifies the step from (D.1) to (D.2):
 \[ \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k = \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
 \] by shifting the values of its index list down by one and splitting the sum into two. In the actual proof, the addition with \(1\) is taken care of using reflexivity and congruence of addition.
 % \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
@@ -2890,7 +2890,7 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
     ∎
 \end{code}
 % $
-\AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (5.2) and (5.3):
+\AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (D.2) and (D.3):
 \[ 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
 \] We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
 
@@ -2913,7 +2913,7 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
       y * (x * z)
     ∎
 \end{code}
-The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum. It provides justification for going from the left-hand side of the outer addition in (5.3) to the left-hand side of the addition in (5.4):
+The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-distributivity law for sums (\AgdaFunction{Σ.distrˡ}) to pull a factor \AgdaBound{x} out of the exponential in the sum. It provides justification for going from the left-hand side of the outer addition in (D.3) to the left-hand side of the addition in (D.4):
 \[ \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} = x · \sum_{k ← 0 … n} \binom{n}{k} · x^k
 \]
 
@@ -2967,7 +2967,7 @@ The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \Agd
       Σ[ k ← 1 … n ] n choose k * x ^ k
     ∎
 \end{code}
-Our final lemma \AgdaFunction{shift} justifies the equality between the right-hand side of the outer addition in (5.3) and the right-hand side of the outer addition in (5.4):
+Our final lemma \AgdaFunction{shift} justifies the equality between the right-hand side of the outer addition in (D.3) and the right-hand side of the outer addition in (D.4):
 \[ \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^k
 \]
 
@@ -2997,21 +2997,21 @@ The following Agda proof is annotated by the corresponding steps in the pen-and-
   proof x (suc n) =
     begin
       1 + Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k
-{- 5.1 -}  ≡⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
+{- D.1 -}  ≡⟨ refl {x = 1} ⟨ +-cong ⟩ (split x n) ⟩
       1 + (  Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
              + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 5.2 -}  ≡⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
+{- D.2 -}  ≡⟨ +-reorder 1 (Σ[ k ← 0 … n ] n choose k * x ^ (suc k)) _ ⟩
       Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
       + (1 + Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k))
-{- 5.3 -}  ≡⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
+{- D.3 -}  ≡⟨ left-distr x n ⟨ +-cong ⟩ shift x n ⟩
       x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
            (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.4 -}  ≡⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
+{- D.4 -}  ≡⟨ refl {x = x * _} ⟨ +-cong ⟩ sym (proj₁ *-identity _) ⟩
       x *  (Σ[ k ← 0 … n ] n choose k * x ^ k) +
       1 *  (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.5 -}  ≡⟨ sym $ distribʳ _ x 1 ⟩
+{- D.5 -}  ≡⟨ sym $ distribʳ _ x 1 ⟩
       (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
-{- 5.6 -}  ≡⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
+{- D.6 -}  ≡⟨ +-comm x 1 ⟨ *-cong ⟩ proof x n ⟩
       (suc x) ^ (suc n)
     ∎
 \end{code}
