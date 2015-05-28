@@ -27,7 +27,8 @@
 \usepackage{subcaption}
 \usepackage{csquotes}
 \usepackage[autocite=inline,citestyle=authoryear-comp,bibstyle=authoryear,
-            dashed=false,isbn=false,doi=false,backend=biber]{biblatex}
+            dashed=false,isbn=false,doi=false,backend=biber,
+            date=iso8601,url=false]{biblatex}
 \usepackage[bookmarks,hidelinks]{hyperref}
 \usepackage[noabbrev,capitalise]{cleveref}
 
