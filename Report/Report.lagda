@@ -2498,14 +2498,10 @@ src/
 \end{figure}
 
 
-\chapter{User's guide}
-
-%\verbatiminput{../README.rst}
 
 
 
-
-\chapter{Extended predicate example: Collatz\label{ch:Collatz}}
+\chapter{Predicate example\label{ch:Collatz}}
 
 \AgdaHide{
 \begin{code}
@@ -2793,7 +2789,7 @@ The proof of the odd Gauss equation again works by natural number induction on \
 \end{code}
 % $
 
-\chapter{Binomial theorem\label{ch:Binom}}
+\chapter{Binomial Theorem\label{ch:Binom}}
 
 In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
 
