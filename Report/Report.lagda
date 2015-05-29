@@ -127,7 +127,7 @@ Date \hspace{0.4in} \today
 \section*{Abstract}
 \label{sc:original-aims}
 
-We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
+We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda, a dependently typed language. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
 
 In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula as well as the Binomial Theorem and the theorem \enquote{square matrices over a semiring form a semiring}.
 
