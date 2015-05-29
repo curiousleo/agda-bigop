@@ -1523,6 +1523,17 @@ Using this notation, we proved that for any Boolean algebra the following varian
 \end{align*}
 Boolean algebras provide a rich structure, and more interesting properties of this structure could be lifted into lemmas about their big operators. The point here is just to demonstrate that the framework we developed is very general, for example allowing us to write proofs concerning the interaction between two big operators defined on the same algebraic structure.
 
+
+
+\chapter{Square matrices over semirings\label{ch:Semi}}
+
+% XXX Things that will have to be explained for this chapter to make sense:
+% Fin; ∀-notation; open ... using notation; all the lemmas in Bigop.Properties; ℕ and Fin; pattern matching; the Matrix library (representation as Vec of Vecs; tabulate; lookup; syntax); universe levels and ⊔; REL A B ℓ; implicit arguments; records (constructors and fields); how algebraic structures publicly export / import the properties of their substructures; equational reasoning; propositional equality implies any other kind of equivalence via `reflexive`; binary operators and mixfix operators _⊕_ and _[_,_]
+
+In this Chapter we present a proof that square matrices over a semiring themselves form a semiring. One explicit success criterion of this project was to make it possible to write this proof using our library.
+
+\cref{Semi-Defs} introduces various definitions. In \cref{Semi-Plus} we show that square matrices and matrix addition constitute a commutative monoid with an annihilator. \cref{Semi-Times} proves that square matrices and matrix multiplication form a monoid. In \cref{Semi-Distr} we show that matrix multiplication distributes over matrix addition.
+
 \section{\label{sc:Impl-Matrices}Matrices}
 
 In order to prove that square matrices over semirings are again semirings, it was necessary to formalise matrices first (the Agda standard library currently lacks a matrix library). This module is independent from the rest of the project.
@@ -1646,16 +1657,6 @@ Our symmetry proof for \AgdaDatatype{\_≋\_} is thus
 }\]
 Reflexivity and transitivity are proved in a similar fashion.
 
-
-
-\chapter{Square matrices over semirings\label{ch:Semi}}
-
-% XXX Things that will have to be explained for this chapter to make sense:
-% Fin; ∀-notation; open ... using notation; all the lemmas in Bigop.Properties; ℕ and Fin; pattern matching; the Matrix library (representation as Vec of Vecs; tabulate; lookup; syntax); universe levels and ⊔; REL A B ℓ; implicit arguments; records (constructors and fields); how algebraic structures publicly export / import the properties of their substructures; equational reasoning; propositional equality implies any other kind of equivalence via `reflexive`; binary operators and mixfix operators _⊕_ and _[_,_]
-
-In this Chapter we present a proof that square matrices over a semiring themselves form a semiring. One explicit success criterion of this project was to make it possible to write this proof using our library.
-
-\cref{Semi-Defs} introduces various definitions. In \cref{Semi-Plus} we show that square matrices and matrix addition constitute a commutative monoid with an annihilator. \cref{Semi-Times} proves that square matrices and matrix multiplication form a monoid. In \cref{Semi-Distr} we show that matrix multiplication distributes over matrix addition.
 
 
 \section{\label{Semi-Defs}Definitions}
