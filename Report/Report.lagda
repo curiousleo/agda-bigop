@@ -981,7 +981,9 @@ A binary operator \(\_\!\!⊗\!\!\_\) may have any of the following properties:
 
 \begin{description}
 \item[Associativity.] \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c)\). The order in which subterms are evaluated has no bearing on the result. If an operator is known to be associative, terms consisting of multiple applications of that operator are usually written without parentheses: \((a ⊗ b) ⊗ c ≡ a ⊗ (b ⊗ c) ≡ a ⊗ b ⊗ c\).
-In \AgdaModule{Algebra.FunctionProperties}, associativity of an operator \AgdaBound{\_∙\_} with respect to some relation \AgdaBound{\_≈\_} is defined as follows:
+In \AgdaModule{Algebra.FunctionProperties}, a standard library module, associativity of an operator \AgdaBound{\_∙\_} with respect to some relation \AgdaBound{\_≈\_} is defined as follows:
+
+\enlargethispage{\baselineskip}
 
 \begin{code}
   Associative : ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) → (A → A → A) → Set _
@@ -1111,7 +1113,9 @@ We formalise four independent concepts: big operators as defined in \cref{sc:Con
 \item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
-In addition, a module formalising \textbf{matrices} has been written as part of this project, since this is one obvious area where the notation and lemmas written in this project can be used. It is completely independent from the rest of the source code.
+
+XXX: paragraph about structure, \#files, \#loc
+
 For an overview of the directory structure and source code files, see \cref{fig:structure}.
 
 
@@ -1171,7 +1175,7 @@ In this Subsection we argue that a binary operator used to build a well-defined 
 The evaluation function for big operators, \AgdaFunction{fold} (defined in \cref{ssc:Implementing}), must be total like any other Agda function: it must accept any value in the domain of its argument types. For the list that the operator is being iterated over, one special value is \AgdaInductiveConstructor{[]}, the empty list.
 
 What should a big operator iterated over an empty collection of indices evaluate to?
-By convention, for any binary operator \(\_\!\!⊕\!\!\_\), \[\bigoplus_{i ← []} f(i) ⊕ x = x \qquad \text{and} \qquad x ⊕ \bigoplus_{i ← []} = x\] These two equations are exactly the left- and right-identity laws.
+By convention, for any binary operator \(\_\!\!⊕\!\!\_\), \[\bigoplus_{i ← []} f(i) ⊕ x = x \qquad \text{and} \qquad x ⊕ \bigoplus_{i ← []} f(i) = x\] These two equations are exactly the left- and right-identity laws.
 
 In order to simultaneously be able to compute any big operator over an list and enforce the intuition that it should behave as an identity, our library requires the binary operator to possess an identity element \(ε\). The evaluation of big operators is defined such that it returns \(ε\) when the collection of indices the big operator being evaluated on is empty: \[\bigoplus_{i ← []} f(i) = ε\]
 
@@ -1232,7 +1236,7 @@ Recall from \cref{sc:Algebra} the definition of a monoid in Agda:
       ε         : Carrier
       isMonoid  : IsMonoid _≈_ _∙_ ε
 \end{code}
-The record \AgdaField{isMonoid} contains proofs that \AgdaField{\_≈\_} is an equivalence relation, \AgdaField{\_∙\_} is associative and congruent and \AgdaField{ε} is the identity for \AgdaField{\_∙\_} (all with respect to \AgdaField{\_≈\_}).
+The record \AgdaField{isMonoid} contains proofs that \AgdaField{\_≈\_} is an equivalence relation, \AgdaField{\_∙\_} is associative and congruent with respect to \AgdaField{\_≈\_} and \AgdaField{ε} is the identity for \AgdaField{\_∙\_} (all with respect to \AgdaField{\_≈\_}).
 One core idea of this project is that any monoid exactly specifies a big operator (see \cref{ssc:Monoid-structure}) as follows:
 
 \begin{itemize}
@@ -1276,7 +1280,7 @@ We can now define the function \AgdaFunction{fold} which evaluates a big operato
     fold f = crush ∘ map f
 \end{code}
 %TC:endignore
-The following syntax declaration should make the connection between this function and big operators clearer: \[
+The following syntax declaration makes the connection between this function and big operators clearer: \[
 \text{\AgdaKeyword{syntax} \AgdaSymbol{fold} \AgdaSymbol{(λ} \AgdaSymbol{x} \AgdaSymbol{→} \AgdaSymbol{e)} \AgdaSymbol{v} \AgdaSymbol{=} \AgdaSymbol{Σ[} \AgdaSymbol{x} \AgdaSymbol{←} \AgdaSymbol{v} \AgdaSymbol{]} \AgdaSymbol{e}}
 \]
 It has the effect of rewriting any expression of the form \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{e} into \AgdaFunction{fold} \AgdaSymbol{(}\AgdaSymbol{λ} \AgdaBound{x} \AgdaSymbol{→} \AgdaBound{e}\AgdaSymbol{)} \AgdaBound{xs}. Note that the \AgdaKeyword{syntax} keyword allows us to define new binding sites: the variable \AgdaBound{x} is \emph{bound} within the expression \AgdaBound{e}. This effect cannot be achieved with mixfix operators.
@@ -1401,7 +1405,7 @@ The following proof shows that the result of filtering a list using \AgdaFunctio
   ∁′ p x | no ¬q  = yes (λ q → ¬q q)
 \end{code}
 %TC:endignore
-In \AgdaModule{Bigop.Filter.Properties}, we show a number of lemmas about filters and decidable properties defined in this way. In each of them, we pick an element from the list and examine whether it satisfies the predicate. They can be considered variants of list induction. In some proofs it is more convenient to perform induction on the list of indices from the head (the first element of the list). This can be achieved simply by pattern matching on a non-empty list using the constructor \AgdaInductiveConstructor{\_∷\_}. In other proofs we may want to start with the last element. The function \AgdaBound{xs} \AgdaFunction{∷ʳ} \AgdaBound{x} abbreviates \AgdaBound{xs} \AgdaInductiveConstructor{∷} \AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}, and allows us to split a list into its last element (\AgdaBound{x}) and everything preceding it (\AgdaBound{xs}).
+In \AgdaModule{Bigop.Filter.Properties}, we show a number of lemmas about filters and decidable properties defined in this way. In each of them, we pick an element from the list and examine whether it satisfies the predicate. They can be considered variants of list induction. In some proofs it is more convenient to perform induction on the list of indices from the head (the first element of the list). This can be achieved simply by pattern matching on a non-empty list using the constructor \AgdaInductiveConstructor{\_∷\_}. In other proofs we may want to start with the last element. \AgdaBound{xs} \AgdaFunction{∷ʳ} \AgdaBound{x} (called \emph{snoc} in Lisp) abbreviates \AgdaBound{xs} \AgdaFunction{++} \AgdaBound{x} \AgdaInductiveConstructor{∷} \AgdaInductiveConstructor{[]}, and allows us to split a list into its last element (\AgdaBound{x}) and everything preceding it (\AgdaBound{xs}).
 
 Omitting the parameters
 \AgdaSymbol{\{}\AgdaBound{i} \AgdaBound{ℓ} \AgdaSymbol{:} \AgdaDatatype{Level}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{\{}\AgdaBound{P} \AgdaSymbol{:} \AgdaDatatype{Pred} \AgdaBound{I} \AgdaBound{ℓ}\AgdaSymbol{\}} \AgdaBound{x} \AgdaBound{xs} \AgdaSymbol{(}\AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Decidable} \AgdaBound{P}\AgdaSymbol{)}, the types of the filter lemmas are as follows:
@@ -1497,7 +1501,7 @@ If the binary operation \AgdaFunction{\_+\_} is commutative as well as associati
 
 \subsection{\enquote{Semiring without one} lemmas}
 
-A \enquote{semiring without one} consists of a commutative monoid over an operation \AgdaFunction{\_+\_} and a semigroup over an operation \AgdaFunction{\_*\_} with a zero element (annihilator). Additionally, \AgdaFunction{\_*\_} distributes over \AgdaFunction{\_+\_}. This allows us to prove two distributivity laws:
+A \enquote{semiring without one} consists of a commutative monoid over an operation \AgdaFunction{\_+\_} and a semigroup over an operation \AgdaFunction{\_*\_} with a zero element (annihilator). Additionally, \AgdaFunction{\_*\_} distributes over \AgdaFunction{\_+\_}. This allows us to prove two distributivity laws for constants:
 \begin{align*}
 \text{(\AgdaFunction{distrˡ})}\qquad
 &\text{\AgdaBound{a} \AgdaFunction{*} \AgdaSymbol{(}\AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{Σ[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{a} \AgdaFunction{*} \AgdaBound{f} \AgdaBound{x}} \\
@@ -2415,6 +2419,8 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
     }
 \end{code}
 %TC:endignore
+
+This concludes our proof that the square matrices over a semiring form a semiring.
 
 \chapter{Conclusions\label{ch:Concl}}
 
