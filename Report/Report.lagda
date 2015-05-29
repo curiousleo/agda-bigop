@@ -1100,7 +1100,7 @@ Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\
 \chapter{Implementation\label{ch:Impl}}
 
 In this Chapter we discuss the design and implementation of our big operator library.
-We formalise four independent concepts: big operators as defined in \cref{sc:Conventions}, intervals of natural numbers, filters, and matrices. In combination, they allow for a large number of proofs involving big operators to be written in Agda. Taking apart the example from the introduction (\cref{eq:Intro-Example}), we will see how the expression
+We formalise three independent concepts: big operators, intervals of natural numbers and filters. In combination, they allow for a large number of proofs involving big operators to be written in Agda. Taking apart the example from the introduction (\cref{eq:Intro-Example}), we will see how the expression
 \[
 \text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \] is assembled from the syntax definition for big operators (\AgdaFunction{Σ[\_←\_]\_}), intervals (\AgdaFunction{\_…\_}) and filters (\AgdaFunction{\_∥\_}):
