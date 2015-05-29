@@ -151,23 +151,38 @@ module Report where
 
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as \[\sum_{i ∈ \{1,2,3\}} i² = 1² + 2² +3³\]
-\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}.
+\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as
+\[ \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \]
+This notation is very concise. It allows us to
+%\begin{itemize}
+specify a set of indices (all odd natural numbers between zero and \(2n\) in this case);
+define an expression in which the index variable is locally bound (here the expression only consists of the bound variable \(i\)); and
+lift a binary operator (addition in this case) to an entire set.
+%\end{itemize}
 
-Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators.
+Sigma-notation often improves our intuition about the problem at hand. The following equations, for example, seem almost trivial when written in this way:
+\[
+\sum_{i = 0}^m \sum_{j = 0}^n a_{i,j} &= \sum_{j = 0}^n \sum_{i = 0}^m a_{i,j}
+\qquad \text{and} \qquad
+\sum_{i = 0}^n a_i + b_i &= \left( \sum_{i = 0}^n a_i \right) + \left( \sum_{i = 0}^n b_i \right)% \\
+%\sum_{i = 0}^n a_i &= \left( \sum_{\substack{i = 0 \\ \text{\(i\) odd} }}^n a_i \right) + \left( \sum_{\substack{i = 0 \\ \text{\(i\) even} }}^n a_i \right)
+\]
+\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}. In fact, the equations above hold for \emph{any} big operator whose underlying binary operator is commutative (i.e.\ immune to re-ordering)---see \cref{ssc:comm-mon-lemmas}.
 
-No such library currently exists for Agda. The aim of this project was to implement a set of syntax definitions and lemmas that allow users of Agda to write proofs that involve big operators in a notation familiar from handwritten or typeset mathematics.
+Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators (see \cref{sc:Related-work}).
+
+Agda is well equipped for writing proofs that resemble pen-and-paper mathematics due to a technique called \emph{equational reasoning} (see \cref{ssc:Equational-reasoning}), but currently lacks a big operator library. The aim of this project was to implement syntax definitions and lemmas that allow Agda users to write proofs that involve big operators in an intuitive notation.
+
+\enlargethispage{-1\baselineskip}
 
 The main contributions of this project are:
 
 \begin{itemize}
-\item Modular syntax for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
-\item A formalisation of matrices in Agda.
-\item Lemmas about big operators based on their underlying algebraic structure (see \cref{sc:Impl-Bigop-Props}).
-\item A formal proof of two identities attributed to Gauss (see \cref{ch:Gauss}), the Binomial theorem (see \cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (see \cref{ch:Semi}) in Agda.
+\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item Lemmas about big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
+\item A formal proof of two identities attributed to Gauss (\cref{ch:Gauss}), the Binomial theorem (\cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}) in Agda.
 \end{itemize}
-
-The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and instead used definitions from the standard library wherever possible.
+The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
 
 %We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
 
@@ -1475,7 +1490,7 @@ It follows from the monoid associativity law that big operators distribute over 
 
 \end{description}
 
-\subsection{Commutative monoid lemmas}
+\subsection{Commutative monoid lemmas\label{ssc:comm-mon-lemmas}}
 
 If the binary operation \AgdaFunction{\_+\_} is commutative as well as associative, the big operator defined on it has more properties that we can use in proofs.
 
