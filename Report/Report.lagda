@@ -186,45 +186,6 @@ The Agda code and module structure of the implementation follows the same conven
 
 %We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
 
-\section{Conventions and nomenclature\label{sc:Conventions}}
-
-We need to get two things out of the way before getting into the report: a definition of what exactly constitutes \enquote{big operator}, and what the colours in the Agda code listings stand for.
-
-\minisec{Big operators}
-
-For the purposes of this report, a \emph{big operator} is defined by
-
-\begin{itemize}
-\item an \emph{underlying structure} at least containing a \emph{carrier} set (or type), a binary operator \(\_\!\!⊕\!\!\_\) and an element of the carrier, \(ε\);
-\item a list of indices \textit{is}; and
-\item a function \(f\) from the set (or type) of indices into the carrier.
-\end{itemize}
-The reasons for choosing this particular representation are discussed in \cref{sc:Impl-Bigops}. We will write the big operator corresponding to the structure described above as \[ \bigoplus_{i ← \textit{is}} f(i) \] Here \(i ← \textit{is}\) indicates that \(i\) ranges over \textit{is}, the list of indices.
-
-\minisec{Code listings}
-
-This report contains Agda code listings. Syntax highlighting is used to make them easier to read. \Cref{tb:Colours} lists the different syntactic categories and how they are typeset in this report.%
-\footnote{This report is a \emph{literal Agda file}: every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{l l}
-%\toprule
-\emph{Notation} & \emph{Role} \\
-\midrule
-\AgdaInductiveConstructor{refl}\quad \AgdaInductiveConstructor{[]}\quad \AgdaInductiveConstructor{\_∷\_} & Datatype constructors \\
-\AgdaDatatype{List}\quad \AgdaDatatype{\_≡\_}\quad \AgdaDatatype{Pred} & Datatype names \\
-\AgdaFunction{fold}\quad \AgdaFunction{*-comm}\quad \AgdaFunction{∙-cong} & Functions \\
-\AgdaBound{x}\quad \AgdaBound{ys}\quad \AgdaBound{A}\quad \AgdaBound{f} & Bound variables \\
-  \AgdaKeyword{open}\quad \AgdaKeyword{with}\quad \AgdaKeyword{where} & Reserved keywords \\
-\bottomrule
-\end{tabular}
-\caption{Colours used in Agda code listings.}
-\label{tb:Colours}
-\end{table}
-
-\newpage
-
 \section{Motivation\label{sc:Motivation}}
 
 \Textcite{dynerowicz_forwarding_2013} presents an algebraic approach to path problems such as computing the shortest path from one vertex to another in a weighted graph. Each path problem is modelled as a semiring, and its solution is calculated by repeatedly multiplying a matrix representing the weighted graph with itself. We realised that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda. One critical dependency of such a formalisation effort is a big operator module, which would also be useful in a large range of other contexts.
@@ -391,6 +352,28 @@ Finally in \textbf{\cref{ch:Concl}} we discuss previous work and ideas for futur
 In this Chapter, we provide the necessary background for the remainder of the report to make it self-contained.
 
 \cref{sc:Agda-basics} introduces Agda by example. The next three Sections cover some fundamental notions in constructive higher-order logic: we introduce predicates and relations as they are defined in Agda (\cref{sc:Pred-Rel}), discuss provability and decidability and how they correspond to type inhabitation (\cref{sc:Prov-Dec}) and present setoids and the equational reasoning style of writing proofs (\cref{sc:Setoids}). In \cref{sc:Algebra} we review some algebraic properties of binary operators and algebraic structures like monoids and semirings.
+
+\minisec{Code listings}
+
+Syntax highlighting is used to make the code listings in this report easier to read. \Cref{tb:Colours} lists the different syntactic categories and how they are typeset in this report.%
+\footnote{This report is a \emph{literal Agda file}: every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l}
+%\toprule
+\emph{Notation} & \emph{Role} \\
+\midrule
+\AgdaInductiveConstructor{refl}\quad \AgdaInductiveConstructor{[]}\quad \AgdaInductiveConstructor{\_∷\_} & Datatype constructors \\
+\AgdaDatatype{List}\quad \AgdaDatatype{\_≡\_}\quad \AgdaDatatype{Pred} & Datatype names \\
+\AgdaFunction{fold}\quad \AgdaFunction{*-comm}\quad \AgdaFunction{∙-cong} & Functions \\
+\AgdaBound{x}\quad \AgdaBound{ys}\quad \AgdaBound{A}\quad \AgdaBound{f} & Bound variables \\
+  \AgdaKeyword{open}\quad \AgdaKeyword{with}\quad \AgdaKeyword{where} & Reserved keywords \\
+\bottomrule
+\end{tabular}
+\caption{Colours used in Agda code listings.}
+\label{tb:Colours}
+\end{table}
 
 \section{Agda basics\label{sc:Agda-basics}}
 
@@ -1165,6 +1148,18 @@ module BigOps where
 }
 
 In this Section, we will see how big operators are evaluated using the \AgdaModule{Bigop} module. We discuss why lists were chosen to represent indices, and why the binary operator must possess an identity and associativity law.
+
+
+\minisec{Nomenclature}
+
+For the purposes of this report, a \emph{big operator} is defined by
+
+\begin{itemize}
+\item an \emph{underlying structure} at least containing a \emph{carrier} type, a binary operator \(\_\!\!⊕\!\!\_\) and an element of the carrier, \(ε\);
+\item a list of indices \textit{is}; and
+\item a function \(f\) from the type of indices into the carrier.
+\end{itemize}
+The reasons for choosing this particular representation will be discussed in this section. We write the big operator corresponding to the structure described above as \[ \bigoplus_{i ← \textit{is}} f(i) \] Here \(i ← \textit{is}\) indicates that \(i\) ranges over \textit{is}, the list of indices.
 
 
 \subsection{Representing indices as lists\label{ssc:as-lists}}
