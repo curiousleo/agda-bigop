@@ -1531,9 +1531,9 @@ In order to make the propositions and proofs more readable, we added two syntax 
 Using this notation, we proved that for any Boolean algebra the following variants of the de Morgan laws hold:
 \begin{align*}
 \text{(\AgdaFunction{deMorgan₁})}\qquad&\text{%\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{R}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaSymbol{:} \AgdaDatatype{List} \AgdaBound{I}\AgdaSymbol{)} \AgdaSymbol{→}%
-            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{i}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{x}} \\
+            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{x}} \\
 \text{(\AgdaFunction{deMorgan₂})}\qquad&\text{%\AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{\{}\AgdaBound{I} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{i}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{f} \AgdaSymbol{:} \AgdaBound{I} \AgdaSymbol{→} \AgdaBound{R}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaBound{xs} \AgdaSymbol{:} \AgdaDatatype{List} \AgdaBound{I}\AgdaSymbol{)} \AgdaSymbol{→}%
-            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{i}}
+            \AgdaFunction{¬} \AgdaSymbol{(}\AgdaFunction{⋁[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaBound{f} \AgdaBound{x}\AgdaSymbol{)} \AgdaDatatype{≈} \AgdaFunction{⋀[} \AgdaBound{x} \AgdaFunction{←} \AgdaBound{xs} \AgdaFunction{]} \AgdaFunction{¬} \AgdaBound{f} \AgdaBound{x}}
 \end{align*}
 Boolean algebras provide a rich structure, and more interesting properties of this structure could be lifted into lemmas about their big operators. The point here is just to demonstrate that the framework we developed is very general, for example allowing us to write proofs concerning the interaction between two big operators defined on the same algebraic structure.
 
@@ -2480,7 +2480,7 @@ The \texttt{bigop} module is more comprehensive than our library. It provides a 
 We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
 In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
-\[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 0 \]
+\[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 1 \]
 It would be interesting to see what other properties can be lifted from different underlying algebraic structures.
 
 A different but related idea would be to attempt to write a solver for big operators over some algebraic structure. Agda's standard library already contains solvers for monoids (\AgdaModule{Algebra.Monoid-solver}) and rings (\AgdaModule{Algebra.RingSolver}).%
