@@ -1702,18 +1702,17 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 \end{code}
 }
 %TC:endignore
-In the next listing, we bring the underlying semiring with its carrier type, special elements, operators and substructures into scope:\footnote{Here \emph{substructures} refers to the weaker structures that are automatically derived from the given algebraic structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we take away the commutative law.} 
-the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
+In the next listing, we bring the underlying semiring with its carrier type (\AgdaBound{Carrier}), special elements (\AgdaBound{0\#}, \AgdaBound{1\#}), operators (\AgdaBound{\_+\_}, \AgdaBound{\_*\_}) and substructures into scope:\footnote{Here \emph{substructures} refers to the weaker structures that are automatically derived from the given algebraic structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we take away the commutative law.} 
+the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_} (\AgdaBound{+-commutativeMonoid}, \AgdaBound{+-monoid}, \AgdaBound{+-semigroup}); the monoid and semigroup over \AgdaFunction{\_*\_} (\AgdaBound{*-monoid}, \AgdaBound{*-semigroup}); and the \enquote{semiring without one} (\AgdaBound{semiringWithoutOne}, a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
 
 %TC:ignore
+\AgdaHide{
 \begin{code}
-  open Semiring semiring
-    using     ( Carrier
-              ; 0#; 1#; _+_; _*_
-              ; setoid
-              ; +-semigroup; +-monoid; +-commutativeMonoid
-              ; *-semigroup; *-monoid; semiringWithoutOne)
+  open Semiring semiring using (
+      Carrier; 0#; 1#; _+_; _*_; setoid; +-semigroup; +-monoid; +-commutativeMonoid;
+      *-semigroup; *-monoid; semiringWithoutOne)
 \end{code}
+}
 %TC:endignore
 Next, the equivalence relation \AgdaDatatype{\_≡\_} of the underlying setoid on \AgdaDatatype{Carrier} and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the modules containing lemmas about ordinals, equational reasoning functionality in the element setoid (\AgdaModule{EqReasoning}) and the module for equational reasoning with propositional equality (\AgdaModule{≡-Reasoning}). In order to avoid name clashes, the functions \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎} are renamed to \AgdaFunction{start\_}, \AgdaFunction{\_≣⟨\_⟩\_} and \AgdaFunction{\_□}, respectively.
 
@@ -1828,7 +1827,6 @@ Since the only law used in this proof is \AgdaFunction{+-cong}, the semigroup ov
 \minisec{Associativity}
 
 The next proof shows that matrix addition is associative, that is, \AgdaSymbol{(}\AgdaBound{A} \AgdaFunction{⊕} \AgdaBound{B}\AgdaSymbol{)} \AgdaFunction{⊕} \AgdaBound{C} \AgdaDatatype{≋} \AgdaBound{A} \AgdaFunction{⊕} \AgdaSymbol{(}\AgdaBound{B} \AgdaFunction{⊕} \AgdaBound{C}\AgdaSymbol{)}. Since matrix addition is defined as elementwise addition, the proof of elementwise equivalence has the exact same structure as the congruence proof above: unfold the definition of \AgdaFunction{\_⊕\_}; use the appropriate properties (associativity in this case) of the elementwise addition \AgdaFunction{\_+\_}; fold back into matrix addition.
-
 In standard mathematical notation, associativity of matrix addition can be proved as follows:
 \begin{align}
 ((A ⊕ B) ⊕ C)_{r,c} &≈ (A_{r,c} + B_{r,c}) + C_{r,c} \\
@@ -1865,14 +1863,15 @@ Again, a semigroup over \AgdaFunction{\_+\_} provides sufficient structure to al
 
 \minisec{Left identity}
 
-Adding the zero matrix to any matrix \(A\) simply gives \(A\) as a result. In order to prove this, we first expand the definition of matrix addition. Then by definition, \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} (\(\mathbf{0}_{r,c}\) in mathematical notation) is equal to \AgdaFunction{0\#} for any \AgdaBound{r} and \AgdaBound{c}. The left identity law of the underlying monoid over \AgdaFunction{\_+\_} then justifies the equivalence:
+%\enlargethispage{\baselineskip}
+
+In order to prove that the zero matrix is an identity for \AgdaFunction{\_⊕\_}, we first expand the definition of matrix addition. Then by definition, \AgdaFunction{0M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} (\(\mathbf{0}_{r,c}\) in mathematical notation) is equal to \AgdaFunction{0\#} for any \AgdaBound{r} and \AgdaBound{c}. The left identity law of the underlying monoid over \AgdaFunction{\_+\_} then justifies the equivalence:
 \begin{align}
 (\mathbf{0} ⊕ A)_{r,c} &≈ \mathbf{0}_{r,c} + A_{r,c} \\
 &≈ 0 + A_{r,c} \\
 &≈ A_{r,c}
 \end{align}
-Using equational reasoning, the corresponding Agda proof looks like this:
-
+%Using equational reasoning, the corresponding Agda proof looks like this:
 %TC:ignore
 \begin{code}
   ⊕-identityˡ : ∀ A → 0M ⊕ A ≋ A
@@ -1891,15 +1890,16 @@ Note that this proof makes use of \AgdaFunction{+-identity}, which \AgdaFunction
 
 \minisec{Commutativity of matrix addition}
 
-The commutativity proof follows the now-familiar pattern: first we use the definition of matrix addition, then apply the appropriate law from the underlying structure (in this case, the commutativity law of the commutative monoid over elementwise addition), and finally we rewrite the term again using the definition of addition.
 
+\enlargethispage{2\baselineskip}
+
+The commutativity proof follows the now-familiar pattern: we use the definition of matrix addition, apply the commutativity law of elementwise addition and finally we rewrite the term again using the definition of addition.
 Again, we present the proof in standard mathematical notation and then in Agda:
 \begin{align}
 (A ⊕ B)_{r,c} &≈ A_{r,c} + B_{r,c} \\
               &≈ B_{r,c} + A_{r,c} \\
               &≈ (B ⊕ A)_{r,c}
 \end{align}
-
 %TC:ignore
 \begin{code}
   ⊕-comm : ∀ A B → A ⊕ B ≋ B ⊕ A
@@ -2133,7 +2133,11 @@ This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \Agda
       where  diag-lemma  : ∀ {n} (r : Fin n) → diag r r ≡ 1#
              diag-lemma  zeroF     =  P.refl
              diag-lemma  (sucF r)  =  diag-lemma r
+\end{code}
+%TC:endignore
 
+%TC:ignore
+\begin{code}
   1M-∁-diag : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
   1M-∁-diag {r} {c} eq with ≟ r c
   1M-∁-diag {r} {c} ¬eq | yes eq  = ⊥-elim (¬eq eq)
