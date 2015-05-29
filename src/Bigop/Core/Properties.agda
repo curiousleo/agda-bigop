@@ -22,12 +22,14 @@ open EqR setoid
 ------------------------------------------------------------------------
 -- `reducebig` is how big operators are evaluated in Coq's bigop module.
 
-reducebig : ∀ {i p} {I : Set i} {P : Pred I p} → (I → R) → Decidable P → List I → R
+reducebig : ∀ {i p} {I : Set i} {P : Pred I p} →
+            (I → R) → Decidable P → List I → R
 reducebig f p = foldr (λ i acc → if ⌊ p i ⌋ then f i ∙ acc else acc) ε
 
 -- `reducebig` and Bigop.Core.Fold.fold are extensionally equal
-equivalent : ∀ {i p} {I : Set i} {P : Pred I p} → (f : I → R) (p : Decidable P)
-             (is : List I) → reducebig f p is ≡ fold f (is ∥ p)
+equivalent : ∀ {i p} {I : Set i} {P : Pred I p} →
+             (f : I → R) (p : Decidable P) (is : List I) →
+             reducebig f p is ≡ fold f (is ∥ p)
 equivalent f p []       = P.refl
 equivalent f p (i ∷ is) with p i
 ... | yes pi = P.cong (_∙_ (f i)) (equivalent f p is)
