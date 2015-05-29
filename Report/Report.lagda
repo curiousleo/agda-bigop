@@ -1678,6 +1678,10 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 \begin{code}
   open import Bigop
   open import Bigop.DecidableEquality using () renaming (≟F to ≟)
+  import Bigop.Properties.Monoid
+  import Bigop.Properties.CommutativeMonoid
+  import Bigop.Properties.SemiringWithoutOne
+  open import Bigop.Interval.Properties.Fin
   open import Matrix
 
   open import Algebra.Structures
@@ -1720,7 +1724,6 @@ Next, the equivalence relation \AgdaDatatype{\_≡\_} of the underlying setoid o
   open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
   open Fold +-monoid using (Σ-syntax)
   open import Bigop.Interval.Fin
-  open Props.Interval.Fin
 
   open import Relation.Binary.EqReasoning setoid
   open P.≡-Reasoning
@@ -1940,7 +1943,7 @@ In this Section we prove that matrix multiplication is monoidal. Additionally, a
 
 \minisec{Congruence of matrix multiplication}
 
-In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-cong} to replace equals by equals in a multiplication wrapped in a sum. The structure of the proof is unchanged from the last Section. See \cref{ssc:Monoid-lemmas} for a description of the lemmas contained in \AgdaModule{Props.Monoid}.
+In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-cong} to replace equals by equals in a multiplication wrapped in a sum. The structure of the proof is unchanged from the last Section. See \cref{ssc:Monoid-lemmas} for a description of the lemmas contained in \AgdaModule{Bigop.Properties.Monoid}.
 \begin{align}
 (A ⊗ B)_{r,c} &≈ \sum_{i ← 0 …<\;n} A_{r,i}\;B_{i,c} \\
              &≈ \sum_{i ← 0 …<\;n} A′_{r,i}\;B′_{i,c} \\
@@ -1961,7 +1964,7 @@ In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-con
     ∎
     where
       open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
-      module Σ = Props.Monoid +-monoid using (cong)
+      module Σ = Bigop.Properties.Monoid +-monoid using (cong)
 \end{code}
 %TC:endignore
 We can read off the \AgdaKeyword{open} statements that this proof requires a semigroup over \AgdaFunction{\_*\_} and a monoid over \AgdaFunction{\_+\_}.
@@ -1998,7 +2001,7 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
     ∎
     where
       open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
-      module Σ = Props.Monoid +-monoid using (cong; identity)
+      module Σ = Bigop.Properties.Monoid +-monoid using (cong; identity)
 \end{code}
 %TC:endignore
 Let us consider the second step of the proof in detail. The aim is to use \AgdaFunction{Σ.cong} to show
@@ -2034,7 +2037,7 @@ In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the
     ∎
     where
       open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
-      module Σ = Props.SemiringWithoutOne semiringWithoutOne
+      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
 \end{code}
 }
 %TC:endignore
@@ -2078,7 +2081,7 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
     ∎
     where
       open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
-      module Σ = Props.SemiringWithoutOne semiringWithoutOne
+      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
         using (cong; swap; distrˡ; distrʳ)
 \end{code}
 %TC:endignore
@@ -2194,7 +2197,7 @@ Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢}
     ∎
     where
       open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
-      module Σ = Props.SemiringWithoutOne semiringWithoutOne
+      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
         using (cong-P; split-P; distrˡ)
 
       ≡-step : ∀ r c →  Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
@@ -2239,7 +2242,7 @@ The proof of right-identity works in a similar way, and is omitted here. It is i
   ⊗-identityʳ A = ident
     where
       open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
-      module Σ = Props.SemiringWithoutOne semiringWithoutOne
+      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
 
       ∁-sym : ∀ {a} {A : Set a} {A B : A} → ∁ (_≡_ A) B → ∁ (λ C → B ≡ C) A
       ∁-sym eq P.refl = eq P.refl
@@ -2327,7 +2330,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
     ∎
     where
       open Semiring semiring using (*-cong; distrib)
-      module Σ = Props.CommutativeMonoid +-commutativeMonoid
+      module Σ = Bigop.Properties.CommutativeMonoid +-commutativeMonoid
         using (cong; merge)
 
       inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
@@ -2351,7 +2354,7 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
   ⊗-distrOverʳ-⊕ A B C = distr
     where
       open Semiring semiring using (*-cong; distrib)
-      module Σ = Props.SemiringWithoutOne semiringWithoutOne
+      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
 
       distr : ∀ r c → ((B ⊕ C) ⊗ A) [ r , c ] ≈ ((B ⊗ A) ⊕ (C ⊗ A)) [ r , c ]
       distr r c = begin
@@ -2606,6 +2609,7 @@ This Chapter presents a proof of the Gauss formula and a variation thereof for o
 module Gauss where
 
   open import Bigop
+  import Bigop.Properties.SemiringWithoutOne
 
   open import Algebra
 
@@ -2630,9 +2634,9 @@ module Gauss where
     open import Data.Product using (proj₁; proj₂)
     open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
     open import Bigop.Interval.Nat
-    open Props.Interval.Nat
+    open import Bigop.Interval.Properties.Nat
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
@@ -2720,10 +2724,11 @@ In step (C.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
     open import Data.Nat.Properties using (commutativeSemiring)
     open CommutativeSemiring commutativeSemiring hiding (_+_; _*_)
 
-    module Σ = Props.SemiringWithoutOne semiringWithoutOne
+    module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
     open import Bigop.Interval.Nat
-    open Props.Interval.Nat
-    open Props.Filter
+    open import Bigop.Interval.Properties.Nat
+    open import Bigop.Filter
+    open import Bigop.Filter.Properties
 
     open Fold +-monoid using (fold; Σ-syntax)
     open P.≡-Reasoning
@@ -2824,6 +2829,8 @@ Since the Agda standard library does not currently define exponentials and binom
 module BinomialTheorem where
 
   open import Bigop
+  open import Bigop.Interval.Properties.Nat
+  import Bigop.Properties.SemiringWithoutOne
 
   open import Algebra
   open import Data.Nat.Base using (_∸_; zero; suc)
@@ -2834,7 +2841,7 @@ module BinomialTheorem where
   open P.≡-Reasoning
 
   open CommutativeSemiring commutativeSemiring hiding (Carrier)
-  module Σ = Props.SemiringWithoutOne semiringWithoutOne
+  module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
   open Fold +-monoid using (fold; Σ-syntax)
 
   open import Data.List
@@ -2843,7 +2850,6 @@ module BinomialTheorem where
   open import Level renaming (zero to lzero; suc to lsuc)
 
   open import Bigop.Interval.Nat
-  open Props.Interval.Nat
 
   infixr 8 _^_
 \end{code}
