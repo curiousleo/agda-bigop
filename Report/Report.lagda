@@ -1661,7 +1661,6 @@ In this Chapter we present a proof that square matrices over a semiring themselv
 \section{\label{Semi-Defs}Definitions}
 
 In this Section, we define matrix addition and multiplication, the zero matrix and the identity matrix.
-
 All the code in this Chapter resides in a module that is parameterised over the underlying semiring and the size \AgdaBound{n} of the square matrices. The following declaration has the effect of fixing the variables \AgdaBound{n}, \AgdaBound{c}, \AgdaBound{ℓ} and \AgdaBound{semiring} in the module's body:
 
 %TC:ignore
@@ -1703,9 +1702,8 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 \end{code}
 }
 %TC:endignore
-In the next listing, we bring the underlying semiring with its carrier type, special elements, operators and substructures into scope. Here \emph{substructures} refers to the weaker structures that are automatically derived from the given algebraic structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we take away the commutative law.
-
-Semirings contain many induced substructures. The structures we are interested in are brought into scope explicitly: the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
+In the next listing, we bring the underlying semiring with its carrier type, special elements, operators and substructures into scope:\footnote{Here \emph{substructures} refers to the weaker structures that are automatically derived from the given algebraic structure by subtracting properties, operators or special elements. For example, any commutative monoid gives rise to a monoid if we take away the commutative law.} 
+the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_}; the monoid and semigroup over \AgdaFunction{\_*\_}; and the \enquote{semiring without one} (a semiring-like structure without an identity for \AgdaFunction{\_*\_}).
 
 %TC:ignore
 \begin{code}
@@ -1744,7 +1742,9 @@ We define \AgdaDatatype{M} as a shorthand for the type of square matrices of siz
   ≋-isEquivalence = PW-isEquivalence isEquivalence
 \end{code}
 %TC:endignore
-Next we define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. The function \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element by applying that function to each position in the matrix. The definition of \AgdaFunction{tabulate} is given in \cref{sc:Impl-Matrices}.
+Next we define matrix addition \AgdaFunction{\_⊕\_} and multiplication \AgdaFunction{\_⊗\_}. Addition works pointwise. 
+%The function \AgdaFunction{tabulate} populates a matrix using a function that takes the row and column index to an element by applying that function to each position in the matrix.
+The definition of \AgdaFunction{tabulate} is given in \cref{sc:Impl-Matrices}.
 
 %TC:ignore
 \begin{code}
