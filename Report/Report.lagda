@@ -150,7 +150,7 @@ module Report where
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
 \enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as
-\begin{equation} \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \end{equation}
+\begin{equation} \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \label{eq:Gauss} \end{equation}
 This notation is very concise. It allows us to
 %\begin{itemize}
 specify a set of indices (all odd natural numbers between zero and \(2n\) in this case);
@@ -176,8 +176,8 @@ Agda is well equipped for writing proofs that resemble pen-and-paper mathematics
 The main contributions of this project are:
 
 \begin{itemize}
-\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
 \item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
+\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
 \item A formal proof of two identities attributed to Gauss (\cref{ch:Gauss}), the Binomial theorem (\cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}) in Agda.
 \end{itemize}
 The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
@@ -198,21 +198,7 @@ One area of particular interest to us is the ongoing effort to model shortest-pa
 
 The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It is to be considered a new language for all intents and purposes.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the online archives of the Institut national de recherche en informatique et en automatique (INRIA), the research institute where it was designed and implemented, was published in 1991 \autocite{dowek_coq_1991}.
 
-Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. We compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size} as a rough indicator of maturity.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{l l l l}
-%\toprule
-\emph{Proof assistant} & Agda (standard library) & Coq (\texttt{theories/}) & Isabelle (\texttt{HOL/}) \\
-\midrule
-\emph{Lines of code} & 20,000 & 110,000 & 310,000 \\
-%\bottomrule
-\end{tabular}
-\caption{Comparison of the size of the standard libraries or their equivalents for Agda, Coq and Isabelle. The measurements were taken using \texttt{cloc} (\url{http://cloc.sourceforge.net}) using the Haskell comments parser for Agda source files and the OCaml comments parser for Coq and Isabelle theories.}
-\label{tb:Size}
-\end{table}
-In the context of proof assistants, a \emph{tactic} is a program that finds proofs using heuristic methods. A good tactic automatically proves many simple lemmas, allowing someone working on a complex proof to concentrate on the difficult problems. As an example, Isabelle has a powerful built-in tactic called \texttt{auto}. Faced with a simple conjecture, users can often simply invoke this tactic using \enquote{\texttt{by auto}} and move on.
+In contrast to Isabelle and Coq, Agda lacks support for tactics. In the context of proof assistants, a \emph{tactic} is a program that finds proofs using heuristic methods. A good tactic automatically proves many simple lemmas, allowing someone working on a complex proof to concentrate on the difficult problems. As an example, Isabelle has a powerful built-in tactic called \texttt{auto}. Faced with a simple conjecture, users can often simply invoke this tactic using \enquote{\texttt{by auto}} and move on.
 
 The downside of tactics is that they make proofs opaque. A sophisticated tactic like \texttt{auto} uses complicated heuristics, making it hard to predict if or why it will succeed or fail to find a proof for a given conjecture. The justification of a reasoning step \enquote{\texttt{by auto}} only tells the reader that it possible to construct a proof, but not what that proof \emph{is}. And even when there is a mechanism to inspect them, proofs constructed by tactics generally have little resemblance to pen-and-paper mathematical reasoning.
 % In case the tactic found a proof, there usually is some way to inspect it. Unfortunately, a thorough understanding of the internals of the proof assistant is often required to make any sense of the proofs constructed by tactics.
@@ -264,6 +250,7 @@ Our project fills this gap, enabling Agda users to use syntax and reasoning prin
 \sum_{i = 0}^n A_{r,i}\,B_{i,c} \quad \text{is written as} \quad
 \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}
 \]
+\Cref{ch:Semi}, \cref{ch:Gauss} and \cref{ch:Binom} demonstrate the use of the reasoning principles provided by our library and discussed in \cref{sc:Impl-Bigop-Props}.
 
 \section{Overview}
 
@@ -272,7 +259,7 @@ A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
 In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
 Finally in \textbf{\cref{ch:Concl}} we discuss related work and ideas for future research.
 
-The \textbf{Appendix} contains an additional example of a predicate (\cref{ch:Collatz}) meant to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}) and the Binomial Theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
+The \textbf{Appendix} contains an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial Theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
 
 \chapter{Background\label{ch:Background}}
 
