@@ -171,7 +171,7 @@ Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{C
 
 Agda is well equipped for writing proofs that resemble pen-and-paper mathematics due to a technique called \emph{equational reasoning} (see \cref{ssc:Equational-reasoning}), but currently lacks a big operator library. The aim of this project was to implement syntax definitions and lemmas that allow Agda users to write proofs that involve big operators in an intuitive notation.
 
-\clearpage
+% \clearpage
 
 The main contributions of this project are:
 
@@ -194,9 +194,7 @@ This makes big operators, which generalise Sigma-notation, immediately applicabl
 
 One area of particular interest to us is the ongoing effort to model shortest-path and related problems algebraically \autocite{dynerowicz_forwarding_2013}. Each path problem is modelled as a \emph{semiring} (see \cref{ssc:Structures}), and its solution is computed by repeatedly multiplying a matrix representing the weighted graph with itself.
 
-\minisec{Agda, Coq and Isabelle}
-
-The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It is to be considered a new language for all intents and purposes.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the online archives of the Institut national de recherche en informatique et en automatique (INRIA), the research institute where it was designed and implemented, was published in 1991 \autocite{dowek_coq_1991}.
+\minisec{Tactics}
 
 In contrast to Isabelle and Coq, Agda lacks support for tactics. In the context of proof assistants, a \emph{tactic} is a program that finds proofs using heuristic methods. A good tactic automatically proves many simple lemmas, allowing someone working on a complex proof to concentrate on the difficult problems. As an example, Isabelle has a powerful built-in tactic called \texttt{auto}. Faced with a simple conjecture, users can often simply invoke this tactic using \enquote{\texttt{by auto}} and move on.
 
@@ -250,7 +248,7 @@ Our project fills this gap, enabling Agda users to use syntax and reasoning prin
 \sum_{i = 0}^n A_{r,i}\,B_{i,c} \quad \text{is written as} \quad
 \text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}
 \]
-\Cref{ch:Semi}, \cref{ch:Gauss} and \cref{ch:Binom} demonstrate the use of the reasoning principles provided by our library and discussed in \cref{sc:Impl-Bigop-Props}.
+\Cref{ch:Semi}, \cref{ch:Gauss} and \cref{ch:Binom} demonstrate the use of the reasoning principles provided by our library, which are discussed in \cref{sc:Impl-Bigop-Props}.
 
 \section{Overview}
 
