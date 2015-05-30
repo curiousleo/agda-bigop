@@ -222,8 +222,7 @@ The downside of tactics is that they make proofs opaque. A sophisticated tactic 
 Agda does not support tactics at the source code level: every proof must be written out in full. This design decision improves the readability of Agda code since no reasoning step is hidden from view.
 Proof developers, on the other hand, are forced to write out all proofs explicitly. They are supported in this by Agsy \autocite{foster_integrating_2011}, an automated proof search tool integrated into Agda's development environment.
 
-
-\subsection{Equational reasoning}
+\minisec{Equational reasoning}
 
 %TC:ignore
 \AgdaHide{
@@ -237,7 +236,7 @@ module IntroExample where
 }
 %TC:endignore
 
-In our view, a proof style called \emph{equational reasoning}, made possible by Agda's flexible syntax and used pervasively in the standard library, is another major selling point of the language.
+The Agda standard library provides an intuitive notation for proving equalities (or equivalences, see \cref{ssc:Equivalences}) called \emph{equational reasoning}. It is used pervasively in the standard library, and we consider it a major selling point of the language.
 
 As an example, we will construct a proof of the identity \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
 \begin{align}
@@ -251,81 +250,6 @@ We then use those steps as the skeleton of our equational reasoning proof (see \
 \begin{code}
   example : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
   example p q r = begin
-\end{code}
-}
-\begin{code}
-    (p * q) * r  ≡⟨ {! associativity !} ⟩
-    p * (q * r)  ≡⟨ {! commutativity !} ⟩
-    p * (r * q)  ∎
-\end{code}
-Thankfully the Agda standard library already contains a proof that multiplication of natural numbers is associative under the name \AgdaFunction{*-assoc}. It shows that for any natural numbers \AgdaBound{p}, \AgdaBound{q} and \AgdaBound{r}, \((p · q) · r = p · (q · r)\)---this is exactly the first step in our handwritten proof (1.1). We use \AgdaFunction{*-assoc} to fill in the first hole in the formal proof:
-
-\AgdaHide{
-\begin{code}
-  example′ : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
-  example′ p q r = begin
-\end{code}
-}
-\begin{code}
-    (p * q) * r  ≡⟨ *-assoc p q r ⟩
-    p * (q * r)  ≡⟨ {! commutativity !} ⟩
-    p * (r * q)  ∎
-\end{code}
-In the typeset proof, we wrote that \(p · (q · r) = p · (r · q)\) follows \enquote{by commutativity}. But commutativity really only states that \(q · r = r · q\). Implicitly, we are using the principle that equal subterms can be replaced by equal subterms. In Agda, we must apply this principle, called \emph{congruence}, explicitly. This is one point where formal proofs using equational reasoning deviate from handwritten or typeset proofs.
-
-To be exact, \(p · (q · r) = p · (r · q)\) holds by the following reasoning:
-\begin{itemize}
-\item Multiplication is \emph{congruent} in both arguments, that is, if \(x = x′\) and \(y = y′\) then \(x · y = x′ · y′\) (in this case we instantiate \(x\) and \(x′\) with \(p\), \(y\) with \(q · r\) and \(y′\) with \(r · q\));
-\item \(p = p\) since equality is a \emph{reflexive} relation (i.e. anything is equal to itself); and
-\item \(q · r = r · q\) by \emph{commutativity} of multiplication.
-\end{itemize}
-
-In Agda, the reflexivity principle is called \AgdaInductiveConstructor{refl}, \AgdaFunction{*-comm} proves that multiplication of natural numbers is commutative and \AgdaFunction{cong₂} \AgdaFunction{\_*\_} shows that it is congruent. They can be written as follows in proof tree notation (with assumptions above the line and conclusion below):
-
-\vspace{.15cm}
-\begin{minipage}[b]{1\linewidth}
-\centering
-\begin{minipage}[b]{0.2\linewidth}
-\begin{prooftree}
-    \AxiomC{}
-    \UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \AgdaBound{p} \AgdaSymbol{=} \AgdaBound{p}}
-\end{prooftree}
-\end{minipage}
-\begin{minipage}[b]{0.36\linewidth}
-\begin{prooftree}
-    \AxiomC{}
-    \UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{x} \AgdaBound{y} \AgdaSymbol{:} \(x · y = y · x\)}
-\end{prooftree}
-\end{minipage}
-\begin{minipage}[b]{0.36\linewidth}
-\begin{prooftree}
-    \AxiomC{\AgdaBound{f} \AgdaSymbol{:} \(x = x′\)}
-    \AxiomC{\AgdaBound{g} \AgdaSymbol{:} \(y = y′\)}
-    \BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} \AgdaSymbol{:} \(x · y = x′ · y′\)}
-\end{prooftree}
-\end{minipage}
-\vspace{.5cm}
-\end{minipage}
-The last rule can be read as \enquote{given a proof \AgdaBound{f} of \(x = x′\) and a proof \AgdaBound{g} of \(y = y′\), we can conclude by \AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaBound{f} \AgdaBound{g} that \(x · y = x′ · y′\) holds}. Instantiating the three rules as appropriate, we can assemble the proof of \(p · (q · r) = p · (r · q)\) as follows:
-
-\begin{minipage}[b]{1\linewidth}
-\centering
-\vspace{.15cm}
-\begin{prooftree}
-\AxiomC{}
-\UnaryInfC{\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} \AgdaSymbol{:} \(p = p\)}
-\AxiomC{}
-\UnaryInfC{\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r} \AgdaSymbol{:} \(q · r = r · q\)}
-\BinaryInfC{\AgdaFunction{cong₂} \AgdaFunction{\_*\_} \AgdaSymbol{(}\AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\})} \AgdaSymbol{(}\AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}\AgdaSymbol{)} \AgdaSymbol{:} \(p · (q · r) = p · (r · q)\)}
-\end{prooftree}
-\vspace{.1cm}
-\end{minipage}
-That is, with \AgdaBound{f} \AgdaSymbol{=} \AgdaInductiveConstructor{refl} \AgdaSymbol{\{}\AgdaBound{x} \AgdaSymbol{=} \AgdaBound{p}\AgdaSymbol{\}} and \AgdaBound{g} \AgdaSymbol{=} \AgdaFunction{*-comm} \AgdaBound{q} \AgdaBound{r}, the third rule constructs the proof of \(p · (q · r) = p · (r · q)\) we were looking for. We can now complete the proof of our original proposition \((p · q) · r = p · (r · q)\) as follows:
-
-\AgdaHide{
-\begin{code}
-  example″ : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
-  example″ p q r = begin
 \end{code}
 }
 \begin{code}
