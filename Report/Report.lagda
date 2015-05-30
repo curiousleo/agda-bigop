@@ -160,26 +160,26 @@ define an expression in which the index variable is locally bound (here the expr
 lift a binary operator (addition in this case) to an entire set.
 %\end{itemize}
 
-Sigma-notation often improves our intuition about the problem at hand. The following equations, for example, seem almost trivial when written in this way:
+Sigma-notation often improves our intuition about the problem at hand. The following reasoning principles, for example, are usually taken for granted when written in this way:
 \[
 \sum_{i = 0}^m \sum_{j = 0}^n a_{i,j} &= \sum_{j = 0}^n \sum_{i = 0}^m a_{i,j}
 \qquad \text{and} \qquad
 \sum_{i = 0}^n a_i + b_i &= \left( \sum_{i = 0}^n a_i \right) + \left( \sum_{i = 0}^n b_i \right)% \\
 %\sum_{i = 0}^n a_i &= \left( \sum_{\substack{i = 0 \\ \text{\(i\) odd} }}^n a_i \right) + \left( \sum_{\substack{i = 0 \\ \text{\(i\) even} }}^n a_i \right)
 \]
-\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}. In fact, the equations above hold for \emph{any} big operator whose underlying binary operator is commutative (i.e.\ immune to re-ordering)---see \cref{ssc:comm-mon-lemmas}.
+\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}. In fact, the equations above hold for \emph{any} big operator whose underlying operator is commutative (i.e.\ immune to re-ordering)---see \cref{ssc:comm-mon-lemmas}.
 
 Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators (see \cref{sc:Related-work}).
 
 Agda is well equipped for writing proofs that resemble pen-and-paper mathematics due to a technique called \emph{equational reasoning} (see \cref{ssc:Equational-reasoning}), but currently lacks a big operator library. The aim of this project was to implement syntax definitions and lemmas that allow Agda users to write proofs that involve big operators in an intuitive notation.
 
-\enlargethispage{-1\baselineskip}
+\clearpage
 
 The main contributions of this project are:
 
 \begin{itemize}
 \item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
-\item Lemmas about big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
+\item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
 \item A formal proof of two identities attributed to Gauss (\cref{ch:Gauss}), the Binomial theorem (\cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}) in Agda.
 \end{itemize}
 The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
