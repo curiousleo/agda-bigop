@@ -188,13 +188,17 @@ The Agda code and module structure of the implementation follows the same conven
 
 \section{Motivation\label{sc:Motivation}}
 
-\Textcite{dynerowicz_forwarding_2013} presents an algebraic approach to path problems such as computing the shortest path from one vertex to another in a weighted graph. Each path problem is modelled as a semiring, and its solution is calculated by repeatedly multiplying a matrix representing the weighted graph with itself. We realised that a lot of the infrastructure required to write proofs about shortest-path algorithms does not yet exist in Agda. One critical dependency of such a formalisation effort is a big operator module, which would also be useful in a large range of other contexts.
+In addition to the chapter on sums, \textcite{graham_concrete_1994} contains chapters on number theory, binomial coefficients and discrete probability. Sigma-notation is used pervasively in each of them.
+More Sigma-notation can be found in matrix algebra---the multiplication of matrices \(A\) and \(B\) is usually defined as follows:
+\[(A\,B)_{r,c} = \sum_{i = 0}^n A_{r,i}\,B_{i,c}\]
+% mult A B r c = Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
+This makes big operators, which generalise Sigma-notation, immediately applicable to any problem that can be formulated in terms of matrices.
 
-In this section, we describe how Agda users can write proofs in a style similar to handwritten or typeset ones, assisted by a theorem prover that is integrated into the editing mode for Agda. We then give an example of a proposition that can be expressed and proved using our library, and how it fits naturally into this model of proof development.
+One area of particular interest to us is the ongoing effort to model shortest-path and related problems algebraically \autocite{dynerowicz_forwarding_2013}. Each path problem is modelled as a \emph{semiring} (see \cref{ssc:Structures}), and its solution is computed by repeatedly multiplying a matrix representing the weighted graph with itself.
 
 \minisec{Agda, Coq and Isabelle}
 
-The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It shares its name and philosophy with the original implementation, but should for all intents and purposes be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the archives of the Institut national de recherche en informatique et en automatique (INRIA), the research institute where it was designed and implemented, was published in 1991 \autocite{dowek_coq_1991}.
+The current implementation of Agda is relatively new: its foundations were laid in Ulf Norell's doctoral thesis, which was published only in 2007 \autocite{norell_towards_2007}.\footnote{\textcite{coquand_structured_1999} first presented a programming language called Agda. The implementation of the current version of the language was rewritten from scratch. It shares its name and philosophy with the original implementation, but should for all intents and purposes be considered a new language.} In comparison, Lawrence Paulson's work on Isabelle goes back to the late 1980s \autocite{paulson_foundation_1989}, and the earliest Coq user's guide that is available from the online archives of the Institut national de recherche en informatique et en automatique (INRIA), the research institute where it was designed and implemented, was published in 1991 \autocite{dowek_coq_1991}.
 
 Partly as a consequence of its young age, Agda's standard library is much smaller than those of Coq and Isabelle. We compare the number of lines of code of the three proof assistants' standard libraries or their equivalents in \cref{tb:Size} as a rough indicator of maturity.\footnote{For Isabelle, the closest equivalent to a standard library is the Higher-Order Logic (HOL) package. The Coq distribution contains a folder \texttt{theories}, which we took as Coq's standard library in the comparison.}
 
@@ -210,8 +214,14 @@ Partly as a consequence of its young age, Agda's standard library is much smalle
 \caption{Comparison of the size of the standard libraries or their equivalents for Agda, Coq and Isabelle. The measurements were taken using \texttt{cloc} (\url{http://cloc.sourceforge.net}) using the Haskell comments parser for Agda source files and the OCaml comments parser for Coq and Isabelle theories.}
 \label{tb:Size}
 \end{table}
+In the context of proof assistants, a \emph{tactic} is a program that finds proofs using heuristic methods. A good tactic automatically proves many simple lemmas, allowing someone working on a complex proof to concentrate on the difficult problems. As an example, Isabelle has a powerful built-in tactic called \texttt{auto}. Faced with a simple conjecture, users can often simply invoke this tactic using \enquote{\texttt{by auto}} and move on.
 
-Among the things that make Agda stand out are mutually recursive datatype and function definitions (\emph{induction-recursion}, not supported by Coq), a more experimental and open development model compared to other proof assistants---copatterns, for example, were first implemented in Agda \parencite{abel_wellfounded_2013}, flexible syntax and a \enquote{less is more} philosophy of providing a small kernel with everything else taken care of by libraries: even the \texttt{if … then … else …} construct is defined in a library.
+The downside of tactics is that they make proofs opaque. A sophisticated tactic like \texttt{auto} uses complicated heuristics, making it hard to predict if or why it will succeed or fail to find a proof for a given conjecture. The justification of a reasoning step \enquote{\texttt{by auto}} only tells the reader that it possible to construct a proof, but not what that proof \emph{is}. And even when there is a mechanism to inspect them, proofs constructed by tactics generally have little resemblance to pen-and-paper mathematical reasoning.
+% In case the tactic found a proof, there usually is some way to inspect it. Unfortunately, a thorough understanding of the internals of the proof assistant is often required to make any sense of the proofs constructed by tactics.
+
+Agda does not support tactics at the source code level: every proof must be written out in full. This design decision improves the readability of Agda code since no reasoning step is hidden from view.
+Proof developers, on the other hand, are forced to write out all proofs explicitly. They are supported in this by Agsy \autocite{foster_integrating_2011}, an automated proof search tool integrated into Agda's development environment.
+
 
 \subsection{Equational reasoning}
 
@@ -1035,7 +1045,7 @@ Binary operators may also interact in certain ways. If we add an operator \(\_\!
 \end{code}
 \end{description}
 
-\subsection{Algebraic structures}
+\subsection{Algebraic structures\label{ssc:Structures}}
 
 Certain combinations of the properties described in the previous subsection arise often, so for convenience, they are given names.
 
