@@ -147,12 +147,10 @@ module Report where
 
 \pagenumbering{arabic}
 
-\section{Aims and contributions}
-
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
 \enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as
-\[ \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \]
+\begin{equation} \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \end{equation}
 This notation is very concise. It allows us to
 %\begin{itemize}
 specify a set of indices (all odd natural numbers between zero and \(2n\) in this case);
@@ -161,12 +159,12 @@ lift a binary operator (addition in this case) to an entire set.
 %\end{itemize}
 
 Sigma-notation often improves our intuition about the problem at hand. The following reasoning principles, for example, are usually taken for granted when written in this way:
-\[
-\sum_{i = 0}^m \sum_{j = 0}^n a_{i,j} &= \sum_{j = 0}^n \sum_{i = 0}^m a_{i,j}
+\begin{equation}
+\sum_{i = 0}^m \sum_{j = 0}^n a_{i,j} = \sum_{j = 0}^n \sum_{i = 0}^m a_{i,j}
 \qquad \text{and} \qquad
-\sum_{i = 0}^n a_i + b_i &= \left( \sum_{i = 0}^n a_i \right) + \left( \sum_{i = 0}^n b_i \right)% \\
-%\sum_{i = 0}^n a_i &= \left( \sum_{\substack{i = 0 \\ \text{\(i\) odd} }}^n a_i \right) + \left( \sum_{\substack{i = 0 \\ \text{\(i\) even} }}^n a_i \right)
-\]
+\sum_{i = 0}^n a_i + b_i = \left( \sum_{i = 0}^n a_i \right) + \left( \sum_{i = 0}^n b_i \right)
+\label{eq:Principles}
+\end{equation}
 \emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}. In fact, the equations above hold for \emph{any} big operator whose underlying operator is commutative (i.e.\ immune to re-ordering)---see \cref{ssc:comm-mon-lemmas}.
 
 Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators (see \cref{sc:Related-work}).
