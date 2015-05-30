@@ -236,14 +236,12 @@ module IntroExample where
 
 The Agda standard library provides an intuitive notation for proving equalities (or equivalences, see \cref{ssc:Equivalences}) called \emph{equational reasoning}. It is used pervasively in the standard library, and we consider it a major selling point of the language.
 
-As an example, we will construct a proof of the identity \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\) as one would do using the interactive development environment. We first convince ourselves that the equation holds by writing down its proof by hand, breaking it into small, obvious steps:
+As an example, we consider a proof of the identity \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\). In standard mathematical notation, we may write down a proof as follows:
 \begin{align}
 (p · q) · r &= && \text{(associativity)} \\
 p · (q · r) &= && \text{(commutativity)} \\
 p · (r · q)
-\end{align}
-We then use those steps as the skeleton of our equational reasoning proof (see \cref{ssc:Equational-reasoning} for details on equational reasoning). The places marked \AgdaSymbol{\{!!\}} represent holes, i.e. justifications that are still missing. The comments indicate how we will go about filling those holes.
-
+\end{align}The corresponding proof in Agda using equational reasoning looks like this:
 \AgdaHide{
 \begin{code}
   example : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
@@ -255,21 +253,17 @@ We then use those steps as the skeleton of our equational reasoning proof (see \
     p * (q * r)  ≡⟨ cong₂ _*_ (refl {x = p}) (*-comm q r) ⟩
     p * (r * q)  ∎
 \end{code}
-This example demonstrates that the combination of equational reasoning and proof-by-refinement simplifies the process of translating handwritten proofs into formal proofs: we first write down the steps by which the left-hand side of the equation transforms into its right-hand side, and then provide justification for each individual step.
+The first equality is justified by \AgdaFunction{*-assoc}, an associativity lemma for multiplication; the second step uses \AgdaFunction{*-comm}, which proves that multiplication is commutative. The second line of the proof is complicated by an application of \emph{congruence} (\AgdaFunction{cong₂}, see \cref{ssc:Predicates}). Equational reasoning is discussed in more detail in \cref{ssc:Equational-reasoning}.
 
+\minisec{The big picture}
 
-\subsection{Big operators}
+Agda is a dependently typed language and proof assistant (more on this in \cref{ch:Background}) with a philosophy that values readable proofs. It supports equational reasoning, an intuitive notation for proving equalities. At the moment, there is no Agda library for big operators.
 
-How does our library fit into this picture? Big operator libraries have been implemented for Isabelle and Coq, but not for Agda. Our goal was to enable Agda users to express definitions and propositions and prove theorems involving big operators.
-
-As a simple example of what our big operator library permits, consider the \enquote{odd Gauss formula}. In standard mathematical notation, can be written as follows:
-\[ ∀n.\;\sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = n² \]
-Using the syntax definitions for sums, intervals and filters implemented in our project (see \cref{ch:Impl}), it can be expressed in Agda as
+Our project fills this gap, enabling Agda users to use syntax and reasoning principles like in \cref{eq:Principles} familiar from pen-and-paper mathematics in proofs involving big operators. As a simple example, this is how matrix multiplication can be defined using the notation provided by our library:
 \[
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≡} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}%
-\label{eq:Intro-Example}
+\sum_{i = 0}^n A_{r,i}\,B_{i,c} \quad \text{is written as} \quad
+\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}
 \]
-A proof of the \enquote{odd Gauss formula} is presented in \cref{ch:Gauss}. Further proofs using our library in \cref{ch:Binom} and \cref{ch:Semi} demonstrate that we achieve our goal of enabling Agda users to express propositions and write proofs with big operators.
 
 \section{Overview}
 
