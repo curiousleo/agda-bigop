@@ -267,11 +267,12 @@ Our project fills this gap, enabling Agda users to use syntax and reasoning prin
 
 \section{Overview}
 
-In \textbf{\cref{ch:Intro}} we discuss the motivation for the project and describes its main contributions.
 \textbf{\cref{ch:Background}} is a tutorial-style introduction to Agda and dependent types in general.
 A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
 In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
-Finally in \textbf{\cref{ch:Concl}} we discuss previous work and ideas for future research.
+Finally in \textbf{\cref{ch:Concl}} we discuss related work and ideas for future research.
+
+The \textbf{Appendix} contains an additional example of a predicate (\cref{ch:Collatz}) meant to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}) and the Binomial Theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
 
 \chapter{Background\label{ch:Background}}
 
@@ -558,7 +559,7 @@ In this Section, we will see how predicates and relations are expressed in a dep
 
 From this point on, we will call some functions \enquote{proofs} and some types \enquote{theorems}. The justification for this lies in the Curry-Howard correspondence, for which we will provide some intuition in this Chapter and the next. For a mathematically exact and systematic take on the Curry-Howard correpondence, see \autocite{sorensen_lectures_2006}.
 
-\subsection{Predicates}
+\subsection{Predicates\label{ssc:Predicates}}
 
 %TC:ignore
 \AgdaHide{
@@ -2985,7 +2986,7 @@ The following Agda proof is annotated by the corresponding steps in the pen-and-
 
 
 
-\chapter{Additional proofs}
+\chapter{Additional proofs\label{ch:Additional-proofs}}
 
 \section{Arrow-pair isomorphism\label{sc:Curry}}
 
