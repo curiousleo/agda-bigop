@@ -1175,7 +1175,7 @@ Given any monoid \AgdaBound{M}, we can bring its fields into scope:
     open Monoid M
 \end{code}
 %TC:endignore
-Using the carrier type, the monoid's binary operator and identity element, we can then define the function \AgdaFunction{crush} which reduces a list to an element of the carrier type using a fold over that list:\footnote{The name \AgdaFunction{crush} for this particular fold originated in \autocite{meertens_calculate_1996} and is combined in \autocite{gibbons_essence_2009} with a monoidal constraint.}
+Using the carrier type, the monoid's binary operator and identity element, we can then define the function \AgdaFunction{crush} which reduces a list to an element of the carrier type using a fold over that list:\footnote{The name \AgdaFunction{crush} for this particular fold originated in \textcite{meertens_calculate_1996} and is combined in \textcite{gibbons_essence_2009} with a monoidal constraint. In Haskell the corresponding function is called \texttt{mconcat}.}
 
 %TC:ignore
 \begin{code}
@@ -1189,7 +1189,7 @@ We can now define the function \AgdaFunction{fold} which evaluates a big operato
 \[
 \text{\AgdaFunction{map}}\;\AgdaSymbol{:}\;\text{\AgdaSymbol{(}\AgdaBound{I} \AgdaSymbol{→} \AgdaBound{Carrier}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{I} \AgdaSymbol{→} \AgdaDatatype{List} \AgdaBound{Carrier}}
 \]
-\AgdaFunction{fold} then applies \AgdaFunction{crush} to combine them into a single value of the monoid's carrier type.
+\AgdaFunction{fold} then applies \AgdaFunction{crush} to combine them into a single value of the monoid's carrier type.\footnote{Haskell's equivalent of our \AgdaFunction{fold} function is called \texttt{foldMap}.}
 
 %TC:ignore
 \begin{code}
