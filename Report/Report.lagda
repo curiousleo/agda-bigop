@@ -1071,7 +1071,7 @@ In this Section, we will see how big operators are evaluated using the \AgdaModu
 
 \minisec{Nomenclature}
 
-For the purposes of this report, a \emph{big operator} is defined by
+In this report, a \emph{big operator} is defined by
 
 \begin{itemize}
 \item an \emph{underlying structure} at least containing a \emph{carrier} type, a binary operator \(\_\!\!⊕\!\!\_\) and an element of the carrier, \(ε\);
