@@ -1023,10 +1023,7 @@ We formalise three independent concepts: big operators, intervals of natural num
 \item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
-
-XXX: paragraph about structure, \#files, \#loc
-
-For an overview of the directory structure and source code files, see \cref{fig:structure}.
+The project's source code consists of 1,822 lines of code in 21 files. The module structure and naming follows the conventions used in the Agda standard library.
 
 
 \section{Design\label{sc:Design}}
@@ -2412,44 +2409,6 @@ The challenge here would be to find a normal form for complex big operator expre
 \appendix
 
 \printbibliography
-
-\chapter{Source code structure}
-
-\begin{figure}[h!]
-\begin{verbatim}
-├── Bigop.agda                           19
-├── Bigop
-│   ├── Core.agda                        35
-│   ├── Core
-│   │   └── Properties.agda              14
-│   ├── Properties
-│   │   ├── BooleanAlgebra.agda          45
-│   │   ├── CommutativeMonoid.agda       92
-│   │   ├── Monoid.agda                  87
-│   │   └── SemiringWithoutOne.agda      30
-│   ├── DecidableEquality.agda           29
-│   ├── Filter.agda                      14
-│   ├── Filter
-│   │   ├── PredicateReasoning.agda      23
-│   │   ├── Predicates.agda              40
-│   │   └── Properties.agda              89
-│   └── Interval
-│       ├── Fin.agda                     23
-│       ├── Nat.agda                     12
-│       └── Properties
-│           ├── Fin.agda                 63
-│           └── Nat.agda                 69
-├── Matrix.agda                          59
-├── GaussProofs.agda                     89
-├── BinomialTheorem.agda                114
-└── SemiringProof.agda                  371
-\end{verbatim}
-\caption{Agda source files and lines of code. The module structure uses conventions of the Agda standard library.}
-\label{fig:structure}
-\end{figure}
-
-
-
 
 
 \chapter{Predicate example\label{ch:Collatz}}
