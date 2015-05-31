@@ -2471,6 +2471,9 @@ This lets us define a type \AgdaDatatype{∃} \AgdaSymbol{λ} \AgdaBound{x} \Agd
       iter f x zero     = x
       iter f x (suc i)  = iter f (f x) i
 \end{code}
+
+\clearpage
+
 The function \AgdaFunction{iter} \AgdaBound{f} \AgdaBound{x} \AgdaBound{i} simply applies \AgdaBound{f} to \AgdaBound{x}, \AgdaBound{i} times:
 
 \[
@@ -2495,6 +2498,8 @@ With \(\AgdaBound{n} = \AgdaInductiveConstructor{suc}\;\AgdaNumber{1}\), the rem
   Collatz‿1+1 = 1 , refl
 \end{code}
 For \(\AgdaBound{n} = \AgdaInductiveConstructor{suc}\;\AgdaNumber{3}\), we divide by two twice to get to \AgdaNumber{1}, giving \(\AgdaBound{i} = \AgdaNumber{2}\).
+
+\enlargethispage{4\baselineskip}
 
 \begin{code}
   Collatz‿3+1 : Collatz 3
