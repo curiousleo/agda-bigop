@@ -2802,6 +2802,8 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
 \] by shifting the values of its index list down by one and splitting the sum into two. In the actual proof, the addition with \(1\) is taken care of using reflexivity and congruence of addition.
 % \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
 
+\clearpage
+
 \begin{code}
   split : ∀ x n →  Σ[ k ← 1 … suc n ] (suc n) choose k * x ^ k ≡
                    Σ[ k ← 0 … n ] n choose k * x ^ (suc k)
@@ -2827,8 +2829,7 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
 % $
 \AgdaFunction{+-reorder} simply re-arranges three summands, as it is done in the pen-and-paper proof between (D.2) and (D.3):
 \[ 1 + \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right) = \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \left( 1 + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
-\] We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
-
+\]
 \begin{code}
   +-reorder : ∀ x y z → x + (y + z) ≡ y + (x + z)
   +-reorder x y z =
@@ -2838,7 +2839,13 @@ In this Section we prove the lemmas used in the final proof of the binomial theo
       (y + x) + z  ≡⟨ +-assoc y x z ⟩
       y + (x + z)
     ∎
+\end{code}
+% $
+We also prove \AgdaFunction{*-reorder}, which proves that the same transformation holds for multiplication. This auxiliary lemma is used in \AgdaFunction{left-distr} (below).
 
+\clearpage
+
+\begin{code}
   *-reorder : ∀ x y z → x * (y * z) ≡ y * (x * z)
   *-reorder x y z =
     begin
@@ -2866,7 +2873,6 @@ The lemma \AgdaFunction{left-distr} uses \AgdaFunction{*-reorder} and the left-d
 \end{code}
 % $
 The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \AgdaDatatype{<} \AgdaBound{q} \AgdaSymbol{→} \AgdaBound{p} \AgdaFunction{choose} \AgdaBound{q} \AgdaDatatype{≡} \AgdaNumber{0}, but this is the form in which it is used in \AgdaFunction{choose-suc}. The keyword \AgdaKeyword{mutual} allows \AgdaFunction{choose-lt} to be defined in terms of \AgdaFunction{choose-lt′} and vice versa.
-\AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
 
 \begin{code}
   mutual
@@ -2875,13 +2881,14 @@ The auxiliary lemma \AgdaFunction{choose-lt} is equivalent to \AgdaBound{p} \Agd
     choose-lt m (suc n)  = choose-lt′ m n ⟨ +-cong ⟩ choose-lt′ (suc m) n
 
     choose-lt′ : ∀ m n → n choose (m + suc n) ≡ 0
-    choose-lt′ m n =
-      begin
-        n choose (m + suc n)  ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
-        n choose suc (m + n)  ≡⟨ choose-lt m n ⟩
-        0
-      ∎
+    choose-lt′ m n = begin
+      n choose (m + suc n)  ≡⟨ P.refl ⟨ P.cong₂ _choose_ ⟩ +-suc m n ⟩
+      n choose suc (m + n)  ≡⟨ choose-lt m n ⟩
+      0 ∎
+\end{code}
+\AgdaFunction{choose-lt} is required for \AgdaFunction{choose-suc}, which in turn is used in \AgdaFunction{shift} (below).
 
+\begin{code}
   choose-suc : ∀ x n →  Σ[ k ← 0 … n ] n choose (suc k) * x ^ (suc k) ≡
                         Σ[ k ← 1 … n ] n choose k * x ^ k
   choose-suc x n  =
@@ -2951,7 +2958,7 @@ The following Agda proof is annotated by the corresponding steps in the pen-and-
     ∎
 \end{code}
 % $
-
+This proves the Binomial Theorem in Agda.
 
 
 
@@ -3080,20 +3087,18 @@ module Reducebig {c ℓ} (M : Monoid c ℓ) where
   import Relation.Binary.EqReasoning as EqR
   import Relation.Binary.PropositionalEquality as P
   open P using (_≡_)
+
+  open Monoid M renaming (Carrier to R)
+  open Core.Fold M using (fold)
+  open EqR setoid
 \end{code}
 }
 
 \begin{code}
-  open Monoid M renaming (Carrier to R)
-  open Core.Fold M using (fold)
-  open EqR setoid
-
-  -- `reducebig` is how big operators are evaluated in Coq's bigop module.
   reducebig :  ∀ {i p} {I : Set i} {P : Pred I p} →
                (I → R) → Decidable P → List I → R
   reducebig f p = foldr (λ i acc → if ⌊ p i ⌋ then f i ∙ acc else acc) ε
 
-  -- `reducebig` and Bigop.Core.Fold.fold are extensionally equal
   equivalent :  ∀ {i p} {I : Set i} {P : Pred I p} →
                 (f : I → R) (p : Decidable P) (is : List I) →
                 reducebig f p is ≡ fold f (is ∥ p)
