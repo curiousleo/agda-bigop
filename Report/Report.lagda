@@ -956,8 +956,6 @@ Given a monoid over \(\_\!\!‚äó\!\!\_\) and a commutative monoid over \(\_\!\!‚ä
 
 In the Agda standard library, the definitions of algebraic structures are split into two records, one containing the \emph{properties} and the other the \emph{data} of the structure.
 
-\newpage
-
 \begin{description}
 \item[Semigroups.] The complete definition of a semigroup in Agda's standard library consists of the record types \AgdaDatatype{IsSemigroup} and \AgdaDatatype{Semigroup}:
 
