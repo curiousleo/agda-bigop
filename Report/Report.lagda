@@ -2968,7 +2968,8 @@ module Curry where
   open import Relation.Binary.PropositionalEquality
 \end{code}
 }
-The functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
+
+We prove that the types \AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} and \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} are isomorphic by definining the functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and proving that they are inverses of each other. \AgdaFunction{curry} and \AgdaFunction{uncurry} are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
 
 \begin{code}
   curry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → B → C) → (A × B → C)
@@ -2990,7 +2991,7 @@ In order to show that \AgdaFunction{curry} and \AgdaFunction{uncurry} constitute
                    f (x , y) ≡ curry (uncurry f) (x , y)
   curry∘uncurry f x y = refl
 \end{code}
-Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaSymbol{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
+Thus \AgdaDatatype{A} \AgdaSymbol{→} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} and \AgdaDatatype{A} \AgdaDatatype{×} \AgdaDatatype{B} \AgdaSymbol{→} \AgdaPrimitiveType{Set} are isomorphic and we can use them interchangeably.
 
 \newpage
 
@@ -3007,22 +3008,25 @@ module FoldlFoldr where
 
   open import Algebra
   import Bigop.Core as Core
-\end{code}
-}
 
-\AgdaFunction{foldr≡foldl} shows that for any list, the right- and left-fold over that list evaluate to the same value if the binary operator and identity of a monoid are supplied as the first and second argument in either case.
-
-\begin{code}
   module Fold {c ℓ} (M : Monoid c ℓ) where
     open Monoid M renaming (Carrier to R)
     open Core.Fold M using (fold)
     open EqR setoid
+\end{code}
+}
 
-    -- Lemmas
+\AgdaFunction{foldr≡foldl} shows that for any list, the right- and left-fold over that list evaluate to the same value if the binary operator and identity of a monoid are supplied as the first and second argument in either case.
+The proof relies on two lemmas. \AgdaFunction{foldl-cong} shows that \AgdaFunction{foldl} is congruent in its second argument:
+
+\begin{code}
     foldl-cong : ∀ x y xs → x ≈ y → foldl _∙_ x xs ≈ foldl _∙_ y xs
     foldl-cong x y []        x≈y = x≈y
     foldl-cong x y (z ∷ zs)  x≈y = foldl-cong (x ∙ z) (y ∙ z) zs (∙-cong x≈y refl)
+\end{code}
+\AgdaFunction{foldl-step} shows that a pre-multiplication using the monoid's binary operator can be factored into a left fold:
 
+\begin{code}
     foldl-step : ∀ x xs → x ∙ foldl _∙_ ε xs ≈ foldl _∙_ (ε ∙ x) xs
     foldl-step x [] = begin
       x ∙ ε  ≈⟨ proj₂ identity x ⟩
@@ -3035,9 +3039,10 @@ module FoldlFoldr where
       foldl _∙_ (ε ∙ (x ∙ y)) ys  ≈⟨ foldl-cong  (ε ∙ (x ∙ y)) (ε ∙ x ∙ y) ys
                                                  (sym (assoc ε x y)) ⟩
       foldl _∙_ (ε ∙ x ∙ y) ys    ∎
+\end{code}
+Finally the proof the left- and right-folds over a monoid are equivalent proceeds by list induction:
 
-    -- The left- and right-fold over a list using a monoidal binary
-    -- operator are equal.
+\begin{code}
     foldr≡foldl : (xs : List R) → foldr _∙_ ε xs ≈ foldl _∙_ ε xs
     foldr≡foldl []        = refl
     foldr≡foldl (x ∷ xs)  = begin
