@@ -1250,7 +1250,7 @@ module Intervals where
 %TC:endignore
 }
 
-Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The module \AgdaModule{Bigop.Interval.Nat} consists of the following four definitions:
+Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The module \AgdaModule{Bigop.Interval.Nat} contains two functions:
 
 %TC:ignore
 \begin{code}
@@ -1260,7 +1260,12 @@ Defining intervals of type \AgdaDatatype{ℕ} is straightforward. The module \Ag
 
   range : ℕ → ℕ → List ℕ
   range m n = upFrom m (n ∸ m)
+\end{code}
+%TC:endignore
+We define two infix operators using \AgdaFunction{range}. \enquote{\AgdaBound{m} \AgdaFunction{…<} \AgdaBound{n}} evaluates to the interval of numbers from \AgdaBound{m} up to but not including \AgdaBound{n}. \enquote{\AgdaBound{m} \AgdaFunction{…} \AgdaBound{n}}, on the other hand, does include \AgdaBound{n}.
 
+%TC:ignore
+\begin{code}
   _…<_ = range
 
   _…_ : ℕ → ℕ → List ℕ
@@ -1300,6 +1305,8 @@ module Filters where
 %TC:endignore
 
 The filter operator \AgdaFunction{\_∥\_} takes a list and a decidable predicate over the list's element type, and returns the list containing only those elements of the input list which satisfy that predicate. Its definition is a straightforward inductive definition, with a case split on whether the predicate is satisfied: if \AgdaInductiveConstructor{yes}, then the element is included in the result; otherwise it is dropped:
+
+\clearpage
 
 %TC:ignore
 \begin{code}
@@ -1554,26 +1561,13 @@ We would like to use \AgdaDatatype{Pointwise} \AgdaBound{\_∼\_} as an equivale
   PW-isEquivalence :  ∀ {a ℓ} {A : Set a} {_≈_ : Rel A ℓ} {m n} →
                       IsEquivalence _≈_ → IsEquivalence (Pointwise _≈_ {m = m} {n})
   PW-isEquivalence {_≈_ = ≈} eq = record
-    { refl = PW-refl
-    ; sym = PW-sym
-    ; trans = PW-trans
-    }
-    where
-      open IsEquivalence eq
-
-      ≋ = Pointwise ≈
-
-      PW-refl : Reflexive ≋
-      PW-refl = (λ r c → refl)
-
-      PW-sym : Symmetric ≋
-      PW-sym eq = (λ r c → sym (eq r c))
-
-      PW-trans : Transitive ≋
-      PW-trans eq₁ eq₂ = (λ r c → trans (eq₁ r c) (eq₂ r c))
+    { refl   = λ r c → refl
+    ; sym    = λ eq r c → sym (eq r c)
+    ; trans  = λ eq₁ eq₂ r c → trans (eq₁ r c) (eq₂ r c) }
+    where open IsEquivalence eq
 \end{code}
 %TC:endignore
-Let us consider \AgdaFunction{PW-sym} in more detail. The property \AgdaFunction{Symmetric} \AgdaDatatype{≋} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{eq} \AgdaSymbol{:} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, which is just a synonym for \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
+Let us consider \AgdaField{sym} in more detail. The property \AgdaFunction{Symmetric} \AgdaDatatype{≋} is defined as \AgdaSymbol{∀}~\AgdaSymbol{\{}\AgdaBound{A} \AgdaBound{B}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}. That is, it transforms evidence of \AgdaBound{eq} \AgdaSymbol{:} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{B} into evidence that \AgdaBound{B} \AgdaDatatype{≋} \AgdaBound{A}, which is just a synonym for \AgdaSymbol{∀} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≈} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}.
 In order to construct a function of this type, we abstract over \AgdaBound{r} and \AgdaBound{c} and then apply the symmetry law of the underlying equivalence \AgdaFunction{sym} to \AgdaBound{eq} \AgdaBound{r} \AgdaBound{c} like so:
 \begin{align*}
 \text{\AgdaSymbol{λ} \AgdaBound{r} \AgdaBound{c} \AgdaSymbol{→} \AgdaBound{eq} \AgdaBound{r} \AgdaBound{c}}
@@ -1642,15 +1636,15 @@ the commutative monoid, monoid and semigroup over \AgdaFunction{\_+\_} (\AgdaBou
 %TC:ignore
 \AgdaHide{
 \begin{code}
-  open Semiring semiring using (
-      Carrier; 0#; 1#; _+_; _*_; setoid; +-semigroup; +-monoid; +-commutativeMonoid;
-      *-semigroup; *-monoid; semiringWithoutOne)
+  open Semiring semiring hiding (_≈_; isEquivalence; refl; sym; trans; reflexive)
+  module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
 \end{code}
 }
 %TC:endignore
 Next, the equivalence relation \AgdaDatatype{\_≡\_} of the underlying setoid on \AgdaDatatype{Carrier} and its reflexive, symmetric and transitive laws (\AgdaField{refl}, \AgdaField{sym}, \AgdaField{trans}) are brought into scope. We make the sum syntax from the \AgdaModule{Bigop.Core.Fold} module available and open the modules containing lemmas about ordinals, equational reasoning functionality in the element setoid (\AgdaModule{EqReasoning}) and the module for equational reasoning with propositional equality (\AgdaModule{≡-Reasoning}). In order to avoid name clashes, the functions \AgdaFunction{begin\_}, \AgdaFunction{\_≡⟨\_⟩\_} and \AgdaFunction{\_∎} are renamed to \AgdaFunction{start\_}, \AgdaFunction{\_≣⟨\_⟩\_} and \AgdaFunction{\_□}, respectively.
 
 %TC:ignore
+\AgdaHide{
 \begin{code}
   open Setoid setoid using (_≈_; refl; sym; trans; reflexive; isEquivalence)
   open Fold +-monoid using (Σ-syntax)
@@ -1660,6 +1654,7 @@ Next, the equivalence relation \AgdaDatatype{\_≡\_} of the underlying setoid o
   open P.≡-Reasoning
     renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 \end{code}
+}
 %TC:endignore
 We define \AgdaDatatype{M} as a shorthand for the type of square matrices of size \AgdaBound{n} over the carrier of the underlying semiring. The pointwise lifting of the equivalence relation between elements is named \AgdaFunction{\_≋\_}. \AgdaDatatype{Matrix} and \AgdaDatatype{Pointwise} are defined in \cref{sc:Impl-Matrices}.
 
@@ -1707,6 +1702,8 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
 %TC:endignore
 \AgdaFunction{1M} is the identity for matrix multiplication. Its definition relies on the function \AgdaFunction{diag}, which returns \AgdaFunction{1\#} (the multiplicative identity of the underlying semiring) if its arguments are equal and \AgdaFunction{0\#} (the additive identity and multiplicative annihilator of the underlying semiring) if they are different.
 
+\enlargethispage{2\baselineskip}
+
 %TC:ignore
 \begin{code}
   diag : {n : ℕ} → Fin n → Fin n → Carrier
@@ -1714,7 +1711,12 @@ The matrix \AgdaFunction{0M} is the identity for matrix addition and the annihil
   diag  zeroF     (sucF c)  =  0#        -- r ≢ c
   diag  (sucF r)  zeroF     =  0#        -- r ≢ c
   diag  (sucF r)  (sucF c)  =  diag r c  -- recursive case
+\end{code}
+%TC:endignore
+The identity matrix \AgdaFunction{1M} is defined as the result of tabulating \AgdaFunction{diag}:
 
+%TC:ignore
+\begin{code}
   1M : M
   1M = tabulate diag
 \end{code}
@@ -1751,8 +1753,6 @@ In the inner proof, we first expand the definitions of \AgdaFunction{\_⊕\_} an
 {- 4.3 -}  A′ [ r , c ]  + B′ [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
            (A′ ⊕ B′) [ r , c ]
     ∎
-    where
-      open Semigroup +-semigroup using () renaming (∙-cong to +-cong)
 \end{code}
 %TC:endignore
 Since the only law used in this proof is \AgdaFunction{+-cong}, the semigroup over \AgdaFunction{\_+\_} induced by the underlying semiring is sufficient to prove that matrix addition is congruent.
@@ -1772,16 +1772,17 @@ The auxiliary functions \AgdaFunction{⟨⊕⟩⊕-expand} and \AgdaFunction{⊕
 %TC:ignore
 \begin{code}
   ⊕-assoc : ∀ A B C → (A ⊕ B) ⊕ C ≋ A ⊕ (B ⊕ C)
-  ⊕-assoc A B C = λ r c → begin
+  ⊕-assoc A B C = λ r c →
+    begin
 {- 4.4 -}  ((A ⊕ B) ⊕ C) [ r , c ]                     ≡⟨ ⟨⊕⟩⊕-expand r c ⟩
 {- 4.5 -}  (A [ r , c ] +  B [ r , c ]) + C [ r , c ]  ≈⟨ +-assoc _ _ _ ⟩
 {- 4.6 -}  A [ r , c ] + (B [ r , c ]  + C [ r , c ])  ≡⟨ P.sym (⊕⟨⊕⟩-expand r c) ⟩
-           (A ⊕ (B ⊕ C)) [ r , c ]                     ∎
-           where
-             open Semigroup +-semigroup using () renaming (assoc to +-assoc)
+           (A ⊕ (B ⊕ C)) [ r , c ]
+    ∎
 \end{code}
 \AgdaHide{
 \begin{code}
+           where
              ⟨⊕⟩⊕-expand : ∀ r c → ((A ⊕ B) ⊕ C) [ r , c ] ≡ (A [ r , c ] + B [ r , c ]) + C [ r , c ]
              ⟨⊕⟩⊕-expand r c =
                lookup∘tabulate r c ⟨ P.trans ⟩ P.cong₂ _+_ (lookup∘tabulate r c) P.refl
@@ -1805,7 +1806,7 @@ In order to prove that the zero matrix is an identity for \AgdaFunction{\_⊕\_}
 &≈ 0 + A_{r,c} \\
 &≈ A_{r,c}
 \end{align}
-%Using equational reasoning, the corresponding Agda proof looks like this:
+\enlargethispage{3\baselineskip}
 %TC:ignore
 \begin{code}
   ⊕-identityˡ : ∀ A → 0M ⊕ A ≋ A
@@ -1814,10 +1815,7 @@ In order to prove that the zero matrix is an identity for \AgdaFunction{\_⊕\_}
 {- 4.7 -}  (0M ⊕ A) [ r , c ]           ≡⟨ lookup∘tabulate r c ⟩
 {- 4.8 -}  0M [ r , c ] +  A [ r , c ]  ≡⟨ P.cong₂ _+_ (lookup∘tabulate r c) P.refl ⟩
 {- 4.9 -}            0# +  A [ r , c ]  ≈⟨ proj₁ +-identity _ ⟩
-                           A [ r , c ]
-    ∎
-    where
-      open Monoid +-monoid using () renaming (identity to +-identity)
+                           A [ r , c ]  ∎
 \end{code}
 %TC:endignore
 Note that this proof makes use of \AgdaFunction{+-identity}, which \AgdaFunction{+-semigroup} does not provide. This is why we open the monoid over \AgdaFunction{\_+\_} in the identity proof above.
@@ -1844,9 +1842,6 @@ Again, we present the proof in standard mathematical notation and then in Agda:
 {- 4.12 -}  B [ r , c ]  + A [ r , c ]  ≡⟨ P.sym (lookup∘tabulate r c) ⟩
             (B ⊕ A) [ r , c ]
     ∎
-    where
-      open CommutativeMonoid +-commutativeMonoid using ()
-        renaming (comm to +-comm)
 \end{code}
 %TC:endignore
 Here \AgdaFunction{\_+\_} must be a commutative operator for the proof to go through.
@@ -1896,9 +1891,6 @@ In this proof we need to use both \AgdaFunction{Σ.cong} and \AgdaFunction{*-con
 {- 4.15 -}       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       (A′ ⊗ B′) [ r , c ]
     ∎
-    where
-      open Semigroup *-semigroup using () renaming (∙-cong to *-cong)
-      module Σ = Bigop.Properties.Monoid +-monoid using (cong)
 \end{code}
 %TC:endignore
 We can read off the \AgdaKeyword{open} statements that this proof requires a semigroup over \AgdaFunction{\_*\_} and a monoid over \AgdaFunction{\_+\_}.
@@ -1917,6 +1909,8 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
                        &≈ \mathbf{0}_{r,c}
 \end{align}
 
+\clearpage
+
 %TC:ignore
 \begin{code}
   M-zeroˡ : ∀ A → 0M ⊗ A ≋ 0M
@@ -1933,9 +1927,6 @@ In this proof that \AgdaFunction{0M} is the left zero for \AgdaFunction{\_⊗\_}
 {- 4.20 -}  0#                                       ≡⟨ P.sym (lookup∘tabulate r c) ⟩
             0M [ r , c ]
     ∎
-    where
-      open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
-      module Σ = Bigop.Properties.Monoid +-monoid using (cong; identity)
 \end{code}
 %TC:endignore
 Let us consider the second step of the proof in detail. The aim is to use \AgdaFunction{Σ.cong} to show
@@ -1969,9 +1960,6 @@ In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the
       0#                               ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       0M [ r , c ]
     ∎
-    where
-      open SemiringWithoutOne semiringWithoutOne using (*-cong; zero)
-      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
 \end{code}
 }
 %TC:endignore
@@ -2013,13 +2001,17 @@ In the Agda proof, we use the appropriate congruence rules to replace subterms b
 {- 4.26 -}  ≈⟨ sym $ ⊗⟨⊗⟩-expand r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ]
     ∎
-    where
-      open SemiringWithoutOne semiringWithoutOne using (*-assoc; *-cong)
-      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
-        using (cong; swap; distrˡ; distrʳ)
 \end{code}
+\AgdaHide{
+\begin{code}
+    where
+\end{code}
+}
 %TC:endignore
+% $
 Within \AgdaFunction{⊗-assoc}, \AgdaFunction{inner} is used which proves steps (4.24) and (4.23):
+
+\clearpage
 
 %TC:ignore
 \begin{code}
@@ -2058,6 +2050,7 @@ Within \AgdaFunction{⊗-assoc}, \AgdaFunction{inner} is used which proves steps
 This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \AgdaFunction{⊗} \AgdaBound{A} \AgdaDatatype{≋} \AgdaBound{A} for all \AgdaBound{A}. The key idea here is that for any term involving \AgdaFunction{1M}, we can perform a case split on whether the row \AgdaBound{r} and column \AgdaBound{c} are equal. If they are, then \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{1\#} by \AgdaFunction{1M-diag}. If not, then by \AgdaFunction{1M-∁-diag} we have \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}:
 
 %TC:ignore
+\AgdaHide{
 \begin{code}
   1M-diag : ∀ {r c} → r ≡ c → 1M [ r , c ] ≡ 1#
   1M-diag {r} {.r} P.refl = start
@@ -2067,11 +2060,7 @@ This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \Agda
       where  diag-lemma  : ∀ {n} (r : Fin n) → diag r r ≡ 1#
              diag-lemma  zeroF     =  P.refl
              diag-lemma  (sucF r)  =  diag-lemma r
-\end{code}
-%TC:endignore
 
-%TC:ignore
-\begin{code}
   1M-∁-diag : ∀ {r c} → ∁ (_≡_ r) c → 1M [ r , c ] ≡ 0#
   1M-∁-diag {r} {c} eq with ≟ r c
   1M-∁-diag {r} {c} ¬eq | yes eq  = ⊥-elim (¬eq eq)
@@ -2089,7 +2078,11 @@ This is the longest of the semiring proofs. We show that \AgdaFunction{1M} \Agda
         diag-lemma (sucF r)  zeroF     ¬eq  =  P.refl
         diag-lemma (sucF r)  (sucF c)  ¬eq  =  diag-lemma r c (suc-¬-lemma ¬eq)
 \end{code}
+}
 %TC:endignore
+
+\enlargethispage{\baselineskip}
+
 The justification for the identity law in mathematical notation is as follows:
 \begin{align}
 (\mathbf{1} ⊗ A)_{r,c} &≈ \sum_{i ← 0 …<\;n} \mathbf{1}_{r,i}\;A_{i,c} \\
@@ -2106,12 +2099,59 @@ The function \AgdaFunction{≡-step} deals with the first case. From \AgdaBound{
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{≟} \AgdaBound{r} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}
 }\]
-Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. By distributivity and the \AgdaFunction{zero} law of the underlying semiring we then have
 
+%TC:ignore
+\begin{code}
+  ≡-step : ∀ (A : M) r c →  Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                            Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
+  ≡-step A r c =
+    begin
+      Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+        ≈⟨ Σ.cong-P  (0 …< n) (≟ r)
+                     (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ] 1# * A [ i , c ]
+        ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
+      1# * (Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ])
+        ≈⟨ proj₁ *-identity _ ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
+    ∎
+\end{code}
+%TC:endignore
+% $
+Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢} \AgdaBound{i}. It follows that \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaDatatype{≡} \AgdaFunction{0\#}. By distributivity and the \AgdaFunction{zero} law of the underlying semiring we then have
 \[ \text{
 \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{∁′} (\AgdaFunction{≟} \AgdaBound{r}) \AgdaFunction{]} \AgdaFunction{1M} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]} \AgdaFunction{≈}
 \AgdaFunction{0\#}
 }\]
+
+%TC:ignore
+\begin{code}
+  ≢-step : ∀ (A : M) r c → Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+  ≢-step A r c =
+    begin
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+        ≈⟨ Σ.cong-P  (0 …< n) (∁′ (≟ r))
+                     (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]
+        ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
+      0# * (Σ[ i ← 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])
+        ≈⟨ proj₁ zero _ ⟩
+      0#
+    ∎
+\end{code}
+%TC:endignore
+% $
+The final lemma required to prove \AgdaFunction{⊗-identityˡ} is \AgdaFunction{filter}, which states that the interval \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} contains each number smaller than \AgdaBound{n} exactly once.
+
+%TC:ignore
+\begin{code}
+  filter : ∀ r → 0 …< n ∥ ≟ r ≡ L.[ r ]
+  filter r = ordinals-filter z≤n (bounded r)
+\end{code}
+%TC:endignore
+
+\clearpage
+
 %TC:ignore
 \begin{code}
   ⊗-identityˡ : ∀ A → 1M ⊗ A ≋ A
@@ -2123,54 +2163,18 @@ Otherwise, \AgdaFunction{≢-step} assumes that \AgdaBound{r} \AgdaFunction{≢}
 {- 4.28 -}  ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
       Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]
-{- 4.29 -}  ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
+{- 4.29 -}  ≈⟨ ≡-step A r c ⟨ +-cong ⟩ ≢-step A r c ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ] + 0#
 {- 4.30 -}  ≈⟨ proj₂ +-identity _ ⟩
       Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
 {- 4.31 -}  ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
-                       (filter r c) ⟩
+                       (filter r) ⟩
       A [ r , c ] + 0#
 {- 4.32 -}  ≈⟨ proj₂ +-identity _  ⟩
       A [ r , c ]
     ∎
-    where
-      open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
-      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
-        using (cong-P; split-P; distrˡ)
-
-      ≡-step : ∀ r c →  Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
-                        Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
-      ≡-step r c =
-        begin
-          Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (0 …< n) (≟ r)
-                         (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← 0 …< n ∥ ≟ r ] 1# * A [ i , c ]
-            ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
-          1# * (Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ])
-            ≈⟨ proj₁ *-identity _ ⟩
-          Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
-        ∎
-
-      ≢-step : ∀ r c → Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
-      ≢-step r c =
-        begin
-          Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
-            ≈⟨ Σ.cong-P  (0 …< n) (∁′ (≟ r))
-                         (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
-          Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]
-            ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
-          0# * (Σ[ i ← 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])
-            ≈⟨ proj₁ zero _ ⟩
-          0#
-        ∎
-
-      filter : ∀ r c → 0 …< n ∥ ≟ r ≡ L.[ r ]
-      filter r c = ordinals-filter z≤n (bounded r)
 \end{code}
 %TC:endignore
-\AgdaFunction{filter} is just an application of \AgdaFunction{ordinals-filterF}, which states that the list ordinals from \(m\) to \(m + n - 1\) includes every natural number between \(m\) and \(m + n - 1\) exactly once.
-
 The proof of right-identity works in a similar way, and is omitted here. It is included in the Agda source of the project.
 
 %TC:ignore
@@ -2179,9 +2183,6 @@ The proof of right-identity works in a similar way, and is omitted here. It is i
   ⊗-identityʳ : ∀ A → A ⊗ 1M ≋ A
   ⊗-identityʳ A = ident
     where
-      open Semiring semiring using (+-cong; +-identity; *-cong; *-identity; zero)
-      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
-
       ∁-sym : ∀ {a} {A : Set a} {A B : A} → ∁ (_≡_ A) B → ∁ (λ C → B ≡ C) A
       ∁-sym eq P.refl = eq P.refl
 
@@ -2248,6 +2249,24 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
                     &≈ ((A ⊗ B) ⊕ (A ⊗ C))_{r,c}
 \end{align}
 %TC:ignore
+\AgdaFunction{inner} proves that
+\(\sum_{i ← 0 …<\;n} A_{r,i} (B_{i,c} + C_{i,c})
+≈ \sum_{i ← 0 …<\;n} (A_{r,i}\;B_{i,c}) + (A_{r,i}\;C_{i,c})\) (4.34):
+
+\begin{code}
+  inner : ∀ {A B C : M} r c i →  A [ r , i ] * (B ⊕ C) [ i , c ] ≈
+                                 A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
+  inner {A} {B} {C} r c i = begin
+      A [ r , i ] * (B ⊕ C) [ i , c ]
+        ≈⟨ refl ⟨ *-cong ⟩ reflexive (lookup∘tabulate i c) ⟩
+      A [ r , i ] * (B [ i , c ] + C [ i , c ])
+        ≈⟨ proj₁ distrib _ _ _ ⟩
+      A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ] ∎
+\end{code}
+%TC:endignore
+It is used in the distributivity proof as follows:
+
+%TC:ignore
 \begin{code}
   ⊗-distrOverˡ-⊕ : ∀ A B C → A ⊗ (B ⊕ C) ≋ (A ⊗ B) ⊕ (A ⊗ C)
   ⊗-distrOverˡ-⊕ A B C = λ r c →
@@ -2266,21 +2285,6 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
 {- 4.37 -}  ≡⟨ P.sym $ lookup∘tabulate r c ⟩
       ((A ⊗ B) ⊕ (A ⊗ C)) [ r , c ]
     ∎
-    where
-      open Semiring semiring using (*-cong; distrib)
-      module Σ = Bigop.Properties.CommutativeMonoid +-commutativeMonoid
-        using (cong; merge)
-
-      inner : ∀ r c i → A [ r , i ] * (B ⊕ C) [ i , c ] ≈
-                        A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
-      inner r c i =
-        begin
-          A [ r , i ] * (B ⊕ C) [ i , c ]
-            ≈⟨ refl ⟨ *-cong ⟩ reflexive (lookup∘tabulate i c) ⟩
-          A [ r , i ] * (B [ i , c ] + C [ i , c ])
-            ≈⟨ proj₁ distrib _ _ _ ⟩
-          A [ r , i ] * B [ i , c ] + A [ r , i ] * C [ i , c ]
-        ∎
 \end{code}
 %TC:endignore
 % $
@@ -2291,9 +2295,6 @@ This proof shows that \AgdaBound{A} \AgdaFunction{⊗} \AgdaSymbol{(}\AgdaBound{
   ⊗-distrOverʳ-⊕ : ∀ A B C → (B ⊕ C) ⊗ A ≋ (B ⊗ A) ⊕ (C ⊗ A)
   ⊗-distrOverʳ-⊕ A B C = distr
     where
-      open Semiring semiring using (*-cong; distrib)
-      module Σ = Bigop.Properties.SemiringWithoutOne semiringWithoutOne
-
       distr : ∀ r c → ((B ⊕ C) ⊗ A) [ r , c ] ≈ ((B ⊗ A) ⊕ (C ⊗ A)) [ r , c ]
       distr r c = begin
         ((B ⊕ C) ⊗ A) [ r , c ]
@@ -2348,7 +2349,6 @@ Taking all the lemmas in this Chapter together, we have shown that square matric
     }
 \end{code}
 %TC:endignore
-
 This concludes our proof that the square matrices over a semiring form a semiring.
 
 \chapter{Conclusions\label{ch:Concl}}
