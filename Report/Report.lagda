@@ -2364,22 +2364,21 @@ This criterion has been met:
 In our project proposal we claimed that any implementation of big operators would depend on \enquote{a notion of enumerable finite sets}. Experiments with prototype implementations using finite sets showed that this additional layer of abstraction only complicated the implementation with no tangible benefits. In \cref{ssc:as-lists} we argue that lists are the most idiomatic way to represent the collection of indices of a big operator.
 
 
-\section{Related work}
+\section{Related work\label{sc:Related-work}}
 
 In this section, we relate our project to previous implementations of big operators in the proof assistants Isabelle and Coq.
 
-\subsection{Isabelle: List.thy and Groups\_Big.thy}
+\minisec{Isabelle}
 
-Isabelle's higher-order logic (HOL) library contains two definitions related to big operators.
+Isabelle's HOL library contains two definitions related to big operators.
 
 \begin{itemize}
 \item The module \texttt{Groups\_Big} defines a Sigma-notation for big operators. Here, sets represent the collection of indices, and the underlying structure is assumed to be a commutative monoid (see \cref{sc:Design} for how the representation of the index domain and the algebraic structure are related).
 \item The \texttt{List} theory defines a function \texttt{listsum}, which exactly corresponds to the function \AgdaFunction{crush} defined in \cref{ssc:Implementing}: given a monoid, it performs a right-fold over the list, combining elements using the monoid's operator. If the list is empty, the identity element of the monoid is returned. No syntax definitions for \texttt{listsum} is provided.
 \end{itemize}
+There has been a large effort to formalise set theory in Isabelle, so building on top of sets as fundamental building block is a natural path to take. Since lists have more structure than sets, we argue that defining big operators over lists rather than sets is the more flexible, unifying approach (see \cref{ssc:as-lists}).
 
-In contrast to Agda, there has been a large effort in Isabelle to formalise set theory, so building on top of sets as fundamental building block is a natural path to take. Since lists are have more structure than sets (see \cref{ssc:as-lists}), we would argue that defining big operators over lists rather than sets is the more flexible, unifying approach.
-
-\subsection{Coq: bigop.v}
+\minisec{Coq}
 
 The approach taken in Coq's \texttt{bigop} module,%
 \footnote{A clickable version of the source code for the \texttt{bigop} module can be accessed via \url{http://ssr.msr-inria.inria.fr/doc/mathcomp-1.5/MathComp.bigop.html}.} %
