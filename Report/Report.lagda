@@ -2410,7 +2410,7 @@ As the terminology suggests, the goal of this paper is to build a set of primiti
 
 \section{Future work\label{sc:Future}}
 
-We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
+We intend to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
 In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
 \[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 1 \]
@@ -2418,7 +2418,7 @@ It would be interesting to see what other properties can be lifted from differen
 
 A different but related idea would be to attempt to write a solver for big operators over some algebraic structure. Agda's standard library already contains solvers for monoids (\AgdaModule{Algebra.Monoid-solver}) and rings (\AgdaModule{Algebra.RingSolver}).%
 \footnote{Eric Mertens wrote a number of solvers for different algebraic structures in Agda, available here: \url{https://github.com/glguy/my-agda-lib/tree/master/Algebra}.} %
-The challenge here would be to find a normal form for complex big operator expressions to reduce to.
+The challenge here would be to find a normal form for arbitrary big operator expressions to reduce to.
 
 %TC:ignore
 \appendix
