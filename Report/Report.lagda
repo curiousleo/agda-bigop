@@ -2346,17 +2346,26 @@ This concludes our proof that the square matrices over a semiring form a semirin
 
 \chapter{Conclusions\label{ch:Concl}}
 
+We introduce the concept of a \emph{big operator} and discuss its importance in many areas of mathematics in \cref{ch:Intro}. We argue that Agda, the dependently typed programming language and proof assistant used in this project, emphasises readability of proofs. Using a small example, we demonstrate a proof style called \emph{equational reasoning}, which allows Agda users to write formal proofs that resemble pen-and-paper mathematics.
+
+\cref{ch:Background} contains a tutorial-style introduction to Agda and theorem proving using dependent types in general. Predicates and relations, provability, decidability, type inhabitance and setoids are introduced by example.
+
+We discuss design decisions and describe the implementation of our library in \cref{ch:Impl}. We argue that the evaluation of a big operator is best modelled as a map from the index list into the carrier of a monoid, followed by a fold over the resulting list using the monoid's binary operator. In addition to big operators, our library implements notation and reasoning principles for intervals and filters.
+
+A proof of the theorem \enquote{square matrices over a semiring form a semiring} is presented in \cref{ch:Semi}. It includes a small matrix module and exercises all three components of our library (big operators, filters, intervals).
+
+\minisec{Success criterion}
+
 The success criterion of this project as described in the project proposal was to build a set of reusable libraries that make it possible to write a readable proof of the theorem \enquote{square matrices over a semiring form a semiring} in Agda.%
 \footnote{The wording in the proposal was \enquote{any square matrix over a semiring is a semiring}, which is incorrect: one square matrix by itself does not constitute a semiring. The intended meaning was \enquote{square matrices over a semiring form a semiring}.} %
 This criterion has been met:
 \begin{itemize}
 \item We have implemented a library for expressing and reasoning about big operators in an algebra-centric way.
 \item Additionally, modules for expressing and reasoning about matrices, intervals of natural numbers and filters have been implemented.
-\item The four components of the library (big operators, matrices, intervals and filters) are independent but can easily be combined. All four are written in idiomatic Agda, and have been designed to interoperate with the Agda standard library.
+\item The components of the library (big operators, intervals and filters) are independent but can easily be combined. All three are written in idiomatic Agda, and have been designed to interoperate with the Agda standard library.
 \item Propositions involving big operators can be written in a notation that resembles pen-and-paper mathematics using special syntax defined in each component.
 \item We have proved that square matrices over a semiring form a semiring (see \cref{ch:Semi}). The proof demonstrates the use of all four components of our library.
 \end{itemize}
-
 In our project proposal we claimed that any implementation of big operators would depend on \enquote{a notion of enumerable finite sets}. Experiments with prototype implementations using finite sets showed that this additional layer of abstraction only complicated the implementation with no tangible benefits. In \cref{ssc:as-lists} we argue that lists are the most idiomatic way to represent the collection of indices of a big operator.
 
 
