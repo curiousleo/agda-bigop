@@ -590,7 +590,7 @@ Using this definition, we can now provide evidence that zero and four are even n
 %TC:endignore
 Since for some \AgdaBound{n} \AgdaSymbol{:} \AgdaDatatype{ℕ}, \AgdaDatatype{Even} \AgdaBound{n} is a datatype, the evidence it represents can be analysed by pattern matching in proofs.
 
-Next we look at \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda.\footnote{The variant of propositional equality presented here is attributed to Christine Paulin-Mohring \autocite{dybjer_what_2006}.} The parameterised predicate \AgdaDatatype{\_≡\_} \AgdaBound{x} expresses the property of \enquote{being equal to \AgdaBound{x}}. Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
+Next we look at \emph{propositional equality}, written as \AgdaDatatype{\_≡\_} in Agda.\footnote{This variant of propositional equality is attributed to Christine Paulin-Mohring \autocite{dybjer_what_2006}.} The parameterised predicate \AgdaDatatype{\_≡\_} \AgdaBound{x} expresses the property of \enquote{being equal to \AgdaBound{x}}. Two elements of the same type are propositionally equal if they can be shown to reduce to the same value.
 
 %TC:ignore
 \begin{code}
@@ -612,7 +612,9 @@ Evaluating a function with equal arguments should always yield equal results. Th
   cong f {x} {.x} refl = refl
 \end{code}
 %TC:endignore
-Let us consider this proof step by step. We match the argument of type \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} with its only constructor, \AgdaInductiveConstructor{refl}. This tells the type checker that \AgdaBound{x} and \AgdaBound{y} must be equal as \AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x}, and replaces all occurrences of \AgdaBound{y} by \AgdaBound{x} for this clause. To make this clearer we also pattern match against the implicit parameters \AgdaBound{x} and \AgdaBound{y}. Argument \AgdaBound{x} is simply matched against a variable \AgdaBound{x}. The dotted pattern for \AgdaBound{y} is revealing: since the pattern \AgdaInductiveConstructor{refl} forces \AgdaBound{x} and \AgdaBound{y} to be equal, the unique value that \AgdaBound{y} can take is \AgdaBound{x}. This pattern match against \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} also has the effect of \emph{rewriting} the type of the result expected on the right-hand side of the equals sign to \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x}. But as \AgdaBound{f} \AgdaBound{x} and \AgdaBound{f} \AgdaBound{x} are trivially equal, we can close the prove by simply using \AgdaInductiveConstructor{refl}.
+Let us consider this proof step by step. We match the argument of type \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} with its only constructor, \AgdaInductiveConstructor{refl}. This tells the type checker that \AgdaBound{x} and \AgdaBound{y} must be equal as \AgdaInductiveConstructor{refl} \AgdaSymbol{:} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{x}, and replaces all occurrences of \AgdaBound{y} by \AgdaBound{x} for this clause. To make this clearer we also pattern match against the implicit parameters \AgdaBound{x} and \AgdaBound{y}. Argument \AgdaBound{x} is simply matched against a variable \AgdaBound{x}. The dotted pattern for \AgdaBound{y} is revealing: since the pattern \AgdaInductiveConstructor{refl} forces \AgdaBound{x} and \AgdaBound{y} to be equal, the unique value that \AgdaBound{y} can take is \AgdaBound{x}.
+
+This pattern match against \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{y} also has the effect of \emph{rewriting} the type of the result expected on the right-hand side of the equals sign to \AgdaBound{f} \AgdaBound{x} \AgdaDatatype{≡} \AgdaBound{f} \AgdaBound{x}. But as \AgdaBound{f} \AgdaBound{x} and \AgdaBound{f} \AgdaBound{x} are trivially equal, we can close the prove by simply using \AgdaInductiveConstructor{refl}.
 
 
 \subsection{Relations\label{ssc:Relations}}
@@ -755,6 +757,8 @@ We can capture decidability in a type as follows:
 %TC:endignore
 For example, in order to show that the predicate \AgdaDatatype{Even} is decidable on all natural numbers, we can define a function of type \AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaDatatype{Dec} \AgdaSymbol{(}\AgdaDatatype{Even} \AgdaBound{n}\AgdaSymbol{)}:
 
+\enlargethispage{2\baselineskip}
+
 %TC:ignore
 \begin{code}
   even : ∀ n → Dec (Even n)
@@ -883,7 +887,7 @@ In general, we may choose an equivalence \AgdaDatatype{\_≈\_} other than propo
 
 \section{Algebra\label{sc:Algebra}}
 
-In this Section, we review some properties binary operator might have, and define monoids, commutative monoids and semirings in terms of those properties.
+In this Section, we review some properties of binary operators and define monoids, commutative monoids and semirings in terms of those properties.
 
 \subsection{Properties of binary operators}
 
@@ -939,6 +943,8 @@ Binary operators may also interact in certain ways. If we add an operator \(\_\!
 \begin{description}
 \item[Distributivity.] \(a ⊗ (x ⊕ y) ≡ (a ⊗ x) ⊕ (a ⊗ y)\), \((x ⊕ y) ⊗ a ≡ (x ⊗ a) ⊕ (y ⊗ a)\). We say that \(\_\!\!⊗\!\!\_\) left- or right-distributes over \(\_\!\!⊕\!\!\_\), respectively. Left-distributivity is encoded in Agda as follows:
 
+\enlargethispage{2\baselineskip}
+
 \begin{code}
   DistributesOverˡ :  ∀ {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) →
                       (A → A → A) → (A → A → A) → Set _
@@ -951,8 +957,14 @@ Binary operators may also interact in certain ways. If we add an operator \(\_\!
 
 Certain combinations of the properties described in the previous subsection arise often, so for convenience, they are given names.
 
-A \emph{semigroup} packages a carrier type together with an associative operation \(\_\!\!⊗\!\!\_\). If the operation has an identity \(ε\), the structure is called a \emph{monoid}. In a \emph{commutative monoid}, the operation is also commutative.
-Given a monoid over \(\_\!\!⊗\!\!\_\) and a commutative monoid over \(\_\!\!⊕\!\!\_\), if the \(⊕\)-identity (this element is called \AgdaBound{0\#} in the standard library definition) is a zero for \(\_\!\!⊗\!\!\_\) and \(\_\!\!⊗\!\!\_\) distributes over \(\_\!\!⊕\!\!\_\) we call the composite structure a \emph{semiring}.
+A \emph{semigroup} packages a carrier type together with an associative operation \(\_\!\!⊗\!\!\_\). If the operation has an identity \(ε\), the structure is called a \emph{monoid}. In a \emph{commutative monoid}, the operation is also commutative. Two examples for commutative monoids over the natural numbers are addition and with the number zero as the identity element, and multiplication with the number one as its identity:
+\begin{align*}
+(a+b)+c&=a+(b+c) & a+b&=b+a & a+0&=0 \\
+(a*b)*c&=a*(b*c) & a*b&=b*a & a*1&=1
+\end{align*}
+These two commutative monoids give rise to the big operators \(\sum\) and \(\prod\), respectively.
+
+Given a monoid over \(\_\!⊗\!\_\) and a commutative monoid over \(\_\!⊕\!\_\), if the \(⊕\)-identity (this element is called \AgdaBound{0\#} in the standard library definition) is a zero for \(\_\!\!⊗\!\!\_\) and \(\_\!\!⊗\!\!\_\) distributes over \(\_\!\!⊕\!\!\_\) we call the composite structure a \emph{semiring}.
 
 In the Agda standard library, the definitions of algebraic structures are split into two records, one containing the \emph{properties} and the other the \emph{data} of the structure.
 
@@ -2597,6 +2609,9 @@ In step (C.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
 {- C.6 -}  ≡⟨ *-comm (2 + n) (suc n) ⟩
         suc n * (suc (suc n))
       ∎
+\end{code}
+\AgdaHide{
+\begin{code}
       where
         lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
         lemma =
@@ -2606,6 +2621,7 @@ In step (C.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
             Σ[ i ← 0 … n ] i + suc n
           ∎
 \end{code}
+}
 
 \section{Odd Gauss formula}
 
@@ -2652,6 +2668,8 @@ to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstruc
 \text{\AgdaFunction{even+1} \AgdaSymbol{(}\AgdaFunction{2n-even} \AgdaBound{n}\AgdaSymbol{)}}\;\AgdaSymbol{:}\;\text{\AgdaDatatype{Odd} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{))}}
 \]
 to show that \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} is odd, which allows us to take this element out of the filter.
+
+\enlargethispage{\baselineskip}
 
 \begin{code}
     extract : ∀ n →  0 … (suc n + suc n) ∥ odd ≡
@@ -2773,9 +2791,8 @@ Additionally we define a shorthand \AgdaFunction{f} for the general form of the 
 \section{Lemmas}
 
 In this Section we prove the lemmas used in the final proof of the binomial theorem.
-
-\AgdaFunction{split} justifies the step from (D.1) to (D.2):
-\[ \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k = \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} + \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
+\AgdaFunction{split} justifies the step from (D.1) to (D.2)
+\[ \sum_{k ← 1 … n + 1} \binom{n + 1}{k} · x^k = \left( \sum_{k ← 0 … n} \binom{n}{k} · x^{k+1} \right) + \left( \sum_{k ← 0 … n} \binom{n}{k + 1} · x^{k+1} \right)
 \] by shifting the values of its index list down by one and splitting the sum into two. In the actual proof, the addition with \(1\) is taken care of using reflexivity and congruence of addition.
 % \footnote{This lemma and the following ones may seem arbitrary---there is no obvious connection to the binomial theorem other than the fact that the equations contain binomials and exponentials. The reason is that the lemmas were simply factored out of the main proof.}
 
