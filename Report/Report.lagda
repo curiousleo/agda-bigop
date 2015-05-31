@@ -107,7 +107,7 @@
 \textbf{Name and College} & Leonhard Markert, Emmanuel College \\
 \textbf{Project Title} & Big operators in Agda \\
 \textbf{Examination} & Computer Science Tripos, Part \textsc{iii} (June 2015) \\
-\textbf{Word Count} & XXX words \\
+\textbf{Word Count} & 11817 words\footnote{Word count excludes code listings, captions, headings, footnotes and appendices.} \\
 \textbf{Project Originators} & Timothy Griffin, Dominic Mulligan and Leonhard Markert \\
 \textbf{Project Supervisors} & Timothy Griffin and Dominic Mulligan
 \end{tabularx}}
