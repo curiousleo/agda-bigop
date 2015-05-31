@@ -2402,6 +2402,12 @@ Lemmas, on the other hand, are structured in a similar way to our project: secti
 
 The \texttt{bigop} module is more comprehensive than our library. It provides a lot of flexibility in terms of notation, and allows users to define big operators over sets, finite types and enumerable predicates (all of which are converted to lists internally).
 
+\minisec{Agda}
+
+\Textcite{gustafsson_foldable_2014} formalises foldable containers in dependent type systems. It describes \emph{exploration functions}, a class of folds of the same form as our big operator evaluation function \AgdaFunction{fold}. In contrast to our implementation, the type of exploration functions does not require their arguments to be monoids but \enquote{when proving properties about explorations, the monoid laws will have to be assumed as well.} Various exploration functions are defined which extract information about the domain type. \emph{Exploration transformers} like filters map exploration functions to exploration functions. An inductive reasoning principle for exploration functions is established. Finally the paper defines a way of exploring dependent Sigma- and Pi-types.
+
+As the terminology suggests, the goal of this paper is to build a set of primitives for exploring types and their properties. It does not define a notation for big operators, nor does it provide reasoning principles like the ones discussed in \cref{sc:Impl-Bigop-Props}.
+
 \section{Future work\label{sc:Future}}
 
 We aim to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
