@@ -288,7 +288,7 @@ module Basics where
 
 This project was implemented in \emph{Agda}, a functional programming language with a dependent type system. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms---examples of dependent types are given in \cref{ssc:Dependent} and \cref{ssc:Records}.
 
-The advantage of a dependently typed language like Agda over non-dependently typed functional languages like \emph{Haskell} \autocite{marlow_haskell_2010} or \emph{ML} \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
+The advantage of a dependently typed language like Agda over non-dependently typed functional languages like \emph{Haskell} \autocite{marlow_haskell_2010} or \emph{ML} \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocites{howard_formulae-as-types_1980}{sorensen_lectures_2006}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
 
 We now introduce the syntax of Agda. The following sections explain how Agda can be used to write theorems and check proofs.
 
@@ -305,7 +305,7 @@ Truth values (Booleans) can be defined in Agda as follows:
 %TC:endignore
 We introduce a new type \AgdaDatatype{Bool} with two constructors, \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{false}. Both construct elements of \AgdaDatatype{Bool}, so that is the type we annotate them with (after the colon). It may come as a surprise that the type \AgdaDatatype{Bool} itself needs an annotation, too. In Agda, the type of small types is called \AgdaPrimitiveType{Set}. Since \AgdaDatatype{Bool} is a small type, we declare it to be of type \AgdaPrimitiveType{Set}. In \cref{ssc:Hierarchy} we introduce types that are not contained in \AgdaPrimitiveType{Set}.
 
-Let us now write a function using this newly introduced datatype. \AgdaFunction{not} flips its Boolean argument:
+The function \AgdaFunction{not} flips its Boolean argument:
 
 %TC:ignore
 \begin{code}
@@ -315,7 +315,7 @@ Let us now write a function using this newly introduced datatype. \AgdaFunction{
 \end{code}
 %TC:endignore
 This function takes a \AgdaDatatype{Bool} and returns a \AgdaDatatype{Bool}, so the type of the function as a whole is \AgdaDatatype{Bool} \AgdaSymbol{→} \AgdaDatatype{Bool}. The function is defined by pattern matching: the result of the function is the term on the right-hand side of the equality sign if its input matches the left-hand side.
-Note that the pattern matching must cover all possible cases. More generally speaking, all Agda functions must be \emph{total}, that is, defined on all values of its argument types.
+Note that the patterns must cover all possible cases. All Agda functions must be \emph{total}, that is, defined on all values of its argument types.
 % CUT: Partiality can be modelled either by restricting the domain of an argument using dependent types (see \cref{ssc:Dependent}) or using \AgdaDatatype{Maybe} \AgdaBound{A} as a return type for a partial function into type \AgdaBound{A}.%
 % CUT: \footnote{\AgdaDatatype{Maybe} \AgdaBound{A} has two constructors, \AgdaInductiveConstructor{just} \AgdaSymbol{:} \AgdaSymbol{(}\AgdaBound{x} \AgdaSymbol{:} \AgdaBound{A}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{Maybe} \AgdaBound{A} representing a successful computation of a value of type \AgdaBound{A} and \AgdaInductiveConstructor{nothing} \AgdaSymbol{:} \AgdaDatatype{Maybe} \AgdaBound{A} representing a failed computation.}
 
@@ -338,7 +338,7 @@ An underscore (the symbol \enquote{\_}) can be interpreted in three different wa
 % CUT: It is easily resolved: in the first pattern, the second argument is matched with \AgdaInductiveConstructor{true}, which is a constructor for the type \AgdaDatatype{Bool}. The underscore must therefore stand for \AgdaDatatype{Bool}.
 \item[As a pattern] the underscore matches anything. It acts like a fresh pattern variable that cannot be referred to. The definition of \AgdaFunction{\_∧\_} can thus be read as \enquote{the conjunction of two Booleans is true if both arguments are true; in any other case, the result is false.}
 \end{description}
-Let us consider a type with more structure. A natural number is either zero, or the successor of some natural number. In Agda, this inductive definition is written as:
+We now consider a type with more structure. A natural number is either zero, or the successor of some natural number. In Agda, this inductive definition is written as:
 
 %TC:ignore
 \begin{code}
@@ -358,7 +358,7 @@ Addition of natural numbers can then be defined as follows:
 %TC:endignore
 Pattern variables like \AgdaBound{m} and \AgdaBound{n} are bound in the function body. They are substituted for the values passed to the function when it is evaluated.
 
-Note that Agda functions defined on inductive types must not only be total, but also \emph{terminating}.%
+Agda functions defined on inductive types must \emph{terminate}.
 % CUT: \footnote{Functions defined on \emph{coinductive} types, on the other hand, must be \emph{productive}. \textcite{altenkirch_termination_2010} discusses the issue of termination checking functions on nested inductive and coinductive types.} %
 Since termination checking is undecidable in general, Agda checks whether the arguments to the recursive call are structurally smaller than the arguments to the caller as a safe syntactic approximation to termination.
 
@@ -370,7 +370,7 @@ This is clearly the case in the recursive case of \AgdaFunction{\_+\_}: the argu
 
 Every type in Agda resides somewhere in a type universe with countably infinite levels.
 % CUT: In other words, if a type \AgdaBound{A} is well-formed, then there exists some level \AgdaBound{a} such that \AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}.
-The reason for introducing a hierarchy of types in the first place is that allowing a typing judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} makes the system logically inconsistent \autocite{girard_interpretation_1972}.%
+This hierarchy of types exists in order to approximate the typing judgement \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} while avoiding logical inconsistency \autocite{girard_interpretation_1972}.%
 % CUT: \footnote{A judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in a type theory makes it possible to prove any proposition. Equivalently, it implies that every type, even \AgdaDatatype{⊥}, is inhabited. Jean-Yves Girard first pointed this out in his doctoral thesis \autocite{girard_interpretation_1972}. Thierry Coquand wrote a very readable introduction to the issue for the Stanford Encyclopedia of Philosophy, relating it, amongst others, to Russel's paradox \autocite{coquand_type_2014}. The approach taken by Coq and Agda to avoid Girard's paradox via an infinite hierarchy of types closely resembles Grothendieck's solution to similar issues in set theory by introducing what are now called \emph{Grothendieck universes} \autocite{artin_theorie_1972}.}
 
 \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} are examples of small types, which is expressed in Agda as \AgdaDatatype{Bool} \AgdaDatatype{ℕ} \AgdaSymbol{:} \AgdaPrimitiveType{Set} (note that we can give type declarations for terms of the same type in one line in this way.) \AgdaPrimitiveType{Set} is a synonym for \AgdaPrimitiveType{Set} \AgdaNumber{0}, which is itself of type \AgdaPrimitiveType{Set} \AgdaNumber{1}.\footnote{We use numbers \AgdaNumber{0}, \AgdaNumber{1}, \AgdaNumber{2} to denote universe levels for brevity here. In actual code, elements of the opaque type \AgdaPrimitiveType{Level} can only be constructed using the postulated functions \AgdaFunction{lzero} and \AgdaFunction{lsuc}.} This gives rise to an infinite predicative hierarchy of types, which approximates \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in the limit:
