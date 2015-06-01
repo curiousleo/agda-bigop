@@ -327,7 +327,6 @@ Truth values (Booleans) can be defined in Agda as follows:
     false  :  Bool
 \end{code}
 %TC:endignore
-
 We introduce a new type \AgdaDatatype{Bool} with two constructors, \AgdaInductiveConstructor{true} and \AgdaInductiveConstructor{false}. Both construct elements of \AgdaDatatype{Bool}, so that is the type we annotate them with (after the colon). It may come as a surprise that the type \AgdaDatatype{Bool} itself needs an annotation, too. In Agda, the type of small types is called \AgdaPrimitiveType{Set}. Since \AgdaDatatype{Bool} is a small type, we declare it to be of type \AgdaPrimitiveType{Set}. In \cref{ssc:Hierarchy} we introduce types that are not contained in \AgdaPrimitiveType{Set}.
 
 Let us now write a function using this newly introduced datatype. \AgdaFunction{not} flips its Boolean argument:
@@ -339,7 +338,6 @@ Let us now write a function using this newly introduced datatype. \AgdaFunction{
   not false  =  true
 \end{code}
 %TC:endignore
-
 This function takes a \AgdaDatatype{Bool} and returns a \AgdaDatatype{Bool}, so the type of the function as a whole is \AgdaDatatype{Bool} \AgdaSymbol{→} \AgdaDatatype{Bool}. The function is defined by pattern matching: the result of the function is the term on the right-hand side of the equality sign if its input matches the left-hand side.
 Note that the pattern matching must cover all possible cases. More generally speaking, all Agda functions must be \emph{total}, that is, defined on all values of its argument types.
 % CUT: Partiality can be modelled either by restricting the domain of an argument using dependent types (see \cref{ssc:Dependent}) or using \AgdaDatatype{Maybe} \AgdaBound{A} as a return type for a partial function into type \AgdaBound{A}.%
@@ -354,7 +352,6 @@ Agda identifiers can contain Unicode symbols, which makes it possible to use not
   _     ∧ _     = false
 \end{code}
 %TC:endignore
-
 An underscore (the symbol \enquote{\_}) can be interpreted in three different ways in Agda, depending on the context of its use. This slightly contrived example covers them all:
 
 \begin{description}
