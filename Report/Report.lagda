@@ -177,7 +177,7 @@ The main contributions of this project are:
 
 \begin{itemize}
 \item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
-\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimicks standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimics standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
 \item A formal proof of two identities attributed to Gauss (\cref{ch:Gauss}), the Binomial theorem (\cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}) in Agda.
 \end{itemize}
 The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
@@ -542,7 +542,7 @@ As a record type, \AgdaDatatype{Σ} can be deconstructed in many ways. The name 
 
 In this Section, we will see how predicates and relations are expressed in a dependent type system by example. We will then introduce the notion of \emph{constructive logic} and how it relates to dependently typed programs.
 
-From this point on, we will call some functions \enquote{proofs} and some types \enquote{theorems}. The justification for this lies in the Curry-Howard correspondence, for which we will provide some intuition in this Chapter and the next. For a mathematically exact and systematic take on the Curry-Howard correpondence, see \autocite{sorensen_lectures_2006}.
+From this point on, we will call some functions \enquote{proofs} and some types \enquote{theorems}. The justification for this lies in the Curry-Howard correspondence, for which we will provide some intuition in this Chapter and the next. For a mathematically exact and systematic take on the Curry-Howard correspondence, see \autocite{sorensen_lectures_2006}.
 
 \subsection{Predicates\label{ssc:Predicates}}
 
@@ -1288,7 +1288,7 @@ Since \AgdaDatatype{Fin} \AgdaBound{n} is the type of natural numbers less than 
 
 \section{Filters\label{sc:Impl-Filters}}
 
-Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfill a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in \cref{ssc:Implementing}. Note that although the filter module was implemented as part of our big operators library, it does not depend on big operators or intervals, and could in the future be spun off into a separate library.
+Sometimes it is useful to write the list of indices of a big operator expression as an interval out of which we only keep those indices which fulfil a certain property. The odd Gauss equation, for example, has as its right-hand side \enquote{the sum of all \emph{odd} numbers from zero to \(2n\)}. In order to express such an equation in this framework, we need a way to filter out the even numbers. In this Section, we will define filters using a infix operator that combines well with the syntax for big operators presented in \cref{ssc:Implementing}. Note that although the filter module was implemented as part of our big operators library, it does not depend on big operators or intervals, and could in the future be spun off into a separate library.
 
 %TC:ignore
 \AgdaHide{
@@ -2355,7 +2355,7 @@ This concludes our proof that the square matrices over a semiring form a semirin
 
 We introduce the concept of a \emph{big operator} and discuss its importance in many areas of mathematics in \cref{ch:Intro}. We argue that Agda, the dependently typed programming language and proof assistant used in this project, emphasises readability of proofs. Using a small example, we demonstrate a proof style called \emph{equational reasoning}, which allows Agda users to write formal proofs that resemble pen-and-paper mathematics.
 
-\cref{ch:Background} contains a tutorial-style introduction to Agda and theorem proving using dependent types in general. Predicates and relations, provability, decidability, type inhabitance and setoids are introduced by example.
+\cref{ch:Background} contains a tutorial-style introduction to Agda and theorem proving using dependent types in general. Predicates and relations, provability, decidability, type inhabitation and setoids are introduced by example.
 
 We discuss design decisions and describe the implementation of our library in \cref{ch:Impl}. We argue that the evaluation of a big operator is best modelled as a map from the index list into the carrier of a monoid, followed by a fold over the resulting list using the monoid's binary operator. In addition to big operators, our library implements notation and reasoning principles for intervals and filters.
 
@@ -2410,7 +2410,7 @@ As the terminology suggests, the goal of this paper is to build a set of primiti
 
 \section{Future work\label{sc:Future}}
 
-We intend to make our library publically available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
+We intend to make our library publicly available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
 
 In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
 \[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 1 \]
@@ -2987,7 +2987,7 @@ module Curry where
 \end{code}
 }
 
-We prove that the types \AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} and \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} are isomorphic by definining the functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and proving that they are inverses of each other. \AgdaFunction{curry} and \AgdaFunction{uncurry} are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
+We prove that the types \AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} and \AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} are isomorphic by defining the functions \AgdaFunction{curry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and \AgdaFunction{uncurry} \AgdaSymbol{:} (\AgdaBound{A} \AgdaDatatype{×} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) \AgdaSymbol{→} (\AgdaBound{A} \AgdaSymbol{→} \AgdaBound{B} \AgdaSymbol{→} \AgdaBound{C}) and proving that they are inverses of each other. \AgdaFunction{curry} and \AgdaFunction{uncurry} are easily defined:\footnote{It is also possible to write \AgdaFunction{curry} and \AgdaFunction{uncurry} for dependent pairs (\AgdaDatatype{Σ}).}
 
 \begin{code}
   curry : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (A → B → C) → (A × B → C)
