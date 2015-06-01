@@ -188,7 +188,7 @@ The main contributions of this project are:
 \begin{itemize}
 \item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
 \item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimics standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
-\item A formal proof of two identities attributed to Gauss (\cref{ch:Gauss}), the Binomial theorem (\cref{ch:Binom}) and the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}) in Agda.
+\item A formal proof of the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}), two identities attributed to Gauss (\cref{ch:Gauss}) and the Binomial theorem (\cref{ch:Binom}) in Agda.
 \end{itemize}
 The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
 
@@ -267,7 +267,7 @@ A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
 In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
 Finally in \textbf{\cref{ch:Concl}} we discuss related work and ideas for future research.
 
-The \textbf{Appendix} contains an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
+The \textbf{Appendices} contain an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
 
 \chapter{Background\label{ch:Background}}
 
@@ -278,7 +278,7 @@ In this Chapter, we provide the necessary background for the remainder of the re
 \minisec{Code listings}
 
 Syntax highlighting is used to make the code listings in this report easier to read. \Cref{tb:Colours} lists the different syntactic categories and how they are typeset in this report.%
-\footnote{This report is a \emph{literal Agda file}: every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
+\footnote{This report is a \emph{literate Agda file}: every piece of code that is displayed in a grey code box is type checked. Some import statements and definitions are not displayed in the output document for brevity.}
 
 \begin{table}[h]
 \centering
@@ -312,7 +312,7 @@ module Basics where
 
 This project was implemented in \emph{Agda}, a functional programming language with a dependent type system. \emph{Functional programming} is a declarative paradigm where computation proceeds by evaluating expressions (instead of, say, changing the state of an abstract machine.) In a \emph{dependent} type system, types can contain (depend on) terms---examples of dependent types are given in \cref{ssc:Dependent} and \cref{ssc:Records}.
 
-The advantage of a dependently type language like Agda over non-dependently typed functional languages like \emph{Haskell} \autocite{marlow_haskell_2010} or \emph{ML} \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
+The advantage of a dependently typed language like Agda over non-dependently typed functional languages like \emph{Haskell} \autocite{marlow_haskell_2010} or \emph{ML} \autocite{milner_definition_1997}, is that the type system is more expressive: under the Curry-Howard correspondence, it also serves as a higher-order logic where formulae are encoded as types and terms inhabiting those types witness derivations \autocite{howard_formulae-as-types_1980}. The disadvantage is that type inference is undecidable, so most terms need type annotations.
 
 We now introduce the syntax of Agda. The following sections explain how Agda can be used to write theorems and check proofs.
 
@@ -1045,7 +1045,7 @@ We formalise three independent concepts: big operators, intervals of natural num
 \item[Intervals.] \AgdaModule{Bigop.Interval} contains functions for creating sequences of natural numbers and lemmas about those functions.
 \item[Filters.] \AgdaModule{Bigop.Filter} defines a function which filters a list based on a decidable predicate. The directory of the same name contains syntax definitions that help write equational reasoning proofs with predicates (\AgdaModule{Bigop.Filter.PredicateReasoning}), definitions of the decidable predicates \AgdaDatatype{Even} and \AgdaDatatype{Odd} (\AgdaModule{Bigop.Filter.Predicates}) and general lemmas about filters (\AgdaModule{Bigop.Filter.Properties}).
 \end{description}
-The project's source code consists of 1,822 lines of code in 21 files. The module structure and naming follows the conventions used in the Agda standard library.
+The project's source code consists of 1,822 lines of code in 21 files. The module structure and naming follow the conventions used in the Agda standard library.
 
 
 \section{Design\label{sc:Design}}
@@ -2365,17 +2365,17 @@ This concludes our proof that the square matrices over a semiring form a semirin
 
 \chapter{Conclusions\label{ch:Concl}}
 
-We introduce the concept of a \emph{big operator} and discuss its importance in many areas of mathematics in \cref{ch:Intro}. We argue that Agda, the dependently typed programming language and proof assistant used in this project, emphasises readability of proofs. Using a small example, we demonstrate a proof style called \emph{equational reasoning}, which allows Agda users to write formal proofs that resemble pen-and-paper mathematics.
+We introduced the concept of a \emph{big operator} and discussed its importance in many areas of mathematics in \cref{ch:Intro}. We argued that Agda, the dependently typed programming language and proof assistant used in this project, emphasises readability of proofs. Using a small example, we demonstrated a proof style called \emph{equational reasoning} which allows Agda users to write formal proofs that resemble pen-and-paper mathematics.
 
-\cref{ch:Background} contains a tutorial-style introduction to Agda and theorem proving using dependent types in general. Predicates and relations, provability, decidability, type inhabitation and setoids are introduced by example.
+In \cref{ch:Background} we provided a tutorial-style introduction to Agda and theorem proving using dependent types in general. Predicates and relations, provability, decidability, type inhabitation and setoids were introduced by example.
 
-We discuss design decisions and describe the implementation of our library in \cref{ch:Impl}. We argue that the evaluation of a big operator is best modelled as a map from the index list into the carrier of a monoid, followed by a fold over the resulting list using the monoid's binary operator. In addition to big operators, our library implements notation and reasoning principles for intervals and filters.
+We discussed design decisions and described the implementation of our library in \cref{ch:Impl}. We argued that the evaluation of a big operator is best modelled as a map from the index list into the carrier of a monoid, followed by a fold over the resulting list using the monoid's binary operator. In addition to big operators, our library implements notation and reasoning principles for intervals and filters.
 
-A proof of the theorem \enquote{square matrices over a semiring form a semiring} is presented in \cref{ch:Semi}. It includes a small matrix module and exercises all three components of our library (big operators, filters, intervals).
+A proof of the theorem \enquote{square matrices over a semiring form a semiring} was presented in \cref{ch:Semi}. It includes a small matrix module and exercises all three components of our library (big operators, filters, intervals).
 
 \minisec{Success criterion}
 
-The success criterion of this project as described in the project proposal was to build a set of reusable libraries that make it possible to write a readable proof of the theorem \enquote{square matrices over a semiring form a semiring} in Agda.%
+This project's success criterion was the construction of a set of reusable libraries that make it possible to write a readable proof of the theorem \enquote{square matrices over a semiring form a semiring} in Agda.%
 \footnote{The wording in the proposal was \enquote{any square matrix over a semiring is a semiring}, which is incorrect: one square matrix by itself does not constitute a semiring. The intended meaning was \enquote{square matrices over a semiring form a semiring}.} %
 This criterion has been met:
 \begin{itemize}
@@ -2416,21 +2416,20 @@ The \texttt{bigop} module is more comprehensive than our library. It provides a 
 
 \minisec{Agda}
 
-\Textcite{gustafsson_foldable_2014} formalises foldable containers in dependent type systems. It describes \emph{exploration functions}, a class of folds of the same form as our big operator evaluation function \AgdaFunction{fold}. In contrast to our implementation, the type of exploration functions does not require their arguments to be monoids but \enquote{when proving properties about explorations, the monoid laws will have to be assumed as well.} Various exploration functions are defined which extract information about the domain type. \emph{Exploration transformers} like filters map exploration functions to exploration functions. An inductive reasoning principle for exploration functions is established. Finally the paper defines a way of exploring dependent Sigma- and Pi-types.
+\Textcite{gustafsson_foldable_2014} formalises foldable containers in dependent type systems. It describes \emph{exploration functions}, a class of folds of the same form as our big operator evaluation function \AgdaFunction{fold}. In contrast to our implementation, the type of exploration functions does not require their arguments to be monoids but \enquote{when proving properties about explorations, the monoid laws will have to be assumed as well} \autocite[3]{gustafsson_foldable_2014}. Various exploration functions are defined which extract information about the domain type. \emph{Exploration transformers} like filters map exploration functions to exploration functions. An inductive reasoning principle for exploration functions is established. Finally the paper defines a way of exploring dependent Sigma- and Pi-types.
 
 As the terminology suggests, the goal of this paper is to build a set of primitives for exploring types and their properties. It does not define a notation for big operators, nor does it provide reasoning principles like the ones discussed in \cref{sc:Impl-Bigop-Props}.
 
 \section{Future work\label{sc:Future}}
 
-We intend to make our library publicly available in the near future. In order to make it more accessible to both users and contributors and improve maintainability, we will try to simplify the structure of the source code.
-
-In order to make the library more useful in a wider range of scenarios, it will be extended to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
+We intend to make our library publicly available in the near future.
+We would like to extend it to include lemmas about more algebraic structures. As a simple example, in an \emph{abelian group} (a commutative monoid with inverses for each carrier element) the following holds:
 \[ \left( \prod_i f(i) \right) · \left( \prod_i \frac{1}{f(i)} \right) = 1 \]
 It would be interesting to see what other properties can be lifted from different underlying algebraic structures.
 
-A different but related idea would be to attempt to write a solver for big operators over some algebraic structure. Agda's standard library already contains solvers for monoids (\AgdaModule{Algebra.Monoid-solver}) and rings (\AgdaModule{Algebra.RingSolver}).%
+A different but related idea would be to attempt to write an automated solver for big operators using a metaprogramming technique called \emph{proof by reflection} \autocite{walt_engineering_2013}. Agda's standard library already contains solvers for monoids and rings.%
 \footnote{Eric Mertens wrote a number of solvers for different algebraic structures in Agda, available here: \url{https://github.com/glguy/my-agda-lib/tree/master/Algebra}.} %
-The challenge here would be to find a normal form for arbitrary big operator expressions to reduce to.
+We expect finding a normal form for arbitrary big operator expressions to be the main challenge in such an effort to automate proofs involving big operators.
 
 %TC:ignore
 \appendix
