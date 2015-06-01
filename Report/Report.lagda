@@ -74,6 +74,7 @@
 \newunicodechar{ʳ}{\ensuremath{^{r}}}
 \newunicodechar{➀}{\ensuremath{➀}}
 \newunicodechar{➁}{\ensuremath{➁}}
+\newunicodechar{⋆}{\ensuremath{⋆}}
 
 \hypersetup{
   pdftitle={Big Operators in Agda},
@@ -159,8 +160,8 @@ module Report where
 
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to sums written in Sigma-notation, such as
-\begin{equation} \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i = 1² + 3² + 5² + ⋯ + (2n - 1)² \label{eq:Gauss} \end{equation}
+\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to the syntax used to express, for example, the \enquote{odd Gauss formula}:
+\begin{equation} n² = \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i \label{eq:Gauss} \end{equation}
 This notation is very concise. It allows us to
 %\begin{itemize}
 specify a set of indices (all odd natural numbers between zero and \(2n\) in this case);
@@ -168,87 +169,72 @@ define an expression in which the index variable is locally bound (here the expr
 lift a binary operator (addition in this case) to an entire set.
 %\end{itemize}
 
-Sigma-notation often improves our intuition about the problem at hand. The following reasoning principles, for example, are usually taken for granted when written in this way:
-\begin{equation}
-\sum_{i = 0}^m \sum_{j = 0}^n a_{i,j} = \sum_{j = 0}^n \sum_{i = 0}^m a_{i,j}
-\qquad \text{and} \qquad
-\sum_{i = 0}^n a_i + b_i = \left( \sum_{i = 0}^n a_i \right) + \left( \sum_{i = 0}^n b_i \right)
-\label{eq:Principles}
-\end{equation}
-\emph{Big operators} generalise this notation to an iteration over any operator with sufficient structure (see \cref{sc:Impl-Bigops}) like multiplication, logical conjunction, set union, max, and so on \autocite{bertot_canonical_2008}. In fact, the equations above hold for \emph{any} big operator whose underlying operator is commutative (i.e.\ immune to re-ordering)---see \cref{ssc:comm-mon-lemmas}.
+Similar syntax exists for products (\(\prod\)), unions (\(\bigcup\)), conjunctions (\(\bigwedge\)) and other operations. Writing terms in this way often improves our intuition about the problem at hand. The following equalities, for example, are usually taken for granted in pen-and-paper mathematical reasoning:
+\begin{align}
+\sum_i \sum_j a_{i,j} &= \sum_j \sum_i a_{i,j}
+& \prod_i \prod_j a_{i,j} &= \prod_j \prod_i a_{i,j} 
+\label{eq:swap} \\
+\prod_i a_i * b_i &= \left( \prod_i a_i \right) * \left( \prod_i b_i \right)
+& \bigcup_i a_i ∪ b_i &= \left( \bigcup_i a_i \right) ∪ \left( \bigcup_i b_i \right)
+\label{eq:split} \\
+\bigcup_i a ∩ b_i &= a ∩ \left( \bigcup_i b_i \right)
+& \bigwedge_i a ∨ b_i &= a ∨ \left( \bigwedge_i b_i \right)
+\label{eq:distr}
+\end{align}
+Following \textcite{bertot_canonical_2008}, we collectively refer to these notational devices as \enquote{big operators}.
+% In order to use these equations in a formal setting, we must prove them.
+% This can be done on a case-by-case basis for sums, products, unions and so on, but there is a better way.
+% Considering the operations used in the equations, we can see that they share certain properties. For example, addition, multiplication and union are associative and commutative.
+It can be shown that \cref{eq:swap} and \cref{eq:split} hold for \emph{any} operation that is both associative and commutative (see \cref{ssc:comm-mon-lemmas}). This line of reasoning leads to a general theory of big operators, where the laws governing a big operator (e.g., \(\prod\)) are derived from the properties of its underlying operation (multiplication in this case).
+
+% In words, we can \labelcref{eq:swap} swap the order of big product (sum) symbols, \labelcref{eq:split} split big products (unions) and \labelcref{eq:distr} move an intersection (disjunction) with a constant expression out of a big union (conjunction).
 
 Proof assistants like \emph{Isabelle} \autocite{paulson_isabelle:_1994}, \emph{Coq} \autocite{huet_coq_2015}, or \emph{Agda} \autocite{norell_dependently_2009} simplify the development of formal proofs. Providing a notation for big operators in a proof assistant is an obvious way to extend the number of proofs that can be expressed naturally. Isabelle and Coq both have libraries that contain syntax definitions and lemmas for dealing with big operators (see \cref{sc:Related-work}).
 
-Agda is well equipped for writing proofs that resemble pen-and-paper mathematics due to a technique called \emph{equational reasoning} (see \cref{ssc:Equational-reasoning}), but currently lacks a big operator library. The aim of this project was to implement syntax definitions and lemmas that allow Agda users to write proofs that involve big operators in an intuitive notation.
+\section{Motivation\label{sc:Motivation}}
 
-% \clearpage
+Our initial motivation for this project came from Timothy Griffin's Algebraic Path Problems course (L11) on modelling shortest-path and related problems algebraically.%
+\footnote{\textcite{gondran_graphs_2008} is the reference for the algebraic constructions used in L11.} %
+Matrix multiplication is used to compute the solutions to path problems in this framework. And matrix multiplication, in turn, is usually defined in terms of a big operator:
+\[(A\,B)_{r,c} = \sum_{i = 0}^n A_{r,i}\,B_{i,c}\]
+Big operators are also common in number theory, discrete probability, combinatorics and other areas of mathematics \autocite{graham_concrete_1994}.
+As an example of a proof with big operators, we can show that matrix multiplication is associative as follows:
+\begin{align*}
+((A\,B) \, C)_{r,c}
+&≈ \sum_{i=0}^n \left( \sum_{j=0}^n A_{r,j}\, B_{j,i} \right) C_{i,c}
+    && \text{by definition} \\
+&≈ \sum_{i=0}^n \sum_{j=0}^n (A_{r,j}\, B_{j,i}) C_{i,c}
+    && \text{by right-distributivity (⋆)} \\
+&≈ \sum_{j=0}^n \sum_{i=0}^n (A_{r,j}\, B_{j,i}) C_{i,c}
+    && \text{swapping the outer sums (⋆)} \\
+&≈ \sum_{j=0}^n \sum_{i=0}^n A_{r,j}\, (B_{j,i}\, C_{i,c})
+    && \text{by associativity} \\
+&≈ \sum_{j=0}^n A_{r,j} \sum_{i=0}^n B_{j,i}\, C_{i,c}
+    && \text{by left-distributivity (⋆)} \\
+&≈ (A \, (B \, C))_{r,c}
+    && \text{by definition}
+\end{align*}
+The proof uses three big operator equalities (marked with ⋆).
+
+\section{Aims and contributions}
+
+Agda is well equipped for writing proofs that resemble pen-and-paper mathematics due to a technique called \emph{equational reasoning} (see \cref{ssc:Equational-reasoning}), but currently lacks a big operator library. The aim of this project was to implement syntax definitions and lemmas that allow Agda users to write proofs that involve big operators.
+
+This aim has been achieved---for example, see \cpageref{mn:Mult-assoc} for a formal proof that matrix multiplication is associative using the same reasoning steps as shown above.
+Our library enables Agda users to utilise syntax and reasoning principles like in \crefrange{eq:swap}{eq:distr} familiar from pen-and-paper mathematics in proofs involving big operators.
+
+\Cref{ch:Semi}, \cref{ch:Gauss} and \cref{ch:Binom} demonstrate the use of the reasoning principles and syntax provided by our library, which are discussed in \cref{sc:Impl-Bigop-Props}.
+
+\clearpage
 
 The main contributions of this project are:
 
 \begin{itemize}
 \item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
-\item Modular syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimics standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
-\item A formal proof of the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}), two identities attributed to Gauss (\cref{ch:Gauss}) and the Binomial theorem (\cref{ch:Binom}) in Agda.
+\item Compositional syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimics standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item A formal proof of the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}), two identities attributed to Gauss (\cref{ch:Gauss}) and a proof of the Binomial theorem (\cref{ch:Binom}) in Agda.
 \end{itemize}
-The Agda code and module structure of the implementation follows the same conventions as the standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
-
-%We argue that the essence of any big operator over a possibly-empty collection of indices is a mapping from an index list into the carrier of a monoid followed by a fold over the list of carrier elements using the monoid's binary operator (see \cref{sc:Impl-Bigops}).
-
-\section{Motivation\label{sc:Motivation}}
-
-In addition to the chapter on sums, \textcite{graham_concrete_1994} contains chapters on number theory, binomial coefficients and discrete probability. Sigma-notation is used pervasively in each of them.
-More Sigma-notation can be found in matrix algebra---the multiplication of matrices \(A\) and \(B\) is usually defined as follows:
-\[(A\,B)_{r,c} = \sum_{i = 0}^n A_{r,i}\,B_{i,c}\]
-% mult A B r c = Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
-This makes big operators, which generalise Sigma-notation, immediately applicable to any problem that can be formulated in terms of matrices.
-
-One area of particular interest to us is the ongoing effort to model shortest-path and related problems algebraically \autocite{dynerowicz_forwarding_2013}. Each path problem is modelled as a \emph{semiring} (see \cref{ssc:Structures}), and its solution is computed by repeatedly multiplying a matrix representing the weighted graph with itself.
-
-\minisec{Equational reasoning}
-
-%TC:ignore
-\AgdaHide{
-\begin{code}
-module IntroExample where
-  open import Data.Nat.Base
-  open import Data.Nat.Properties.Simple
-  open import Relation.Binary.PropositionalEquality
-  open ≡-Reasoning
-\end{code}
-}
-%TC:endignore
-
-The Agda standard library provides an intuitive notation for proving equalities (or equivalences, see \cref{ssc:Equivalences}) called \emph{equational reasoning}. It is used pervasively in the standard library, and we consider it a major selling point of the language.
-
-As an example, we consider a proof of the identity \((p · q) · r = p · (r · q)\) for natural numbers \(p\), \(q\) and \(r\). In standard mathematical notation, we may write down a proof as follows:
-\begin{align}
-(p · q) · r &= && \text{(associativity)} \\
-p · (q · r) &= && \text{(commutativity)} \\
-p · (r · q)
-\end{align}The corresponding proof in Agda using equational reasoning looks like this:
-\AgdaHide{
-\begin{code}
-  example : (p q r : ℕ) → (p * q) * r ≡ p * (r * q)
-  example p q r = begin
-\end{code}
-}
-\begin{code}
-    (p * q) * r  ≡⟨ *-assoc p q r ⟩
-    p * (q * r)  ≡⟨ cong₂ _*_ (refl {x = p}) (*-comm q r) ⟩
-    p * (r * q)  ∎
-\end{code}
-The first equality is justified by \AgdaFunction{*-assoc}, an associativity lemma for multiplication; the second step uses \AgdaFunction{*-comm}, which proves that multiplication is commutative. The second line of the proof is complicated by an application of \emph{congruence} (\AgdaFunction{cong₂}, see \cref{ssc:Predicates}). Equational reasoning is discussed in more detail in \cref{ssc:Equational-reasoning}.
-
-\minisec{The big picture}
-
-Agda is a dependently typed language and proof assistant (more on this in \cref{ch:Background}) with a philosophy that values readable proofs. It supports equational reasoning, an intuitive notation for proving equalities. At the moment, there is no Agda library for big operators.
-
-Our project fills this gap, enabling Agda users to use syntax and reasoning principles like in \cref{eq:Principles} familiar from pen-and-paper mathematics in proofs involving big operators. As a simple example, this is how matrix multiplication can be defined using the notation provided by our library:
-\[
-\sum_{i = 0}^n A_{r,i}\,B_{i,c} \quad \text{is written as} \quad
-\text{\AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…<} \AgdaBound{n} \AgdaFunction{]} \AgdaBound{A} \AgdaFunction{[} \AgdaBound{r} \AgdaFunction{,} \AgdaBound{i} \AgdaFunction{]} \AgdaFunction{*} \AgdaBound{B} \AgdaFunction{[} \AgdaBound{i} \AgdaFunction{,} \AgdaBound{c} \AgdaFunction{]}}
-\]
-\Cref{ch:Semi}, \cref{ch:Gauss} and \cref{ch:Binom} demonstrate the use of the reasoning principles provided by our library, which are discussed in \cref{sc:Impl-Bigop-Props}.
+The Agda code and module structure of the implementation follow the same conventions as the Agda standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
 
 \section{Overview}
 
@@ -1966,7 +1952,7 @@ In the remainder of the proof, we first apply the \AgdaFunction{zero} law of the
 }
 %TC:endignore
 
-\minisec{Associativity of matrix multiplication}
+\minisec{Associativity of matrix multiplication\label{mn:Mult-assoc}}
 
 This proof is more involved than the associativity proof for matrix addition. The argument runs as follows:
 \begin{align}
