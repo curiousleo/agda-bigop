@@ -204,16 +204,6 @@ This makes big operators, which generalise Sigma-notation, immediately applicabl
 
 One area of particular interest to us is the ongoing effort to model shortest-path and related problems algebraically \autocite{dynerowicz_forwarding_2013}. Each path problem is modelled as a \emph{semiring} (see \cref{ssc:Structures}), and its solution is computed by repeatedly multiplying a matrix representing the weighted graph with itself.
 
-\minisec{Tactics}
-
-In contrast to Isabelle and Coq, Agda lacks support for tactics. In the context of proof assistants, a \emph{tactic} is a program that finds proofs using heuristic methods. A good tactic automatically proves many simple lemmas, allowing someone working on a complex proof to concentrate on the difficult problems. As an example, Isabelle has a powerful built-in tactic called \texttt{auto}. Faced with a simple conjecture, users can often simply invoke this tactic using \enquote{\texttt{by auto}} and move on.
-
-The downside of tactics is that they make proofs opaque. A sophisticated tactic like \texttt{auto} uses complicated heuristics, making it hard to predict if or why it will succeed or fail to find a proof for a given conjecture. The justification of a reasoning step \enquote{\texttt{by auto}} only tells the reader that it possible to construct a proof, but not what that proof \emph{is}. And even when there is a mechanism to inspect them, proofs constructed by tactics generally have little resemblance to pen-and-paper mathematical reasoning.
-% In case the tactic found a proof, there usually is some way to inspect it. Unfortunately, a thorough understanding of the internals of the proof assistant is often required to make any sense of the proofs constructed by tactics.
-
-Agda does not support tactics at the source code level: every proof must be written out in full. This design decision improves the readability of Agda code since no reasoning step is hidden from view.
-Proof developers, on the other hand, are forced to write out all proofs explicitly. They are supported in this by Agsy \autocite{foster_integrating_2011}, an automated proof search tool integrated into Agda's development environment.
-
 \minisec{Equational reasoning}
 
 %TC:ignore
