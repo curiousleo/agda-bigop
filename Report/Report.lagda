@@ -160,7 +160,7 @@ module Report where
 
 %The \enquote{big sum} operator \(\sum\) (Sigma) is commonly used in various areas of mathematics.\footnote{Chapter 2 of \textcite{graham_concrete_1994}, which is entirely devoted to sums written using Sigma-notation, starts with the words \enquote{SUMS ARE EVERYWHERE in mathematics} (original capitalisation).} Similar big operator notations exist for multiplication \(\Pi\) (Pi), unions \(\bigcup\), least upper bounds \(\bigsqcup\) and so on.
 
-\enquote{SUMS ARE EVERYWHERE}, so begins Chapter 2 of \emph{Concrete mathematics: a foundation for computer science} \autocite{graham_concrete_1994}. Its authors are referring to the syntax used to express, for example, the \enquote{odd Gauss formula}:
+\enquote{SUMS ARE EVERYWHERE}: so begins the second chapter of \emph{Concrete mathematics: a foundation for computer science} \autocite[21]{graham_concrete_1994}. Its authors are referring to the syntax used to express, for example, the \enquote{odd Gauss formula}:
 \begin{equation} n² = \sum_{\substack{i = 0 \\ \text{\(i\) odd}}}^{2n} i \label{eq:Gauss} \end{equation}
 This notation is very concise. It allows us to
 %\begin{itemize}
@@ -230,9 +230,9 @@ Our library enables Agda users to utilise syntax and reasoning principles like i
 The main contributions of this project are:
 
 \begin{itemize}
-\item Reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}).
-\item Compositional syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimics standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
-\item A formal proof of the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}), two identities attributed to Gauss (\cref{ch:Gauss}) and a proof of the Binomial theorem (\cref{ch:Binom}) in Agda.
+\item We have proved and packaged reasoning principles for big operators based on the algebraic properties of their underlying binary operators (see \cref{sc:Impl-Bigop-Props}) for use in equational Agda proofs.
+\item We have designed compositional syntax definitions for writing sums and other big operators, intervals of natural numbers and filters in Agda that mimic standard mathematical notation (see \crefrange{sc:Impl-Bigops}{sc:Impl-Filters}).
+\item We provide a formal proof of the theorem \enquote{square matrices over a semiring again form a semiring} (\cref{ch:Semi}), two identities attributed to Gauss (\cref{ch:Gauss}) and a proof of the Binomial theorem (\cref{ch:Binom}) in Agda.
 \end{itemize}
 The Agda code and module structure of the implementation follow the same conventions as the Agda standard library.\footnote{An overview of the standard library as a clickable source code file is presented here: \url{https://agda.github.io/agda-stdlib/README.html}} We took care not to duplicate work and used definitions from the standard library wherever possible.
 
