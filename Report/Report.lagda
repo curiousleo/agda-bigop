@@ -394,10 +394,10 @@ This is clearly the case in the recursive case of \AgdaFunction{\_+\_}: the argu
 
 \subsection{The type hierarchy and universe polymorphism\label{ssc:Hierarchy}}
 
-Both \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} as well as all the functions we have seen so far could have been written in a very similar way in Haskell or ML, modulo syntax. We will now see how Agda is different from non-dependently typed functional languages.
+% CUT: Both \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} as well as all the functions we have seen so far could have been written in a very similar way in Haskell or ML, modulo syntax. We will now see how Agda is different from non-dependently typed functional languages.
 
 Every type in Agda resides somewhere in a type universe with countably infinite levels. In other words, if a type \AgdaBound{A} is well-formed, then there exists some level \AgdaBound{a} such that \AgdaBound{A} \AgdaSymbol{:} \AgdaPrimitiveType{Set} \AgdaBound{a}. The reason for introducing a hierarchy of types in the first place is that allowing a typing judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} makes the system logically inconsistent.%
-\footnote{A judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in a type theory makes it possible to prove any proposition. Equivalently, it implies that every type, even \AgdaDatatype{⊥}, is inhabited. Jean-Yves Girard first pointed this out in his doctoral thesis \autocite{girard_interpretation_1972}. Thierry Coquand wrote a very readable introduction to the issue for the Stanford Encyclopedia of Philosophy, relating it, amongst others, to Russel's paradox \autocite{coquand_type_2014}. The approach taken by Coq and Agda to avoid Girard's paradox via an infinite hierarchy of types closely resembles Grothendieck's solution to similar issues in set theory by introducing what are now called \emph{Grothendieck universes} \autocite{artin_theorie_1972}.}
+% CUT: \footnote{A judgement like \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in a type theory makes it possible to prove any proposition. Equivalently, it implies that every type, even \AgdaDatatype{⊥}, is inhabited. Jean-Yves Girard first pointed this out in his doctoral thesis \autocite{girard_interpretation_1972}. Thierry Coquand wrote a very readable introduction to the issue for the Stanford Encyclopedia of Philosophy, relating it, amongst others, to Russel's paradox \autocite{coquand_type_2014}. The approach taken by Coq and Agda to avoid Girard's paradox via an infinite hierarchy of types closely resembles Grothendieck's solution to similar issues in set theory by introducing what are now called \emph{Grothendieck universes} \autocite{artin_theorie_1972}.}
 
 \AgdaDatatype{Bool} and \AgdaDatatype{ℕ} are examples of small types, which is expressed in Agda as \AgdaDatatype{Bool} \AgdaDatatype{ℕ} \AgdaSymbol{:} \AgdaPrimitiveType{Set} (note that we can give type declarations for terms of the same type in one line in this way.) \AgdaPrimitiveType{Set} is a synonym for \AgdaPrimitiveType{Set} \AgdaNumber{0}, which is itself of type \AgdaPrimitiveType{Set} \AgdaNumber{1}.\footnote{We use numbers \AgdaNumber{0}, \AgdaNumber{1}, \AgdaNumber{2} to denote universe levels for brevity here. In actual code, elements of the opaque type \AgdaPrimitiveType{Level} can only be constructed using the postulated functions \AgdaFunction{lzero} and \AgdaFunction{lsuc}.} This gives rise to an infinite predicative hierarchy of types, which approximates \AgdaPrimitiveType{Set} \AgdaSymbol{:} \AgdaPrimitiveType{Set} in the limit:
 %(XXX explain predicativity, difference between Agda and Coq)
@@ -428,7 +428,8 @@ In the datatype declaration of \AgdaDatatype{List}, the names \AgdaBound{a} and 
 
 \AgdaDatatype{Bool} has type \AgdaPrimitiveType{Set} \AgdaNumber{0}, so Agda correctly infers that in the type of \AgdaFunction{bools}, \AgdaBound{a} must be \AgdaNumber{0}. If we wanted to be explicit, we could have written the declaration as \AgdaFunction{bools} \AgdaSymbol{:} \AgdaDatatype{List} \AgdaSymbol{\{}\AgdaNumber{0}\AgdaSymbol{\}} \AgdaDatatype{Bool} instead.
 
-Why is the parameter \AgdaBound{a} necessary at all? Since our definition of \AgdaDatatype{List} abstracts over the level of its carrier type, we can also build lists that live higher up in the type hierarchy. We might for example want to create a list of types:
+% CUT: Why is the parameter \AgdaBound{a} necessary at all?
+Since our definition of \AgdaDatatype{List} abstracts over the level of its carrier type, we can also build lists that live higher up in the type hierarchy. We might for example want to create a list of types:
 
 %TC:ignore
 \begin{code}
@@ -443,7 +444,7 @@ Lists defined in this way are \emph{universe polymorphic}, meaning that the univ
 \subsection{Dependent types and indexed type families\label{ssc:Dependent}}
 
 We now turn to the classic example of a dependent datatype (or \emph{indexed family of types}): fixed-length lists, or \emph{vectors}:%
-\footnote{Lists and vectors have the same constructors, so depending on the context, \AgdaInductiveConstructor{[]} and \AgdaInductiveConstructor{\_∷\_} may create a list or a vector. If a constructor is used in a context where its type is ambiguous, the full constructor name (such as \AgdaInductiveConstructor{List.[]}) must be given.}
+% CUT: \footnote{Lists and vectors have the same constructors, so depending on the context, \AgdaInductiveConstructor{[]} and \AgdaInductiveConstructor{\_∷\_} may create a list or a vector. If a constructor is used in a context where its type is ambiguous, the full constructor name (such as \AgdaInductiveConstructor{List.[]}) must be given.}
 
 %TC:ignore
 \begin{code}
@@ -464,7 +465,9 @@ The vector append function \AgdaFunction{\_++\_} demonstrates how dependent type
   (x ∷ xs)  ++ ys = x ∷ (xs ++ ys)
 \end{code}
 %TC:endignore
-As another example, consider a function \AgdaFunction{head} which returns the first element of a vector. Applying it to an empty vector makes no sense, as there is no first element to return. We would therefore like to restrict the argument of the function to vectors containing at least one element. The type of the following function does just that:
+As another example, consider a function \AgdaFunction{head} which returns the first element of a vector.
+% CUT: Applying it to an empty vector makes no sense, as there is no first element to return.
+We would like to restrict the argument of the function to vectors containing at least one element. The type of the following function does just that:
 
 %TC:ignore
 \begin{code}
@@ -472,8 +475,9 @@ As another example, consider a function \AgdaFunction{head} which returns the fi
   head (x ∷ _) = x
 \end{code}
 %TC:endignore
-But what about totality? Earlier we said that the patterns of a function must cover all possible arguments of its type. If we look close enough, we can see that this principle is not violated here even though there is no pattern for the empty vector. The reason is that the constructor for the empty vector has type \AgdaInductiveConstructor{[]} \AgdaSymbol{:} \AgdaDatatype{Vec} \AgdaBound{A} \AgdaInductiveConstructor{zero}. Agda knows that \AgdaInductiveConstructor{suc} \AgdaBound{n} and \AgdaInductiveConstructor{zero} cannot be unified, so we do not have to (and indeed cannot) supply a pattern for the empty list, which is exactly what we wanted. This is a first example of the powerful interplay between dependent types and pattern matching.
-%Later we will see dotted patterns, absurd patterns and the \AgdaKeyword{with} construct.
+% CUT: But what about totality?
+Earlier we said that the patterns of a function must cover all possible arguments of its type. If we look close enough, we can see that this principle is not violated here even though there is no pattern for the empty vector. The reason is that the constructor for the empty vector has type \AgdaInductiveConstructor{[]} \AgdaSymbol{:} \AgdaDatatype{Vec} \AgdaBound{A} \AgdaInductiveConstructor{zero}. Agda knows that \AgdaInductiveConstructor{suc} \AgdaBound{n} and \AgdaInductiveConstructor{zero} cannot be unified, so we do not have to (and indeed cannot) supply a pattern for the empty list, which is exactly what we wanted.
+% CUT: This is a first example of the powerful interplay between dependent types and pattern matching.
 
 Lastly, we consider the type of finite sets \AgdaDatatype{Fin}, indexed by a natural number:
 
@@ -496,10 +500,10 @@ A bounded natural number can be used as an index into a vector. This lets us lev
   lookup          (suc n)  (x ∷ xs) = lookup n xs
 \end{code}
 %TC:endignore
-What is going on in the first pattern? Firstly, it shows that we can match against implicit arguments by position. Here we use the pattern \AgdaSymbol{\{}.\AgdaInductiveConstructor{zero}\AgdaSymbol{\}} to match the argument \AgdaBound{n}. The curly braces indicate that we are matching against an implicit argument; the dot before the pattern marks this pattern as the unique value of the correct type. It is unique in this case because the constructor of the empty vector \AgdaInductiveConstructor{[]} \AgdaSymbol{:} \AgdaDatatype{Vec} \AgdaBound{A} \AgdaInductiveConstructor{zero} appears in the same pattern, which forces the unification of \AgdaBound{n} with \AgdaInductiveConstructor{zero}. Note that \emph{dotted patterns} do not have to be implicit, and that implicit arguments can also be matched against by name.
+There are several things to note here. Firstly, it shows that we can match against implicit arguments by position. Here we use the pattern \AgdaSymbol{\{}.\AgdaInductiveConstructor{zero}\AgdaSymbol{\}} to match the argument \AgdaBound{n}. The curly braces indicate that we are matching against an implicit argument; the dot before the pattern marks this pattern as the unique value of the correct type. It is unique in this case because the constructor of the empty vector \AgdaInductiveConstructor{[]} \AgdaSymbol{:} \AgdaDatatype{Vec} \AgdaBound{A} \AgdaInductiveConstructor{zero} appears in the same pattern, which forces the unification of \AgdaBound{n} with \AgdaInductiveConstructor{zero}. Note that \emph{dotted patterns} do not have to be implicit, and that implicit arguments can also be matched against by name.
 
 Secondly, since \AgdaBound{n} is unified with \AgdaInductiveConstructor{zero}, the position (the first non-implicit argument) would have to be of type \AgdaDatatype{Fin} \AgdaInductiveConstructor{zero}. But there is no value of this type! Agda's type checker can infer this and allows us to match this impossible value with \AgdaBound{()}, the \emph{absurd pattern}. No right-hand side is given for absurd patterns because they are never matched.%
-\footnote{Note that in this particular example, it is not necessary to write down the first pattern. As with the function \AgdaFunction{head}, Agda can infer that the second and third pattern cover all possible inputs. However, in more complicated pattern matches, the absurd pattern is sometimes needed. It allows us to tell the totality checker explicitly which argument it is that cannot possibly be given.}
+% CUT: \footnote{Note that in this particular example, it is not necessary to write down the first pattern. As with the function \AgdaFunction{head}, Agda can infer that the second and third pattern cover all possible inputs. However, in more complicated pattern matches, the absurd pattern is sometimes needed. It allows us to tell the totality checker explicitly which argument it is that cannot possibly be given.}
 
 
 \subsection{Record types\label{ssc:Records}}
@@ -718,7 +722,7 @@ Type inhabitation translates to \emph{provability} in the constructive logic cor
 
 A proof of classical logic is a constructive proof if it does not use the law of excluded middle \((A ∨ ¬ A)\) or proof by contradiction / double negation elimination \((¬ ¬ A → A)\). The law of contradiction \(((A → B) → (A → ¬ B) → ¬ A)\) and \emph{ex falso quodlibet} \((¬ A → A → B)\) are allowed.
 
-One consequence of disallowing proof by contradiction is that in constructive logic, \(¬ (∀ x. P(x)) → (∃ x. ¬ P(x))\) is not a theorem. In order to prove that there exists some element with a certain property, it not sufficient to show that it is impossible for it not to exist: we must construct that element explicitly.
+% CUT: One consequence of disallowing proof by contradiction is that in constructive logic, \(¬ (∀ x. P(x)) → (∃ x. ¬ P(x))\) is not a theorem. In order to prove that there exists some element with a certain property, it not sufficient to show that it is impossible for it not to exist: we must construct that element explicitly.
 
 Let us consider the following definition:
 
@@ -978,6 +982,8 @@ Given a monoid over \(\_\!⊗\!\_\) and a commutative monoid over \(\_\!⊕\!\_\
 
 In the Agda standard library, the definitions of algebraic structures are split into two records, one containing the \emph{properties} and the other the \emph{data} of the structure.
 
+\clearpage
+
 \begin{description}
 \item[Semigroups.] The complete definition of a semigroup in Agda's standard library consists of the record types \AgdaDatatype{IsSemigroup} and \AgdaDatatype{Semigroup}:
 
@@ -1022,7 +1028,7 @@ The \AgdaDatatype{Semigroup} record packages a \AgdaField{Carrier} type, a relat
 \item[Commutative monoids.] \AgdaDatatype{CommutativeMonoid} contains the same data as \AgdaDatatype{Monoid}: an equivalence relation, an operator, and an identity. \AgdaDatatype{IsCommutativeMonoid}  extends \AgdaDatatype{IsSemigroup} in as similar way as \AgdaDatatype{IsMonoid} by adding an identity and a commutativity law.
 
 \item[Semirings \enquote{without one}.] \AgdaDatatype{SemiringWithoutOne} is a structure almost like a semiring, except that it does not have a multiplicative identity.%
-\footnote{We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \cref{ch:Semi} as well as \cref{ch:Gauss} and \cref{ch:Binom}. It was one goal of this project to always assume only what is really needed.} %
+% CUT: \footnote{We describe this structure, rather than the more commonly used semiring, because it is sufficient to show all the lemmas about big operators (see \cref{sc:Impl-Bigop-Props}) required for our proofs presented in \cref{ch:Semi} as well as \cref{ch:Gauss} and \cref{ch:Binom}. It was one goal of this project to always assume only what is really needed.} %
 Its data contains \emph{two} binary operators \AgdaField{\_+\_} and \AgdaField{\_*\_} and a special element \AgdaField{0\#}.% which is simultaneously an identity for \AgdaField{\_+\_} and a zero for \AgdaField{\_*\_}. \AgdaDatatype{IsSemiringWithoutOne} specifies that \AgdaField{\_+\_} forms a commutative monoid with \AgdaField{0\#} as its identity elements, \AgdaField{\_*\_} forms a semigroup, \AgdaField{0\#} is a zero for \AgdaField{\_*\_} and \AgdaField{\_*\_} distributes over \AgdaField{\_+\_}.
 
 \end{description}
