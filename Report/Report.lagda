@@ -181,11 +181,11 @@ Similar syntax exists for products (\(\prod\)), unions (\(\bigcup\)), conjunctio
 & \bigwedge_i a ∨ b_i &= a ∨ \left( \bigwedge_i b_i \right)
 \label{eq:distr}
 \end{align}
-Following \textcite{bertot_canonical_2008}, we collectively refer to these notational devices as \enquote{big operators}.
+In formal mathematics, we collectively refer to these notational devices as \enquote{big operators} \autocite{bertot_canonical_2008}.
 % In order to use these equations in a formal setting, we must prove them.
 % This can be done on a case-by-case basis for sums, products, unions and so on, but there is a better way.
 % Considering the operations used in the equations, we can see that they share certain properties. For example, addition, multiplication and union are associative and commutative.
-It can be shown that \cref{eq:swap} and \cref{eq:split} hold for \emph{any} operation that is both associative and commutative (see \cref{ssc:comm-mon-lemmas}). This line of reasoning leads to a general theory of big operators, where the laws governing a big operator (e.g., \(\prod\)) are derived from the properties of its underlying operation (multiplication in this case).
+It can be shown that \cref{eq:swap} and \cref{eq:split} hold for \emph{any} operation that is both associative and commutative (see \cref{ssc:comm-mon-lemmas}). This idea leads to a general theory of big operators, where the laws governing a big operator (e.g., \(\prod\)) are derived from the properties of its underlying operation (multiplication in this case).
 
 % In words, we can \labelcref{eq:swap} swap the order of big product (sum) symbols, \labelcref{eq:split} split big products (unions) and \labelcref{eq:distr} move an intersection (disjunction) with a constant expression out of a big union (conjunction).
 
@@ -243,7 +243,7 @@ A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
 In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
 Finally in \textbf{\cref{ch:Concl}} we discuss related work and ideas for future research.
 
-The \textbf{Appendices} contain an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
+The \textbf{Appendices} contain an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove \cref{eq:Gauss} and one of its variants (\cref{ch:Gauss}) and the Binomial theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
 
 \chapter{Background\label{ch:Background}}
 
