@@ -89,6 +89,7 @@
 \urlstyle{tt} % normal text font (alternatives: tt, rm, sf)
 \pagestyle{headings}
 \addtokomafont{pagehead}{\itshape}
+\hyphenation{ma-tri-ces}
 
 \begin{document}
 \setmathfont{Asana-Math.otf}
@@ -96,6 +97,22 @@
 \includepdf{Cover.pdf}
 
 \pagenumbering{roman}
+
+\newpage
+\thispagestyle{empty}
+\addtocounter{page}{-1}
+\mbox{}
+\newpage
+
+\mbox{}
+\vfil
+
+
+\begin{quote}We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda, a dependently typed language and proof assistant. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
+
+In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula as well as the Binomial theorem and the theorem \enquote{square matrices over a semiring form a semiring}.\end{quote}
+
+\clearpage
 
 %TC:ignore
 \chapter*{Proforma}
@@ -123,13 +140,6 @@ Signed
 
 \vspace{0.2in}
 Date \hspace{0.4in} \today
-
-\section*{Abstract}
-\label{sc:original-aims}
-
-We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda, a dependently typed language. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
-
-In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula as well as the Binomial theorem and the theorem \enquote{square matrices over a semiring form a semiring}.
 
 \newpage
 \tableofcontents
