@@ -129,7 +129,7 @@ Date \hspace{0.4in} \today
 
 We present a library for expressing and proving conjectures involving \enquote{big operators} like \(\sum_{i=0}^n f(i)\) in Agda, a dependently typed language. We argue that the essence of any such operation is encapsulated in a monoid, an algebraic structure with an identity and associativity law.
 
-In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula as well as the Binomial Theorem and the theorem \enquote{square matrices over a semiring form a semiring}.
+In addition to big operators, we formalise intervals of natural numbers, filters and matrices. To demonstrate the definitions and lemmas included in our library, we prove two variants of the Gauss formula as well as the Binomial theorem and the theorem \enquote{square matrices over a semiring form a semiring}.
 
 \newpage
 \tableofcontents
@@ -257,7 +257,7 @@ A detailed description of our library is given in \textbf{\cref{ch:Impl}}.
 In \textbf{\cref{ch:Semi}} we prove that square matrices over a semiring form a semiring, demonstrating the definitions and lemmas developed in this project.
 Finally in \textbf{\cref{ch:Concl}} we discuss related work and ideas for future research.
 
-The \textbf{Appendix} contains an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial Theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
+The \textbf{Appendix} contains an extended example of a predicate (\cref{ch:Collatz}) to reinforce the understanding of predicates developed in \cref{ssc:Predicates}. We prove two variants of the \enquote{Gauss formula} (\cref{ch:Gauss}), one of which states that the expression in \cref{eq:Gauss} equals \(n²\), and the Binomial theorem (\cref{ch:Binom}). In \cref{ch:Additional-proofs} we provide additional proofs for some claims made in the main body of the report.
 
 \chapter{Background\label{ch:Background}}
 
@@ -782,7 +782,7 @@ Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol
 
 \section{Equivalences and setoids\label{sc:Setoids}}
 
-The main use case of the \AgdaModule{Bigop} library is to prove equalities like the Binomial Theorem \autocite[][Equation 5.13, page 163]{graham_concrete_1994}: \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
+The main use case of the \AgdaModule{Bigop} library is to prove equalities like the Binomial theorem \autocite[][Equation 5.13, page 163]{graham_concrete_1994}: \[ (1 + x)^n = \sum_{k = 0}^n \binom{n}{k} \; x^k \]
 In dependently typed languages, we often use the more general notions of equivalence and setoid in place of equality. These will be discussed in this Section.
 
 \subsection{Equivalences\label{ssc:Equivalences}}
@@ -2727,7 +2727,7 @@ The proof of the odd Gauss equation again works by natural number induction on \
 \end{code}
 % $
 
-\chapter{Binomial Theorem\label{ch:Binom}}
+\chapter{Binomial theorem\label{ch:Binom}}
 
 In this Chapter, we use the \AgdaModule{Bigop} module to prove a special case of the binomial theorem (see, for example, equation 5.13 on page 163 in \textcite{graham_concrete_1994}): \[\sum_{k ← 0 … n-1} \binom{n}{k} · x^k = (1 + x)^n\]
 We present a pen-and-paper proof first and then translate it into Agda.
@@ -2963,7 +2963,7 @@ The following Agda proof is annotated by the corresponding steps in the pen-and-
     ∎
 \end{code}
 % $
-This proves the Binomial Theorem in Agda.
+This proves the Binomial theorem in Agda.
 
 
 
