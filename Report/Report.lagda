@@ -12,9 +12,9 @@
 \usepackage{polyglossia}
 \setmainlanguage[variant=british]{english}
 \usepackage{fontspec}
-% \setmainfont{erewhon}
-% \setsansfont{Gillius ADF}[Scale=MatchLowercase]
-% \setmonofont{Source Code Pro}[Scale=MatchLowercase]
+\setmainfont{erewhon}
+\setsansfont{Gillius ADF}[Scale=MatchLowercase]
+\setmonofont{CMU Typewriter Text}[Scale=MatchLowercase]
 \usepackage[]{unicode-math}
 
 \usepackage{pdfpages}
@@ -94,6 +94,7 @@
 
 \begin{document}
 \setmathfont{Asana-Math.otf}
+\setmathfont[range={"2200-"22FF}]{XITS}
 
 \includepdf{Cover.pdf}
 
