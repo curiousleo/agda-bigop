@@ -125,7 +125,7 @@ In addition to big operators, we formalise intervals of natural numbers, filters
 \textbf{Name and College} & Leonhard Markert, Emmanuel College \\
 \textbf{Project Title} & Big operators in Agda \\
 \textbf{Examination} & Computer Science Tripos, Part \textsc{iii} (June 2015) \\
-\textbf{Word Count} & 11817 words\footnote{Word count excludes code listings, captions, headings, footnotes and appendices.} \\
+\textbf{Word Count} & 11999 words\footnote{Number of words in the main body of the report. This word count includes footnotes, but excludes code listings and appendices.} \\
 \textbf{Project Originators} & Timothy Griffin, Dominic Mulligan and Leonhard Markert \\
 \textbf{Project Supervisors} & Timothy Griffin and Dominic Mulligan
 \end{tabularx}}
@@ -675,7 +675,7 @@ The inductive hypothesis, \AgdaFunction{n≡n*1} \AgdaSymbol{\{}\AgdaBound{n}\Ag
 
 \section{Provability and decidability\label{sc:Prov-Dec}}
 
-In this Section, we will make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous Section as examples.
+In this Section, we make the relationship between Agda's type system and constructive logic more explicit, using types, predicates and relations from the previous Section as examples.
 
 \AgdaHide{
 %TC:ignore
@@ -692,7 +692,7 @@ module Truth where
 
 \subsection{Type inhabitation}
 
-We proved in the previous Section that four is an even number by giving a term of type \AgdaDatatype{Even} \AgdaNumber{4}. The term we wrote down, \AgdaInductiveConstructor{ss-even} \AgdaSymbol{(}\AgdaInductiveConstructor{ss-even} \AgdaInductiveConstructor{zero-even}\AgdaSymbol{)}, explicitly constructs an element of \AgdaDatatype{Even} \AgdaNumber{4}. The fact the we were able to define a term of this type means that the type is \emph{inhabited}, that is, it has at least one element.
+We proved in the previous Section that four is an even number by explicitly constructing a term of type \AgdaDatatype{Even} \AgdaNumber{4}. The fact the we were able to define a term of this type means that the type is \emph{inhabited}, that is, it is a type with least one element.
 
 Type inhabitation translates to \emph{provability} in the constructive logic corresponding to Agda's type system: a type is shown to be inhabited if a term of that type can be given; in a constructive logic, a proposition is considered true when a constructive proof can be given for that proposition.
 
@@ -709,7 +709,7 @@ Let us consider the following definition:
 %TC:endignore
 The type \AgdaDatatype{⊥} (pronounced \enquote{bottom}) has no constructors, yet without termination checking we could define a function that just calls itself to inhabit \AgdaDatatype{⊥}. But this requires general recursion, which is not allowed in Agda because of the termination requirement. Therefore \AgdaDatatype{⊥} has no inhabitants, which is why it is often called the \emph{empty type}.
 
-A type with no elements is useless from a computational perspective: it can neither be constructed nor deconstructed, so we cannot write functions which operate on it. It does, however, make for a useful definition of emptiness. We said just now that it is impossible to create an element of type \AgdaDatatype{⊥}. But \emph{ex falso quodlibet} means that we can derive anything, even \AgdaDatatype{⊥}, from an absurd assumption:
+A type with no elements is useless from a computational perspective, but it makes for a useful definition of emptiness (the opposite of inhabitation). We claimed that it is impossible to create an element of type \AgdaDatatype{⊥}. But \emph{ex falso quodlibet} means that we can derive anything, even \AgdaDatatype{⊥}, from an absurd assumption:
 
 %TC:ignore
 \begin{code}
@@ -717,10 +717,9 @@ A type with no elements is useless from a computational perspective: it can neit
   ¬Even‿1 ()
 \end{code}
 %TC:endignore
-Here the \emph{only} pattern is an absurd pattern. One is neither zero nor the successor of the successor of any natural number, so an argument of type \AgdaDatatype{Even} \AgdaNumber{1} is absurd. We do not need to supply a right-hand side of the definition because an argument of type \AgdaDatatype{Even} \AgdaNumber{1} can never be given.
+Here the \emph{only} pattern is an absurd pattern. The number one is neither zero nor the successor of the successor of any natural number, so an argument of type \AgdaDatatype{Even} \AgdaNumber{1} is absurd. We do not need to supply a right-hand side of the definition because an argument of type \AgdaDatatype{Even} \AgdaNumber{1} can never be given.
 
-We are allowed to give this undefined return value any type we like. Setting this return type to \AgdaDatatype{⊥} carries a special meaning: only functions where the arguments are empty types can return the empty type, so the fact that we can define a function \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{⊥} for some type \AgdaBound{A} means that \AgdaBound{A} must be empty.
-This is the motivation for termination checking: without it, any function could have \AgdaDatatype{⊥} as its return type. With termination checks in place, a function into the empty type proves that its domain is empty.
+We are allowed to give this undefined return value any type we like. Setting it to \AgdaDatatype{⊥} carries a special meaning: because of termination checking, only functions whose argument type is empty can return the empty type, so the fact that we can define a function \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{⊥} for some type \AgdaBound{A} means that \AgdaBound{A} must be empty.
 
 The following definition is simply a shortcut for the type of empty types:
 
@@ -734,8 +733,7 @@ This lets us write the type of \AgdaFunction{¬Even‿1} more succinctly as \Agd
 
 \subsection{Decidability}
 
-The notion of relation and predicate as introduced above is very general. One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \AgdaDatatype{P} \AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}, a decision procedure would be a function which for any argument \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A} returns either an inhabitant of type \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate holds) or an inhabitant of type \AgdaDatatype{¬} \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate does not hold).
-
+One question we may ask is whether there exists a terminating decision procedure for a given relation or predicate. In the case of a predicate \AgdaDatatype{P} \AgdaSymbol{:} \AgdaDatatype{A} \AgdaSymbol{→} \AgdaPrimitiveType{Set}, a decision procedure would be a function which for any argument \AgdaBound{x} \AgdaSymbol{:} \AgdaDatatype{A} returns either an inhabitant of type \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate holds) or an inhabitant of type \AgdaDatatype{¬} \AgdaDatatype{P} \AgdaBound{x} (evidence that the predicate does not hold).
 We can capture decidability in a type as follows:
 
 %TC:ignore
@@ -762,11 +760,11 @@ For example, in order to show that the predicate \AgdaDatatype{Even} is decidabl
       ss-odd ¬ps (ss-even p) = ¬ps p
 \end{code}
 %TC:endignore
-We have already covered the two base cases before: zero is clearly even and one is clearly not. The induction step is where things get interesting. Using a \AgdaKeyword{with}-clause, we pattern match on whether \AgdaBound{n} is even. If yes, then we can easily construct a proof of \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} by applying \AgdaInductiveConstructor{ss-even} to the proof of \AgdaDatatype{Even} \AgdaBound{n}.
+We have already covered the two base cases before: zero is clearly even and one is clearly not. The induction step is where things get interesting. Using a \AgdaKeyword{with}-clause, we pattern match on whether \AgdaBound{n} is even. If yes, then we can easily construct a proof of \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc}~\AgdaBound{n}\AgdaSymbol{))} by applying \AgdaInductiveConstructor{ss-even} to the proof of \AgdaDatatype{Even} \AgdaBound{n}.
 
 Otherwise, we build a proof of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} from a element of \AgdaFunction{¬} \AgdaDatatype{Even} \AgdaBound{n} using \AgdaFunction{ss-odd}. Since \AgdaFunction{¬} \AgdaBound{A} is just an abbreviation for \AgdaBound{A} \AgdaSymbol{→} \AgdaDatatype{⊥}, the type of \AgdaFunction{ss-odd} can also be written as
 \AgdaSymbol{∀} \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}} \AgdaSymbol{→} \AgdaSymbol{(}\AgdaDatatype{Even} \AgdaBound{n} \AgdaSymbol{→} \AgdaDatatype{⊥}\AgdaSymbol{)} \AgdaSymbol{→} \AgdaDatatype{Even} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaInductiveConstructor{suc} \AgdaBound{n}\AgdaSymbol{))} \AgdaSymbol{→} \AgdaDatatype{⊥}. The given pattern matches
-\AgdaBound{¬ps} \AgdaSymbol{:} \AgdaDatatype{Even} \AgdaBound{n} \AgdaSymbol{→} \AgdaDatatype{⊥} and
+\AgdaBound{¬ps} \AgdaSymbol{:} \AgdaDatatype{Even}~\AgdaBound{n} \AgdaSymbol{→} \AgdaDatatype{⊥} and
 \AgdaBound{p} \AgdaSymbol{:} \AgdaDatatype{Even} \AgdaBound{n}. All we need to do to derive a contradiction is to apply \AgdaBound{¬ps} to \AgdaBound{p}.
 
 
@@ -827,7 +825,7 @@ Setoids can be used to define quotients. For example, we could represent non-neg
 
 \subsection{Equational reasoning\label{ssc:Equational-reasoning}}
 
-Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder can be used to do \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make Agda proofs look more like pen-and-paper proofs and will be used extensively in the next chapters.
+Any setoid gives rise to a preorder, which consists of a carrier type and a relation with a reflexive and transitive law. This preorder can be used for \emph{equational reasoning}, which provides syntactic sugar for applying the transitivity law. It aims to make Agda proofs look more like pen-and-paper proofs and will be used extensively in the next chapters.
 
 As an example we take the setoid whose carrier is \AgdaDatatype{ℕ} with propositional equality \AgdaDatatype{\_≡\_} as the equivalence relation, and prove \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{q}\AgdaSymbol{)} \AgdaFunction{*} \AgdaBound{r} \AgdaDatatype{≡} \AgdaBound{q} \AgdaFunction{*} \AgdaSymbol{(}\AgdaBound{p} \AgdaFunction{*} \AgdaBound{r}\AgdaSymbol{)} in two different ways: first using transitivity explicitly, and then using equational reasoning.
 
