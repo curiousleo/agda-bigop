@@ -2653,7 +2653,7 @@ In step (C.3), the induction hypothesis \AgdaFunction{proof} \AgdaBound{n} is us
 A variant of the Gauss formula is the equation \[ ∀ n.\quad\sum_{\substack{i ← 0 … 2n \\ \text{\(i\) odd}}} i = n² \]
 
 which using Σ-syntax and the filter function \AgdaFunction{\_∥\_} can be written as follows in Agda: \[
-\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…+} \AgdaInductiveConstructor{suc} \AgdaSymbol{(}\AgdaBound{n} \AgdaFunction{+} \AgdaBound{n}\AgdaSymbol{)} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
+\text{\AgdaSymbol{∀} \AgdaBound{n} \AgdaSymbol{→} \AgdaFunction{Σ[} \AgdaBound{i} \AgdaFunction{←} \AgdaNumber{0} \AgdaFunction{…} \AgdaBound{n} \AgdaFunction{+} \AgdaBound{n} \AgdaFunction{∥} \AgdaFunction{odd} \AgdaFunction{]} \AgdaBound{i} \AgdaDatatype{≈} \AgdaBound{n} \AgdaFunction{*} \AgdaBound{n}}
 \]
 
 The lemma \AgdaFunction{extract} brings the list into a form more amenable to induction. It states that the list of odd numbers from zero up to but not including \(2n + 3\) equals the list of odd numbers from zero up to but not including \(2n + 1\) with \(2n + 1\) appended to it.
