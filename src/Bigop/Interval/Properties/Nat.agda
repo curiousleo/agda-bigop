@@ -37,7 +37,7 @@ upFrom-last m (suc n) = begin
   upFrom m (suc n) ∷ʳ m + suc n ∎
 
 private
-  ordinals-suc : ∀ m n k → k < m → upFrom m n ∥ (≟N k) ≡ []
+  ordinals-suc : ∀ m n k → k < m → upFrom m n ← (≟N k) ≡ []
   ordinals-suc m       zero    k k<m = refl
   ordinals-suc zero    (suc n) k ()
   ordinals-suc (suc m) (suc n) k k<m with ≟N k (suc m)
@@ -55,7 +55,7 @@ private
       lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
 
 ordinals-filter : ∀ m n k → m ≤ k → (k<m+n : k < (m + n)) →
-                   upFrom m n ∥ (≟N k) ≡ [ k ]
+                   upFrom m n ← (≟N k) ≡ [ k ]
 ordinals-filter zero zero k z≤n ()
 ordinals-filter zero (suc n) zero z≤n (s≤s z≤n) = cong (_∷_ zero) (ordinals-suc 1 n 0 (s≤s z≤n))
 ordinals-filter zero (suc n) (suc k) z≤n (s≤s k<m+n) = ordinals-filter 1 n (suc k) (s≤s z≤n) (s≤s k<m+n)

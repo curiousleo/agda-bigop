@@ -4,13 +4,13 @@ open import Data.List.Base using (List; _∷_; [])
 open import Relation.Nullary using (yes; no)
 open import Relation.Unary using (Pred; Decidable; ∁)
 
-infixl 5 _∥_
+infixl 5 _←_
 
-_∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → List I
-[]       ∥ dec = []
-(i ∷ is) ∥ dec with dec i
-(i ∷ is) ∥ dec | yes _ = i ∷ (is ∥ dec)
-(i ∷ is) ∥ dec | no  _ =      is ∥ dec
+_←_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → List I
+[]       ← dec = []
+(i ∷ is) ← dec with dec i
+(i ∷ is) ← dec | yes _ = i ∷ (is ← dec)
+(i ∷ is) ← dec | no  _ =      is ← dec
 
 -- equivalent to `filter (⌊_⌋ ∘ dec) is`
 

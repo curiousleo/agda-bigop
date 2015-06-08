@@ -281,36 +281,36 @@ M-zeroʳ A = z
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
       using (cong-P; split-P; distrˡ)
 
-    ≡-step : ∀ r c →  Σ[ i ∈ 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
-                      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]
+    ≡-step : ∀ r c →  Σ[ i ∈ 0 …< n ← ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                      Σ[ i ∈ 0 …< n ← ≟ r ] A [ i , c ]
     ≡-step r c = begin
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+      Σ[ i ∈ 0 …< n ← ≟ r ] 1M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong-P  (0 …< n) (≟ r)
                      (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
-      1# * (Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]         ∎
+      Σ[ i ∈ 0 …< n ← ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ← ≟ r) ⟩
+      1# * (Σ[ i ∈ 0 …< n ← ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
+      Σ[ i ∈ 0 …< n ← ≟ r ] A [ i , c ]         ∎
 
-    ≢-step : ∀ r c → Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+    ≢-step : ∀ r c → Σ[ i ∈ 0 …< n ← ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
     ≢-step r c = begin
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+      Σ[ i ∈ 0 …< n ← ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong-P  (0 …< n) (∁′ (≟ r))
                      (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
-      0# * (Σ[ i ∈ 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+      Σ[ i ∈ 0 …< n ← ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ← ∁′ (≟ r)) ⟩
+      0# * (Σ[ i ∈ 0 …< n ← (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
       0#                                              ∎
 
-    filter : ∀ r c → 0 …< n ∥ ≟ r ≡ L.[ r ]
+    filter : ∀ r c → 0 …< n ← ≟ r ≡ L.[ r ]
     filter r c = ordinals-filter z≤n (bounded r)
 
     ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
     ident r c = begin
       (1M ⊗ A) [ r , c ]                                      ≡⟨ lookup∘tabulate r c ⟩
       Σ[ i ∈ 0 …< n ] 1M [ r , i ] * A [ i , c ]               ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+      Σ[ i ∈ 0 …< n ← ≟ r ]       1M [ r , i ] * A [ i , c ] +
+      Σ[ i ∈ 0 …< n ← ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
+      Σ[ i ∈ 0 …< n ← ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
+      Σ[ i ∈ 0 …< n ← ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
                                                                         (filter r c) ⟩
       A [ r , c ] + 0#                                        ≈⟨ proj₂ +-identity _  ⟩
       A [ r , c ]                                             ∎
@@ -330,8 +330,8 @@ M-zeroʳ A = z
         ≡⟨ lookup∘tabulate r c ⟩
       Σ[ i ∈ 0 …< n ] A [ r , i ] * 1M [ i , c ]
         ≈⟨ Σ.split-P _ (0 …< n) (≟ c) ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
+      Σ[ i ∈ 0 …< n ← (≟ c) ] A [ r , i ] * 1M [ i , c ] +
+      Σ[ i ∈ 0 …< n ← ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
         ≈⟨ +-cong
              (Σ.cong-P (0 …< n) (≟ c)
                        (λ i c≡i → *-cong refl
@@ -339,16 +339,16 @@ M-zeroʳ A = z
              (Σ.cong-P (0 …< n) (∁′ (≟ c))
                        (λ i c≢i → *-cong refl
                                          (reflexive (1M-∁-diag (∁-sym c≢i))))) ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ] * 1# +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
-        ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (0 …< n ∥ (≟ c)))
-                        (Σ.distrʳ _ 0# (0 …< n ∥ ∁′ (≟ c))) ⟩
-      (Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]) * 1# +
-      (Σ[ i ∈ 0 …< n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
+      Σ[ i ∈ 0 …< n ← (≟ c) ] A [ r , i ] * 1# +
+      Σ[ i ∈ 0 …< n ← ∁′ (≟ c) ] A [ r , i ] * 0#
+        ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (0 …< n ← (≟ c)))
+                        (Σ.distrʳ _ 0# (0 …< n ← ∁′ (≟ c))) ⟩
+      (Σ[ i ∈ 0 …< n ← (≟ c) ] A [ r , i ]) * 1# +
+      (Σ[ i ∈ 0 …< n ← (∁′ (≟ c)) ] A [ r , i ]) * 0#
         ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
-      (Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]) + 0#
+      (Σ[ i ∈ 0 …< n ← (≟ c) ] A [ r , i ]) + 0#
         ≈⟨ proj₂ +-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]
+      Σ[ i ∈ 0 …< n ← (≟ c) ] A [ r , i ]
         ≡⟨ P.cong (Σ-syntax (λ i → A [ r , i ]))
                   (ordinals-filter z≤n (bounded c)) ⟩
       Σ[ i ∈ L.[ c ] ] A [ r , i ]

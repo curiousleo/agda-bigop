@@ -80,27 +80,27 @@ cong′ {f = f} {g} (x ∷ xs) P.refl fx≈gx = begin
 
 cong-P : ∀ {i ℓ} {I : Set i} {f g : I → R} {P : Pred I ℓ} (is : List I)
          (p : Decidable P) →
-         (∀ i → (P i) → f i ≈ g i) → fold f (is ∥ p) ≈ fold g (is ∥ p)
+         (∀ i → (P i) → f i ≈ g i) → fold f (is ← p) ≈ fold g (is ← p)
 cong-P                 []       _ _  = refl
 cong-P {f = f} {g} {P} (x ∷ xs) p eq = begin
-  fold f (x ∷ xs ∥ p)  ≈⌊ x ∈ p ⌋⟨ case-p ⟩⟨ case-¬p ⟩
-  fold g (x ∷ xs ∥ p)  ∎
+  fold f (x ∷ xs ← p)  ≈⌊ x ∈ p ⌋⟨ case-p ⟩⟨ case-¬p ⟩
+  fold g (x ∷ xs ← p)  ∎
   where
     open import Bigop.Filter.PredicateReasoning
     open import Relation.Nullary
     open import Relation.Nullary.Decidable
     open import Bigop.Filter.Properties
 
-    case-p : P x → fold f (x ∷ xs ∥ p) ≈ fold g (x ∷ xs ∥ p)
+    case-p : P x → fold f (x ∷ xs ← p) ≈ fold g (x ∷ xs ← p)
     case-p px = begin
-      fold f (x ∷ xs ∥ p)    ≡⟨ P.cong (fold f) (head-yes x xs p px) ⟩
-      f x ∙ fold f (xs ∥ p)  ≈⟨ ∙-cong (eq x px) (cong-P xs p eq) ⟩
-      g x ∙ fold g (xs ∥ p)  ≡⟨ P.cong (fold g) (P.sym $ head-yes x xs p px) ⟩
-      fold g (x ∷ xs ∥ p)    ∎
+      fold f (x ∷ xs ← p)    ≡⟨ P.cong (fold f) (head-yes x xs p px) ⟩
+      f x ∙ fold f (xs ← p)  ≈⟨ ∙-cong (eq x px) (cong-P xs p eq) ⟩
+      g x ∙ fold g (xs ← p)  ≡⟨ P.cong (fold g) (P.sym $ head-yes x xs p px) ⟩
+      fold g (x ∷ xs ← p)    ∎
 
-    case-¬p : ¬ P x → fold f (x ∷ xs ∥ p) ≈ fold g (x ∷ xs ∥ p)
+    case-¬p : ¬ P x → fold f (x ∷ xs ← p) ≈ fold g (x ∷ xs ← p)
     case-¬p ¬px = begin
-      fold f (x ∷ xs ∥ p)  ≡⟨ P.cong (fold f) (head-no x xs p ¬px) ⟩
-      fold f (xs ∥ p)      ≈⟨ cong-P xs p eq ⟩
-      fold g (xs ∥ p)      ≡⟨ P.cong (fold g) (P.sym $ head-no x xs p ¬px) ⟩
-      fold g (x ∷ xs ∥ p)  ∎
+      fold f (x ∷ xs ← p)  ≡⟨ P.cong (fold f) (head-no x xs p ¬px) ⟩
+      fold f (xs ← p)      ≈⟨ cong-P xs p eq ⟩
+      fold g (xs ← p)      ≡⟨ P.cong (fold g) (P.sym $ head-no x xs p ¬px) ⟩
+      fold g (x ∷ xs ← p)  ∎
