@@ -70,33 +70,33 @@ module GaussProofs where
 
     open import Relation.Unary
 
-    lemma : ∀ n → 0 … suc n + suc n ← odd ≡
-                  0 … n + n ← odd ∷ʳ suc (n + n)
+    lemma : ∀ n → 0 … suc n + suc n ∥ odd ≡
+                  0 … n + n ∥ odd ∷ʳ suc (n + n)
     lemma n =
       begin
-        0 … suc n + suc n ← odd
-          ≡⟨ P.cong (flip _←_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
-        0 … suc (suc (n + n)) ← odd
-          ≡⟨ P.cong (flip _←_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
-        0 … suc (n + n) ∷ʳ suc (suc (n + n)) ← odd
+        0 … suc n + suc n ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd ∘ _…_ 0) (+-suc (suc n) n) ⟩
+        0 … suc (suc (n + n)) ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (suc (n + n)))) ⟩
+        0 … suc (n + n) ∷ʳ suc (suc (n + n)) ∥ odd
           ≡⟨ last-no (0 … suc (n + n)) (suc (suc (n + n))) odd
                      (even→¬odd (ss-even (2n-even n))) ⟩
-        0 … suc (n + n) ← odd
-          ≡⟨ P.cong (flip _←_ odd) (upFrom-last 0 (suc (n + n))) ⟩
-        0 … n + n ∷ʳ suc (n + n) ← odd
+        0 … suc (n + n) ∥ odd
+          ≡⟨ P.cong (flip _∥_ odd) (upFrom-last 0 (suc (n + n))) ⟩
+        0 … n + n ∷ʳ suc (n + n) ∥ odd
           ≡⟨ last-yes (0 … n + n) (suc (n + n)) odd (even+1 (2n-even n)) ⟩
-        0 … n + n ← odd ∷ʳ suc (n + n)
+        0 … n + n ∥ odd ∷ʳ suc (n + n)
       ∎
 
-    proof : ∀ n → Σ[ i ∈ 0 … n + n ← odd ] i ≡ n * n
+    proof : ∀ n → Σ[ i ∈ 0 … n + n ∥ odd ] i ≡ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
-        Σ[ i ∈ 0 … suc n + suc n ← odd ] i
+        Σ[ i ∈ 0 … suc n + suc n ∥ odd ] i
           ≡⟨ P.cong (fold id) (lemma n)⟩
-        Σ[ i ∈ 0 … n + n ← odd ∷ʳ suc (n + n) ] i
-          ≡⟨ Σ.snoc id (suc (n + n)) (0 … n + n ← odd) ⟩
-        Σ[ i ∈ 0 … n + n ← odd ] i + suc (n + n)
+        Σ[ i ∈ 0 … n + n ∥ odd ∷ʳ suc (n + n) ] i
+          ≡⟨ Σ.snoc id (suc (n + n)) (0 … n + n ∥ odd) ⟩
+        Σ[ i ∈ 0 … n + n ∥ odd ] i + suc (n + n)
           ≡⟨ +-cong (proof n) refl ⟩
 
         n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩

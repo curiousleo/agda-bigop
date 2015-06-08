@@ -29,7 +29,7 @@ reducebig f p = foldr (λ i acc → if ⌊ p i ⌋ then f i ∙ acc else acc) ε
 -- `reducebig` and Bigop.Core.Fold.fold are extensionally equal
 equivalent : ∀ {i p} {I : Set i} {P : Pred I p} →
              (f : I → R) (p : Decidable P) (is : List I) →
-             reducebig f p is ≡ fold f (is ← p)
+             reducebig f p is ≡ fold f (is ∥ p)
 equivalent f p []       = P.refl
 equivalent f p (i ∷ is) with p i
 ... | yes pi = P.cong (_∙_ (f i)) (equivalent f p is)

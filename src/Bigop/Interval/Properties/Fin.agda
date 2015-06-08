@@ -18,7 +18,7 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 open ≡-Reasoning
 
 private
-  ordinals-suc : ∀ m n k → toℕ k < m → upFrom m n ← (≟F k) ≡ []
+  ordinals-suc : ∀ m n k → toℕ k < m → upFrom m n ∥ (≟F k) ≡ []
   ordinals-suc m zero k k<m = refl
   ordinals-suc zero (suc n) k ()
   ordinals-suc (suc m) (suc n) k k<m rewrite +-suc m n with ≟F k (fromℕ≤ {suc m} (s≤s (s≤s (m≤m+n m n))))
@@ -36,7 +36,7 @@ private
       lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
 
   ordinals-filter′ : ∀ m n k → m ≤ toℕ k → (k<m+n : toℕ k < (m + n)) →
-                      upFrom m n ← (≟F k) ≡ [ k ]
+                      upFrom m n ∥ (≟F k) ≡ [ k ]
   ordinals-filter′ zero zero k m≤k ()
   ordinals-filter′ (suc m) zero zero () k<m+n
   ordinals-filter′ (suc m) zero (suc k) (s≤s m≤k) (s≤s k<m+n) rewrite +-comm m zero = ⊥-elim (contr m k k<m+n m≤k)
@@ -68,5 +68,5 @@ private
         s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
 
 ordinals-filter : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k < (m + n)) →
-                     upFrom m n ← (≟F k) ≡ [ k ]
+                     upFrom m n ∥ (≟F k) ≡ [ k ]
 ordinals-filter {m} {n} {k} = ordinals-filter′ m n k
