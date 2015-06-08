@@ -1,0 +1,80 @@
+\documentclass{minimal}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\[ (A \times B)_{r,c} = \sum_i A_{r,i} \cdot B_{i,c} \]
+\[ (A \times B)_{r,c} = \sum_{i=0}^n A_{r,i} \cdot B_{i,c} \]
+\[ \forall n.\quad n^2 = \sum_{\substack{i=0 \\ \text{\(i\) odd}}}^{2n} i \]
+\[ \sum_i a \cdot b_i = a \cdot \sum_i b_i \]
+\[ {(1 + x)}^n = \sum_{k=0}^n \binom{n}{k} \cdot x^k \]
+\[ (a \oplus b) \oplus c = a \oplus (b \oplus c) \quad a \oplus b = b \oplus a \]
+\[ a \otimes (b \oplus c) = (a \otimes b) \oplus (a \otimes c) \quad (a \oplus b) \otimes c = (a \otimes c) \oplus (a \otimes c) \]
+
+\[ \left( \bigoplus_i a_i \right) \oplus \left( x \oplus \left( \bigoplus_i b_i \right) \right) = x \oplus \left( \bigoplus_i a_i \oplus b_i \right) \]
+
+\begin{align*}
+((A \times B) \times C)_{r,c}
+&= \sum_i \left( \sum_j A_{r,j} \cdot B_{j,i} \right) \cdot C_{i,c}
+    && \text{by definition} \\
+&= \sum_i \sum_j (A_{r,j} \cdot B_{j,i}) \cdot C_{i,c}
+    && \text{by right-distributivity (⋆)} \\
+&= \sum_j \sum_i (A_{r,j} \cdot B_{j,i}) \cdot C_{i,c}
+    && \text{swapping the outer sums (⋆)} \\
+&= \sum_j \sum_i A_{r,j} \cdot (B_{j,i} \cdot C_{i,c})
+    && \text{by associativity} \\
+&= \sum_j A_{r,j} \cdot \sum_i B_{j,i} \cdot C_{i,c}
+    && \text{by left-distributivity (⋆)} \\
+&= (A \times (B \times C))_{r,c}
+    && \text{by definition}
+\end{align*}
+
+\begin{align*}
+\bigoplus_{i} \bigoplus_{j} a_{i,j} &= \bigoplus_{j} \bigoplus_{i} a_{i,j} \\
+\bigoplus_{i} a_i \oplus b_i &= \left( \bigoplus_{i} a_i \right) \oplus \left( \bigoplus_{i} b_i \right) \\
+\bigoplus_{i} a_i &= \left( \bigoplus_{i \,|\, P(i)} a_i \right) \oplus \left( \bigoplus_{i \,|\, \neg P(i)} a_i \right) \\ \\
+a \otimes \left( \bigoplus_i b_i \right) &= \bigoplus_i a \otimes b_i \\
+\left( \bigoplus_i a_i \right) \otimes b &= \bigoplus_i a_i \otimes b \\ \\
+\bigoplus_i a_i^{-1} &= {\left( \bigotimes_i a_i \right)}^{-1} \\
+\bigwedge_i \neg a_i &= \neg \left( \bigvee_i a_i \right)
+\end{align*}
+
+\begin{align*}
+&= ((A \times B) \times C)_{r,c} \\
+&= \sum_i \left( \sum_j A_{r,j} \cdot B_{j,i} \right) \cdot C_{i,c}
+    && \text{by definition} \\
+&= \sum_i \sum_j (A_{r,j} \cdot B_{j,i}) \cdot C_{i,c}
+    && \text{by right-distributivity (⋆)} \\
+&= \sum_j \sum_i (A_{r,j} \cdot B_{j,i}) \cdot C_{i,c}
+    && \text{swapping the outer sums (⋆)} \\
+&= \sum_j \sum_i A_{r,j} \cdot (B_{j,i} \cdot C_{i,c})
+    && \text{by associativity} \\
+&= \sum_j A_{r,j} \cdot \sum_i B_{j,i} \cdot C_{i,c}
+    && \text{by left-distributivity (⋆)} \\
+&= (A \times (B \times C))_{r,c}
+    && \text{by definition}
+\end{align*}
+
+\begin{align*}
+(p \cdot q) \cdot r &= \qquad\text{(commutativity)} \\
+(q \cdot p) \cdot r &= \qquad\text{(associativity)} \\
+q \cdot (p \cdot r)
+\end{align*}
+
+\begin{align*}
+\sum_{i=0}^n a_i &= a_0 + a_1 + \cdots + a_n \\
+\prod_{i=0}^n a_i &= a_0 * a_1 * \cdots * a_n \\
+\bigcup_{i=0}^n a_i &= a_0 \cup a_1 \cup \cdots \cup a_n \\
+\bigwedge_{i=0}^n a_i &= a_0 \wedge a_1 \wedge \cdots \wedge a_n \\
+\bigoplus_{i=0}^n a_i &= a_0 \oplus a_1 \oplus \cdots \oplus a_n
+\end{align*}
+
+\begin{align*}
+\bigoplus_{i \in \{\}} a_i &= \text{?} \\ \\
+\bigoplus_{i=0}^n a_i &= a_0 \oplus a_1 \oplus a_2 \oplus \cdots \\
+                      &= ((a_0 \oplus a_1) \oplus a_2) \oplus \cdots \\
+                      &= a_0 \oplus (a_1 \oplus (a_2 \oplus \cdots))
+\end{align*}
+
+\end{document}
