@@ -28,25 +28,25 @@ module GaussProofs where
 
     open Props.Interval.Nat
 
-    proof : ∀ n → 2 * (Σ[ i ← 0 … n ] i) ≡ n * (suc n)
+    proof : ∀ n → 2 * (Σ[ i ∈ 0 … n ] i) ≡ n * (suc n)
     proof 0 = P.refl
     proof (suc n) =
       begin
-        2 * (Σ[ i ← 0 … suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
-        2 * (Σ[ i ← 0 … n ] i + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 … n ] i) (suc n) ⟩
-        2 * (Σ[ i ← 0 … n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
+        2 * (Σ[ i ∈ 0 … suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
+        2 * (Σ[ i ∈ 0 … n ] i + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ∈ 0 … n ] i) (suc n) ⟩
+        2 * (Σ[ i ∈ 0 … n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
         n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
         2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
         (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
         suc n * (suc (suc n))
       ∎
       where
-        lemma : Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
+        lemma : Σ[ i ∈ 0 … suc n ] i ≡ Σ[ i ∈ 0 … n ] i + suc n
         lemma =
           begin
-            Σ[ i ← 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
-            Σ[ i ← 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.last id (suc n) (0 … n) ⟩
-            Σ[ i ← 0 … n ] i + suc n
+            Σ[ i ∈ 0 … suc n ] i       ≡⟨ P.cong (fold id) (upFrom-last 1 n) ⟩
+            Σ[ i ∈ 0 … n ∷ʳ suc n ] i  ≡⟨ Σ.snoc id (suc n) (0 … n) ⟩
+            Σ[ i ∈ 0 … n ] i + suc n
           ∎
 
   module OddGauss where
@@ -88,15 +88,15 @@ module GaussProofs where
         0 … n + n ∥ odd ∷ʳ suc (n + n)
       ∎
 
-    proof : ∀ n → Σ[ i ← 0 … n + n ∥ odd ] i ≡ n * n
+    proof : ∀ n → Σ[ i ∈ 0 … n + n ∥ odd ] i ≡ n * n
     proof zero = P.refl
     proof (suc n) =
       begin
-        Σ[ i ← 0 … suc n + suc n ∥ odd ] i
+        Σ[ i ∈ 0 … suc n + suc n ∥ odd ] i
           ≡⟨ P.cong (fold id) (lemma n)⟩
-        Σ[ i ← 0 … n + n ∥ odd ∷ʳ suc (n + n) ] i
-          ≡⟨ Σ.last id (suc (n + n)) (0 … n + n ∥ odd) ⟩
-        Σ[ i ← 0 … n + n ∥ odd ] i + suc (n + n)
+        Σ[ i ∈ 0 … n + n ∥ odd ∷ʳ suc (n + n) ] i
+          ≡⟨ Σ.snoc id (suc (n + n)) (0 … n + n ∥ odd) ⟩
+        Σ[ i ∈ 0 … n + n ∥ odd ] i + suc (n + n)
           ≡⟨ +-cong (proof n) refl ⟩
 
         n * n + suc (n + n)  ≡⟨ +-cong (refl {x = n * n}) (sym (+-suc n n)) ⟩

@@ -22,22 +22,22 @@ module Fold {c ℓ} (M : Monoid c ℓ) where
   infix 5 Π-syntax ⋀-syntax ⨂-syntax
 
   Σ-syntax = fold
-  syntax Σ-syntax (λ x → e) v = Σ[ x ← v ] e
+  syntax Σ-syntax (λ x → e) v = Σ[ x ∈ v ] e
 
   Π-syntax = fold
-  syntax Π-syntax (λ x → e) v = Π[ x ← v ] e
+  syntax Π-syntax (λ x → e) v = Π[ x ∈ v ] e
 
   ⋁-syntax = fold
-  syntax ⋁-syntax (λ x → e) v = ⋁[ x ← v ] e
+  syntax ⋁-syntax (λ x → e) v = ⋁[ x ∈ v ] e
 
   ⋀-syntax = fold
-  syntax ⋀-syntax (λ x → e) v = ⋀[ x ← v ] e
+  syntax ⋀-syntax (λ x → e) v = ⋀[ x ∈ v ] e
 
   ⨁-syntax = fold
-  syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v ] e
+  syntax ⨁-syntax (λ x → e) v = ⨁[ x ∈ v ] e
 
   ⨂-syntax = fold
-  syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v ] e
+  syntax ⨂-syntax (λ x → e) v = ⨂[ x ∈ v ] e
 
 module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
 
