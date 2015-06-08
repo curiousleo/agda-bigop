@@ -3,6 +3,7 @@ module Everything where
 open import BinomialTheorem
 open import GaussProofs
 open import SemiringProof
+open import RegressionTest
 open import Matrix
 open import Bigop
 open import Bigop.Interval.Nat
