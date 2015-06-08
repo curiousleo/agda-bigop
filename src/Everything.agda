@@ -1,0 +1,23 @@
+module Everything where
+
+open import BinomialTheorem
+open import GaussProofs
+open import SemiringProof
+open import RegressionTest
+open import Matrix
+open import Bigop
+open import Bigop.Interval.Nat
+open import Bigop.Interval.Fin
+open import Bigop.Interval.Properties.Nat
+open import Bigop.Interval.Properties.Fin
+open import Bigop.Filter.Properties
+open import Bigop.Filter.Predicates
+open import Bigop.Filter.PredicateReasoning
+open import Bigop.Filter
+open import Bigop.Core.Properties
+open import Bigop.DecidableEquality
+open import Bigop.Core
+open import Bigop.Properties.CommutativeMonoid
+open import Bigop.Properties.BooleanAlgebra
+open import Bigop.Properties.Monoid
+open import Bigop.Properties.SemiringWithoutOne
