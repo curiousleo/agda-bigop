@@ -57,7 +57,7 @@ _⊕_ : Op₂ M
 A ⊕ B = tabulate (λ r c → A [ r , c ] + B [ r , c ])
 
 mult : M → M → Fin n → Fin n → Carrier
-mult A B r c = Σ[ i ∈ 0 …< n ] A [ r , i ] * B [ i , c ]
+mult A B r c = Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ]
 
 _⊗_ : Op₂ M
 A ⊗ B = tabulate (mult A B)
@@ -182,11 +182,11 @@ M-zeroˡ A = z
     z : ∀ r c → (0M ⊗ A) [ r , c ] ≈ 0M [ r , c ]
     z r c = begin
       (0M ⊗ A) [ r , c ]               ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] 0M [ r , i ] * A [ i , c ]
+      Σ[ i ← 0 …< n ] 0M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl
                   (λ i → reflexive (lookup∘tabulate r i) ⟨ *-cong ⟩ refl) ⟩
-      Σ[ i ∈ 0 …< n ] 0# * A [ i , c ]  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → proj₁ zero _) ⟩
-      Σ[ i ∈ 0 …< n ] 0#                ≈⟨ Σ.identity (0 …< n) ⟩
+      Σ[ i ← 0 …< n ] 0# * A [ i , c ]  ≈⟨ Σ.cong (0 …< n) P.refl (λ i → proj₁ zero _) ⟩
+      Σ[ i ← 0 …< n ] 0#                ≈⟨ Σ.identity (0 …< n) ⟩
       0#                               ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       0M [ r , c ]                     ∎
 
@@ -199,11 +199,11 @@ M-zeroʳ A = z
     z : ∀ r c → (A ⊗ 0M) [ r , c ] ≈ 0M [ r , c ]
     z r c = begin
       (A ⊗ 0M) [ r , c ]                 ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * 0M [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * 0M [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl
                   (λ i → *-cong refl (reflexive (lookup∘tabulate i c))) ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * 0#    ≈⟨ sym (Σ.distrʳ _ 0# (0 …< n)) ⟩
-      (Σ[ i ∈ 0 …< n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
+      Σ[ i ← 0 …< n ] A [ r , i ] * 0#    ≈⟨ sym (Σ.distrʳ _ 0# (0 …< n)) ⟩
+      (Σ[ i ← 0 …< n ] A [ r , i ]) * 0#  ≈⟨ proj₂ zero _ ⟩
       0#                                 ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       0M [ r , c ]                       ∎
 
@@ -216,45 +216,45 @@ M-zeroʳ A = z
 
     ⟨⊗⟩⊗-expand : ∀ r c →
                   ((A ⊗ B) ⊗ C) [ r , c ] ≈
-                  Σ[ i ∈ 0 …< n ] (Σ[ j ∈ 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+                  Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
     ⟨⊗⟩⊗-expand r c = begin
       ((A ⊗ B) ⊗ C) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] (A ⊗ B) [ r , i ] * C [ i , c ]
+      Σ[ i ← 0 …< n ] (A ⊗ B) [ r , i ] * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (reflexive (lookup∘tabulate r i)) refl) ⟩
-      Σ[ i ∈ 0 …< n ] (Σ[ j ∈ 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
+      Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ] ∎
 
     ⊗⟨⊗⟩-expand : ∀ r c →
                   (A ⊗ (B ⊗ C)) [ r , c ] ≈
-                  Σ[ j ∈ 0 …< n ] A [ r , j ] * (Σ[ i ∈ 0 …< n ] B [ j , i ] * C [ i , c ])
+                  Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
     ⊗⟨⊗⟩-expand r c = begin
       (A ⊗ (B ⊗ C)) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ j ∈ 0 …< n ] A [ r , j ] * (B ⊗ C) [ j , c ]
+      Σ[ j ← 0 …< n ] A [ r , j ] * (B ⊗ C) [ j , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ j → *-cong refl (reflexive (lookup∘tabulate j c))) ⟩
-      Σ[ j ∈ 0 …< n ] A [ r , j ] * (Σ[ i ∈ 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
+      Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
 
     inner : ∀ r c j →
-            Σ[ i ∈ 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
-            A [ r , j ] * (Σ[ i ∈ 0 …< n ] B [ j , i ] * C [ i , c ])
+            Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ] ≈
+            A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
     inner r c j = begin
-      Σ[ i ∈ 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+      Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-assoc _ _ _) ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
+      Σ[ i ← 0 …< n ] A [ r , j ] * (B [ j , i ] * C [ i , c ])
         ≈⟨ sym (Σ.distrˡ _ _ (0 …< n)) ⟩
-      A [ r , j ] * (Σ[ i ∈ 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
+      A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ]) ∎
 
     assoc : ∀ r c → ((A ⊗ B) ⊗ C) [ r , c ] ≈ (A ⊗ (B ⊗ C)) [ r , c ]
     assoc r c = begin
       ((A ⊗ B) ⊗ C) [ r , c ]
         ≈⟨ ⟨⊗⟩⊗-expand r c ⟩
-      Σ[ i ∈ 0 …< n ] (Σ[ j ∈ 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
+      Σ[ i ← 0 …< n ] (Σ[ j ← 0 …< n ] A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → Σ.distrʳ _ _ (0 …< n)) ⟩
-      Σ[ i ∈ 0 …< n ] Σ[ j ∈ 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+      Σ[ i ← 0 …< n ] Σ[ j ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.comm _ (0 …< n) (0 …< n) ⟩
-      Σ[ j ∈ 0 …< n ] Σ[ i ∈ 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
+      Σ[ j ← 0 …< n ] Σ[ i ← 0 …< n ] (A [ r , j ] * B [ j , i ]) * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (inner r c) ⟩
-      Σ[ j ∈ 0 …< n ] A [ r , j ] * (Σ[ i ∈ 0 …< n ] B [ j , i ] * C [ i , c ])
+      Σ[ j ← 0 …< n ] A [ r , j ] * (Σ[ i ← 0 …< n ] B [ j , i ] * C [ i , c ])
         ≈⟨ sym $ ⊗⟨⊗⟩-expand r c ⟩
       (A ⊗ (B ⊗ C)) [ r , c ] ∎
 
@@ -268,9 +268,9 @@ M-zeroʳ A = z
     cong r c = begin
       (u ⊗ A) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] u [ r , i ] * A [ i , c ]
+      Σ[ i ← 0 …< n ] u [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → *-cong (eq₁ r i) (eq₂ i c)) ⟩
-      Σ[ i ∈ 0 …< n ] v [ r , i ] * B [ i , c ]
+      Σ[ i ← 0 …< n ] v [ r , i ] * B [ i , c ]
         ≡⟨ P.sym (lookup∘tabulate r c) ⟩
       (v ⊗ B) [ r , c ] ∎
 
@@ -281,23 +281,23 @@ M-zeroʳ A = z
     module Σ = Props.SemiringWithoutOne semiringWithoutOne
       using (cong-P; split-P; distrˡ)
 
-    ≡-step : ∀ r c →  Σ[ i ∈ 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
-                      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]
+    ≡-step : ∀ r c →  Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ] ≈
+                      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]
     ≡-step r c = begin
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
+      Σ[ i ← 0 …< n ∥ ≟ r ] 1M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong-P  (0 …< n) (≟ r)
                      (λ i r≡i → reflexive (1M-diag r≡i) ⟨ *-cong ⟩ refl) ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
-      1# * (Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]         ∎
+      Σ[ i ← 0 …< n ∥ ≟ r ] 1# * A [ i , c ]    ≈⟨ sym $ Σ.distrˡ _ 1# (0 …< n ∥ ≟ r) ⟩
+      1# * (Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ])  ≈⟨ proj₁ *-identity _ ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]         ∎
 
-    ≢-step : ∀ r c → Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
+    ≢-step : ∀ r c → Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ] ≈ 0#
     ≢-step r c = begin
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 1M [ r , i ] * A [ i , c ]
         ≈⟨ Σ.cong-P  (0 …< n) (∁′ (≟ r))
                      (λ i r≢i → reflexive (1M-∁-diag r≢i) ⟨ *-cong ⟩ refl) ⟩
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
-      0# * (Σ[ i ∈ 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ] 0# * A [ i , c ]      ≈⟨ sym $ Σ.distrˡ _ 0# (0 …< n ∥ ∁′ (≟ r)) ⟩
+      0# * (Σ[ i ← 0 …< n ∥ (∁′ (≟ r)) ] A [ i , c ])  ≈⟨ proj₁ zero _ ⟩
       0#                                              ∎
 
     filter : ∀ r c → 0 …< n ∥ ≟ r ≡ L.[ r ]
@@ -306,11 +306,11 @@ M-zeroʳ A = z
     ident : ∀ r c → (1M ⊗ A) [ r , c ] ≈ A [ r , c ]
     ident r c = begin
       (1M ⊗ A) [ r , c ]                                      ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] 1M [ r , i ] * A [ i , c ]               ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
+      Σ[ i ← 0 …< n ] 1M [ r , i ] * A [ i , c ]               ≈⟨ Σ.split-P _ (0 …< n) (≟ r) ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ]       1M [ r , i ] * A [ i , c ] +
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ r) ]  1M [ r , i ] * A [ i , c ]    ≈⟨ ≡-step r c ⟨ +-cong ⟩ ≢-step r c ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ] + 0#                    ≈⟨ proj₂ +-identity _ ⟩
+      Σ[ i ← 0 …< n ∥ ≟ r ] A [ i , c ]                         ≡⟨ P.cong  (Σ-syntax (λ i → A [ i , c ]))
                                                                         (filter r c) ⟩
       A [ r , c ] + 0#                                        ≈⟨ proj₂ +-identity _  ⟩
       A [ r , c ]                                             ∎
@@ -328,10 +328,10 @@ M-zeroʳ A = z
     ident r c = begin
       (A ⊗ 1M) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * 1M [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * 1M [ i , c ]
         ≈⟨ Σ.split-P _ (0 …< n) (≟ c) ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
+      Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ] * 1M [ i , c ] +
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 1M [ i , c ]
         ≈⟨ +-cong
              (Σ.cong-P (0 …< n) (≟ c)
                        (λ i c≡i → *-cong refl
@@ -339,19 +339,19 @@ M-zeroʳ A = z
              (Σ.cong-P (0 …< n) (∁′ (≟ c))
                        (λ i c≢i → *-cong refl
                                          (reflexive (1M-∁-diag (∁-sym c≢i))))) ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ] * 1# +
-      Σ[ i ∈ 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
+      Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ] * 1# +
+      Σ[ i ← 0 …< n ∥ ∁′ (≟ c) ] A [ r , i ] * 0#
         ≈⟨ sym $ +-cong (Σ.distrʳ _ 1# (0 …< n ∥ (≟ c)))
                         (Σ.distrʳ _ 0# (0 …< n ∥ ∁′ (≟ c))) ⟩
-      (Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]) * 1# +
-      (Σ[ i ∈ 0 …< n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
+      (Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]) * 1# +
+      (Σ[ i ← 0 …< n ∥ (∁′ (≟ c)) ] A [ r , i ]) * 0#
         ≈⟨ +-cong (proj₂ *-identity _) (proj₂ zero _) ⟩
-      (Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]) + 0#
+      (Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]) + 0#
         ≈⟨ proj₂ +-identity _ ⟩
-      Σ[ i ∈ 0 …< n ∥ (≟ c) ] A [ r , i ]
+      Σ[ i ← 0 …< n ∥ (≟ c) ] A [ r , i ]
         ≡⟨ P.cong (Σ-syntax (λ i → A [ r , i ]))
                   (ordinals-filter z≤n (bounded c)) ⟩
-      Σ[ i ∈ L.[ c ] ] A [ r , i ]
+      Σ[ i ← L.[ c ] ] A [ r , i ]
         ≈⟨ proj₂ +-identity _  ⟩
       A [ r , c ] ∎
 
@@ -374,12 +374,12 @@ M-zeroʳ A = z
     distr r c = begin
       (A ⊗ (B ⊕ C)) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * (B ⊕ C) [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * (B ⊕ C) [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (inner r c)⟩
-      Σ[ i ∈ 0 …< n ] ((A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]))
+      Σ[ i ← 0 …< n ] ((A [ r , i ] * B [ i , c ]) + (A [ r , i ] * C [ i , c ]))
         ≈⟨ sym (Σ.∙-distr _ _ (0 …< n)) ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * B [ i , c ] +
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * C [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * B [ i , c ] +
+      Σ[ i ← 0 …< n ] A [ r , i ] * C [ i , c ]
         ≡⟨ P.sym $ P.cong₂ _+_ (lookup∘tabulate r c) (lookup∘tabulate r c) ⟩
       (A ⊗ B) [ r , c ] + (A ⊗ C) [ r , c ]
         ≡⟨ P.sym (lookup∘tabulate r c) ⟩
@@ -395,7 +395,7 @@ M-zeroʳ A = z
     distr r c = begin
       ((A ⊕ B) ⊗ C) [ r , c ]
         ≡⟨ lookup∘tabulate r c ⟩
-      Σ[ i ∈ 0 …< n ] (A ⊕ B) [ r , i ] * C [ i , c ]
+      Σ[ i ← 0 …< n ] (A ⊕ B) [ r , i ] * C [ i , c ]
         ≈⟨ Σ.cong (0 …< n) P.refl (λ i → begin
 
           (A ⊕ B) [ r , i ] * C [ i , c ]
@@ -404,10 +404,10 @@ M-zeroʳ A = z
             ≈⟨ proj₂ distrib _ _ _ ⟩
           (A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]) ∎)⟩
 
-      Σ[ i ∈ 0 …< n ] ((A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]))
+      Σ[ i ← 0 …< n ] ((A [ r , i ] * C [ i , c ]) + (B [ r , i ] * C [ i , c ]))
         ≈⟨ sym (Σ.∙-distr _ _ (0 …< n)) ⟩
-      Σ[ i ∈ 0 …< n ] A [ r , i ] * C [ i , c ] +
-      Σ[ i ∈ 0 …< n ] B [ r , i ] * C [ i , c ]
+      Σ[ i ← 0 …< n ] A [ r , i ] * C [ i , c ] +
+      Σ[ i ← 0 …< n ] B [ r , i ] * C [ i , c ]
         ≡⟨ P.sym $ P.cong₂ _+_ (lookup∘tabulate r c) (lookup∘tabulate r c) ⟩
       (A ⊗ C) [ r , c ] + (B ⊗ C) [ r , c ]
         ≡⟨ P.sym (lookup∘tabulate r c) ⟩
