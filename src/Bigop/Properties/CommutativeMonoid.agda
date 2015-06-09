@@ -24,13 +24,13 @@ import Relation.Binary.PropositionalEquality as P
 
 module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
 
-  open CommutativeMonoid M renaming (Carrier to R; identity to ident; comm to ∙-comm)
+  open CommutativeMonoid M renaming (identity to ident; comm to ∙-comm)
   open Fold monoid
   open MonoidProps {c} {ℓ} monoid public
 
   open import Relation.Binary.EqReasoning setoid
 
-  fold-reverse : ∀ {ℓ} {I : Set ℓ} (f : I → R) (is : List I) → fold f is ≈ fold f (reverse is)
+  fold-reverse : ∀ {ℓ} {I : Set ℓ} (f : I → Carrier) (is : List I) → fold f is ≈ fold f (reverse is)
   fold-reverse {ℓ} {I} f []       = refl
   fold-reverse {ℓ} {I} f (i ∷ is) = begin
     f i ∙ fold f is
@@ -43,7 +43,7 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
       ≈⟨ cong (reverse is ∷ʳ i) (P.sym $ reverse-++-commute [ i ] is) (λ x → refl) ⟩
     fold f (reverse (i ∷ is)) ∎
 
-  ∙-distr : ∀ {i} {I : Set i} (f g : I → R) (is : List I) →
+  ∙-distr : ∀ {i} {I : Set i} (f g : I → Carrier) (is : List I) →
     fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
   ∙-distr f g [] = proj₁ ident _
   ∙-distr f g (i ∷ is) = begin
@@ -68,7 +68,7 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
           ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ ∙-distr f g is ⟩
         g i ∙ fold (λ i → f i ∙ g i) is ∎
 
-  comm : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → R)
+  comm : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → Carrier)
        (js : List J) (is : List I) →
          fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
   comm f [] ys = sym (identity ys)
@@ -80,7 +80,7 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
       ≈⟨ ∙-distr (f x) (λ i → fold (flip f i) xs) ys ⟩
     fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
   
-  split-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (i : I) (is : List I)
+  split-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (i : I) (is : List I)
     (p : Decidable P) → P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
                     ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
   split-yes f i is p pi = begin
@@ -91,7 +91,7 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
                          (P.cong (fold f) (head-∁-yes i is p pi)) ⟩
     fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
 
-  split-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (i : I) (is : List I)
+  split-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (i : I) (is : List I)
     (p : Decidable P) → ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
                      ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
   split-no f i is p ¬pi = begin
@@ -106,7 +106,7 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
          ≈⟨ ∙-comm _ _ ⟩
     fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
 
-  split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → R) (is : List I)
+  split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (is : List I)
     (p : Decidable P) → fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p)
   split-P f [] p = sym $ proj₁ ident _
   split-P {ℓ = ℓ} {P = P} f (i ∷ is) p =

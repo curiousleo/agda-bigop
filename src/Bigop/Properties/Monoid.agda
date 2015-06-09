@@ -23,12 +23,12 @@ open P using (_≡_)
 
 open Fold M using (crush; fold)
 
-join : ∀ {i} → {I : Set i} (f : I → R) (xs : List I) (ys : List I) →
+++-distr : ∀ {i} → {I : Set i} (f : I → R) (xs : List I) (ys : List I) →
        fold f xs ∙ fold f ys ≈ fold f (xs ++ ys)
-join f []       ys = proj₁ ident _
-join f (x ∷ xs) ys = begin
+++-distr f []       ys = proj₁ ident _
+++-distr f (x ∷ xs) ys = begin
   (f x ∙  fold f xs) ∙ fold f ys   ≈⟨ assoc _ _ _ ⟩
-   f x ∙ (fold f xs  ∙ fold f ys)  ≈⟨ ∙-cong refl (join f xs ys) ⟩
+   f x ∙ (fold f xs  ∙ fold f ys)  ≈⟨ ∙-cong refl (++-distr f xs ys) ⟩
    f x ∙  fold f (xs ++ ys)        ∎
 
 snoc : ∀ {i} {I : Set i} (f : I → R) (x : I) (xs : List I) →
@@ -36,7 +36,7 @@ snoc : ∀ {i} {I : Set i} (f : I → R) (x : I) (xs : List I) →
 snoc f x xs =
   begin
     fold f (xs ∷ʳ x)
-      ≈⟨ sym $ join f xs [ x ] ⟩
+      ≈⟨ sym $ ++-distr f xs [ x ] ⟩
     fold f xs ∙ fold f [ x ]
       ≈⟨ ∙-cong refl $ proj₂ ident (f x) ⟩
     fold f xs ∙ f x
