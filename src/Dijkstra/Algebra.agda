@@ -10,8 +10,6 @@ open import Function
 open import Level
 open import Relation.Binary
 
--- rightCanonicalOrder : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Op₂ A → Rel A _
--- rightCanonicalOrder _≈_ _∙_ a b = ∃ λ c → b ≈ (a ∙ c)
 
 record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
   infixl 7 _*_
@@ -37,9 +35,6 @@ record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
       ; ε = 0#
       ; isCommutativeMonoid = +-isCommutativeMonoid
       }
-
-  _⊴_ : Rel Carrier _
-  a ⊴ b = ∃ λ c → b ≈ (a + c) -- rightCanonicalOrder _≈_ _+_
 
 record Prebimonoid c ℓ : Set (suc (c ⊔ ℓ)) where
   infixl 7 _*_
@@ -90,5 +85,3 @@ record Bimonoid c ℓ : Set (suc (c ⊔ ℓ)) where
       ; ε = 0#
       ; isCommutativeMonoid = *-isCommutativeMonoid
       }
-
-  _⊴_ = rightCanonicalOrder _≈_ _+_
