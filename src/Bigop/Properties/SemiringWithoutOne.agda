@@ -12,7 +12,8 @@ open import Data.Product hiding (map)
 open import Function
 
 open SemiringWithoutOne S renaming (Carrier to R; zero to *-zero)
-open CommutativeMonoidProps {c} {ℓ} +-commutativeMonoid public
+open CommutativeMonoidProps
+open RequiresCommutativeMonoid {c} {ℓ} +-commutativeMonoid public
 
 open import Relation.Binary.EqReasoning setoid
 open Fold +-monoid
