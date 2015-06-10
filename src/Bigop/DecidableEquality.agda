@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Simple decidable equalities for natural numbers and finite sets
+------------------------------------------------------------------------
+
 module Bigop.DecidableEquality where
 
 open import Data.Empty

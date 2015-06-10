@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Properties of the core big operator function
+------------------------------------------------------------------------
+
 open import Algebra
 
 module Bigop.Core.Properties {c ℓ} (M : Monoid c ℓ) where

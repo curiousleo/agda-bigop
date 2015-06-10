@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Equivalences for big operators over a Boolean algebra
+------------------------------------------------------------------------
+
 open import Algebra
 
 module Bigop.Properties.BooleanAlgebra
@@ -21,6 +27,9 @@ open CommutativeSemiring ∨-∧-commutativeSemiring
 
 open Fold ∨-monoid using (⋁-syntax)
 open Fold ∧-monoid using (⋀-syntax)
+
+------------------------------------------------------------------------
+-- De Morgan's laws lifted to big operators
 
 deMorgan₁ : ∀ {i} → {I : Set i} → (f : I → R) → (idx : List I) →
             ¬ (⋀[ i ← idx ] f i) ≈ ⋁[ i ← idx ] ¬ f i

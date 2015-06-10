@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Equational reasoning with predicates
+------------------------------------------------------------------------
+
 module Bigop.Filter.PredicateReasoning where
 
 open import Relation.Nullary using (yes; no; ¬_)

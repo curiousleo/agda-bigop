@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Equivalences for big operators over a commutative monoid
+------------------------------------------------------------------------
+
 module Bigop.Properties.CommutativeMonoid where
 
 open import Algebra
@@ -30,6 +36,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
 
   open import Relation.Binary.EqReasoning setoid
 
+  -- We can reverse the index list without changing the result of the big
+  -- operator expression: ⨁[ i ← is ] f i ≈ ⨁[ i ← reverse is ] f i
+
   fold-reverse : ∀ {ℓ} {I : Set ℓ} (f : I → Carrier) (is : List I) → fold f is ≈ fold f (reverse is)
   fold-reverse {ℓ} {I} f []       = refl
   fold-reverse {ℓ} {I} f (i ∷ is) = begin
@@ -42,6 +51,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
     fold f (reverse is ∷ʳ i)
       ≈⟨ cong (reverse is ∷ʳ i) (P.sym $ reverse-++-commute [ i ] is) (λ x → refl) ⟩
     fold f (reverse (i ∷ is)) ∎
+
+  -- The small operator distributes over its big operator
+  -- (⨁[ i ← is ] f i) ⊕ (⨁[ i ← is ] g i) ≈ ⨁[ i ← is ] f i ⊕ g i
 
   ∙-distr : ∀ {i} {I : Set i} (f g : I → Carrier) (is : List I) →
     fold f is ∙ fold g is ≈ fold (λ i → f i ∙ g i) is
@@ -68,6 +80,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
           ≈⟨ (refl {g i}) ⟨ ∙-cong ⟩ ∙-distr f g is ⟩
         g i ∙ fold (λ i → f i ∙ g i) is ∎
 
+  -- Swapping the order of big operators is allowed
+  -- ⨁[ j ← js ] (⨁[ i ← is ] f j i) ≈ ⨁[ i ← is ] (⨁[ j ← js ] f j i)
+
   comm : ∀ {i j} {I : Set i} {J : Set j} (f : J → I → Carrier)
        (js : List J) (is : List I) →
          fold (λ j → fold (f j) is) js ≈ fold (λ i → fold (flip f i) js) is
@@ -79,6 +94,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
     fold (f x) ys ∙ fold (λ i → fold (flip f i) xs) ys
       ≈⟨ ∙-distr (f x) (λ i → fold (flip f i) xs) ys ⟩
     fold (λ i → f x i ∙ fold (flip f i) xs) ys ∎
+
+  ------------------------------------------------------------------------
+  -- Splitting the index list using a decidable predicate
   
   split-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (i : I) (is : List I)
     (p : Decidable P) → P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
@@ -105,6 +123,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
     fold f (i ∷ is ∥ ∁′ p) ∙ fold f (i ∷ is ∥ p)
          ≈⟨ ∙-comm _ _ ⟩
     fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
+
+  -- A big operator's index list can be split using a decidable predicate
+  -- ⨁[ i ← is ] f i ≈ (⨁[ i ← is ∥ p ] f i) ⊕ (⨁[ i ← is ∥ ∁′ p ] f i)
 
   split-P : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (is : List I)
     (p : Decidable P) → fold f is ≈ fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p)
