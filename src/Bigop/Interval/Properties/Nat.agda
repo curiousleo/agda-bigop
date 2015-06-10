@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Properties of intervals of natural numbers
+------------------------------------------------------------------------
+
 module Bigop.Interval.Properties.Nat where
 
 open import Bigop.DecidableEquality
@@ -36,6 +42,9 @@ upFrom-last m (suc n) = begin
     ≡⟨ cong (_∷ʳ_ $ upFrom m (suc n)) $ sym $ +-suc m n ⟩
   upFrom m (suc n) ∷ʳ m + suc n ∎
 
+------------------------------------------------------------------------
+-- Specification for upFrom
+
 private
   ordinals-suc : ∀ m n k → k < m → upFrom m n ∥ (≟N k) ≡ []
   ordinals-suc m       zero    k k<m = refl
@@ -53,6 +62,9 @@ private
       lt {zero} m≤n = z≤n
       lt {suc m} {zero} ()
       lt {suc m} {suc n} (s≤s m≤n) = s≤s (lt m≤n)
+
+-- upFrom m n contains every number from m up to but not including m + n
+-- exactly once
 
 ordinals-filter : ∀ m n k → m ≤ k → (k<m+n : k < (m + n)) →
                    upFrom m n ∥ (≟N k) ≡ [ k ]

@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Filter properties
+------------------------------------------------------------------------
+
 module Bigop.Filter.Properties where
 
 open import Bigop.DecidableEquality
@@ -14,12 +20,17 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open ≡-Reasoning
 
+-- _∥_ right-distributes over _++_
+
 ∥-distrib : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} xs ys (p : Decidable P) →
             (xs ++ ys) ∥ p ≡ (xs ∥ p) ++ (ys ∥ p)
 ∥-distrib [] ys p = refl
 ∥-distrib (x ∷ xs) ys p with p x
 ... | yes px = cong (_∷_ x) (∥-distrib xs ys p)
 ... | no ¬px = ∥-distrib xs ys p
+
+------------------------------------------------------------------------
+-- Single-step lemmas
 
 ∥-step-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x (p : Decidable P) →
              P x → [ x ] ∥ p ≡ [ x ]
@@ -74,12 +85,18 @@ head-∁-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} x xs (p : Decidable P) �
             ¬ P x → (x ∷ xs) ∥ ∁′ p ≡ x ∷ (xs ∥ ∁′ p)
 head-∁-no x xs p ¬px = head-yes x xs (∁′ p) ¬px
 
+------------------------------------------------------------------------
+-- _∥_ is equivalent to the standard library function "filter"
+
 ∥-filters : ∀ {a p} {A : Set a} {P : Pred A p} (xs : List A) (dec : Decidable P) →
             xs ∥ dec ≡ filter (⌊_⌋ ∘ dec) xs
 ∥-filters [] dec = refl
 ∥-filters (x ∷ xs) dec with dec x
 ∥-filters (x ∷ xs) dec | yes p = cong (_∷_ x) (∥-filters xs dec)
 ∥-filters (x ∷ xs) dec | no ¬p = ∥-filters xs dec
+
+------------------------------------------------------------------------
+-- _∥_ behaves as expected when decidable predicates are intersected
 
 combine-filters : ∀ {a p q} {A : Set a} {P : Pred A p} {Q : Pred A q}
                   (xs : List A) (dec-p : Decidable P) (dec-q : Decidable Q)

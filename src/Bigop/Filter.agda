@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Filter definition (_∥_)
+------------------------------------------------------------------------
+
 module Bigop.Filter where
 
 open import Data.List.Base using (List; _∷_; [])
@@ -12,7 +18,7 @@ _∥_ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → List I → Decidable P → 
 (i ∷ is) ∥ dec | yes _ = i ∷ (is ∥ dec)
 (i ∷ is) ∥ dec | no  _ =      is ∥ dec
 
--- equivalent to `filter (⌊_⌋ ∘ dec) is`
+-- The decidable complement
 
 ∁′ : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → Decidable P → Decidable (∁ P)
 ∁′ p x with p x

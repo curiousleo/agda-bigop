@@ -1,11 +1,20 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Core definitions: crush, fold and syntax
+------------------------------------------------------------------------
+
 module Bigop.Core where
 
 open import Algebra
+open import Function using (_∘_; id)
+
+------------------------------------------------------------------------
+-- Folding over monoids
 
 module Fold {c ℓ} (M : Monoid c ℓ) where
 
   open import Data.List.Base using (List; foldr; map)
-  open import Function using (_∘_)
 
   open Monoid M renaming (Carrier to R)
 
@@ -39,10 +48,12 @@ module Fold {c ℓ} (M : Monoid c ℓ) where
   ⨂-syntax = fold
   syntax ⨂-syntax (λ x → e) v = ⨂[ x ← v ] e
 
+------------------------------------------------------------------------
+-- Folding over semigroups
+
 module FoldNonEmpty {c ℓ} (S : Semigroup c ℓ) {i} {I : Set i} where
 
   open import Data.List.NonEmpty using (List⁺; foldr₁; map)
-  open import Function using (_∘_; id)
 
   open Semigroup S renaming (Carrier to R)
 
