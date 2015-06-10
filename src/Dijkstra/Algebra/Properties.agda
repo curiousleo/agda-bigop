@@ -7,6 +7,8 @@ open import Algebra.FunctionProperties as FunctionProperties using (Op₂)
 import Algebra.MoreFunctionProperties as MoreFunctionProperties
 open import Dijkstra.Algebra
 
+open import Function.Equivalence using (_⇔_; equivalence; module Equivalence)
+
 rightCanonicalOrder : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Op₂ A → Rel A _
 rightCanonicalOrder _≈_ _∙_ a b = ∃ λ c → b ≈ (a ∙ c)
 
@@ -18,19 +20,84 @@ module RequiresDijkstraAlgebra
 
   open DijkstraAlgebra dijkstra
   open FunctionProperties _≈_
+  open import Relation.Binary.EqReasoning setoid
 
   _⊴ᴸ_ = leftCanonicalOrder _≈_ _+_
+  _⊴ᴿ_ = rightCanonicalOrder _≈_ _+_
 
   +-idempotent : Idempotent _+_
   +-idempotent x with +-selective x x
   ... | inj₁ eq = eq
   ... | inj₂ eq = eq
 
---  equivalent : ∀ a b → a + b ≈ b → a ⊴ b
---  equivalent a b a+b≈b = b , (sym a+b≈b)
+  equivalentᴸ : ∀ a b → b + a ≈ a ⇔ a ⊴ᴸ b
+  equivalentᴸ a b = equivalence to from
+    where
+      to : b + a ≈ a → a ⊴ᴸ b
+      to a≈b+b = a , sym a≈b+b
 
-  isRightIncreasing : ∀ a b → a ⊴ᴸ (a * b)
-  isRightIncreasing a b = a , trans (sym (+-absorbs-* a b)) (+-comm _ _)
+      from : a ⊴ᴸ b → b + a ≈ a
+      from (x , a≈b+x) with +-selective b x
+      ... | inj₁ b+x≈b = b+a≈a
+        where
+          a≈b = trans a≈b+x b+x≈b
+          b+a≈a =
+            begin
+              b + a ≈⟨ +-cong (sym a≈b) refl ⟩
+              a + a ≈⟨ +-idempotent a ⟩
+              a
+            ∎
+      ... | inj₂ b+x≈x = b+a≈a
+        where
+          a≈x = trans a≈b+x b+x≈x
+          b+a≈a =
+            begin
+              b + a ≈⟨ +-cong refl a≈x ⟩
+              b + x ≈⟨ sym a≈b+x ⟩
+              a
+            ∎
+
+  equivalentᴿ : ∀ a b → a + b ≈ b ⇔ a ⊴ᴿ b
+  equivalentᴿ a b = equivalence to from
+    where
+      to : a + b ≈ b → a ⊴ᴿ b
+      to a+b≈b = b , (sym a+b≈b)
+
+      from : a ⊴ᴿ b → a + b ≈ b
+      from (x , b≈a+x) with +-selective a x
+      ... | inj₁ a+x≈a = a+b≈b
+        where
+          b≈a = trans b≈a+x a+x≈a
+          a+b≈b =
+            begin
+              a + b  ≈⟨ +-cong (sym b≈a) refl ⟩
+              b + b  ≈⟨ +-idempotent b ⟩
+              b
+            ∎
+      ... | inj₂ a+x≈x = a+b≈b
+        where
+          b≈x = trans b≈a+x a+x≈x
+          a+b≈b =
+            begin
+              a + b  ≈⟨ +-cong refl b≈x ⟩
+              a + x  ≈⟨ sym b≈a+x ⟩
+              b
+            ∎
+
+  rightIncreasingᴸ : ∀ a b → a ⊴ᴸ (a * b)
+  rightIncreasingᴸ a b = a , trans (sym (+-absorbs-* a b)) (+-comm _ _)
+
+--   equivalentᴿ : ∀ a b → a + b ≈ b ⇔ a ⊴ᴿ b
+
+  rightIncreasingᴿ : ∀ a b → a ⊴ᴿ (a * b)
+  rightIncreasingᴿ a b = {!to!}
+    where
+      open Equivalence
+      rightIncreasingᴿ′ : a + (a * b) ≈ a * b
+      rightIncreasingᴿ′ = {!!}
+
+  1#-bottomᴸ : ∀ a → 1# ⊴ᴸ a
+  1#-bottomᴸ a = 1# , sym (proj₂ +-zero a)
 
 module RequiresCommutativeMonoid
        {c ℓ} (cmon : CommutativeMonoid c ℓ) where
