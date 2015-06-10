@@ -34,13 +34,16 @@ upFrom-head : ∀ m n → m ∷ (upFrom (suc m) n) ≡ upFrom m (suc n)
 upFrom-head m n = refl
 
 upFrom-last : ∀ m n → upFrom m (suc n) ≡ (upFrom m n) ∷ʳ (m + n)
-upFrom-last m zero = cong (_∷ʳ_ []) $ +-comm zero m
-upFrom-last m (suc n) = begin
-  m ∷ upFrom (suc m) (suc n)
-    ≡⟨ cong (_∷_ m) $ upFrom-last (suc m) n ⟩
-  m ∷ (upFrom (suc m) n) ∷ʳ suc m + n
-    ≡⟨ cong (_∷ʳ_ $ upFrom m (suc n)) $ sym $ +-suc m n ⟩
-  upFrom m (suc n) ∷ʳ m + suc n ∎
+upFrom-last m zero
+  rewrite +-right-identity m = refl
+upFrom-last m (suc n) =
+  begin
+    m ∷ upFrom (suc m) (suc n)
+      ≡⟨ cong (_∷_ m) $ upFrom-last (suc m) n ⟩
+    m ∷ (upFrom (suc m) n) ∷ʳ suc m + n
+      ≡⟨ cong (_∷ʳ_ $ upFrom m (suc n)) $ sym $ +-suc m n ⟩
+    upFrom m (suc n) ∷ʳ m + suc n
+  ∎
 
 ------------------------------------------------------------------------
 -- Specification for upFrom

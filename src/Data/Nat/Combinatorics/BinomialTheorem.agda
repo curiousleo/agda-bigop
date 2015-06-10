@@ -11,6 +11,7 @@ open Props.Interval.Nat
 open import Bigop.Interval.Nat
 
 open import Algebra
+open import Algebra.Structures
 
 open import Data.List
 
@@ -37,13 +38,16 @@ open import Relation.Binary.PropositionalEquality as P
 open P.≡-Reasoning
 
 open CommutativeSemiring commutativeSemiring
-  hiding (sym; refl; trans) renaming (Carrier to ℕ)
+  renaming (Carrier to ℕ)
 
 module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
 open Fold +-monoid
   using (fold; Σ-syntax)
 open RequiresMonoid *-monoid
+
+open import Bigop.Properties.Monoid *-monoid
+  using (cong)
 
 -- Shorthand so that we don't have to keep writing out the full expression…
 f : ℕ → ℕ → ℕ → ℕ
@@ -149,4 +153,16 @@ binomial-theorem x (suc n) =
     (x + 1) * (Σ[ k ← 0 … n ] n choose k * x ^ k)
       ≡⟨ +-comm x 1 ⟨ *-cong ⟩ binomial-theorem x n ⟩
     (suc x) ^ (suc n)
+  ∎
+
+binomial-theorem-corollary : ∀ n → Σ[ k ← 0 … n ] n choose k ≡ 2 ^ n
+binomial-theorem-corollary n =
+  begin
+    Σ[ k ← 0 … n ] n choose k
+      ≡⟨ Σ.cong {f = λ x → n choose x} (0 … n) P.refl (λ x → sym $ proj₂ *-identity (n choose x)) ⟩
+    Σ[ k ← 0 … n ] (n choose k) * 1
+      ≡⟨ Σ.cong {f = λ x → n choose x * 1} {g = λ x → n choose x * (1 ^ x)} (0 … n) P.refl (λ x → *-cong (refl {x = n choose x}) (sym (one-pow x)))⟩
+    Σ[ k ← 0 … n ] (n choose k) * (1 ^ k)
+      ≡⟨ binomial-theorem 1 n ⟩
+    2 ^ n
   ∎

@@ -80,6 +80,19 @@ module RequiresMonoid {c} {ℓ} (mon : Monoid c ℓ) where
   pow-one : ∀ b → b ^ 1 ≈ b
   pow-one b = proj₂ identity b
 
+  one-pow : ∀ m → ε ^ m ≈ ε
+  one-pow zero    = refl
+  one-pow (suc m) =
+    begin⟨ setoid ⟩
+      ε ^ (suc m)
+        ≡⟨ P.refl ⟩
+      ε ∙ ε ^ m
+        ≈⟨ proj₁ identity (ε ^ m) ⟩
+      ε ^ m
+        ≈⟨ one-pow m ⟩
+      ε
+    ∎
+
   pow-+ : ∀ b m n → b ^ (m + n) ≈ b ^ m ∙ b ^ n
   pow-+ b zero    n = sym $ proj₁ identity $ b ^ n
   pow-+ b (suc m) n =
