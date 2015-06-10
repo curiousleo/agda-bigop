@@ -3,8 +3,8 @@ module Dijkstra.Algebra.Properties where
 open import Data.Product
 open import Data.Sum
 open import Relation.Binary
-import Dijkstra.Algebra.FunctionProperties as FunctionProperties
-open import Algebra.FunctionProperties.Core using (Op₂)
+open import Algebra.FunctionProperties as FunctionProperties using (Op₂)
+import Algebra.MoreFunctionProperties as MoreFunctionProperties
 open import Dijkstra.Algebra
 
 rightCanonicalOrder : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Op₂ A → Rel A _
@@ -37,6 +37,7 @@ module RequiresCommutativeMonoid
 
   open CommutativeMonoid cmon
   open FunctionProperties _≈_
+  open MoreFunctionProperties _≈_
   open import Relation.Binary.EqReasoning setoid
 
   _⊴ᴸ_ = leftCanonicalOrder _≈_ _∙_

@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Intervals of finite sets
+------------------------------------------------------------------------
+
 module Bigop.Interval.Fin where
 
 open import Data.List.Base

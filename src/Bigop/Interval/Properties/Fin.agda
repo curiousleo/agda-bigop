@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Properties of intervals of finite sets
+------------------------------------------------------------------------
+
 module Bigop.Interval.Properties.Fin where
 
 open import Bigop.DecidableEquality
@@ -16,6 +22,9 @@ open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open ≡-Reasoning
+
+------------------------------------------------------------------------
+-- Specification for upFrom
 
 private
   ordinals-suc : ∀ m n k → toℕ k < m → upFrom m n ∥ (≟F k) ≡ []
@@ -66,6 +75,9 @@ private
       lt (suc m) zero    ()        m≤m+n             ¬k≡m
       lt (suc m) (suc k) (s≤s m≤k) (s≤s (s≤s m≤m+n)) ¬k≡m =
         s≤s (lt m k m≤k (s≤s m≤m+n) (λ z → ¬k≡m (cong suc z)))
+
+-- upFrom m n contains every number from m up to but not including m + n
+-- exactly once
 
 ordinals-filter : ∀ {m n k} → m ≤ toℕ k → (k<m+n : toℕ k < (m + n)) →
                      upFrom m n ∥ (≟F k) ≡ [ k ]

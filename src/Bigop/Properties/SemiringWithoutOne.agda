@@ -23,6 +23,7 @@ open RequiresCommutativeMonoid {c} {ℓ} +-commutativeMonoid public
 open import Relation.Binary.EqReasoning setoid
 open Fold +-monoid
 
+-- Left-distributivity for big operators
 
 distrˡ : ∀ {i} {I : Set i} (f : I → Carrier) (x : Carrier) (is : List I) →
            x * fold f is ≈ fold (λ k → x * (f k)) is
@@ -33,6 +34,8 @@ distrˡ f x (n ∷ ns) = begin
   (x * f n) + (x * fold f ns)
     ≈⟨ refl {x * f n} ⟨ +-cong ⟩ distrˡ f x ns ⟩
   (x * f n) + fold ((_*_ x) ∘ f) ns ∎
+
+-- Right-distributivity for big operators
 
 distrʳ : ∀ {i} {I : Set i} (f : I → Carrier) (x : Carrier) (is : List I) →
            fold f is * x ≈ fold (λ k → (f k) * x) is

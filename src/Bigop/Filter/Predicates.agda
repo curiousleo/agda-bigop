@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Decidable predicates for "even" and "odd"
+------------------------------------------------------------------------
+
 module Bigop.Filter.Predicates where
 
 import Level
@@ -7,6 +13,9 @@ open import Data.Nat.Base
 open import Data.Nat.Properties.Simple using (+-suc)
 open import Relation.Nullary
 open import Relation.Unary
+
+------------------------------------------------------------------------
+-- Even
 
 data Even : Pred ℕ Level.zero where
   zero-even : Even ℕ.zero
@@ -22,6 +31,9 @@ even (suc (suc n)) with even n
     ss-odd : ∀ {n} → ¬ Even n → ¬ Even (suc (suc n))
     ss-odd ¬ps (ss-even p) = ¬ps p
 
+------------------------------------------------------------------------
+-- Odd
+
 data Odd : Pred ℕ Level.zero  where
   one-odd : Odd 1
   ss-odd  : ∀ {n} → Odd n → Odd (suc (suc n))
@@ -35,6 +47,9 @@ odd (suc (suc n)) with odd n
   where
     ss-even′ : ∀ {n} → ¬ Odd n → ¬ Odd (suc (suc n))
     ss-even′ ¬ps (ss-odd p) = ⊥-elim (¬ps p)
+
+------------------------------------------------------------------------
+-- Additional rules
 
 2n-even : ∀ n → Even (n + n)
 2n-even zero = zero-even

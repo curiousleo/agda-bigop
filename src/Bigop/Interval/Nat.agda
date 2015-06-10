@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Big operator library
+--
+-- Intervals of natural numbers
+------------------------------------------------------------------------
+
 module Bigop.Interval.Nat where
 
 open import Data.List.Base
