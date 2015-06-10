@@ -37,6 +37,8 @@ record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
       ; isCommutativeMonoid = +-isCommutativeMonoid
       }
 
+  open CommutativeMonoid +-commutativeMonoid using (setoid) public
+
 record Prebimonoid c ℓ : Set (suc (c ⊔ ℓ)) where
   infixl 7 _*_
   infixl 6 _+_
