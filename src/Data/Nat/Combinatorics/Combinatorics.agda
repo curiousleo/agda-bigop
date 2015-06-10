@@ -30,7 +30,7 @@ choose-+ m zero    = P.refl
 choose-+ m (suc n) =
   begin⟨ P.setoid ℕ ⟩
     suc n choose (suc m + suc n)
-      ≡⟨ P.cong (_choose_ (suc n)) (+-suc (suc m) n)  ⟩
+      ≡⟨ P.cong (_choose_ (suc n)) (+-suc (suc m) n) ⟩
     suc n choose (suc (suc (m + n)))
       ≡⟨ P.refl ⟩
     (n choose suc (m + n)) + (n choose (suc (suc (m + n))))
@@ -69,7 +69,7 @@ fib (suc (suc n)) = fib n + fib (suc n)
 
 module RequiresMonoid {c} {ℓ} (mon : Monoid c ℓ) where
 
-  open Monoid mon public
+  open Monoid mon
 
   infixr 8 _^_
 
@@ -91,4 +91,36 @@ module RequiresMonoid {c} {ℓ} (mon : Monoid c ℓ) where
       (b ∙ b ^ m) ∙ b ^ n
         ≈⟨ refl ⟩
       b ^ (suc m) ∙ b ^ n
+    ∎
+
+module RequiresCommutativeMonoid {c} {ℓ} (com : CommutativeMonoid c ℓ) where
+
+  open CommutativeMonoid com
+  open RequiresMonoid monoid
+
+  pow-∙ : ∀ b c m → (b ∙ c) ^ m ≈ b ^ m ∙ c ^ m
+  pow-∙ b c zero    = sym $ proj₂ identity ε
+  pow-∙ b c (suc m) =
+    begin⟨ setoid ⟩
+      (b ∙ c) ^ suc m
+        ≡⟨ P.refl ⟩
+      (b ∙ c) ∙ (b ∙ c) ^ m
+        ≈⟨ ∙-cong refl $ pow-∙ b c m ⟩
+      (b ∙ c) ∙ (b ^ m ∙ c ^ m)
+        ≈⟨ ∙-cong (comm b c) refl ⟩
+      (c ∙ b) ∙ (b ^ m ∙ c ^ m)
+        ≈⟨ assoc c b $ (b ^ m) ∙ (c ^ m) ⟩
+      c ∙ (b ∙ (b ^ m ∙ c ^ m))
+        ≈⟨ ∙-cong refl $ sym $ assoc b (b ^ m) (c ^ m) ⟩
+      c ∙ (b ∙ b ^ m ∙ c ^ m)
+        ≡⟨ P.refl ⟩
+      c ∙ (b ^ suc m ∙ c ^ m)
+        ≈⟨ ∙-cong refl $ comm (b ^ suc m) (c ^ m) ⟩
+      c ∙ (c ^ m ∙ b ^ suc m)
+        ≈⟨ sym $ assoc c (c ^ m) (b ^ suc m) ⟩
+      (c ∙ c ^ m) ∙ b ^ suc m
+        ≡⟨ P.refl ⟩
+      c ^ suc m ∙ b ^ suc m
+        ≈⟨ comm (c ^ suc m) (b ^ suc m) ⟩
+      b ^ suc m ∙ c ^ suc m
     ∎
