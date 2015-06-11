@@ -37,7 +37,8 @@ open import Relation.Binary.PropositionalEquality as P
 open P.≡-Reasoning
 
 open CommutativeSemiring commutativeSemiring
-  hiding (sym; refl; trans) renaming (Carrier to ℕ)
+--  hiding (sym; refl; trans)
+  renaming (Carrier to ℕ)
 
 module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
