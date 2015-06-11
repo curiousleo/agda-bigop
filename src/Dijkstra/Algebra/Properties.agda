@@ -165,7 +165,7 @@ module RequiresDijkstraAlgebra
   open MoreFunctionProperties _≈_
   open import Relation.Binary.EqReasoning setoid
 
-  open RequiresCommutativeMonoid +-commutativeMonoid
+  open RequiresCommutativeMonoid +-commutativeMonoid public
   open IsTotalOrder (isTotalOrderᴸ +-selective) using (antisym)
 
   +-idempotent : Idempotent _+_
