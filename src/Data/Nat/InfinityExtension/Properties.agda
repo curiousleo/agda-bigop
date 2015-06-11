@@ -1,18 +1,35 @@
 module Data.Nat.InfinityExtension.Properties where
 
+open import Data.Empty
 open import Data.Nat
   using (ℕ; zero; suc)
 import Data.Nat as Nat
 open import Data.Nat.InfinityExtension
 import Data.Nat.MoreProperties as NP
+open import Data.Nat.Properties using (strictTotalOrder)
 
 open import Data.Product
 open import Data.Sum
 
+open import Relation.Nullary
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 
 open import Algebra.FunctionProperties (_≡_ {A = ℕ∞})
 open import Algebra.MoreFunctionProperties (_≡_ {A = ℕ∞})
+
+open StrictTotalOrder strictTotalOrder hiding (trans)
+
+↑-injective : ∀ {a b} → ↑ a ≡ ↑ b → a ≡ b
+↑-injective refl = refl
+
+_≟∞_ : Decidable (_≡_ {A = ℕ∞})
+↑ a ≟∞ ↑ b with a ≟ b
+... | yes a≡b rewrite a≡b = yes refl
+... | no ¬a≡b = no (λ ↑a≡↑b → ¬a≡b (↑-injective ↑a≡↑b))
+↑ a ≟∞ ∞   = no (λ ())
+∞   ≟∞ ↑ b = no (λ ())
+∞   ≟∞ ∞   = yes refl
 
 ⊓-zeroˡ : LeftZero (↑ 0) _⊓_
 ⊓-zeroˡ (↑ m) = refl

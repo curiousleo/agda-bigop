@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality
   record
   { Carrier = ℕ∞
   ; _≈_ = _≡_
+  ; _≈?_ = _≟∞_
   ; _+_ = _⊓_
   ; _*_ = _+_
   ; 0# = ∞
