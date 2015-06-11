@@ -168,6 +168,9 @@ module RequiresDijkstraAlgebra
   open RequiresCommutativeMonoid +-commutativeMonoid public
   open IsTotalOrder (isTotalOrderᴸ +-selective) using (antisym)
 
+  _≉_ : _ → _ → Set _
+  x ≉ y = ¬ (x ≈ y)
+
   +-idempotent : Idempotent _+_
   +-idempotent = sel⟶idp _+_ +-selective
 
@@ -201,8 +204,14 @@ module RequiresDijkstraAlgebra
   lem₁ : ∀ {a b} → a ≈ b → ¬ a ⊲ᴸ b
   lem₁ a≈b (_ , ¬a≈b) = ¬a≈b a≈b
 
+  lem₁′ : ∀ {a b} → a ⊲ᴸ b → a ≉ b
+  lem₁′ (a⊴ᴸb , a≉b) = a≉b
+
   lem₂ : ∀ {a b} → a ≈ b → ¬ b ⊲ᴸ a
   lem₂ a≈b (_ , ¬b≈a) = ¬b≈a (sym a≈b)
+
+  lem₂′ : ∀ {a b} → b ⊲ᴸ a → a ≉ b
+  lem₂′ (b⊴ᴸa , b≉a) a≈b = b≉a $ sym a≈b
 
   lem₃ : ∀ {a b} → a ⊲ᴸ b → ¬ b ⊲ᴸ a
   lem₃ {a} {b} (a⊴ᴸb , ¬a≈b) (b⊴ᴸa , ¬b≈a) = ¬a≈b (antisym a⊴ᴸb b⊴ᴸa)
