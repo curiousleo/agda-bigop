@@ -5,7 +5,7 @@ module SemiringProof (n : ℕ) {c ℓ} (semiring : Semiring c ℓ) where
 
 open import Bigop
 open import Bigop.DecidableEquality using () renaming (≟F to ≟)
-open import Matrix
+open import Data.Matrix
 
 open import Algebra.FunctionProperties
 open import Algebra.Structures

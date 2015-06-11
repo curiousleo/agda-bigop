@@ -1,4 +1,4 @@
-module Matrix where
+module Data.Matrix where
 
 open import Data.Fin using (Fin)
 open import Data.Nat.Base using (ℕ)
