@@ -2,9 +2,14 @@ module Dijkstra.Algebra.Properties where
 
 open import Data.Product
 open import Data.Sum
+
+open import Function
+
 open import Relation.Binary
+
 open import Algebra.FunctionProperties as FunctionProperties using (Op₂)
 import Algebra.MoreFunctionProperties as MoreFunctionProperties
+
 open import Dijkstra.Algebra
 
 open import Function.Equivalence using (_⇔_; equivalence; module Equivalence)
@@ -22,9 +27,12 @@ module RequiresDijkstraAlgebra
   open FunctionProperties _≈_
   open import Relation.Binary.EqReasoning setoid
 
+  infix 4 _⊴ᴸ_ _⊴ᴿ_
+
   _⊴ᴸ_ = leftCanonicalOrder _≈_ _+_
   _⊴ᴿ_ = rightCanonicalOrder _≈_ _+_
 
+  -- XXX: should be a general consequence of Selective and should be moved outside
   +-idempotent : Idempotent _+_
   +-idempotent x with +-selective x x
   ... | inj₁ eq = eq
@@ -84,20 +92,46 @@ module RequiresDijkstraAlgebra
               b
             ∎
 
-  rightIncreasingᴸ : ∀ a b → a ⊴ᴸ (a * b)
-  rightIncreasingᴸ a b = a , trans (sym (+-absorbs-* a b)) (+-comm _ _)
-
---   equivalentᴿ : ∀ a b → a + b ≈ b ⇔ a ⊴ᴿ b
-
-  rightIncreasingᴿ : ∀ a b → a ⊴ᴿ (a * b)
-  rightIncreasingᴿ a b = {!to!}
+  *-rightIncreasingᴸ : ∀ a b → a ⊴ᴸ a * b
+  *-rightIncreasingᴸ a b = a , lemma
     where
-      open Equivalence
-      rightIncreasingᴿ′ : a + (a * b) ≈ a * b
-      rightIncreasingᴿ′ = {!!}
+      lemma : a ≈ a * b + a
+      lemma =
+        sym $ begin
+          a * b + a
+            ≈⟨ +-comm (a * b) a ⟩
+          a + a * b
+            ≈⟨ +-absorbs-* a b ⟩
+          a
+        ∎
 
   1#-bottomᴸ : ∀ a → 1# ⊴ᴸ a
   1#-bottomᴸ a = 1# , sym (proj₂ +-zero a)
+
+  +-upperᴸ : ∀ {a b c} → a ⊴ᴸ b → a ⊴ᴸ c → a ⊴ᴸ b + c
+  +-upperᴸ {a} {b} {c} (d , a≡b+d) (e , a≡c+e) = d + e , lemma
+    where
+      lemma : a ≈ b + c + (d + e)
+      lemma =
+        sym $ begin
+          b + c + (d + e)
+            ≈⟨ +-cong (+-comm b c) refl ⟩
+          c + b + (d + e)
+            ≈⟨ +-assoc c b (d + e) ⟩
+          c + (b + (d + e))
+            ≈⟨ +-cong refl $ sym $ +-assoc b d e ⟩
+          c + ((b + d) + e)
+            ≈⟨ +-cong refl $ +-cong (sym a≡b+d) refl ⟩
+          c + (a + e)
+            ≈⟨ +-cong refl $ +-comm a e ⟩
+          c + (e + a)
+            ≈⟨ sym $ +-assoc c e a ⟩
+          (c + e) + a
+            ≈⟨ +-cong (sym a≡c+e) refl ⟩
+          a + a
+            ≈⟨ +-idempotent a ⟩
+          a
+        ∎
 
 module RequiresCommutativeMonoid
        {c ℓ} (cmon : CommutativeMonoid c ℓ) where
