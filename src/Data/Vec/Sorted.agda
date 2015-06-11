@@ -2,7 +2,7 @@ open import Relation.Binary
 
 module Data.Vec.Sorted
   {a ℓ₁ ℓ₂}
-  (A : Set a)
+  {A : Set a}
   {_≈_ : Rel A ℓ₁} {_<_ : Rel A ℓ₂}
   (isStrictTotalOrder : IsStrictTotalOrder _≈_ _<_)
   where
@@ -135,3 +135,7 @@ mutual
 
 sort : ∀ {n} → (xs : Vec A n) → SortedVec n
 sort xs = Data.Vec.foldr SortedVec insert [] xs
+
+toVec : ∀ {n} → SortedVec n → Vec A n
+toVec [] = Data.Vec.[]
+toVec (x ∷ xs ⟨ _ ⟩) = x Data.Vec.∷ toVec xs
