@@ -65,11 +65,8 @@ A ⊗ B = tabulate (mult A B)
 0M : M
 0M = tabulate (λ r c → 0#)
 
-diag : {n : ℕ} → Fin n → Fin n → Carrier
-diag zeroF    zeroF    = 1#
-diag zeroF    (sucF c) = 0#
-diag (sucF r) zeroF    = 0#
-diag (sucF r) (sucF c) = diag r c
+diag : ∀ {n} → Fin n → Fin n → Carrier
+diag = diagonal 0# 1#
 
 1M : M
 1M = tabulate diag

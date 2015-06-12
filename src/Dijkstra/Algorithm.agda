@@ -2,7 +2,7 @@ open import Dijkstra.Algebra
 
 open import Data.Fin hiding (_+_)
 import Data.Matrix as M
-open M using (Matrix; diag; _[_,_])
+open M using (Matrix; diagonal; _[_,_])
 import Data.Nat as N
 
 module Dijkstra.Algorithm
@@ -45,7 +45,7 @@ _⊕_ : Op₂ Square
 A ⊕ B = M.tabulate (λ r c → A [ r , c ] + B [ r , c ])
 
 1M : Square
-1M = M.tabulate (diag 0# 1#)
+1M = M.tabulate (diagonal 0# 1#)
 
 sortBy : (est : Est) → (Queue est)
 sortBy est = sort (allFin n)
