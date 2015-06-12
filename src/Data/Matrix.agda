@@ -1,6 +1,6 @@
 module Data.Matrix where
 
-open import Data.Fin using (Fin)
+open import Data.Fin using (Fin; zero; suc)
 open import Data.Nat.Base using (ℕ)
 import Data.Vec as V
 open V using (Vec)
@@ -36,6 +36,12 @@ tabulate f = V.tabulate (λ r → V.tabulate (λ c → f r c))
 
 transpose : ∀ {r c a} {A : Set a} → Matrix A r c → Matrix A c r
 transpose m = tabulate (λ c r → lookup r c m)
+
+diag : ∀ {a m n} {A : Set a} → A → A → Fin m → Fin n → A
+diag 0# 1# zero    zero    = 1#
+diag 0# 1# zero    (suc c) = 0#
+diag 0# 1# (suc r) zero    = 0#
+diag 0# 1# (suc r) (suc c) = diag 0# 1# r c
 
 ------------------------------------------------------------------------
 -- Tabulate is an inverse of (flip lookup)
