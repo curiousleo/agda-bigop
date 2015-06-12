@@ -37,7 +37,6 @@ open Fold +-monoid
 
 module Σ = Props.SemiringWithoutOne semiringWithoutOne
 
--- XXX: generally useful, move elsewhere…
 reveal-ih : ∀ n → Σ[ i ← 0 … suc n ] i ≡ Σ[ i ← 0 … n ] i + suc n
 reveal-ih n =
   begin

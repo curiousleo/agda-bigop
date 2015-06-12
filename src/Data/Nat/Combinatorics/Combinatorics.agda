@@ -3,15 +3,13 @@ module Data.Nat.Combinatorics.Combinatorics where
 open import Algebra
 
 open import Data.Nat as Nat
-  hiding (_*_)
 open import Data.Nat.Properties
-  using (commutativeSemiring)
 open import Data.Nat.Properties.Simple
-  using (+-suc)
 open import Data.Product
 
 open import Function
 
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality as P
   using (_≡_)
 open import Relation.Binary.SetoidReasoning
@@ -25,6 +23,15 @@ _     choose 0     = 1
 0     choose suc k = 0
 suc n choose suc k = n choose k + n choose (suc k)
 
+--
+-- Factorial
+--
+
+_! : ℕ → ℕ
+0 !     = 1
+suc n ! = suc n Nat.* (n !)
+
+-- XXX: rewrite choose-greedy in terms of this…
 choose-+ : ∀ m n → n choose ((suc m) + n) ≡ 0
 choose-+ m zero    = P.refl
 choose-+ m (suc n) =
@@ -46,13 +53,39 @@ choose-+ m (suc n) =
     +-cong : ∀ {m₁ m₂ n₁ n₂} → m₁ ≡ m₂ → n₁ ≡ n₂ → m₁ + n₁ ≡ m₂ + n₂
     +-cong P.refl P.refl = P.refl
 
---
--- Factorial
---
+choose-greedy : ∀ m n → n < m → n choose m ≡ 0
+choose-greedy zero    n       ()
+choose-greedy (suc m) zero    n<m       = P.refl
+choose-greedy (suc m) (suc n) (s≤s n<m) =
+  begin⟨ P.setoid ℕ ⟩
+    n choose m + n choose suc m
+      ≡⟨ P.cong (λ x → x + n choose suc m) (choose-greedy m n n<m) ⟩
+    0 + n choose suc m
+      ≡⟨ P.cong (_+_ 0) (choose-greedy (suc m) n (≤-step n<m)) ⟩
+    0 + 0
+      ≡⟨ P.refl ⟩
+    0
+  ∎
 
-_! : ℕ → ℕ
-0 !     = 1
-suc n ! = suc n Nat.* (n !)
+choose-exact : ∀ n → n choose n ≡ 1
+choose-exact zero    = P.refl
+choose-exact (suc n) =
+  begin⟨ P.setoid ℕ ⟩
+    n choose n + n choose suc n
+      ≡⟨ P.cong (λ x → x + n choose suc n) (choose-exact n) ⟩
+    1 + n choose suc n
+      ≡⟨ P.cong suc (choose-greedy (suc n) n refl) ⟩
+    1 + 0
+      ≡⟨ +-right-identity 1 ⟩
+    1
+  ∎
+  where open DecTotalOrder decTotalOrder
+
+pascal's-identity : ∀ m n → suc m choose suc n ≡ m choose n + m choose suc n
+pascal's-identity zero    zero    = P.refl
+pascal's-identity zero    (suc n) = P.refl
+pascal's-identity (suc m) zero    = P.refl
+pascal's-identity (suc m) (suc n) = P.refl
 
 --
 -- The nth Fibonacci number
