@@ -23,12 +23,7 @@ open IsStrictTotalOrder sto
            ; <-resp-≈ to sto-resp)
 open IsEquivalence isEquivalence
 
-Fin-isStrictTotalOrder : (n : ℕ) → IsStrictTotalOrder _ _
-Fin-isStrictTotalOrder n = StrictTotalOrder.isStrictTotalOrder (strictTotalOrder n)
-  where
-    open import Data.Fin.Properties
-
-module Estimate {n} (est : Vec A n) where
+module EstimateOrder {n} (est : Vec A n) where
 
   _<ᵉ_ : Fin n → Fin n → Set _
   a <ᵉ b = lookup a est < lookup b est
@@ -36,8 +31,8 @@ module Estimate {n} (est : Vec A n) where
   _≈ᵉ_ : Rel (Fin n) _
   a ≈ᵉ b = lookup a est ≈ lookup b est
 
-  estimate-isStrictTotalOrder : IsStrictTotalOrder _≈ᵉ_ _<ᵉ_
-  estimate-isStrictTotalOrder =
+  isStrictTotalOrder : IsStrictTotalOrder _≈ᵉ_ _<ᵉ_
+  isStrictTotalOrder =
     record
       { isEquivalence = record { refl = refl ; sym = sym ; trans = trans }
       ; trans         = sto-trans
@@ -61,8 +56,8 @@ record DijkstraState (n : ℕ) : Set (a ⊔ ℓ₂) where
     estimate : Vec A n
     unseen   : Fin n
 
-  open Estimate estimate
-  open Sorted estimate-isStrictTotalOrder
+  open EstimateOrder estimate
+  open Sorted isStrictTotalOrder
 
   field
     queue    : SortedVec n
