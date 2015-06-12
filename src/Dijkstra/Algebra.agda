@@ -28,6 +28,15 @@ record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
 
   open IsDijkstraAlgebra isDijkstraAlgebra public
 
+  decSetoid : DecSetoid c ℓ
+  decSetoid =
+    record
+      { Carrier          = Carrier
+      ; _≈_              = _≈_
+      ; isDecEquivalence =
+          record { isEquivalence = isEquivalence ; _≟_ = _≈?_ }
+      }
+
   +-commutativeMonoid : CommutativeMonoid _ _
   +-commutativeMonoid =
     record
