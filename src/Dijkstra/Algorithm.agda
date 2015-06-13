@@ -3,7 +3,7 @@ open import Dijkstra.Algebra
 open import Data.Fin hiding (_+_; _≤_)
 open import Data.Matrix using (Matrix; diagonal; _[_,_])
 open import Data.Nat.Base
-  using (ℕ; zero; suc; _∸_; _≤_; s≤s)
+  using (ℕ; zero; suc; _∸_; s≤s)
   renaming (_+_ to _N+_)
 
 module Dijkstra.Algorithm
@@ -49,6 +49,9 @@ weight p adj = foldl _*_ 1# weights
   where
     weights : List Weight
     weights = map (λ e → adj [ proj₁ e , proj₂ e ]) (Path.edges p)
+
+_via_ : ∀ {n i j} → (k : Fin n) → Path {n} i j → Path {n} i k
+u via (path v) = path (v ∷ʳ u)
 
 open import Level using (_⊔_)
 
@@ -116,9 +119,9 @@ step {n} adj state with State.unseen state
     open Path
 
     w : ∀ {j} → Path source j → Weight
-    w p = weight {size} {source} p adj
+    w = flip (weight {size} {source}) adj
 
     relax : Fin size → ((j : Fin size) → Path source j)
-    relax u j with w {j} (path (mids (paths u) ∷ʳ j)) ≤? w (paths j)
+    relax u j with w (j via (paths u)) ≤? w (paths j)
     ... | yes _ = path (mids (paths u) ∷ʳ j)
     ... | no  _ = paths j
