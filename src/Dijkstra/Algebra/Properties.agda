@@ -1,5 +1,6 @@
 module Dijkstra.Algebra.Properties where
 
+open import Data.Empty
 open import Data.Product
 open import Data.Sum
 
@@ -109,7 +110,6 @@ module RequiresCommutativeMonoid
       ... | inj₁ ≈x = inj₁ (x , (sym (trans (comm _ _) ≈x)))
       ... | inj₂ ≈y = inj₂ (y , (sym ≈y))
 
-
   isTotalOrderᴿ : Selective _∙_ → IsTotalOrder _≈_ _⊴ᴿ_
   isTotalOrderᴿ selective =
     record
@@ -200,6 +200,24 @@ module RequiresDijkstraAlgebra
               b + x ≈⟨ sym a≈b+x ⟩
               a
             ∎
+
+  lem₀ : ∀ {a b c} → a ≈ b + c → a ≈ b ⊎ a ≈ c
+  lem₀ {a} {b} {c} a≈b+c with +-selective b c
+  ... | inj₁ b+c≈b = inj₁ (trans a≈b+c b+c≈b)
+  ... | inj₂ b+c≈c = inj₂ (trans a≈b+c b+c≈c)
+
+  equivalentᴸ-¬ : ∀ a b → ¬ b + a ≈ a ⇔ ¬ a ⊴ᴸ b
+  equivalentᴸ-¬ a b = equivalence to from
+    where
+      to : ¬ b + a ≈ a → ¬ a ⊴ᴸ b
+      to ¬b+a≈a (x , a≈b+x) with lem₀ a≈b+x
+      ... | inj₁ a≈b = ¬b+a≈a (trans (+-cong (sym a≈b) refl) (+-idempotent a))
+      ... | inj₂ a≈x = ¬b+a≈a (trans (+-cong refl a≈x) (sym a≈b+x))
+
+      from : ¬ a ⊴ᴸ b → ¬ b + a ≈ a
+      from ¬a⊴ᴸb b+a≈a = ¬a⊴ᴸb (b+a≈a⟶a⊴ᴸb ⟨$⟩ b+a≈a)
+        where
+          open Equivalence (equivalentᴸ a b) renaming (to to b+a≈a⟶a⊴ᴸb)
 
   lem₁ : ∀ {a b} → a ≈ b → ¬ a ⊲ᴸ b
   lem₁ a≈b (_ , ¬a≈b) = ¬a≈b a≈b
@@ -384,3 +402,22 @@ module RequiresDijkstraAlgebra
             ≈⟨ +-idempotent a ⟩
           a
         ∎
+
+  isDecTotalOrderᴸ : IsDecTotalOrder _≈_ _⊴ᴸ_
+  isDecTotalOrderᴸ =
+    record {
+      isTotalOrder = isTotalOrderᴸ +-selective
+      ; _≟_        = _≈?_
+      ; _≤?_       = _⊴ᴸ?_
+      }
+    where
+      _⊴ᴸ?_ : Decidable _⊴ᴸ_
+      a ⊴ᴸ? b with (b + a) ≈? a
+      ... | yes b+a≈a = yes (a , sym b+a≈a)
+      ... | no ¬b+a≈a = no (¬b+a≈a⟶¬a⊴ᴸb ⟨$⟩ ¬b+a≈a)
+        where
+          open Equivalence (equivalentᴸ-¬ a b) renaming (to to ¬b+a≈a⟶¬a⊴ᴸb)
+
+  decTotalOrderᴸ : DecTotalOrder _ _ _
+  decTotalOrderᴸ =
+    record { Carrier = Carrier ; _≈_ = _≈_ ; _≤_ = _⊴ᴸ_ ; isDecTotalOrder = isDecTotalOrderᴸ }
