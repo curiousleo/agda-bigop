@@ -38,29 +38,29 @@ mutual
  
   data SortedVec : ℕ → Set (ℓ₂ ⊔ a) where
     []     : SortedVec 0
-    _∷_⟨_⟩ : ∀ {n} → (x : Carrier) → (xs : SortedVec n) → xs Dominates x → SortedVec (ℕ.suc n)
+    _∷_⟨_⟩ : ∀ {n} → (y : Carrier) → (ys : SortedVec n) → (y≼ys : y ≼ ys) → SortedVec (ℕ.suc n)
 
-  _Dominates_ : ∀ {n} → SortedVec n → Carrier → Set ℓ₂
-  []               Dominates x = Lift ⊤
-  (y ∷ ys ⟨ prf ⟩) Dominates x = (x ≤ y) × (ys Dominates x)
+  _≼_ : ∀ {n} → Carrier → SortedVec n → Set ℓ₂
+  x ≼ []               = Lift ⊤
+  x ≼ (y ∷ ys ⟨ prf ⟩) = x ≤ y × x ≼ ys
 
-Dominates-trans : ∀ {n y x} → (xs : SortedVec n) → xs Dominates x → y ≤ x → xs Dominates y
-Dominates-trans []               xsDomx         y≤x = lift tt
-Dominates-trans (z ∷ zs ⟨ prf ⟩) (x≤z , zsDomx) y≤x = ≤-trans y≤x x≤z , Dominates-trans zs zsDomx y≤x
+≼-trans : ∀ {n y x} → (xs : SortedVec n) → x ≼ xs → y ≤ x → y ≼ xs
+≼-trans []               xsDomx         y≤x = lift tt
+≼-trans (z ∷ zs ⟨ prf ⟩) (x≤z , zsDomx) y≤x = ≤-trans y≤x x≤z , ≼-trans zs zsDomx y≤x
 
 mutual
 
   insert : ∀ {n} → Carrier → SortedVec n → SortedVec (ℕ.suc n)
   insert x []               = x ∷ [] ⟨ lift tt ⟩
   insert x (y ∷ ys ⟨ prf ⟩) with x ≤? y
-  ... | yes lt = x ∷ y ∷ ys ⟨ prf ⟩ ⟨ lt , Dominates-trans ys prf lt ⟩
-  ... | no ¬lt = y ∷ insert x ys ⟨ Dominates-insert ys (¬x≤y→y≤x ¬lt) prf ⟩
+  ... | yes lt = x ∷ y ∷ ys ⟨ prf ⟩ ⟨ lt , ≼-trans ys prf lt ⟩
+  ... | no ¬lt = y ∷ insert x ys ⟨ ≼-insert ys (¬x≤y→y≤x ¬lt) prf ⟩
 
-  Dominates-insert : ∀ {n x y} → (ys : SortedVec n) → y ≤ x → ys Dominates y → (insert x ys) Dominates y
-  Dominates-insert {zero} {x} []                y≤x dom = y≤x , lift tt
-  Dominates-insert {suc n} {x} (z ∷ zs ⟨ prf ⟩) y≤x (y≤z , zsDomy) with x ≤? z
+  ≼-insert : ∀ {n x y} → (ys : SortedVec n) → y ≤ x → y ≼ ys → y ≼ (insert x ys)
+  ≼-insert {zero} {x} []                y≤x dom = y≤x , lift tt
+  ≼-insert {suc n} {x} (z ∷ zs ⟨ prf ⟩) y≤x (y≤z , zsDomy) with x ≤? z
   ... | yes lt = y≤x , y≤z , zsDomy
-  ... | no ¬lt = y≤z , Dominates-insert zs y≤x zsDomy
+  ... | no ¬lt = y≤z , ≼-insert zs y≤x zsDomy
 
 [_] : Carrier → SortedVec 1
 [ x ] = x ∷ [] ⟨ lift tt ⟩
@@ -71,12 +71,17 @@ tail (x ∷ xs ⟨ prf ⟩) = xs
 head : ∀ {n} → SortedVec (ℕ.suc n) → Carrier
 head (x ∷ xs ⟨ prf ⟩) = x
 
+drop : ∀ m {n} → SortedVec (m + n) → SortedVec n
+drop zero    xs                = xs
+drop (suc m) (x ∷ xs ⟨ x≼xs ⟩) = drop m xs
+
+
 toVec : ∀ {m} → SortedVec m → Vec Carrier m
 toVec []               = []′
 toVec (x ∷ xs ⟨ prf ⟩) = x ∷′ toVec xs
 
 fromVec : ∀ {m} → Vec Carrier m → SortedVec m
-fromVec xs = foldr SortedVec insert [] xs
+fromVec = foldr SortedVec insert []
 
 _++_ : ∀ {m n} → SortedVec m → SortedVec n → SortedVec (m + n)
 xs ++ ys = fromVec $ toVec xs ++′ toVec ys
