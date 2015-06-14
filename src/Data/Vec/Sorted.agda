@@ -8,6 +8,8 @@ module Data.Vec.Sorted
 open import Level
 
 open import Data.Empty
+open import Data.Fin
+  using (Fin; zero; suc)
 open import Data.Nat
   using (ℕ; zero; suc; _+_)
 open import Data.Nat.Properties.Simple
@@ -71,10 +73,28 @@ tail (x ∷ xs ⟨ prf ⟩) = xs
 head : ∀ {n} → SortedVec (ℕ.suc n) → Carrier
 head (x ∷ xs ⟨ prf ⟩) = x
 
+mutual
+
+  take : ∀ m {n} → SortedVec (m + n) → SortedVec m
+  take zero    xs                = []
+  take (suc m) (x ∷ xs ⟨ x≼xs ⟩) = x ∷ take m xs ⟨ ≼-take m x xs x≼xs ⟩
+
+  ≼-take : ∀ m {n} → (x : Carrier) → (xs : SortedVec (m + n)) → x ≼ xs →
+           x ≼ take m xs
+  ≼-take zero    x xs                x≼xs         = lift tt
+  ≼-take (suc m) x (y ∷ ys ⟨ y≼ys ⟩) (x≤y , x≼ys) = x≤y , (≼-take m x ys x≼ys)
+
 drop : ∀ m {n} → SortedVec (m + n) → SortedVec n
 drop zero    xs                = xs
 drop (suc m) (x ∷ xs ⟨ x≼xs ⟩) = drop m xs
 
+splitAt : ∀ m {n} → SortedVec (m + n) → SortedVec m × SortedVec n
+splitAt m xs = take m xs , drop m xs
+
+nth : ∀ {n} → Fin n → SortedVec n → Carrier
+nth {zero}  ()      xs
+nth {suc n} zero    (x ∷ xs ⟨ x≼xs ⟩) = x
+nth {suc n} (suc m) (x ∷ xs ⟨ x≼xs ⟩) = nth m xs
 
 toVec : ∀ {m} → SortedVec m → Vec Carrier m
 toVec []               = []′
