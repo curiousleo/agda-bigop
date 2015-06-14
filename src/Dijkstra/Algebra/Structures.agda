@@ -20,7 +20,7 @@ record IsDijkstraAlgebra {a ℓ} {A : Set a} (≈ : Rel A ℓ)
     +-selective           : Selective +
     +-zero                : Zero 1# +
 
-    *-identity            : LeftIdentity 1# *
+    *-identityˡ           : LeftIdentity 1# *
     *-cong                : * Preserves₂ ≈ ⟶ ≈ ⟶ ≈
 
     +-absorbs-*           : + Absorbs *

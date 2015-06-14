@@ -1,7 +1,7 @@
 open import Dijkstra.Algebra
 
 open import Data.Fin hiding (_+_; _≤_)
-open import Data.Matrix using (Matrix; diagonal; _[_,_])
+open import Data.Matrix using (Matrix; diagonal; tabulate; row; _[_,_])
 open import Data.Nat.Base
   using (ℕ; zero; suc; _∸_; _≤_; s≤s)
   renaming (_+_ to _N+_)
@@ -21,7 +21,7 @@ open import Data.List hiding (take; drop)
 open import Data.Nat.Properties using (n∸m≤n)
 open import Data.Nat.Properties.Extra
 open import Data.Product using (_×_; proj₁; proj₂)
-open import Data.Vec using (Vec; allFin; tabulate; toList)
+open import Data.Vec using (Vec; allFin; toList)
 import Data.Vec.Sorted as Sorted
 
 open import Function
@@ -40,6 +40,9 @@ open Fold +-monoid using (⨁-syntax)
 
 Adj : ℕ → _
 Adj n = Matrix Weight n n
+
+I : ∀ {m n} → Fin m → Fin n → Weight
+I = diagonal 0# 1#
 
 record Path {n} (i j : Fin n) : Set ℓ where
   constructor path
@@ -69,13 +72,13 @@ record State {n} (adj : Adj (suc n))
   size = suc n
 
   field
-    ⇝ : (j : Fin size) → Path source j
+    _⇝_ : (i j : Fin size) → Path i j
 
-  estimate : Vec Weight size
-  estimate = tabulate (λ (j : Fin size) → weight adj (⇝ j))
+  estimate : Adj size
+  estimate = tabulate (λ i j → weight adj (i ⇝ j))
 
   order : DecTotalOrder _ _ _
-  order = estimateOrder estimate
+  order = estimateOrder (row source estimate)
 
   open Sorted order
 
@@ -106,23 +109,22 @@ record State {n} (adj : Adj (suc n))
 
 Invariant : ∀ {n} → {adj : Adj (suc n)} {source unseen : Fin (suc n)} →
             Pred (State adj source unseen) _
-Invariant {n} {adj} {source} {unseen} state = ∀ j → weightTo j ≡ localSolutionᴿ j
+Invariant {n} {adj} {source} {unseen} state = ∀ i j → estimate i j ≡ localSolutionᴿ i j
   where
-    open State state
+    open State state hiding (estimate)
     open Sorted order
 
-    weightTo : Fin seen → Weight
-    weightTo j = weight adj (⇝ (nth j visited))
+    estimate : Fin seen → Fin seen → Weight
+    estimate i j = weight adj (nth i visited ⇝ nth j visited)
 
-    localSolutionᴿ : Fin seen → Weight
-    localSolutionᴿ j = I + ⨁[ i ← is ] weightTo i * adj [ inj i , inj j ]
+    localSolutionᴿ : Fin seen → Fin seen → Weight
+    localSolutionᴿ i j = I i j + ⨁[ q ← qs ] estimate i q * adj [ inj q , inj j ]
       where
-        I = diagonal 0# 1# source j
-        is = toList (allFin seen)
+        qs = toList (allFin seen)
         inj = flip inject≤ (n∸m≤n (suc (toℕ unseen)) size)
 
 initial : ∀ {n} (adj : Adj (suc n)) → (source : Fin (suc n)) → State adj source (fromℕ n)
-initial _ _ = now $ λ j → path []
+initial _ _ = now $ λ i j → path []
 
 step : ∀ {n} (adj : Adj (suc n)) {source} {unseen : Fin n} →
        State adj source (suc unseen) → State adj source (inject₁ unseen)
@@ -131,10 +133,11 @@ step {n} adj {source} state = now $ relax (head queue)
     open State state
     open Sorted order
 
-    w : ∀ {j} → Path source j → Weight
-    w = weight {size} {source} adj
+    w : ∀ {i j} → Path i j → Weight
+    w = weight adj
 
-    relax : Fin size → ((j : Fin size) → Path source j)
-    relax u j with w (j via (⇝ u)) ≤? w (⇝ j)
-    ... | yes _ = j via (⇝ u)
-    ... | no  _ = ⇝ j
+    relax : Fin size → (i j : Fin size) → Path i j
+    relax u i j with w (j via (i ⇝ u)) ≤? w (i ⇝ j)
+    ... | yes _ = j via (i ⇝ u)
+    ... | no  _ = i ⇝ j
+

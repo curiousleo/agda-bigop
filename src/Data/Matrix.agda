@@ -22,8 +22,11 @@ Matrix A r c = Vec (Vec A c) r
 ------------------------------------------------------------------------
 -- Looking up values in a matrix
 
+row : ∀ {r c a} {A : Set a} → Fin r → Matrix A r c → Vec A c
+row = V.lookup
+
 lookup : ∀ {r c a} {A : Set a} → Fin r → Fin c → Matrix A r c → A
-lookup i j m = V.lookup j (V.lookup i m)
+lookup i j m = V.lookup j (row i m)
 
 _[_,_] : ∀ {r c a} {A : Set a} → Matrix A r c → Fin r → Fin c → A
 m [ i , j ] = lookup i j m
