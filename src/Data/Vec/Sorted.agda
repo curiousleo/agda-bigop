@@ -101,11 +101,6 @@ drop (suc m) (x ∷ xs ⟨ x≼xs ⟩) = drop m xs
 splitAt : ∀ m {n} → SortedVec (m + n) → SortedVec m × SortedVec n
 splitAt m xs = take m xs , drop m xs
 
-nth : ∀ {n} → Fin n → SortedVec n → Carrier
-nth {zero}  ()      xs
-nth {suc n} zero    (x ∷ xs ⟨ x≼xs ⟩) = x
-nth {suc n} (suc m) (x ∷ xs ⟨ x≼xs ⟩) = nth m xs
-
 lookup : ∀ {n} → SortedVec n → Fin n → Carrier
 lookup []               ()
 lookup (x ∷ xs ⟨ prf ⟩) zero     = x
