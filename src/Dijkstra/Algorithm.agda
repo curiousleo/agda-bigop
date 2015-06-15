@@ -1,7 +1,8 @@
 open import Dijkstra.Algebra
 
 open import Data.Fin hiding (_+_; _≤_)
-open import Data.Matrix using (Matrix; diagonal; tabulate; row; _[_,_])
+import Data.Matrix as M
+open M using (Matrix; diagonal; row; _[_,_]; Pointwise)
 open import Data.Nat.Base
   using (ℕ; zero; suc; _∸_; _≤_; s≤s)
   renaming (_+_ to _N+_)
@@ -16,12 +17,14 @@ open import Dijkstra.Algebra.Properties
 
 open import Algebra.FunctionProperties.Core using (Op₂)
 
+open import Data.Empty using (⊥-elim)
 open import Data.Fin.Properties using (_≟_; to-from; bounded; inject₁-lemma)
 open import Data.List hiding (take; drop)
 open import Data.Nat.Properties using (n∸m≤n; n∸n≡0; +-∸-assoc)
+open import Data.Nat.Properties.Simple using (+-suc)
 open import Data.Nat.Properties.Extra
 open import Data.Product using (∃; Σ; _×_; proj₁; proj₂) renaming (_,_ to _,′_)
-open import Data.Vec using (Vec; allFin; toList)
+open import Data.Vec using (Vec; allFin; toList; tabulate)
 import Data.Vec.Sorted as Sorted
 
 open import Function
@@ -46,8 +49,27 @@ open EqR setoid
 Adj : ℕ → _
 Adj n = Matrix Weight n n
 
+postulate
+  diag-1# : ∀ {n} → (adj : Adj n) → (i : Fin n) → (adj [ i , i ]) ≡ 1#
+
+_⊗_ : ∀ {n} → Adj n → Adj n → Adj n
+A ⊗ B = M.tabulate $ λ i j → ⨁[ q ← toList (allFin _) ] A [ i , q ] * B [ q , j ]
+
+_⊕_ : ∀ {n} → Adj n → Adj n → Adj n
+A ⊕ B = M.tabulate $ λ i j → A [ i , j ] + B [ i , j ]
+
 I : ∀ {n} → Fin n → Fin n → Weight
-I = diagonal 0# 1#
+I i j with i ≟ j
+... | yes i≡j = 1#
+... | no ¬i≡j = 0#
+
+ident : ∀ {n} → Adj n
+ident = M.tabulate $ λ i j → diagonal 0# 1# i j
+
+infix 4 _≋_
+
+_≋_ : ∀ {n} → Rel (Adj n) ℓ
+_≋_ = Pointwise _≈_
 
 {-
 I : ∀ {n} → Fin n → Fin n → Weight
@@ -69,7 +91,7 @@ record Path {n} (i j : Fin n) : Set ℓ where
 
 weightᴸ : ∀ {n} i j → Adj n → Path {n} i j → Weight
 weightᴸ i j adj (via [])      = adj [ i , j ]
-weightᴸ i j adj (via (q ∷ p)) = adj [ i , q ] * weightᴸ q j adj (via p)
+weightᴸ i j adj (via (q ∷ p)) = (adj [ i , q ]) * weightᴸ q j adj (via p)
 
 _over_ : ∀ {n i j} → (k : Fin n) → Path {n} i j → Path {n} i k
 u over (via v) = via (v ∷ʳ u)
@@ -87,13 +109,13 @@ record State {n} (adj : Adj (suc n))
   field
     _⇝_ : (i j : Fin size) → Path i j
 
-  estimateᴸ : Adj size
-  estimateᴸ = tabulate (λ i j → weightᴸ i j adj (i ⇝ j))
+  estimateᴸ : Fin size → Fin size → Weight
+  estimateᴸ i j = weightᴸ i j adj (i ⇝ j)
 
   orderᴸ : DecTotalOrder _ _ _
-  orderᴸ = estimateOrder (row source estimateᴸ)
+  orderᴸ = estimateOrder $ tabulate $ estimateᴸ source
 
-  open Sorted orderᴸ
+  open Sorted orderᴸ public
 
   vertices : SortedVec size
   vertices = fromVec (allFin size)
@@ -109,43 +131,34 @@ record State {n} (adj : Adj (suc n))
     s≡u+v : size ≡ seen N+ suc (toℕ unseen)
     s≡u+v = P.sym (∸‿+‿lemma (bounded unseen))
 
-    convert : SortedVec size → SortedVec (seen N+ suc (toℕ unseen))
-    convert = P.subst SortedVec s≡u+v
+    convert : SortedVec size → SortedVec (suc seen N+ toℕ unseen)
+    convert = P.subst SortedVec (P.trans s≡u+v (+-suc (n ∸ toℕ unseen) (toℕ unseen)))
 
-  queue : SortedVec (suc (toℕ unseen))
-  queue = drop seen (convert vertices)
+  queue : SortedVec (toℕ unseen)
+  queue = drop (suc seen) (convert vertices)
 
-  visited : SortedVec seen
-  visited = take seen (convert vertices)
+  visited : SortedVec (suc seen)
+  visited = take (suc seen) (convert vertices)
 
-module InvariantDef
-       {n} {adj : Adj (suc n)} {source unseen : Fin (suc n)}
-       (state : State adj source unseen) where
+  left : Adj (suc seen)
+  left = M.tabulate (λ i j → estimateᴸ (lookup visited i) (lookup visited j))
 
-  open State state hiding (estimateᴸ)
-  open Sorted orderᴸ public
-  
-  estimateᴸ : Fin seen → Fin seen → Weight
-  estimateᴸ i j = weightᴸ _ _ adj (nth i visited ⇝ nth j visited)
-
-  localSolutionᴸ : Fin seen → Fin seen → Weight
-  localSolutionᴸ i j = (⨁[ q ← qs ] adj [ inj q , inj j ] * estimateᴸ i q) + I i j
-    where
-      qs = toList (allFin seen)
-      inj = flip inject≤ (n∸m≤n (suc (toℕ unseen)) size)
+  adj-visited : Adj (suc seen)
+  adj-visited = M.tabulate (λ i j → adj [ lookup visited i , lookup visited j ])  
 
 {-
-  localSolutionᴿ : Fin seen → Fin seen → Weight
+  localSolutionᴿ : Fin (suc seen) → Fin (suc seen) → Weight
   localSolutionᴿ i j = I i j + ⨁[ q ← qs ] estimate i q * adj [ inj q , inj j ]
     where
-      qs = toList (allFin seen)
+      qs = toList (allFin (suc seen))
       inj = flip inject≤ (n∸m≤n (suc (toℕ unseen)) size)
 -}
 
-Invariant : ∀ {n} → {adj : Adj (suc n)} {source unseen : Fin (suc n)} →
+Invariant : ∀ {n} {adj : Adj (suc n)} {source unseen} →
             Pred (State adj source unseen) _
-Invariant {n} {adj} {source} {unseen} state = ∀ i j → estimateᴸ i j ≈ localSolutionᴸ i j
-  where open InvariantDef state
+Invariant {n} {adj} {source} {unseen} state = left ≋ (adj-visited ⊗ left) ⊕ ident
+  where
+    open State state
 
 initial : ∀ {n} (adj : Adj (suc n)) → (source : Fin (suc n)) →
           Σ (State adj source (fromℕ n)) Invariant
@@ -154,14 +167,15 @@ initial {n} adj source = state ,′ invariant
     state : State adj source (fromℕ n)
     state = now $ λ i j → via []
 
-    open State state hiding (estimateᴸ)
-    open InvariantDef state
+    open State state
 
-    qs : List (Fin seen)
-    qs = toList (allFin seen)
+    qs : List (Fin (suc seen))
+    qs = toList (allFin (suc seen))
 
-    inj : Fin (size ∸ (suc $ toℕ (fromℕ n))) → Fin size
-    inj = flip inject≤ (n∸m≤n (suc (toℕ (fromℕ n))) size)
+    singleton-adj-lemma : (i j : Fin 1) → (adj : Adj 1) → adj [ i , j ] ≡ 1#
+    singleton-adj-lemma zero     zero     adj = diag-1# adj zero
+    singleton-adj-lemma zero     (suc ()) adj
+    singleton-adj-lemma (suc ()) j        adj
 
     seen≡0 : seen ≡ 0
     seen≡0 =
@@ -171,37 +185,24 @@ initial {n} adj source = state ,′ invariant
         0
       □
 
-    ¬Fin⟨seen⟩ : ¬ Fin seen
-    ¬Fin⟨seen⟩ rewrite seen≡0 = λ ()
+    seen-lemma : Fin (suc seen) → Fin 1
+    seen-lemma i = P.subst Fin (P.cong suc seen≡0) i -- P.cong Fin (P.cong suc seen≡0)
 
-    invariant : Invariant state
-    invariant i j = {!!}
-    {- with i ≟ j
-    ... | yes i≡j rewrite i≡j = ?
+    invariant : (i j : Fin (suc seen)) → left [ i , j ] ≈ ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
+    invariant i j =
       begin
-        adj [ nth i visited , nth j visited ]
-          ≈⟨ {!!} ⟩
-        (⨁[ q ← qs ] adj [ inj q , inj j ] * adj [ nth i visited , nth  q visited ]) + 1#
+        left [ i , j ]
+          ≡⟨ singleton-adj-lemma (seen-lemma i) {! seen-lemma j !} (P.subst Adj (P.cong suc seen≡0) left) ⟩
+        1#
+          ≡⟨ P.sym (singleton-adj-lemma (seen-lemma i) {! seen-lemma j !} (P.subst Adj (P.cong suc seen≡0) ((adj-visited ⊗ left) ⊕ ident))) ⟩
+        ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
       ∎
-    ... | no ¬i≡j = ?
-      begin
-        adj [ nth i visited , nth j visited ]
-          ≈⟨ {!!} ⟩
-        (⨁[ q ← qs ] adj [ inj q , inj j ] * adj [ nth i visited , nth  q visited ]) + 0#
-      ∎ -}
-
-{-
-initial-inv : ∀ {n} (adj : Adj (suc n)) → (source : Fin (suc n)) → Invariant (initial adj source)
-initial-inv adj source i j with initial adj source
-... | p = ?
--}
 
 step : ∀ {n} (adj : Adj (suc n)) {source} {unseen : Fin n} →
        State adj source (suc unseen) → State adj source (inject₁ unseen)
 step {n} adj {source} state = now $ relax (head queue)
   where
     open State state
-    open Sorted orderᴸ
 
     w : ∀ {i j} → Path i j → Weight
     w {i} {j} = weightᴸ i j adj
@@ -214,16 +215,13 @@ step {n} adj {source} state = now $ relax (head queue)
 step′ : ∀ {n} (adj : Adj (suc n)) {source} {unseen : Fin n} →
         Σ (State adj source (suc unseen)) Invariant →
         Σ (State adj source (inject₁ unseen)) Invariant
-step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!!} --invariant′
+step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!invariant-helper!} --invariant′
   where
     state′ = step adj state
-    module S  = State state
-    module S′ = State state′
+    module S = State state
+    open State state′
 
-    module I  = InvariantDef state
-    module I′ = InvariantDef state′
-
-    0<seen : S′.seen ≡ suc S.seen
+    0<seen : seen ≡ suc S.seen
     0<seen =
       start
         n ∸ toℕ (inject₁ unseen)      ≣⟨ P.cong₂ _∸_ P.refl (inject₁-lemma unseen) ⟩
@@ -231,17 +229,36 @@ step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!!} --
         1 N+ (n ∸ (1 N+ toℕ unseen))
       □
 
-    convert : Fin (suc S.seen) → Fin S′.seen
+    convert : Fin (suc S.seen) → Fin seen
     convert = P.subst Fin (P.sym 0<seen)
 
-    invariant′ : ∀ (i j : Fin (suc S.seen)) → I′.estimateᴸ (convert i) (convert j) ≈ I′.localSolutionᴸ (convert i) (convert j)
-    invariant′ zero zero = {!I′.estimateᴸ zero zero!}
-    invariant′ zero (suc j) = {!!}
-    invariant′ (suc i) j = {!!}
-{-
-    invariant′ : Invariant state′
-    invariant′ i j = {!i!}
--}
+    invariant′ : ∀ i j → estimateᴸ (lookup visited i) (lookup visited j) ≈
+                        (⨁[ q ← toList (allFin _) ] adj-visited [ i , q ] * left [ q , j ]) + ident [ i , j ]
+    invariant′ i j =
+      begin
+        estimateᴸ (lookup visited i) (lookup visited j)
+          ≈⟨ {!!} ⟩
+        (⨁[ q ← toList (allFin _) ] adj-visited [ i , q ] * left [ q , j ]) + ident [ i , j ]
+      ∎
+
+    invariant-helper : ∀ i j →
+                       estimateᴸ (lookup visited i) (lookup visited j) ≈
+                       (⨁[ q ← toList (allFin _) ] adj-visited [ i , q ] * left [ q , j ]) + ident [ i , j ] →
+                       left [ i , j ] ≈ ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
+    invariant-helper i j eq =
+      begin
+        left [ i , j ]
+          ≡⟨ M.lookup∘tabulate
+               {f = λ i j → estimateᴸ (lookup visited i) (lookup visited j)} i j ⟩
+        estimateᴸ (lookup visited i) (lookup visited j)
+          ≈⟨ eq ⟩
+        (⨁[ q ← toList (allFin _) ] adj-visited [ i , q ] * left [ q , j ]) + ident [ i , j ]
+          ≈⟨ +-cong (sym (reflexive (M.lookup∘tabulate {f = λ i j → ⨁[ q ← toList (allFin _) ] adj-visited [ i , q ] * left [ q , j ]} i j))) refl ⟩
+        (adj-visited ⊗ left) [ i , j ] + ident [ i , j ]
+          ≡⟨ P.sym (M.lookup∘tabulate
+               {f = λ i j → (adj-visited ⊗ left) [ i , j ] + ident [ i , j ]} i j) ⟩
+        ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
+      ∎
 
 --- XXX : move this to a separate file
 module Properties {n} (adj : Adj n) where
@@ -254,9 +271,9 @@ module Properties {n} (adj : Adj n) where
   weight-sum *-assoc i j k []      q = refl
   weight-sum *-assoc i j k (l ∷ p) q =
     begin
-      (adj [ i , l ] * weightᴸ l j adj (via p)) * weightᴸ j k adj (via q)
+      (((adj [ i , l ]) * weightᴸ l j adj (via p)) * weightᴸ j k adj (via q))
         ≈⟨ *-assoc _ _ _ ⟩
-      adj [ i , l ] * (weightᴸ l j adj (via p) * weightᴸ j k adj (via q))
+      ((adj [ i , l ]) * (weightᴸ l j adj (via p) * weightᴸ j k adj (via q)))
         ≈⟨ *-cong refl (weight-sum *-assoc l j k p q) ⟩
-      adj [ i , l ] * weightᴸ l k adj (via (p ++ j ∷ q))
+      ((adj [ i , l ]) * weightᴸ l k adj (via (p ++ j ∷ q)))
     ∎
