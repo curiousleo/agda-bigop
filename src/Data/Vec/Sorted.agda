@@ -8,6 +8,8 @@ module Data.Vec.Sorted
 open import Level
 
 open import Data.Empty
+open import Data.Fin
+  hiding (_≤_; lift; _+_)
 open import Data.Nat
   using (ℕ; zero; suc; _+_)
 open import Data.Nat.Properties.Simple
@@ -31,7 +33,7 @@ open IsEquivalence isEquivalence
 -- XXX: standard library candidate
 ¬x≤y→y≤x : ∀ {x y} → ¬ (x ≤ y) → y ≤ x
 ¬x≤y→y≤x {x} {y} prf with total x y
-... | inj₁ p = ⊥-elim (prf p)
+... | inj₁ p = ⊥-elim ∘ prf $ p
 ... | inj₂ p = p
 
 mutual
@@ -68,6 +70,16 @@ mutual
 tail : ∀ {n} → SortedVec (ℕ.suc n) → SortedVec n
 tail (x ∷ xs ⟨ prf ⟩) = xs
 
+mutual
+
+  init : ∀ {n} → SortedVec (ℕ.suc n) → SortedVec n
+  init (x ∷ []                ⟨ prf₁ ⟩) = []
+  init (x ∷ xs ∷ xss ⟨ prf₁ ⟩ ⟨ prf₂ ⟩) = x ∷ init (xs ∷ xss ⟨ prf₁ ⟩) ⟨ ≼-init (xs ∷ xss ⟨ prf₁ ⟩) prf₂ ⟩
+
+  ≼-init : ∀ {x n} → (xs : SortedVec (ℕ.suc n)) → x ≼ xs → x ≼ (init xs)
+  ≼-init (x₁ ∷ [] ⟨ prf₁ ⟩)             prf₂ = lift tt
+  ≼-init (x₁ ∷ x₂ ∷ xs ⟨ x₃ ⟩ ⟨ prf₁ ⟩) prf₂ = proj₁ prf₂ , ≼-init (x₂ ∷ xs ⟨ x₃ ⟩) (proj₂ prf₂)
+
 head : ∀ {n} → SortedVec (ℕ.suc n) → Carrier
 head (x ∷ xs ⟨ prf ⟩) = x
 
@@ -75,6 +87,10 @@ drop : ∀ m {n} → SortedVec (m + n) → SortedVec n
 drop zero    xs                = xs
 drop (suc m) (x ∷ xs ⟨ x≼xs ⟩) = drop m xs
 
+lookup : ∀ {n} → SortedVec n → Fin n → Carrier
+lookup []               ()
+lookup (x ∷ xs ⟨ prf ⟩) Fin.zero     = x
+lookup (x ∷ xs ⟨ prf ⟩) (Fin.suc ix) = lookup xs ix
 
 toVec : ∀ {m} → SortedVec m → Vec Carrier m
 toVec []               = []′
