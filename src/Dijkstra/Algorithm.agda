@@ -16,11 +16,11 @@ open import Dijkstra.Algebra.Properties
 
 open import Algebra.FunctionProperties.Core using (Op₂)
 
-open import Data.Fin.Properties using (_≟_; bounded)
+open import Data.Fin.Properties using (_≟_; to-from; bounded; inject₁-lemma)
 open import Data.List hiding (take; drop)
-open import Data.Nat.Properties using (n∸m≤n)
+open import Data.Nat.Properties using (n∸m≤n; n∸n≡0; +-∸-assoc)
 open import Data.Nat.Properties.Extra
-open import Data.Product using (Σ; _×_; proj₁; proj₂) renaming (_,_ to _,′_)
+open import Data.Product using (∃; Σ; _×_; proj₁; proj₂) renaming (_,_ to _,′_)
 open import Data.Vec using (Vec; allFin; toList)
 import Data.Vec.Sorted as Sorted
 
@@ -32,6 +32,9 @@ open import Relation.Binary
 import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
+open P.≡-Reasoning
+  using ()
+  renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
@@ -142,19 +145,14 @@ module InvariantDef
 Invariant : ∀ {n} → {adj : Adj (suc n)} {source unseen : Fin (suc n)} →
             Pred (State adj source unseen) _
 Invariant {n} {adj} {source} {unseen} state = ∀ i j → estimateᴸ i j ≈ localSolutionᴸ i j
-  where
-    open InvariantDef state
-
+  where open InvariantDef state
 
 initial : ∀ {n} (adj : Adj (suc n)) → (source : Fin (suc n)) →
           Σ (State adj source (fromℕ n)) Invariant
 initial {n} adj source = state ,′ invariant
   where
-    start : (i j : Fin (suc n)) → Path i j
-    start i j = via []
-
     state : State adj source (fromℕ n)
-    state = now start
+    state = now $ λ i j → via []
 
     open State state hiding (estimateᴸ)
     open InvariantDef state
@@ -162,8 +160,19 @@ initial {n} adj source = state ,′ invariant
     qs : List (Fin seen)
     qs = toList (allFin seen)
 
-    inj : Fin _ → Fin _
+    inj : Fin (size ∸ (suc $ toℕ (fromℕ n))) → Fin size
     inj = flip inject≤ (n∸m≤n (suc (toℕ (fromℕ n))) size)
+
+    seen≡0 : seen ≡ 0
+    seen≡0 =
+      start
+        n ∸ toℕ (fromℕ n)  ≣⟨ P.cong₂ _∸_ P.refl (to-from n) ⟩
+        n ∸ n              ≣⟨ n∸n≡0 n ⟩
+        0
+      □
+
+    ¬Fin⟨seen⟩ : ¬ Fin seen
+    ¬Fin⟨seen⟩ rewrite seen≡0 = λ ()
 
     invariant : Invariant state
     invariant i j = {!!}
@@ -201,6 +210,38 @@ step {n} adj {source} state = now $ relax (head queue)
     relax u i j with w (j over (i ⇝ u)) ≤? w (i ⇝ j)
     ... | yes _ = j over (i ⇝ u)
     ... | no  _ = i ⇝ j
+
+step′ : ∀ {n} (adj : Adj (suc n)) {source} {unseen : Fin n} →
+        Σ (State adj source (suc unseen)) Invariant →
+        Σ (State adj source (inject₁ unseen)) Invariant
+step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!!} --invariant′
+  where
+    state′ = step adj state
+    module S  = State state
+    module S′ = State state′
+
+    module I  = InvariantDef state
+    module I′ = InvariantDef state′
+
+    0<seen : S′.seen ≡ suc S.seen
+    0<seen =
+      start
+        n ∸ toℕ (inject₁ unseen)      ≣⟨ P.cong₂ _∸_ P.refl (inject₁-lemma unseen) ⟩
+        (1 N+ n) ∸ (1 N+ toℕ unseen)  ≣⟨ +-∸-assoc 1 (bounded unseen) ⟩
+        1 N+ (n ∸ (1 N+ toℕ unseen))
+      □
+
+    convert : Fin (suc S.seen) → Fin S′.seen
+    convert = P.subst Fin (P.sym 0<seen)
+
+    invariant′ : ∀ (i j : Fin (suc S.seen)) → I′.estimateᴸ (convert i) (convert j) ≈ I′.localSolutionᴸ (convert i) (convert j)
+    invariant′ zero zero = {!I′.estimateᴸ zero zero!}
+    invariant′ zero (suc j) = {!!}
+    invariant′ (suc i) j = {!!}
+{-
+    invariant′ : Invariant state′
+    invariant′ i j = {!i!}
+-}
 
 --- XXX : move this to a separate file
 module Properties {n} (adj : Adj n) where
