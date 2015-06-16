@@ -169,14 +169,6 @@ initial {n} adj source = state ,′ invariant
 
     open State state
 
-    qs : List (Fin (suc seen))
-    qs = toList (allFin (suc seen))
-
-    singleton-adj-lemma : (i j : Fin 1) → (adj : Adj 1) → adj [ i , j ] ≡ 1#
-    singleton-adj-lemma zero     zero     adj = diag-1# adj zero
-    singleton-adj-lemma zero     (suc ()) adj
-    singleton-adj-lemma (suc ()) j        adj
-
     seen≡0 : seen ≡ 0
     seen≡0 =
       start
@@ -185,16 +177,24 @@ initial {n} adj source = state ,′ invariant
         0
       □
 
-    seen-lemma : Fin (suc seen) → Fin 1
-    seen-lemma i = P.subst Fin (P.cong suc seen≡0) i -- P.cong Fin (P.cong suc seen≡0)
+    seen-lemma : (i : Fin (suc (seen))) → i ≡ zero
+    seen-lemma rewrite seen≡0 = Fin1-lemma
+      where
+        Fin1-lemma : (i : Fin 1) → i ≡ zero
+        Fin1-lemma zero = P.refl
+        Fin1-lemma (suc ())
 
     invariant : (i j : Fin (suc seen)) → left [ i , j ] ≈ ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
     invariant i j =
       begin
         left [ i , j ]
-          ≡⟨ singleton-adj-lemma (seen-lemma i) {! seen-lemma j !} (P.subst Adj (P.cong suc seen≡0) left) ⟩
+          ≡⟨ P.cong₂ (_[_,_] left) (seen-lemma i) (seen-lemma j) ⟩
+        left [ zero , zero ]
+          ≡⟨ diag-1# left zero ⟩
         1#
-          ≡⟨ P.sym (singleton-adj-lemma (seen-lemma i) {! seen-lemma j !} (P.subst Adj (P.cong suc seen≡0) ((adj-visited ⊗ left) ⊕ ident))) ⟩
+          ≡⟨ P.sym $ diag-1# ((adj-visited ⊗ left) ⊕ ident) zero ⟩
+        ((adj-visited ⊗ left) ⊕ ident) [ zero , zero ]
+          ≡⟨ P.sym $ P.cong₂ (_[_,_] ((adj-visited ⊗ left) ⊕ ident)) (seen-lemma i) (seen-lemma j) ⟩
         ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
       ∎
 
