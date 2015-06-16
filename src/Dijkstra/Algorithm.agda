@@ -1,12 +1,5 @@
 open import Dijkstra.Algebra
 
-open import Data.Fin hiding (_+_; _≤_)
-import Data.Matrix as M
-open M using (Matrix; diagonal; row; _[_,_]; Pointwise)
-open import Data.Nat.Base
-  using (ℕ; zero; suc; _∸_; _≤_; s≤s)
-  renaming (_+_ to _N+_)
-
 module Dijkstra.Algorithm
   {c ℓ} (alg : DijkstraAlgebra c ℓ)
   where
@@ -18,10 +11,16 @@ open import Dijkstra.Algebra.Properties
 open import Algebra.FunctionProperties.Core using (Op₂)
 
 open import Data.Empty using (⊥-elim)
+open import Data.Fin hiding (_+_; _≤_)
 open import Data.Fin.Properties using (_≟_; to-from; bounded; inject₁-lemma)
 open import Data.List hiding (take; drop)
-open import Data.Nat.Properties using (n∸m≤n; n∸n≡0; +-∸-assoc)
-open import Data.Nat.Properties.Simple using (+-suc)
+import Data.Matrix as M
+open M using (Matrix; diagonal; row; _[_,_]; Pointwise)
+open import Data.Nat.Base
+  using (ℕ; zero; suc; _∸_; s≤s)
+  renaming (_+_ to _N+_; _≤_ to _N≤_)
+open import Data.Nat.Properties using (≤-step; n∸m≤n; m+n∸n≡m; n∸n≡0; +-∸-assoc)
+open import Data.Nat.Properties.Simple using (+-suc) renaming (+-comm to N+-comm)
 open import Data.Nat.Properties.Extra
 open import Data.Product using (∃; Σ; _×_; proj₁; proj₂) renaming (_,_ to _,′_)
 open import Data.Vec using (Vec; allFin; toList; tabulate)
