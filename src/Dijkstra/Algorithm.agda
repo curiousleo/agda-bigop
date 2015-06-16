@@ -36,7 +36,7 @@ import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
 open P.≡-Reasoning
   using ()
-  renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
+  renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
@@ -174,7 +174,7 @@ initial {n} adj source = state ,′ invariant
         n ∸ toℕ (fromℕ n)  ≣⟨ P.cong₂ _∸_ P.refl (to-from n) ⟩
         n ∸ n              ≣⟨ n∸n≡0 n ⟩
         0
-      □
+      ■
 
     seen-lemma : (i : Fin (suc (seen))) → i ≡ zero
     seen-lemma rewrite seen≡0 = Fin1-lemma
@@ -226,7 +226,7 @@ step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!invar
         n ∸ toℕ (inject₁ unseen)      ≣⟨ P.cong₂ _∸_ P.refl (inject₁-lemma unseen) ⟩
         (1 N+ n) ∸ (1 N+ toℕ unseen)  ≣⟨ +-∸-assoc 1 (bounded unseen) ⟩
         1 N+ (n ∸ (1 N+ toℕ unseen))
-      □
+      ■
 
     convert : Fin (suc S.seen) → Fin seen
     convert = P.subst Fin (P.sym 0<seen)
@@ -258,6 +258,38 @@ step′ {n} adj {source} {unseen} (state ,′ invariant) = state′ ,′ {!invar
                {f = λ i j → (adj-visited ⊗ left) [ i , j ] + ident [ i , j ]} i j) ⟩
         ((adj-visited ⊗ left) ⊕ ident) [ i , j ]
       ∎
+
+subtract : (n i : ℕ) → Fin (suc n)
+subtract (suc n) zero    = suc (subtract n zero)
+subtract zero    zero    = zero
+subtract zero    (suc i) = zero
+subtract (suc n) (suc i) = inject₁ (subtract n i)
+
+subtract0 : ∀ n → subtract n zero ≡ fromℕ n
+subtract0 zero    = P.refl
+subtract0 (suc n) = P.cong suc (subtract0 n)
+
+{-
+    m∸n+n=m : ∀ m n → n N≤ m → m ∸ n N+ n ≡ m
+    m∸n+n=m m n n≤m =
+      start
+        (m ∸ n) N+ n  ≣⟨ N+-comm (m ∸ n) n ⟩
+        n N+ (m ∸ n)  ≣⟨ P.sym (+-∸-assoc n n≤m) ⟩
+        (n N+ m) ∸ n  ≣⟨ P.cong₂ _∸_ (N+-comm n m) (P.refl {x = n}) ⟩
+        (m N+ n) ∸ n  ≣⟨ m+n∸n≡m m n ⟩
+        m
+      ■
+-}
+
+iter : ∀ {n} (i : Fin (suc n)) (adj : Adj (suc n)) source →
+       Σ (State adj source {! subtract n i !}) Invariant
+iter {n} i adj source = {!!} -- initial {n} adj source --or-- step′ adj $ iter i adj source
+
+dijkstra : ∀ {n} (adj : Adj (suc n)) source i j → Weight
+dijkstra adj source i j = estimateᴸ i j
+  where open State (proj₁ $ iter i adj source)
+
+-- locallyOptimalᴸ : ∀ {n} (adj : Adj (suc n)) source → 
 
 --- XXX : move this to a separate file
 module Properties {n} (adj : Adj n) where
