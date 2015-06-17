@@ -4,14 +4,20 @@ module Dijkstra.Algorithm
   {c ℓ} (alg : DijkstraAlgebra c ℓ)
   where
 
+open import Level
+  using (Lift; lift; _⊔_)
+  renaming (zero to lzero; suc to lsuc)
+
 open import Bigop.Core
 
+open import Dijkstra.Adjacency alg
 open import Dijkstra.Algebra.Properties
+open import Dijkstra.Paths
 
 open import Algebra.FunctionProperties.Core using (Op₂)
 
 open import Data.Empty using (⊥-elim)
-open import Data.Fin hiding (_+_; _≤_)
+open import Data.Fin hiding (_+_; _≤_; lift)
 open import Data.Fin.Properties using (_≟_; to-from; bounded; inject₁-lemma)
 open import Data.List hiding (take; drop)
 import Data.Matrix as M
@@ -19,10 +25,12 @@ open M using (Matrix; diagonal; row; _[_,_]; Pointwise)
 open import Data.Nat.Base
   using (ℕ; zero; suc; _∸_; s≤s)
   renaming (_+_ to _N+_; _≤_ to _N≤_)
+open import Data.Nat using (decTotalOrder)
 open import Data.Nat.Properties using (≤-step; n∸m≤n; m+n∸n≡m; n∸n≡0; +-∸-assoc)
 open import Data.Nat.Properties.Simple using (+-suc) renaming (+-comm to N+-comm)
 open import Data.Nat.Properties.Extra
 open import Data.Product using (∃; Σ; _×_; proj₁; proj₂) renaming (_,_ to _,′_)
+open import Data.Unit using (⊤; tt)
 open import Data.Vec using (Vec; allFin; toList; tabulate)
 import Data.Vec.Sorted as Sorted
 
@@ -38,6 +46,7 @@ open P.≡-Reasoning
   using ()
   renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
+open DecTotalOrder decTotalOrder using () renaming (refl to ≤-refl)
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
 open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_)
@@ -45,17 +54,13 @@ open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open Fold +-monoid using (⨁-syntax)
 open EqR setoid
 
-Adj : ℕ → _
-Adj n = Matrix Weight n n
-
-postulate
-  diag-1# : ∀ {n} → (adj : Adj n) → (i : Fin n) → (adj [ i , i ]) ≡ 1#
-
 _⊗_ : ∀ {n} → Adj n → Adj n → Adj n
-A ⊗ B = M.tabulate $ λ i j → ⨁[ q ← toList (allFin _) ] A [ i , q ] * B [ q , j ]
+A ▦[ diag-A ] ⊗ B ▦[ diag-B ] =
+  (M.tabulate $ λ i j → ⨁[ q ← toList (allFin _) ] A [ i , q ] * B [ q , j ]) ▦[ {!!} ]
 
 _⊕_ : ∀ {n} → Adj n → Adj n → Adj n
-A ⊕ B = M.tabulate $ λ i j → A [ i , j ] + B [ i , j ]
+A ▦[ diag-A ] ⊕ B ▦[ diag-B ] =
+  (M.tabulate $ λ i j → A [ i , j ] + B [ i , j ]) ▦[ {!!} ]
 
 I : ∀ {n} → Fin n → Fin n → Weight
 I i j with i ≟ j
@@ -63,42 +68,23 @@ I i j with i ≟ j
 ... | no ¬i≡j = 0#
 
 ident : ∀ {n} → Adj n
-ident = M.tabulate $ λ i j → diagonal 0# 1# i j
+ident =
+  (M.tabulate $ λ i j → diagonal 0# 1# i j) ▦[ {!!} ]
 
 infix 4 _≋_
 
 _≋_ : ∀ {n} → Rel (Adj n) ℓ
-_≋_ = Pointwise _≈_
-
-{-
-I : ∀ {n} → Fin n → Fin n → Weight
-I i j with i ≟ j
-... | yes i≡j = 1#
-... | no ¬i≡j = 0#
--}
-
-record Path {n} (i j : Fin n) : Set ℓ where
-  constructor via
-  field
-    mids : List (Fin n)
-
-  edges : List (Fin n × Fin n)
-  edges = zip (i ∷ mids) (mids ∷ʳ j)
-
-  weights : (Adj n) → List Weight
-  weights adj = map (λ e → adj [ proj₁ e , proj₂ e ]) edges
+_≋_ = (Pointwise _≈_) on Adj.matrix
 
 weightᴸ : ∀ {n} i j → Adj n → Path {n} i j → Weight
-weightᴸ i j adj (via [])      = adj [ i , j ]
-weightᴸ i j adj (via (q ∷ p)) = (adj [ i , q ]) * weightᴸ q j adj (via p)
+weightᴸ i j adj (via [])      =  Adj.matrix adj [ i , j ]
+weightᴸ i j adj (via (q ∷ p)) = (Adj.matrix adj [ i , q ]) * weightᴸ q j adj (via p)
 
 _over_ : ∀ {n i j} → (k : Fin n) → Path {n} i j → Path {n} i k
 u over (via v) = via (v ∷ʳ u)
 
-open import Level using (_⊔_)
-
-record State {n} (adj : Adj (suc n))
-             (source unseen : Fin (suc n)) : Set (c ⊔ ℓ) where
+record Estimate {n} (adj : Adj (suc n))
+                (source unseen : Fin (suc n)) : Set (c ⊔ ℓ) where
 
   constructor now
 
@@ -123,10 +109,6 @@ record State {n} (adj : Adj (suc n))
   seen = size ∸ suc (toℕ unseen)
 
   private
-    -- XXX: The following three definitions should not be necessary and make
-    -- type-checking this file terribly slow. Unfortunately I haven't found a nicer
-    -- way of convincing Agdaa to type-check "queue" yet.
-
     s≡u+v : size ≡ seen N+ suc (toℕ unseen)
     s≡u+v = P.sym (∸‿+‿lemma (bounded unseen))
 
@@ -139,13 +121,17 @@ record State {n} (adj : Adj (suc n))
   visited : SortedVec (suc seen)
   visited = take (suc seen) (convert vertices)
 
+  adj-visited : Adj (suc seen)
+  adj-visited =
+    (M.tabulate $ λ i j → Adj.matrix adj [ lookup visited i , lookup visited j ]) ▦[ {!!} ]
+{-
   left : Adj (suc seen)
-  left = M.tabulate (λ i j → estimateᴸ (lookup visited i) (lookup visited j))
+  left =
+    (M.tabulate (λ i j → estimateᴸ (lookup visited i) (lookup visited j))) ▦[ {!!} ]
 
   adj-visited : Adj (suc seen)
   adj-visited = M.tabulate (λ i j → adj [ lookup visited i , lookup visited j ])  
 
-{-
   localSolutionᴿ : Fin (suc seen) → Fin (suc seen) → Weight
   localSolutionᴿ i j = I i j + ⨁[ q ← qs ] estimate i q * adj [ inj q , inj j ]
     where
@@ -153,12 +139,67 @@ record State {n} (adj : Adj (suc n))
       inj = flip inject≤ (n∸m≤n (suc (toℕ unseen)) size)
 -}
 
-Invariant : ∀ {n} {adj : Adj (suc n)} {source unseen} →
-            Pred (State adj source unseen) _
-Invariant {n} {adj} {source} {unseen} state = left ≋ (adj-visited ⊗ left) ⊕ ident
+Invariant : ∀ {n} (adj : Adj (suc n)) → Pred (Paths (suc n)) ℓ
+Invariant {zero}  adj  □             = Lift ⊤
+Invariant {zero}  adj (◰ () frm int)
+Invariant {suc n} adj (◰ ps frm int) =
+  (∀ i → from i ≈ ⨁[ q ← qs ] from  q * into′ q) ×
+  (∀ j → into j ≈ ⨁[ q ← qs ] from′ q * into  q)
   where
-    open State state
+    qs = toList (allFin _)
 
+    from : Fin (suc (suc n)) → Weight -- from q = M [ q , suc n ]
+    from i = weightᴸ i (suc (fromℕ n)) adj (frm i)
+
+    from′ : Fin (suc (suc n)) → Weight
+    from′ i = weightᴸ i (suc (fromℕ n)) adj (lookup-from i (◰ ps frm int))
+
+    into : Fin (suc (suc n)) → Weight
+    into j = weightᴸ (suc (fromℕ n)) j adj (int j)
+
+    into′ : Fin (suc (suc n)) → Weight
+    into′ j = weightᴸ (suc (fromℕ n)) j adj (lookup-into j (◰ ps frm int))
+
+record State {n} (adj : Adj (suc n))
+             (source unseen : Fin (suc n)) : Set (c ⊔ ℓ) where
+  field
+    estimate  : Estimate adj source unseen
+
+  open Estimate estimate
+
+  field
+    paths     : Paths (suc seen)
+    invariant : Invariant adj-visited paths
+
+initial : ∀ {n} (adj : Adj (suc n)) source →
+          State adj source (fromℕ n)
+initial {n} adj source =
+  record
+    { estimate  = estimate
+    ; paths     = paths
+    ; invariant = {!lift tt!}
+    }
+  where
+    estimate : Estimate adj source (fromℕ n)
+    estimate = now $ λ i j → via []
+
+    open Estimate estimate
+
+    seen≡0 : seen ≡ 0
+    seen≡0 =
+      start
+        n ∸ toℕ (fromℕ n)  ≣⟨ P.cong₂ _∸_ P.refl (to-from n) ⟩
+        n ∸ n              ≣⟨ n∸n≡0 n ⟩
+        0
+      ■
+
+    paths : Paths (suc seen)
+    paths rewrite seen≡0 = □
+
+    invariant : Invariant adj-visited paths
+    invariant rewrite seen≡0 = lift tt
+{-
+{-
 initial : ∀ {n} (adj : Adj (suc n)) → (source : Fin (suc n)) →
           Σ (State adj source (fromℕ n)) Invariant
 initial {n} adj source = state ,′ invariant
@@ -308,3 +349,5 @@ module Properties {n} (adj : Adj n) where
         ≈⟨ *-cong refl (weight-sum *-assoc l j k p q) ⟩
       ((adj [ i , l ]) * weightᴸ l k adj (via (p ++ j ∷ q)))
     ∎
+-}
+-}
