@@ -21,6 +21,7 @@ open import Algebra.FunctionProperties.Core using (Op₂)
 open import Data.Empty using (⊥-elim)
 open import Data.Fin.Properties using (bounded; to-from)
 open import Data.List hiding (take; drop)
+open import Data.List.Any
 open import Data.Nat.Properties using (n∸m≤n; n∸n≡0)
 open import Data.Nat.Properties.Extra
 open import Data.Product using (_×_; proj₁; proj₂)
@@ -45,6 +46,8 @@ open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open Fold +-monoid using (⨁-syntax)
 open EqR setoid
+import Bigop.Properties.CommutativeMonoid as P
+module Σ = P.RequiresCommutativeMonoid +-commutativeMonoid
 
 I : ∀ {n} → Adj n
 I = tabulate (diagonal 0# 1#) ▦[ (λ i → {! lookup∘tabulate i i !}) ]
@@ -187,6 +190,29 @@ step state = now $ relax state (head queue)
   where
     open State state
 
+module Lemmas {n} {adj : Adj (suc n)} {source unseen}
+              (state : State adj source (suc unseen)) where
+
+  open State state hiding (A[_,_])
+  open State (step state)
+    using ()
+    renaming
+      ( r[_] to r′[_]
+      ; estimate to estimate′
+      ; s to s′
+      ; queue to queue′
+      ; head to head′
+      )
+
+  lemma₁ : ∀ q → (P.setoid (Fin size) Membership.∈ q) s → r[ q ] ≡ r′[ q ]
+  lemma₁ q q∈s = {!!}
+
+  lemma₂ : r[ head queue ] ≡ r′[ head queue ]
+  lemma₂ = {!!}
+
+  lemma₃ : s ∷ʳ head queue ≡ s′
+  lemma₃ = {!!}
+
 step-Invariant : ∀ {n} {adj : Adj (suc n)} {source unseen} →
                  (state : State adj source (suc unseen)) →
                  Invariant state → Invariant (step state)
@@ -199,12 +225,11 @@ step-Invariant {adj = adj} {i} state invariant j =
     (I[ i , j ] + ⨁[ q ← s ] (r[ q ] * A[ q , j ])) + r[ head queue ] * A[ head queue , j ]
       ≈⟨ +-assoc _ _ _ ⟩
     I[ i , j ] + (⨁[ q ← s ] (r[ q ] * A[ q , j ]) + r[ head queue ] * A[ head queue , j ])
---      ≈⟨ +-cong refl (+-cong {!!} {!!}) ⟩
-      ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ {!!} (P.cong₂ _*_ {!!} P.refl)) ⟩
+      ≈⟨ +-cong refl (+-cong (Σ.cong′ s P.refl (λ q q∈s → *-cong (reflexive (lemma₁ q q∈s)) refl)) (*-cong (reflexive lemma₂) refl)) ⟩
     I[ i , j ] + (⨁[ q ← s ] (r′[ q ] * A[ q , j ]) + r′[ head queue ] * A[ head queue , j ])
-      ≡⟨ P.cong₂ _+_ P.refl {!!} ⟩
+      ≈⟨ +-cong refl (sym (Σ.snoc (λ q → r′[ q ] * A[ q , j ]) (head queue) s)) ⟩
     I[ i , j ] + ⨁[ q ← s ∷ʳ head queue ] (r′[ q ] * A[ q , j ])
-      ≡⟨ P.cong₂ _+_ P.refl (P.cong (⨁-syntax (λ q → r′[ q ] * A[ q , j ])) {!!}) ⟩ -- I believe this
+      ≡⟨ P.cong₂ _+_ P.refl (P.cong (⨁-syntax (λ q → r′[ q ] * A[ q , j ])) lemma₃) ⟩
     I[ i , j ] + ⨁[ q ← s′ ] (r′[ q ] * A[ q , j ])
   ∎
   where
@@ -218,6 +243,8 @@ step-Invariant {adj = adj} {i} state invariant j =
         ; queue to queue′
         ; head to head′
         )
+
+    open Lemmas state
         
     A[_,_] : Fin size → Fin size → Weight
     A[ i , j ] = Adj.matrix adj [ i , j ]
