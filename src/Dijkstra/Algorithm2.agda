@@ -3,7 +3,7 @@ open import Dijkstra.Algebra
 open import Data.Nat.Base hiding (_≤_; _⊔_; _+_; _*_)
 
 module Dijkstra.Algorithm2
-    {c ℓ} (n : ℕ) (alg : DijkstraAlgebra c ℓ)
+    {c ℓ} (alg : DijkstraAlgebra c ℓ)
     where
 
 open import Level using (_⊔_)
@@ -13,13 +13,14 @@ open import Dijkstra.Algebra.Properties
 
 open import Data.Fin hiding (_≤_; _+_)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Fin.Subset
+open import Data.Fin.Subset hiding (_∈_)
+import Data.Fin.Subset.Extra as S
 open import Data.List.Any using (module Membership)
 open import Data.List.Base
 open import Data.Matrix
 open import Data.Product using () renaming (_,_ to _,,_)
 import Data.Vec as V
-import Data.Vec.Sorted as Sorted
+import Data.List.Sorted as Sorted
 
 open import Function using (_$_)
 
@@ -39,19 +40,20 @@ I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
 
 mutual
-  data State (i : Fin (suc n)) (adj : Adj (suc n)) : Set (ℓ ⊔ c) where
+  data State {n} (i : Fin (suc n)) (adj : Adj (suc n)) : Set (ℓ ⊔ c) where
     init : State i adj
-    step : (state : State i adj) (q : Fin (suc n))
-           (q-min : ∀ j → {- -} j ∈ queue state → {- -} estimate state q ≤ estimate state j)
+    step : (state : State i adj) (q : Fin (suc n)) →
+           let open Sorted (estimateOrder (V.tabulate (estimate state))) in
+           (elm : q ≼ sorted-queue state)
            → State i adj
 
-  queue : {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Subset (suc n)
-  queue {i} init                 = ∁ ⁅ i ⁆
-  queue {i} (step state q q-min) = queue state ∩ ∁ ⁅ q ⁆
+  queue : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Subset (suc n)
+  queue {n} {i} init               = ∁ ⁅ i ⁆
+  queue {n} {i} (step state q elm) = queue state ∩ ∁ ⁅ q ⁆
 
-  estimate : {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Fin (suc n) → Weight
-  estimate {i} {adj} init                 j = I[ i , j ]
-  estimate {i} {adj} (step state q q-min) j = r[ j ] + r[ q ] * A[ q , j ]
+  estimate : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Fin (suc n) → Weight
+  estimate {n} {i} {adj} init               j = I[ i , j ]
+  estimate {n} {i} {adj} (step state q elm) j = r[ j ] + r[ q ] * A[ q , j ]
     where
       A[_,_] : Fin (suc n) → Fin (suc n) → Weight
       A[ i , j ] = Adj.matrix adj [ i , j ]
@@ -59,6 +61,43 @@ mutual
       r[_] : Fin (suc n) → Weight
       r[ j ] = estimate state j
 
+  sorted-queue : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) →
+                 let open Sorted (estimateOrder $ V.tabulate $ estimate state) in
+                 SortedList
+  sorted-queue state = fromList (S.toList (queue state))
+    where open Sorted (estimateOrder $ V.tabulate $ estimate state)
+
+module Next {n} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) where
+
+  order : DecTotalOrder _ _ _
+  order = estimateOrder $ V.tabulate $ estimate state
+
+  open Sorted order
+
+  contains-head : ∀ {q} (qs : SortedList) (q≼qs : q ≼ qs) → q ∈ q ∷ qs ⟨ q≼qs ⟩
+  contains-head = here
+
+  next : State i adj
+  next = {!!}
+  {- = step state q $ contains-head {S.size (queue state)} (subst ? ? {!qs!}) (subst ? ? {!q≼qs!})
+    where
+      eq : suc m ≡ S.size (queue state)
+      eq = {!!} -}
+
+next : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) → State i adj
+next state with sorted-queue state
+next state | Sorted.[] = state
+next state | q Sorted.∷ qs ⟨ q≼qs ⟩ = step state q q≼qs
+
+
+
+
+
+
+
+-------------
+
+{-
 _subset-∈?_ : {n : ℕ} → (x : Fin n) → (xs : Subset n) → Dec (x ∈ xs)
 x subset-∈? V.[] = no (λ ())
 zero subset-∈? (inside V.∷ ys)  = yes V.here
@@ -69,57 +108,4 @@ suc x subset-∈? (y V.∷ ys) with x subset-∈? ys
   where
     contradiction : ¬ y V.∷ ys V.[ suc x ]= inside
     contradiction (V.there x∈ys) = ¬x∈ys x∈ys
-
-size : {n : ℕ} → Subset n → ℕ
-size V.[]             = 0
-size (inside V.∷ xs)  = suc $ size xs
-size (outside V.∷ xs) =       size xs
-
-subsetToVec : {n : ℕ} → (sub : Subset n) → V.Vec (Fin n) (size sub)
-subsetToVec V.[]              = V.[]
-subsetToVec (inside V.∷ sub)  = zero V.∷ V.map inject₁ (subsetToVec sub)
-subsetToVec (outside V.∷ sub) =          V.map inject₁ (subsetToVec sub)
-
-sorted-queue : {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) →
-               let order = estimateOrder (V.tabulate (estimate state)) in
-               Sorted.SortedVec order (size (queue state))
-sorted-queue state = Sorted.fromVec order $ subsetToVec $ queue state
-  where
-    order : DecTotalOrder _ _ _
-    order = estimateOrder $ V.tabulate $ estimate state
-
-module Next {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) where
-
-  order : DecTotalOrder _ _ _
-  order = estimateOrder $ V.tabulate $ estimate state
-
-  open Sorted order hiding (_∈_)
-  
-  ∈q : ∀ {m} (q : Fin (suc n)) (qs : SortedVec m) (q≼qs : q ≼ qs) (j : Fin (suc n))
-       → j ∈ queue state → estimate state q ≤ estimate state j
-  ∈q q Sorted.[] q≼qs j j∈queue = {!queue state!}
-  ∈q q (y Sorted.∷ qs ⟨ y≼ys ⟩) q≼qs j j∈queue = {!!}
-
-  next : State i adj
-  next with size (queue state) | sorted-queue state
-  ... | zero  | []              = state
-  ... | suc m | q ∷ qs ⟨ q≼qs ⟩ = step state q (∈q q qs q≼qs)
-
-next : {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) → State i adj
-next {i} {adj} state = Next.next state
-
-{-
-next {i} {adj} state = step state q q-min
-  where
-    A[_,_] : Fin (suc n) → Fin (suc n) → Weight
-    A[ i , j ] = Adj.matrix adj [ i , j ]
-
-    r[_] : Fin (suc n) → Weight
-    r[ j ] = estimate state j
-
-    q : Fin (suc n)
-    q = {!!}
-
-    q-min : ∀ j → r[ q ] ≤ r[ j ]
-    q-min j = {!!}
 -}
