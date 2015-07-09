@@ -6,21 +6,20 @@ module Dijkstra.Algorithm2
     {c ℓ} (n : ℕ) (alg : DijkstraAlgebra c ℓ)
     where
 
-open import Level using (_⊔_; Lift)
+open import Level using (_⊔_)
 
 open import Dijkstra.Adjacency alg
 open import Dijkstra.Algebra.Properties
 
 open import Data.Fin hiding (_≤_; _+_)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Fin.Subset hiding (Lift; ⊤)
+open import Data.Fin.Subset
 open import Data.List.Any using (module Membership)
 open import Data.List.Base
 open import Data.Matrix
-open import Data.Product using (_×_) renaming (_,_ to _,,_)
+open import Data.Product using () renaming (_,_ to _,,_)
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
-open import Data.Unit using (⊤; tt)
 
 open import Function using (_$_)
 
@@ -39,25 +38,11 @@ I = tabulate (diagonal 0# 1#) ▦[ (λ i → {! lookup∘tabulate i i !}) ]
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
 
-_≼′_ : ∀ {n} → Weight → V.Vec Weight n → Set (ℓ ⊔ c)
-x ≼′ V.[]       = Lift ⊤
-x ≼′ (y V.∷ ys) = x ≤ y × x ≼′ ys
-
-size : {n : ℕ} → Subset n → ℕ
-size V.[]             = 0
-size (inside V.∷ xs)  = suc $ size xs
-size (outside V.∷ xs) =       size xs
-
-subsetToVec : {n : ℕ} → (sub : Subset n) → V.Vec (Fin n) (size sub)
-subsetToVec V.[]              = V.[]
-subsetToVec (inside V.∷ sub)  = zero V.∷ V.map inject₁ (subsetToVec sub)
-subsetToVec (outside V.∷ sub) =          V.map inject₁ (subsetToVec sub)
-
 mutual
   data State (i : Fin (suc n)) (adj : Adj (suc n)) : Set (ℓ ⊔ c) where
     init : State i adj
     step : (state : State i adj) (q : Fin (suc n))
-           (q-min : estimate state q ≼′ V.map (estimate state) (subsetToVec $ queue state))
+           (q-min : ∀ j → {- -} j ∈ queue state → {- -} estimate state q ≤ estimate state j)
            → State i adj
 
   queue : {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Subset (suc n)
@@ -85,6 +70,16 @@ suc x subset-∈? (y V.∷ ys) with x subset-∈? ys
     contradiction : ¬ y V.∷ ys V.[ suc x ]= inside
     contradiction (V.there x∈ys) = ¬x∈ys x∈ys
 
+size : {n : ℕ} → Subset n → ℕ
+size V.[]             = 0
+size (inside V.∷ xs)  = suc $ size xs
+size (outside V.∷ xs) =       size xs
+
+subsetToVec : {n : ℕ} → (sub : Subset n) → V.Vec (Fin n) (size sub)
+subsetToVec V.[]              = V.[]
+subsetToVec (inside V.∷ sub)  = zero V.∷ V.map inject₁ (subsetToVec sub)
+subsetToVec (outside V.∷ sub) =          V.map inject₁ (subsetToVec sub)
+
 sorted-queue : {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) →
                let order = estimateOrder (V.tabulate (estimate state)) in
                Sorted.SortedVec order (size (queue state))
@@ -101,14 +96,14 @@ module Next {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) where
   open Sorted order hiding (_∈_)
   
   ∈q : ∀ {m} (q : Fin (suc n)) (qs : SortedVec m) (q≼qs : q ≼ qs) (j : Fin (suc n))
-       → estimate state q ≼′ V.map (estimate state) (subsetToVec $ queue state)
-  ∈q q Sorted.[] q≼qs j = {!queue state!}
-  ∈q q (y Sorted.∷ qs ⟨ y≼ys ⟩) q≼qs j = {!!}
+       → j ∈ queue state → estimate state q ≤ estimate state j
+  ∈q q Sorted.[] q≼qs j j∈queue = {!queue state!}
+  ∈q q (y Sorted.∷ qs ⟨ y≼ys ⟩) q≼qs j j∈queue = {!!}
 
   next : State i adj
   next with size (queue state) | sorted-queue state
   ... | zero  | []              = state
-  ... | suc m | q ∷ qs ⟨ q≼qs ⟩ = step state q {!!}
+  ... | suc m | q ∷ qs ⟨ q≼qs ⟩ = step state q (∈q q qs q≼qs)
 
 next : {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) → State i adj
 next {i} {adj} state = Next.next state
