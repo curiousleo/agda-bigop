@@ -92,27 +92,28 @@ record State
   seen : ℕ
   seen = size ∸ suc (toℕ unseen)
 
-{-
   private
     -- XXX: The following three definitions should not be necessary and make
     -- type-checking this file terribly slow. Unfortunately I haven't found a nicer
     -- way of convincing Agda to type-check "queue" yet.
 
+{-
     s≡u+v : size ≡ seen N+ suc (toℕ unseen)
     s≡u+v = P.sym (∸‿+‿lemma (bounded unseen))
 
     queue-type : SortedVec size ≡ SortedVec (seen N+ suc (toℕ unseen))
     queue-type = P.cong SortedVec s≡u+v
-
-    convert : SortedVec size → SortedVec (seen N+ suc (toℕ unseen))
-    convert xs = {!!} -- rewrite queue-type = xs
 -}
 
+    postulate
+      convert : SortedVec size → SortedVec (seen N+ suc (toℕ unseen))
+      -- convert xs = {!!} -- rewrite queue-type = xs
+
   queue : SortedVec (suc (toℕ unseen))
-  queue = drop seen {!!} -- (convert vertices)
+  queue = drop seen (convert vertices)
 
   visited : SortedVec seen
-  visited = take seen {!!} -- (convert vertices)
+  visited = take seen (convert vertices)
   
   A[_,_] : Fin size → Fin size → Weight
   A[ i , j ] = Adj.matrix adj [ i , j ]
