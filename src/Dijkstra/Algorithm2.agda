@@ -30,7 +30,7 @@ open import Relation.Binary.PropositionalEquality as P
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
-open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_)
+open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ≤-refl)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 
 I : ∀ {n} → Adj n
@@ -44,8 +44,7 @@ mutual
     init : State i adj
     step : (state : State i adj) (q : Fin (suc n)) →
            let open Sorted (estimateOrder (V.tabulate (estimate state))) in
-           (elm : q ≼ sorted-queue state)
-           → State i adj
+           (q-min : q ≼ sorted-queue state) → State i adj
 
   queue : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj → Subset (suc n)
   queue {n} {i} init               = ∁ ⁅ i ⁆
@@ -67,45 +66,8 @@ mutual
   sorted-queue state = fromList (S.toList (queue state))
     where open Sorted (estimateOrder $ V.tabulate $ estimate state)
 
-module Next {n} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) where
-
-  order : DecTotalOrder _ _ _
-  order = estimateOrder $ V.tabulate $ estimate state
-
-  open Sorted order
-
-  contains-head : ∀ {q} (qs : SortedList) (q≼qs : q ≼ qs) → q ∈ q ∷ qs ⟨ q≼qs ⟩
-  contains-head = here
-
-  next : State i adj
-  next = {!!}
-  {- = step state q $ contains-head {S.size (queue state)} (subst ? ? {!qs!}) (subst ? ? {!q≼qs!})
-    where
-      eq : suc m ≡ S.size (queue state)
-      eq = {!!} -}
-
 next : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj) → State i adj
-next state with sorted-queue state
-next state | Sorted.[] = state
-next state | q Sorted.∷ qs ⟨ q≼qs ⟩ = step state q q≼qs
-
-
-
-
-
-
-
--------------
-
-{-
-_subset-∈?_ : {n : ℕ} → (x : Fin n) → (xs : Subset n) → Dec (x ∈ xs)
-x subset-∈? V.[] = no (λ ())
-zero subset-∈? (inside V.∷ ys)  = yes V.here
-zero subset-∈? (outside V.∷ ys) = no (λ ())
-suc x subset-∈? (y V.∷ ys) with x subset-∈? ys
-... | yes x∈ys = yes $ V.there x∈ys
-... | no ¬x∈ys = no contradiction
-  where
-    contradiction : ¬ y V.∷ ys V.[ suc x ]= inside
-    contradiction (V.there x∈ys) = ¬x∈ys x∈ys
--}
+next state with queue state | sorted-queue state
+next state | x V.∷ s | Sorted.[]              = state
+next state | x V.∷ s | q Sorted.∷ qs ⟨ q≼qs ⟩ = step state q {!≤-refl {x = estimate state q} ,, q≼qs!}
+  where open Sorted (estimateOrder $ V.tabulate $ estimate state)
