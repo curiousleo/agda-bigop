@@ -378,6 +378,9 @@ module RequiresDijkstraAlgebra
   1#-bottomᴸ : ∀ a → 1# ⊴ᴸ a
   1#-bottomᴸ a = 1# , sym (proj₂ +-zero a)
 
+  0#-topᴸ : ∀ a → a ⊴ᴸ 0#
+  0#-topᴸ a = a , sym (proj₁ +-identity a)
+
   +-upperᴸ : ∀ {a b c} → a ⊴ᴸ b → a ⊴ᴸ c → a ⊴ᴸ b + c
   +-upperᴸ {a} {b} {c} (d , a≡b+d) (e , a≡c+e) = d + e , lemma
     where
