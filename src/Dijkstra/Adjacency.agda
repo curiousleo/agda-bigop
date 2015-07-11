@@ -15,4 +15,4 @@ record Adj (n : ℕ) : Set c where
   constructor _▦[_]
   field
     matrix : Matrix Weight n n
-    diag   : ∀ i → matrix [ i , i ] ≡ 1#
+    diag   : ∀ i → (matrix [ i , i ]) ≡ 1#

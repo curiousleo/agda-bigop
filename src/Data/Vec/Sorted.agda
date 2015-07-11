@@ -44,7 +44,7 @@ mutual
 
   _≼_ : ∀ {n} → Carrier → SortedVec n → Set ℓ₂
   x ≼ []               = Lift ⊤
-  x ≼ (y ∷ ys ⟨ prf ⟩) = x ≤ y × x ≼ ys
+  x ≼ (y ∷ ys ⟨ prf ⟩) = (x ≤ y) × (x ≼ ys)
 
 ≼-decidable : ∀ {n} → Decidable (_≼_ {n})
 ≼-decidable x []                = yes ∘ lift $ tt
@@ -115,8 +115,8 @@ lookup (x ∷ xs ⟨ prf ⟩) zero     = x
 lookup (x ∷ xs ⟨ prf ⟩) (suc ix) = lookup xs ix
 
 data _∈_ (x : Carrier) : ∀ {n} → SortedVec n → Set (ℓ₁ ⊔ a ⊔ ℓ₂) where
-  here  : ∀ {n} → (xs : SortedVec n) → ∀ prf → x ∈ x ∷ xs ⟨ prf ⟩
-  there : ∀ {n} → (y : Carrier) → (ys : SortedVec n) → ∀ prf → x ∈ ys → x ∈ y ∷ ys ⟨ prf ⟩
+  here  : ∀ {n} → (xs : SortedVec n) → ∀ prf → x ∈ (x ∷ xs ⟨ prf ⟩)
+  there : ∀ {n} → (y : Carrier) → (ys : SortedVec n) → ∀ prf → x ∈ ys → x ∈ (y ∷ ys ⟨ prf ⟩)
 
 _++_ : ∀ {m n} → SortedVec m → SortedVec n → SortedVec (m + n)
 []                ++ ys = ys
@@ -128,11 +128,11 @@ insert-∈¹ x (y ∷ ys ⟨ y≼ys ⟩) with x ≤? y
 ... | yes lt = here (y ∷ ys ⟨ y≼ys ⟩) (lt , ≼-trans ys y≼ys lt)
 ... | no ¬lt = there y (insert x ys) (≼-insert ys (¬x≤y→y≤x ¬lt) y≼ys) $ insert-∈¹ x ys
 
-∈-singleton : (x y : Carrier) → ∀ prf → x ∈ y ∷ [] ⟨ prf ⟩ → x ≡ y
+∈-singleton : (x y : Carrier) → ∀ prf → x ∈ (y ∷ [] ⟨ prf ⟩) → x ≡ y
 ∈-singleton x .x prf (here .[] .prf)        = refl
 ∈-singleton x y  prf (there .y .[] .prf ())
 
-∷-∈ : ∀ {m} → (x y : Carrier) → (ys : SortedVec m) → ∀ prf → x ∈ y ∷ ys ⟨ prf ⟩ → x ≡ y ⊎ x ∈ ys
+∷-∈ : ∀ {m} → (x y : Carrier) → (ys : SortedVec m) → ∀ prf → x ∈ (y ∷ ys ⟨ prf ⟩) → (x ≡ y) ⊎ (x ∈ ys)
 ∷-∈ x y []                 prf x∈ys                                    = inj₁ $ ∈-singleton x y prf x∈ys
 ∷-∈ y .y (z ∷ zs ⟨ y≼ys ⟩) prf (here  .(z ∷ zs ⟨ y≼ys ⟩) .prf)         = inj₁ refl
 ∷-∈ x y  (z ∷ zs ⟨ y≼ys ⟩) prf (there .y .(z ∷ zs ⟨ y≼ys ⟩) .prf x∈ys) with ∷-∈ x z zs y≼ys x∈ys
@@ -146,7 +146,7 @@ insert-∈² x y (z ∷ zs ⟨ z≼zs ⟩) x∈xs with y ≤? z | ∷-∈ x z zs
 ... | no ¬lt | inj₁ x≡z  rewrite x≡z = here (insert y zs) $ ≼-insert zs (¬x≤y→y≤x ¬lt) z≼zs
 ... | no ¬lt | inj₂ x∈zs = there z (insert y zs) (≼-insert zs (¬x≤y→y≤x ¬lt) z≼zs) $ insert-∈² x y zs x∈zs
 
-++-∈ : ∀ {m n} → (x : Carrier) → (xs : SortedVec m) → (ys : SortedVec n) → x ∈ xs ⊎ x ∈ ys → x ∈ (xs ++ ys)
+++-∈ : ∀ {m n} → (x : Carrier) → (xs : SortedVec m) → (ys : SortedVec n) → (x ∈ xs) ⊎ (x ∈ ys) → x ∈ (xs ++ ys)
 ++-∈ x [] ys (inj₁ ())
 ++-∈ x [] ys (inj₂ x∈ys) = x∈ys
 ++-∈ x (y ∷ xs ⟨ y≼ys ⟩) ys (inj₁ x₁) with ∷-∈ x y xs y≼ys x₁

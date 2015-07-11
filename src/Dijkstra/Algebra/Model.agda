@@ -4,6 +4,7 @@ open import Dijkstra.Algebra
 
 open import Data.Nat.InfinityExtension
 open import Data.Nat.InfinityExtension.Properties
+open import Data.Product
 
 open import Relation.Binary.PropositionalEquality
 
@@ -32,7 +33,7 @@ open import Relation.Binary.PropositionalEquality
           }
       ; +-selective = ⊓-selective
       ; +-zero = ⊓-zero
-      ; *-identity = +-identity
+      ; *-identityˡ = +-identity
       ; *-cong = cong₂ _+_
       ; +-absorbs-* = ⊓-absorbs-+
       }

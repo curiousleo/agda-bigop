@@ -8,4 +8,4 @@ open import Algebra.FunctionProperties _≈_ public
 open import Data.Sum
 
 Selective : Op₂ A → Set _
-Selective _∙_ = ∀ x y → (x ∙ y) ≈ x ⊎ (x ∙ y) ≈ y
+Selective _∙_ = ∀ x y → ((x ∙ y) ≈ x) ⊎ ((x ∙ y) ≈ y)

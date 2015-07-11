@@ -9,7 +9,7 @@ open import Level
 
 open import Data.Empty using (⊥-elim)
 open import Data.List.Base
-open import Data.Nat.Base hiding (_⊔_; _≤_)
+open import Data.Nat.Base hiding (_⊔_; _≤_; _≤?_)
 open import Data.Product using (_×_; _,_)
 open import Data.Sum using (inj₁; inj₂)
 open import Data.Unit using (⊤; tt)
@@ -36,7 +36,7 @@ mutual
 
   _≼_ : Carrier → SortedList → Set ℓ₂
   x ≼ []               = Lift ⊤
-  x ≼ (y ∷ ys ⟨ y≼ys ⟩) = x ≤ y × x ≼ ys
+  x ≼ (y ∷ ys ⟨ y≼ys ⟩) = (x ≤ y) × (x ≼ ys)
 
 ≼-trans : ∀ {x y} → (ys : SortedList) → y ≼ ys → x ≤ y → x ≼ ys
 ≼-trans []               xsDomx         y≤x = lift tt
@@ -66,5 +66,5 @@ fromList = foldr insert []
 
 
 data _∈_ (x : Carrier) : SortedList → Set (ℓ₁ ⊔ a ⊔ ℓ₂) where
-  here  : (xs : SortedList) → ∀ prf → x ∈ x ∷ xs ⟨ prf ⟩
-  there : (y : Carrier) → (ys : SortedList) → ∀ prf → x ∈ ys → x ∈ y ∷ ys ⟨ prf ⟩
+  here  : (xs : SortedList) → ∀ prf → x ∈ (x ∷ xs ⟨ prf ⟩)
+  there : (y : Carrier) → (ys : SortedList) → ∀ prf → x ∈ ys → x ∈ (y ∷ ys ⟨ prf ⟩)

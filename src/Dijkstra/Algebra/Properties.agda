@@ -206,7 +206,7 @@ module RequiresDijkstraAlgebra
   ... | inj₁ b+c≈b = inj₁ (trans a≈b+c b+c≈b)
   ... | inj₂ b+c≈c = inj₂ (trans a≈b+c b+c≈c)
 
-  equivalentᴸ-¬ : ∀ a b → ¬ b + a ≈ a ⇔ ¬ a ⊴ᴸ b
+  equivalentᴸ-¬ : ∀ a b → (¬ b + a ≈ a) ⇔ (¬ a ⊴ᴸ b)
   equivalentᴸ-¬ a b = equivalence to from
     where
       to : ¬ b + a ≈ a → ¬ a ⊴ᴸ b

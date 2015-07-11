@@ -20,7 +20,7 @@ open import Algebra.FunctionProperties.Core using (Op₂)
 
 open import Data.Empty using (⊥-elim)
 open import Data.Fin.Properties using (bounded; to-from)
-open import Data.List hiding (take; drop)
+open import Data.List.Base hiding (take; drop; [_])
 open import Data.List.Any
 open import Data.Nat.Properties using (n∸m≤n; n∸n≡0)
 open import Data.Nat.Properties.Extra
@@ -58,10 +58,10 @@ I[ i , j ] = Adj.matrix I [ i , j ]
 I-diag-neq : ∀ {n r c} → r ≢ c → I[ r , c ] ≡ 0#
 I-diag-neq {n} {r} {c} ¬eq with r ≟ c
 I-diag-neq {n} {r} {c} ¬eq | yes eq = ⊥-elim (¬eq eq)
-I-diag-neq {n} {r} {c} ¬eq | no  _  = start
+I-diag-neq {n} {r} {c} ¬eq | no  _  = {!!} {- start
   Adj.matrix (I {n}) [ r , c ]  ≣⟨ lookup∘tabulate r c ⟩
   diagonal 0# 1# r c            ≣⟨ diag-lemma r c ¬eq ⟩
-  0#                            □
+  0#                            □ -}
   where
     suc-¬-lemma : ∀ {n} {r c : Fin n} → ¬ suc r ≡ suc c → ¬ r ≡ c
     suc-¬-lemma {r} ¬eq P.refl = ¬eq P.refl
@@ -128,7 +128,7 @@ initial : ∀ {n} (adj : Adj (suc n)) source → State adj source (fromℕ n)
 initial adj source = now $ V.tabulate (const 0#) [ source ]≔ 1#
 
 Invariant : ∀ {n} {adj : Adj (suc n)} {source seen} → Pred (State adj source seen) ℓ
-Invariant {n} {adj} {i} {seen} state = ∀ j → r[ j ] ≈ I[ i , j ] + ⨁[ q ← s ] (r[ q ] * A[ q , j ])
+Invariant {n} {adj} {i} {seen} state = ∀ j → r[ j ] ≈ (I[ i , j ] + (⨁[ q ← s ] (r[ q ] * A[ q , j ])))
   where
     open State state
 
@@ -163,8 +163,8 @@ initial-Invariant adj i j with j ≟ i
   begin
     V.lookup i (V.tabulate (const 0#) [ i ]≔ 1#)     ≡⟨ initial-lemma-eq adj i ⟩
     1#                                               ≈⟨ sym $ proj₁ +-zero _ ⟩ -- alternatively using +-identity as below
-    1#         + ⨁[ q ← s  ] (r[ q ] * A[ q , i ])  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
-    I[ i , i ] + ⨁[ q ← s  ] (r[ q ] * A[ q , i ])
+    1#         + (⨁[ q ← s  ] (r[ q ] * A[ q , i ]))  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
+    I[ i , i ] + (⨁[ q ← s  ] (r[ q ] * A[ q , i ]))
   ∎
   where
     open State (initial adj i)
@@ -172,8 +172,8 @@ initial-Invariant adj i j with j ≟ i
   begin
     V.lookup j (V.tabulate (const 0#) [ i ]≔ 1#)     ≡⟨ initial-lemma-neq adj j≠i ⟩
     0#                                               ≈⟨ sym $ proj₁ +-identity _ ⟩
-    0#         + ⨁[ q ← [] ] (r[ q ] * A[ q , j ])  ≡⟨ P.cong₂ _+_ (P.sym (I-diag-neq i≠j)) (P.cong (⨁-syntax (λ q → r[ q ] * A[ q , j ])) (P.sym (initial-s-empty adj i))) ⟩
-    I[ i , j ] + ⨁[ q ← s  ] (r[ q ] * A[ q , j ])
+    0#         + (⨁[ q ← [] ] (r[ q ] * A[ q , j ]))  ≡⟨ P.cong₂ _+_ (P.sym (I-diag-neq i≠j)) (P.cong (⨁-syntax (λ q → r[ q ] * A[ q , j ])) (P.sym (initial-s-empty adj i))) ⟩
+    I[ i , j ] + (⨁[ q ← s  ] (r[ q ] * A[ q , j ]))
   ∎
   where
     open State (initial adj i)
@@ -223,15 +223,15 @@ step-Invariant {adj = adj} {i} state invariant j =
       ≡⟨ VP.lookup∘tabulate (λ j → r[ j ] + (r[ head queue ] * A[ head queue , j ])) j ⟩
     r[ j ] + r[ head queue ] * A[ head queue , j ]
       ≈⟨ +-cong (invariant j) refl ⟩
-    (I[ i , j ] + ⨁[ q ← s ] (r[ q ] * A[ q , j ])) + r[ head queue ] * A[ head queue , j ]
+    (I[ i , j ] + (⨁[ q ← s ] (r[ q ] * A[ q , j ]))) + r[ head queue ] * A[ head queue , j ]
       ≈⟨ +-assoc _ _ _ ⟩
-    I[ i , j ] + (⨁[ q ← s ] (r[ q ] * A[ q , j ]) + r[ head queue ] * A[ head queue , j ])
+    I[ i , j ] + ((⨁[ q ← s ] (r[ q ] * A[ q , j ])) + (r[ head queue ] * A[ head queue , j ]))
       ≈⟨ +-cong refl (+-cong (Σ.cong′ s P.refl (λ q q∈s → *-cong (reflexive (lemma₁ q q∈s)) refl)) (*-cong (reflexive lemma₂) refl)) ⟩
-    I[ i , j ] + (⨁[ q ← s ] (r′[ q ] * A[ q , j ]) + r′[ head queue ] * A[ head queue , j ])
+    I[ i , j ] + ((⨁[ q ← s ] (r′[ q ] * A[ q , j ])) + (r′[ head queue ] * A[ head queue , j ]))
       ≈⟨ +-cong refl (sym (Σ.snoc (λ q → r′[ q ] * A[ q , j ]) (head queue) s)) ⟩
-    I[ i , j ] + ⨁[ q ← s ∷ʳ head queue ] (r′[ q ] * A[ q , j ])
+    I[ i , j ] + (⨁[ q ← s ∷ʳ head queue ] (r′[ q ] * A[ q , j ]))
       ≡⟨ P.cong₂ _+_ P.refl (P.cong (⨁-syntax (λ q → r′[ q ] * A[ q , j ])) lemma₃) ⟩
-    I[ i , j ] + ⨁[ q ← s′ ] (r′[ q ] * A[ q , j ])
+    I[ i , j ] + (⨁[ q ← s′ ] (r′[ q ] * A[ q , j ]))
   ∎
   where
     open State state hiding (A[_,_])
