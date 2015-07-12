@@ -118,42 +118,46 @@ RLS : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → Pred (State i adj m)
 RLS {i = i} state = let open Abbreviations state in
   ∀ j → r[ j ] ≈ I[ i , j ] + (⨁[ q ← Sub.toList (visited state) ] (r[ j ] + r[ q ] * A[ q , j ]))
 
+init‿A≈I+A : {n : ℕ} (i j : Fin (suc n)) {adj : Adj (suc n)} →
+             let open Abbreviations (init {n} {i} {adj})
+             in A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
+init‿A≈I+A i j {adj} with i ≟ j
+... | yes i≡j rewrite i≡j =
+  begin
+    A[ j , j ]               ≡⟨ Adj.diag adj j ⟩
+    1#                       ≈⟨ sym (+-idempotent _) ⟩
+    1#         + 1#          ≡⟨ P.sym (P.cong₂ _+_ (Adj.diag I j) (Adj.diag adj j)) ⟩
+    I[ j , j ] + A[ j , j ]
+  ∎
+  where open Abbreviations (init {i = i} {adj})
+... | no ¬i≡j =
+  begin
+    A[ i , j ]               ≈⟨ sym (proj₁ +-identity _) ⟩
+    0#         + A[ i , j ]  ≡⟨ P.cong₂ _+_ {!!} P.refl ⟩
+    I[ i , j ] + A[ i , j ]
+  ∎
+  where open Abbreviations (init {i = i} {adj})
+
 correct-init : {n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} →
                RLS (init {n} {i} {adj})
-correct-init {n} {i} {adj} j =
-  begin
-    A[ i , j ]
-      ≈⟨ lemma i j ⟩
-    I[ i , j ] + A[ i , j ]
-      ≈⟨ +-cong refl (sym (*-identityˡ _)) ⟩
-    I[ i , j ] + 1# * A[ i , j ]
-      ≈⟨ sym $ +-cong (+-idempotent _) (*-cong (reflexive (Adj.diag I i)) refl) ⟩
-    (I[ i , j ] + I[ i , j ]) + I[ i , i ] * A[ i , j ]
-      ≈⟨ +-assoc _ _ _ ⟩
-    I[ i , j ] + (I[ i , j ] + I[ i , i ] * A[ i , j ])
-      ≈⟨ +-cong refl (sym (proj₂ +-identity _)) ⟩
-    I[ i , j ] + ((I[ i , j ] + I[ i , i ] * A[ i , j ]) + 0#)
-      ≡⟨⟩
-    I[ i , j ] + (⨁[ q ← i ∷ [] ] (I[ i , j ] + I[ i , q ] * A[ q , j ]))
-      ≡⟨ {!Sub.toList ⁅ i ⁆ ≡ i ∷ []!} ⟩
-    I[ i , j ] + (⨁[ q ← Sub.toList ⁅ i ⁆ ] (r[ j ] + r[ q ] * A[ q , j ]))
-  ∎
+correct-init {i = i} {adj} j = trans (init‿A≈I+A i j {adj}) (+-cong refl lemma)
   where
-    open Abbreviations (init {n} {i} {adj})
-    lemma : ∀ i j → A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
-    lemma i j with i ≟ j
-    ... | yes i≡j rewrite i≡j =
+    open Abbreviations (init {i = i} {adj})
+    lemma =
       begin
-        A[ j , j ]               ≡⟨ Adj.diag adj j ⟩
-        1#                       ≈⟨ sym (+-idempotent _) ⟩
-        1#         + 1#          ≡⟨ P.sym (P.cong₂ _+_ (Adj.diag I j) (Adj.diag adj j)) ⟩
-        I[ j , j ] + A[ j , j ]
-      ∎
-    ... | no ¬i≡j =
-      begin
-        A[ i , j ]               ≈⟨ sym (proj₁ +-identity _) ⟩
-        0#         + A[ i , j ]  ≡⟨ P.cong₂ _+_ {!!} P.refl ⟩
-        I[ i , j ] + A[ i , j ]
+        A[ i , j ]
+          ≈⟨ sym (+-idempotent _) ⟩
+        A[ i , j ] + A[ i , j ]
+          ≈⟨ +-cong refl (sym (*-identityˡ _)) ⟩
+        A[ i , j ] + 1# * A[ i , j ]
+          ≈⟨ +-cong refl (*-cong (sym (reflexive (Adj.diag adj i))) refl) ⟩
+        A[ i , j ] + A[ i , i ] * A[ i , j ]
+          ≈⟨ sym (proj₂ +-identity _) ⟩
+        (r[ j ] + r[ i ] * A[ i , j ]) + 0#
+          ≡⟨⟩
+        ⨁[ q ← i ∷ [] ] (r[ j ] + r[ q ] * A[ q , j ])
+          ≡⟨ P.cong (⨁-syntax _) (P.sym (Sub.toList⁅i⁆ i)) ⟩
+        ⨁[ q ← Sub.toList ⁅ i ⁆ ] (r[ j ] + r[ q ] * A[ q , j ])
       ∎
 
 correct-step : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)}
