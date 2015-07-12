@@ -18,13 +18,13 @@ size (outside ∷ xs) =       size xs
 
 toVec : {n : ℕ} → (sub : Subset n) → Vec (Fin n) (size sub)
 toVec []              = []
-toVec (inside  ∷ sub) = zero ∷ V.map inject₁ (toVec sub)
-toVec (outside ∷ sub) =        V.map inject₁ (toVec sub)
+toVec (inside  ∷ sub) = zero ∷ V.map suc (toVec sub)
+toVec (outside ∷ sub) =        V.map suc (toVec sub)
 
 toList : {n : ℕ} → Subset n → List (Fin n)
 toList []              = []
-toList (inside  ∷ sub) = zero ∷ L.map inject₁ (toList sub)
-toList (outside ∷ sub) =        L.map inject₁ (toList sub)
+toList (inside  ∷ sub) = zero ∷ L.map suc (toList sub)
+toList (outside ∷ sub) =        L.map suc (toList sub)
 
 private
   length : ∀ {a} {A : Set a} {n} → Vec A n → ℕ
@@ -52,3 +52,12 @@ size≤n (outside V.∷ sub) = ≤-step (size≤n sub)
 ∁-size V.[]                      = refl
 ∁-size {suc n} (inside  V.∷ sub) = ∁-size sub
 ∁-size {suc n} (outside V.∷ sub) = trans (cong suc (∁-size sub)) (sym (+-∸-assoc 1 {n} {size sub} (size≤n sub)))
+
+toList⊥ : {n : ℕ} → toList (⊥ {n}) ≡ []
+toList⊥ {zero}  = refl
+toList⊥ {suc n} = cong (L.map suc) toList⊥
+
+toList⁅i⁆ : {n : ℕ} (i : Fin n) → toList ⁅ i ⁆ ≡ i ∷ []
+toList⁅i⁆ {zero}  ()
+toList⁅i⁆ {suc n} zero                        = cong₂ _∷_ refl toList⊥
+toList⁅i⁆ {suc n} (suc i) rewrite toList⁅i⁆ i = refl
