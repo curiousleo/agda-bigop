@@ -168,7 +168,13 @@ correct-step {i = i} state rls j =
       ≈⟨ +-cong (rls j) (*-cong (reflexive eq) refl) ⟩
     (I[ i , j ] + (⨁[ q ← qs ] (r[ j ] + r[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
       ≈⟨ {!!} ⟩
-    (I[ i , j ] + (⨁[ q ← qs ] (r[ j ] + r[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
+    (I[ i , j ] + (⨁[ q ← qs ] (r′[ j ] + r′[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
+      ≈⟨ {!!} ⟩
+    I[ i , j ] + (r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ])) + r′[ q ] * A[ q , j ]))
+      ≈⟨ {!!} ⟩
+    I[ i , j ] + (r′[ j ] + (⨁[ q ← qs ∷ʳ q ] (r′[ q ] * A[ q , j ])))
+      ≈⟨ {!!} ⟩
+    I[ i , j ] + (r′[ j ] + (⨁[ q ← qs′ ] (r′[ q ] * A[ q , j ])))
       ≈⟨ {!!} ⟩
     I[ i , j ] + (⨁[ q ← qs′ ] (r′[ j ] + r′[ q ] * A[ q , j ]))
   ∎
@@ -179,5 +185,9 @@ correct-step {i = i} state rls j =
     q = head (queue state)
     qs = Sub.toList (visited state)
     qs′ = Sub.toList (⁅ q ⁆ ∪ visited state)
+
     eq : r[ q ] ≡ r′[ q ]
     eq = {!!}
+
+    eq′ : ∀ j → j ∈ queue state → r[ j ] ≡ r′[ j ]
+    eq′ j j∈queue = {!!}
