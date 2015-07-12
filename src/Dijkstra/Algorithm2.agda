@@ -8,14 +8,12 @@ module Dijkstra.Algorithm2
 
 open import Level using (_⊔_)
 
-open import Bigop.Core
-
 open import Dijkstra.Adjacency alg
 open import Dijkstra.Algebra.Properties
 
 open import Data.Fin hiding (_≤_; _+_)
 open import Data.Fin.Properties using (_≟_)
-open import Data.Fin.Subset hiding (_∈_)
+open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Nat.Properties.Simple using (+-suc)
 open import Data.Nat.Properties using (n∸n≡0; ≤-step; +-∸-assoc; 0∸n≡0)
@@ -40,7 +38,7 @@ open RequiresDijkstraAlgebra alg
 open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ≤-refl)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open EqR setoid
-open Fold +-monoid using (⨁-syntax)
+open import Bigop.SubsetCore +-commutativeMonoid
 
 I : ∀ {n} → Adj n
 I = tabulate (diagonal 0# 1#) ▦[ (λ i → {! lookup∘tabulate i i !}) ]
@@ -80,7 +78,7 @@ queue {m} {n} state = P.subst SortedVec (P.trans (Sub.∁-size (visited state)) 
     queue′ = fromVec $ Sub.toVec $ ∁ $ visited state
 
 visited {i = i} init         = ⁅ i ⁆
-visited {i = i} (step state) = ⁅ head (queue state) ⁆ ∪ visited state
+visited {i = i} (step state) = visited state ∪ ⁅ head (queue state) ⁆
   where open Sorted (estimateOrder $ V.tabulate $ estimate state)
 
 module Abbreviations
@@ -93,7 +91,7 @@ module Abbreviations
   r[_] : Fin (suc n) → Weight
   r[ j ] = estimate state j
 
-estimate {i = i} {adj} init         j = A[ i , j ]
+estimate {i = i} {adj} init   j = A[ i , j ]
   where
     open Abbreviations (init {i = i} {adj})
 estimate {i = i} (step state) j = r[ j ] + r[ q ] * A[ q , j ]
@@ -116,7 +114,7 @@ allFin = V.toList ∘ V.allFin
 
 RLS : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → Pred (State i adj m) _
 RLS {i = i} state = let open Abbreviations state in
-  ∀ j → r[ j ] ≈ I[ i , j ] + (⨁[ q ← Sub.toList (visited state) ] (r[ j ] + r[ q ] * A[ q , j ]))
+  ∀ j → r[ j ] ≈ I[ i , j ] + (⨁[ q ← visited state ] (r[ j ] + r[ q ] * A[ q , j ]))
 
 init‿A≈I+A : {n : ℕ} (i j : Fin (suc n)) {adj : Adj (suc n)} →
              let open Abbreviations (init {n} {i} {adj})
@@ -152,12 +150,10 @@ correct-init {i = i} {adj} j = trans (init‿A≈I+A i j {adj}) (+-cong refl lem
         A[ i , j ] + 1# * A[ i , j ]
           ≈⟨ +-cong refl (*-cong (sym (reflexive (Adj.diag adj i))) refl) ⟩
         A[ i , j ] + A[ i , i ] * A[ i , j ]
-          ≈⟨ sym (proj₂ +-identity _) ⟩
-        (r[ j ] + r[ i ] * A[ i , j ]) + 0#
           ≡⟨⟩
-        ⨁[ q ← i ∷ [] ] (r[ j ] + r[ q ] * A[ q , j ])
-          ≡⟨ P.cong (⨁-syntax _) (P.sym (Sub.toList⁅i⁆ i)) ⟩
-        ⨁[ q ← Sub.toList ⁅ i ⁆ ] (r[ j ] + r[ q ] * A[ q , j ])
+        r[ j ] + r[ i ] * A[ i , j ]
+          ≈⟨ sym (fold-⁅i⁆ _ i) ⟩
+        ⨁[ q ← ⁅ i ⁆ ] (r[ j ] + r[ q ] * A[ q , j ])
       ∎
 
 correct-step : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)}
@@ -165,29 +161,33 @@ correct-step : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)}
 correct-step {i = i} state rls j =
   begin
     r[ j ] + r[ q ] * A[ q , j ]
-      ≈⟨ +-cong (rls j) (*-cong (reflexive eq) refl) ⟩
+      ≈⟨ +-cong (rls j) (*-cong eq refl) ⟩
     (I[ i , j ] + (⨁[ q ← qs ] (r[ j ] + r[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
-      ≈⟨ {!!} ⟩
+      ≈⟨ +-cong (+-cong refl (fold-cong _ _ qs (λ q q∈qs → +-cong (eq′ j {!!}) (*-cong (eq′ q q∈qs) refl)))) refl ⟩
     (I[ i , j ] + (⨁[ q ← qs ] (r′[ j ] + r′[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
-      ≈⟨ {!!} ⟩
+      ≈⟨ +-assoc _ _ _ ⟩
+    I[ i , j ] + ((⨁[ q ← qs ] (r′[ j ] + r′[ q ] * A[ q , j ])) + r′[ q ] * A[ q , j ])
+      ≈⟨ +-cong refl (+-cong {!!} refl) ⟩
+    I[ i , j ] + ((r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]))
+      ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
     I[ i , j ] + (r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ])) + r′[ q ] * A[ q , j ]))
-      ≈⟨ {!!} ⟩
-    I[ i , j ] + (r′[ j ] + (⨁[ q ← qs ∷ʳ q ] (r′[ q ] * A[ q , j ])))
-      ≈⟨ {!!} ⟩
+      ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q)))) ⟩
+    I[ i , j ] + (r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ])) + (⨁[ q ← ⁅ q ⁆ ] (r′[ q ] * A[ q , j ]))))
+      ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited state) ⁅ q ⁆))) ⟩
     I[ i , j ] + (r′[ j ] + (⨁[ q ← qs′ ] (r′[ q ] * A[ q , j ])))
       ≈⟨ {!!} ⟩
     I[ i , j ] + (⨁[ q ← qs′ ] (r′[ j ] + r′[ q ] * A[ q , j ]))
   ∎
   where
-    open Sorted (estimateOrder $ V.tabulate $ estimate state)
+    open Sorted (estimateOrder $ V.tabulate $ estimate state) hiding (_∈_)
     open Abbreviations state
     open Abbreviations (step state) using () renaming (r[_] to r′[_])
     q = head (queue state)
-    qs = Sub.toList (visited state)
-    qs′ = Sub.toList (⁅ q ⁆ ∪ visited state)
+    qs = visited state
+    qs′ = visited state ∪ ⁅ q ⁆
 
-    eq : r[ q ] ≡ r′[ q ]
+    eq : r[ q ] ≈ r′[ q ]
     eq = {!!}
 
-    eq′ : ∀ j → j ∈ queue state → r[ j ] ≡ r′[ j ]
+    eq′ : ∀ j → j ∈ visited state → r[ j ] ≈ r′[ j ]
     eq′ j j∈queue = {!!}
