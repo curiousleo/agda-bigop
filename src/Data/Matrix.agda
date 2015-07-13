@@ -1,5 +1,6 @@
 module Data.Matrix where
 
+open import Data.Empty
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Nat.Base using (ℕ)
 import Data.Vec as V
@@ -9,7 +10,7 @@ open import Function using (_∘_)
 open import Function.Equivalence as Equiv using (_⇔_)
 open import Relation.Binary
 import Relation.Binary.PropositionalEquality as P
-open P using (_≡_)
+open P using (_≡_; _≢_)
 open P.≡-Reasoning
 import Relation.Binary.Vec.Pointwise as VP
 
@@ -110,3 +111,12 @@ private
 diagonal-diag : ∀ {a n} {A : Set a} {0# : A} {1# : A} → (i : Fin n) → diagonal 0# 1# i i ≡ 1#
 diagonal-diag zero    = P.refl
 diagonal-diag (suc i) = diagonal-diag i
+
+diagonal-nondiag : ∀ {a n} {A : Set a} {0# : A} {1# : A} (i j : Fin n) → i ≢ j → diagonal 0# 1# i j ≡ 0#
+diagonal-nondiag zero zero i≢j = ⊥-elim (i≢j P.refl)
+diagonal-nondiag zero (suc j) i≢j = P.refl
+diagonal-nondiag (suc i) zero i≢j = P.refl
+diagonal-nondiag (suc i) (suc j) si≢sj = diagonal-nondiag i j (≢-suc si≢sj)
+  where
+    ≢-suc : ∀ {n} {i j : Fin n} → suc i ≢ suc j → i ≢ j
+    ≢-suc si≢sj i≡j = ⊥-elim (si≢sj (P.cong suc i≡j))

@@ -67,10 +67,8 @@ visited-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State
 
 state-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
               m N.≤ n
-state-lemma init = ≤-refl
-state-lemma (step state) =
-  let sm≤sn = ≤-step (state-lemma state)
-  in suc-inj sm≤sn
+state-lemma init         = ≤-refl
+state-lemma (step state) = suc-inj (≤-step (state-lemma state))
 
 queue : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
         let open Sorted (estimateOrder $ V.tabulate $ estimate state) in
@@ -146,9 +144,10 @@ init‿A≈I+A i j {adj} with i ≟ j
   where open Abbreviations (init {i = i} {adj})
 ... | no ¬i≡j =
   begin
-    A[ i , j ]               ≈⟨ sym (proj₁ +-identity _) ⟩
-    0#         + A[ i , j ]  ≡⟨ P.cong₂ _+_ {!!} P.refl ⟩
-    I[ i , j ] + A[ i , j ]
+    A[ i , j ]                       ≈⟨ sym (proj₁ +-identity _) ⟩
+    0#                 + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i j ¬i≡j)) P.refl ⟩
+    diagonal 0# 1# i j + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i j)) P.refl ⟩
+    I[ i , j ]         + A[ i , j ]
   ∎
   where open Abbreviations (init {i = i} {adj})
 
