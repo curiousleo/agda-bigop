@@ -59,8 +59,8 @@ sn∸n≡1 (suc n) = sn∸n≡1 n
 ∸-assoc (suc m) (suc n) zero    (s≤s n≤m) z≤n       = +-comm zero (m ∸ n)
 ∸-assoc (suc m) (suc n) (suc o) (s≤s n≤m) (s≤s o≤n) =
   start
-    suc m ∸ (n ∸ o)      ≣⟨ sm∸n m (n ∸ o) (∸-≤-steps n m o n≤m) ⟩
-    suc (m ∸ (n ∸ o))    ≣⟨ cong suc (∸-assoc m n o n≤m o≤n) ⟩
+    suc m ∸ (n ∸ o)    ≣⟨ sm∸n m (n ∸ o) (∸-≤-steps n m o n≤m) ⟩
+    suc (m ∸ (n ∸ o))  ≣⟨ cong suc (∸-assoc m n o n≤m o≤n) ⟩
     suc ((m ∸ n) + o)  ≣⟨ sym (+-suc (m ∸ n) o) ⟩
     (m ∸ n) + suc o
   □
