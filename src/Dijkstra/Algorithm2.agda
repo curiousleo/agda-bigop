@@ -1,7 +1,5 @@
 open import Dijkstra.Algebra
 
-open import Data.Nat.Base using (ℕ; zero; suc; _∸_; _≥_; z≤n; s≤s)
-
 module Dijkstra.Algorithm2
     {c ℓ} (alg : DijkstraAlgebra c ℓ)
     where
@@ -15,6 +13,8 @@ open import Data.Fin hiding (_≤_; _+_)
 open import Data.Fin.Properties using (_≟_)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
+import Data.Nat as N
+open N using (ℕ; zero; suc; _∸_; z≤n; s≤s)
 open import Data.Nat.Properties.Simple using (+-suc)
 open import Data.Nat.Properties using (n∸n≡0; ≤-step; +-∸-assoc; 0∸n≡0)
 open import Data.List.Any using (module Membership)
@@ -35,13 +35,21 @@ import Relation.Binary.EqReasoning as EqR
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
-open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ≤-refl)
+open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open EqR setoid
 open import Bigop.SubsetCore +-commutativeMonoid
 
+open DecTotalOrder N.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
+
 I : ∀ {n} → Adj n
-I = tabulate (diagonal 0# 1#) ▦[ (λ i → {! lookup∘tabulate i i !}) ]
+I = matrix ▦[ diag ]
+  where
+    matrix : Matrix Weight _ _
+    matrix = tabulate (diagonal 0# 1#)
+
+    diag : ∀ i → (matrix [ i , i ]) ≡ 1#
+    diag i = P.trans (lookup∘tabulate i i) (diagonal-diag i)
 
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
@@ -50,11 +58,11 @@ sn∸n≡1 : ∀ n → suc n ∸ n ≡ 1
 sn∸n≡1 zero    = P.refl
 sn∸n≡1 (suc n) = sn∸n≡1 n
 
-∸-assoc : ∀ m n o → m ≥ n → n ≥ o → m ∸ (n ∸ o) ≡ (m ∸ n) Data.Nat.Base.+ o
-∸-assoc zero .0 .0 z≤n z≤n = P.refl
-∸-assoc (suc m) zero .0 z≤n z≤n = P.cong suc (P.sym {!!})
-∸-assoc (suc m) (suc n) zero (s≤s m≥n) z≤n = {!!}
-∸-assoc (suc m) (suc n) (suc o) (s≤s m≥n) (s≤s n≥o) = {!∸-assoc (suc m) n o!}
+∸-assoc : ∀ m n o → n N.≤ m → o N.≤ n → m ∸ (n ∸ o) ≡ (m ∸ n) N.+ o
+∸-assoc zero .zero .zero z≤n z≤n = P.refl
+∸-assoc (suc m) zero .zero z≤n z≤n = P.cong suc (P.sym {!!})
+∸-assoc (suc m) (suc n) zero (s≤s n≤m) z≤n = {!!}
+∸-assoc (suc m) (suc n) (suc o) (s≤s n≤m) (s≤s o≤n) = {!∸-assoc (suc m) n o!}
 
 ---
 
@@ -67,15 +75,38 @@ visited : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj m �
 visited-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
                 (Sub.size (visited state)) ≡ suc n ∸ m
 
+suc-inj : ∀ {m n} → suc m N.≤ suc n → m N.≤ n
+suc-inj {zero}  {n}     leq       = z≤n
+suc-inj {suc m} {zero}  (s≤s ())
+suc-inj {suc m} {suc n} (s≤s leq) = leq
+
+state-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
+              m N.≤ n
+state-lemma init = ≤-refl
+state-lemma (step state) =
+  let sm≤sn = ≤-step (state-lemma state)
+  in suc-inj sm≤sn
+
 queue : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
         let open Sorted (estimateOrder $ V.tabulate $ estimate state) in
         SortedVec m
-queue {m} {n} state = P.subst SortedVec (P.trans (Sub.∁-size (visited state)) (P.trans (P.cong₂ _∸_ P.refl (visited-lemma state)) (P.trans (∸-assoc _ _ m {!≤-refl!} {!!}) (P.cong₂ Data.Nat.Base._+_ (n∸n≡0 n) P.refl)))) queue′
+queue {m} {n} state = P.subst SortedVec m-eq queue′
   where
+    open P.≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
     open Sorted (estimateOrder $ V.tabulate $ estimate state)
 
     queue′ : SortedVec (Sub.size $ ∁ $ visited state)
     queue′ = fromVec $ Sub.toVec $ ∁ $ visited state
+
+    m-eq : Sub.size (∁ (visited state)) ≡ m
+    m-eq =
+      start
+        Sub.size (∁ (visited state))      ≣⟨ Sub.∁-size (visited state) ⟩
+        suc n ∸ Sub.size (visited state)  ≣⟨ P.cong₂ _∸_ P.refl (visited-lemma state) ⟩
+        suc n ∸ (suc n ∸ m)               ≣⟨ ∸-assoc _ _ m ≤-refl (≤-step (state-lemma state)) ⟩
+        (suc n ∸ suc n) N.+ m             ≣⟨ P.cong₂ N._+_ (n∸n≡0 (suc n)) P.refl ⟩
+        m
+      □
 
 visited {i = i} init         = ⁅ i ⁆
 visited {i = i} (step state) = visited state ∪ ⁅ head (queue state) ⁆
