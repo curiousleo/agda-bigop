@@ -22,8 +22,8 @@ open ≡-Reasoning
 
 size : {n : ℕ} → Subset n → ℕ
 size []             = 0
-size (inside  ∷ xs) = suc $ size xs
-size (outside ∷ xs) =       size xs
+size (inside  ∷ xs) = suc (size xs)
+size (outside ∷ xs) =      size xs
 
 toVec : {n : ℕ} → (sub : Subset n) → Vec (Fin n) (size sub)
 toVec []              = []
