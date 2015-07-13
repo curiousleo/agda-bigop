@@ -158,7 +158,7 @@ correct-init {i = i} {adj} j = trans (init‿A≈I+A i j {adj}) (+-cong refl lem
 
 correct-step : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)}
                (state : State i adj (suc m)) → RLS state → RLS (step state)
-correct-step {i = i} state rls j =
+correct-step {i = i} state rls j = -- need to split on j ∈? visited state
   begin
     r[ j ] + r[ q ] * A[ q , j ]
       ≈⟨ +-cong (rls j) (*-cong eq refl) ⟩
@@ -167,7 +167,7 @@ correct-step {i = i} state rls j =
     (I[ i , j ] + (⨁[ q ← qs ] (r′[ j ] + r′[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]
       ≈⟨ +-assoc _ _ _ ⟩
     I[ i , j ] + ((⨁[ q ← qs ] (r′[ j ] + r′[ q ] * A[ q , j ])) + r′[ q ] * A[ q , j ])
-      ≈⟨ +-cong refl (+-cong {!!} refl) ⟩
+      ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ r′[ j ] qs {!!}) refl) ⟩
     I[ i , j ] + ((r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ]))) + r′[ q ] * A[ q , j ]))
       ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
     I[ i , j ] + (r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ])) + r′[ q ] * A[ q , j ]))
@@ -175,7 +175,7 @@ correct-step {i = i} state rls j =
     I[ i , j ] + (r′[ j ] + ((⨁[ q ← qs ] (r′[ q ] * A[ q , j ])) + (⨁[ q ← ⁅ q ⁆ ] (r′[ q ] * A[ q , j ]))))
       ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited state) ⁅ q ⁆))) ⟩
     I[ i , j ] + (r′[ j ] + (⨁[ q ← qs′ ] (r′[ q ] * A[ q , j ])))
-      ≈⟨ {!!} ⟩
+      ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ r′[ j ] qs′ {!!})) ⟩
     I[ i , j ] + (⨁[ q ← qs′ ] (r′[ j ] + r′[ q ] * A[ q , j ]))
   ∎
   where
