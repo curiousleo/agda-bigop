@@ -1,6 +1,6 @@
 open import Dijkstra.Algebra
 
-open import Data.Nat.Base hiding (_≤_; _⊔_; _+_; _*_; _≟_)
+open import Data.Nat.Base using (ℕ; zero; suc; _∸_; _≥_; z≤n; s≤s)
 
 module Dijkstra.Algorithm2
     {c ℓ} (alg : DijkstraAlgebra c ℓ)
