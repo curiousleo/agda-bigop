@@ -1,12 +1,14 @@
 module Data.Fin.Subset.Extra where
 
 open import Algebra
+import Algebra.Properties.BooleanAlgebra as BA
 open import Algebra.Structures
 
 open import Data.Bool.Base hiding (true; false)
-open import Data.Bool.Properties
+open import Data.Bool.Properties using () renaming (booleanAlgebra to Bool-booleanAlgebra)
+open import Data.Empty using (⊥-elim)
 open import Data.Fin hiding (_≤_)
-open import Data.Fin.Subset
+open import Data.Fin.Subset renaming (booleanAlgebra to Subset-booleanAlgebra)
 open import Data.List.Base as L hiding (length)
 open import Data.Nat.Base
 open import Data.Nat.Properties
@@ -15,11 +17,24 @@ open import Data.Sum
 import Data.Vec as V
 open V using (Vec; []; _∷_; here; there)
 
-open import Function using (_$_)
+open import Function using (_$_; _∘_)
 
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
+
+module Bool-BA = BA Bool-booleanAlgebra
+open IsCommutativeSemiring Bool-BA.∨-∧-isCommutativeSemiring
+  using ()
+  renaming (+-identity to ∨-identity)
+
+module Properties (n : ℕ) where
+  open BA (Subset-booleanAlgebra n) using (∨-∧-isCommutativeSemiring)
+  open IsCommutativeSemiring ∨-∧-isCommutativeSemiring public
+    using ()
+    renaming ( +-identity to ∪-identity
+             ; +-comm to ∪-comm
+             )
 
 size : {n : ℕ} → Subset n → ℕ
 size []             = 0
@@ -100,3 +115,36 @@ suc i ∈? (x ∷ xs) with i ∈? xs
   where
     contradiction : ¬ (suc i ∈ x ∷ xs)
     contradiction (there i∈xs) = ¬i∈xs i∈xs
+
+size-suc : ∀ {n} (i : Fin n) (xs : Subset n) → i ∉ xs → size (⁅ i ⁆ ∪ xs) ≡ suc (size xs)
+size-suc () [] i∉xs
+size-suc zero (inside ∷ xs) i∉xs = ⊥-elim (i∉xs here)
+size-suc {suc n} zero (outside ∷ xs) i∉xs =
+  let open Properties n in cong (suc ∘ size) (proj₁ ∪-identity _)
+size-suc (suc i) (inside  ∷ xs) si∉x∷xs = cong suc (size-suc i xs (si∉x∷xs ∘ there))
+size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ there)
+
+∁-∈ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i ∉ (∁ xs)
+∁-∈ zero (.inside ∷ xs) here ()
+∁-∈ (suc i) (x ∷ xs) (there i∈xs) (there i∈∁xs) = ∁-∈ i xs i∈xs i∈∁xs
+
+∁-∈′ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∉ xs → i ∈ (∁ xs)
+∁-∈′ zero    (inside  ∷ xs) i∉xs = ⊥-elim (i∉xs here)
+∁-∈′ zero    (outside ∷ xs) i∉xs = here
+∁-∈′ (suc i) (x ∷ xs)       i∉xs = there (∁-∈′ i xs (i∉xs ∘ there))
+
+private
+
+  ∈-cong : {m n : ℕ} {i : Fin n} {xs : Vec (Fin n) m} → i V.∈ xs → Data.Fin.suc i V.∈ V.map suc xs
+  ∈-cong here         = here
+  ∈-cong (there i∈xs) = there (∈-cong i∈xs)
+
+  toVec-∈-lemma : {n : ℕ} (i : Fin n) (xs : Vec Bool n) → i ∈ xs → Data.Fin.suc i V.∈ V.map suc (toVec xs)
+  toVec-∈-lemma zero    (.inside ∷ xs) here         = here
+  toVec-∈-lemma (suc i) (inside  ∷ xs) (there i∈xs) = ∈-cong (there (toVec-∈-lemma i xs i∈xs))
+  toVec-∈-lemma (suc i) (outside ∷ xs) (there i∈xs) = ∈-cong (toVec-∈-lemma i xs i∈xs)
+
+toVec-∈ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i V.∈ (toVec xs)
+toVec-∈ zero    (.inside ∷ xs) here         = here
+toVec-∈ (suc i) (inside  ∷ xs) (there i∈xs) = there (toVec-∈-lemma i xs i∈xs)
+toVec-∈ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma i xs i∈xs

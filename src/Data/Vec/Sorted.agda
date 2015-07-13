@@ -17,8 +17,10 @@ open import Data.Product
 open import Data.Sum
 open import Data.Unit
   hiding (_≤_; _≤?_; total)
-open import Data.Vec
-  using (Vec; foldr) renaming ([] to []′; _∷_ to _∷′_; _++_ to _++′_)
+import Data.Vec as V
+open V
+  using (Vec; foldr)
+  renaming ([] to []′; _∷_ to _∷′_; _++_ to _++′_)
 
 open import Function
 
@@ -163,3 +165,8 @@ toVec (x ∷ xs ⟨ prf ⟩) = x ∷′ toVec xs
 
 sort : ∀ {m} → Vec Carrier m → Vec Carrier m
 sort = toVec ∘ fromVec
+
+fromVec-∈ : ∀ {m} x (xs : Vec Carrier m) → x V.∈ xs → x ∈ (fromVec xs)
+fromVec-∈ x []′        ()
+fromVec-∈ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
+fromVec-∈ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈ x xs x∈xs)
