@@ -15,7 +15,7 @@ open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 import Data.Nat as N
 open N using (ℕ; zero; suc; _∸_; z≤n; s≤s)
-open import Data.Nat.Properties.Simple using (+-suc)
+open import Data.Nat.MoreProperties
 open import Data.Nat.Properties using (n∸n≡0; ≤-step; +-∸-assoc; 0∸n≡0)
 open import Data.List.Any using (module Membership)
 open import Data.List.Base
@@ -54,16 +54,6 @@ I = matrix ▦[ diag ]
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
 
-sn∸n≡1 : ∀ n → suc n ∸ n ≡ 1
-sn∸n≡1 zero    = P.refl
-sn∸n≡1 (suc n) = sn∸n≡1 n
-
-∸-assoc : ∀ m n o → n N.≤ m → o N.≤ n → m ∸ (n ∸ o) ≡ (m ∸ n) N.+ o
-∸-assoc zero .zero .zero z≤n z≤n = P.refl
-∸-assoc (suc m) zero .zero z≤n z≤n = P.cong suc (P.sym {!!})
-∸-assoc (suc m) (suc n) zero (s≤s n≤m) z≤n = {!!}
-∸-assoc (suc m) (suc n) (suc o) (s≤s n≤m) (s≤s o≤n) = {!∸-assoc (suc m) n o!}
-
 ---
 
 data State {n} (i : Fin (suc n)) (adj : Adj (suc n)) : ℕ → Set (ℓ ⊔ c) where
@@ -74,11 +64,6 @@ estimate : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj m �
 visited : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} → State i adj m → Subset (suc n)
 visited-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
                 (Sub.size (visited state)) ≡ suc n ∸ m
-
-suc-inj : ∀ {m n} → suc m N.≤ suc n → m N.≤ n
-suc-inj {zero}  {n}     leq       = z≤n
-suc-inj {suc m} {zero}  (s≤s ())
-suc-inj {suc m} {suc n} (s≤s leq) = leq
 
 state-lemma : {m n : ℕ} {i : Fin (suc n)} {adj : Adj (suc n)} (state : State i adj m) →
               m N.≤ n
