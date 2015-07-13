@@ -17,6 +17,7 @@ open V using (Vec; []; _∷_; here; there)
 
 open import Function using (_$_)
 
+open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 
@@ -89,3 +90,13 @@ toList⁅i⁆ {suc n} (suc i) rewrite toList⁅i⁆ i = refl
 ∪-nonempty (outside ∷ xs) (x ∷ ys) (suc i , there i∈xs) =
   let i , i∈xs = ∪-nonempty xs ys (i , i∈xs)
   in suc i , there i∈xs
+
+_∈?_ : ∀ {n} (i : Fin n) (xs : Subset n) → Dec (i ∈ xs)
+zero ∈? (inside  ∷ xs) = yes here
+zero ∈? (outside ∷ xs) = no (λ ())
+suc i ∈? (x ∷ xs) with i ∈? xs
+... | yes i∈xs = yes (there i∈xs)
+... | no ¬i∈xs = no contradiction
+  where
+    contradiction : ¬ (suc i ∈ x ∷ xs)
+    contradiction (there i∈xs) = ¬i∈xs i∈xs
