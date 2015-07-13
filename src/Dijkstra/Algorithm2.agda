@@ -15,7 +15,7 @@ open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 import Data.Nat as N
 open N using (ℕ; zero; suc; _∸_; z≤n; s≤s)
-open import Data.Nat.Properties.Simple using (+-suc)
+open import Data.Nat.Properties.Simple using (+-suc; +-right-identity)
 open import Data.Nat.Properties using (n∸n≡0; ≤-step; +-∸-assoc; 0∸n≡0)
 open import Data.List.Any using (module Membership)
 open import Data.List.Base
@@ -58,11 +58,16 @@ sn∸n≡1 : ∀ n → suc n ∸ n ≡ 1
 sn∸n≡1 zero    = P.refl
 sn∸n≡1 (suc n) = sn∸n≡1 n
 
-∸-assoc : ∀ m n o → n N.≤ m → o N.≤ n → m ∸ (n ∸ o) ≡ (m ∸ n) N.+ o
-∸-assoc zero .zero .zero z≤n z≤n = P.refl
-∸-assoc (suc m) zero .zero z≤n z≤n = P.cong suc (P.sym {!!})
-∸-assoc (suc m) (suc n) zero (s≤s n≤m) z≤n = {!!}
-∸-assoc (suc m) (suc n) (suc o) (s≤s n≤m) (s≤s o≤n) = {!∸-assoc (suc m) n o!}
+∸-suc : ∀ m n → m N.≥ n → suc m ∸ n ≡ suc (m ∸ n)
+∸-suc = {!!}
+
+∸-assoc : ∀ m n o → m N.≥ n → n N.≥ o → m ∸ (n ∸ o) ≡ (m ∸ n) N.+ o
+∸-assoc zero .0 .0 z≤n z≤n = P.refl
+∸-assoc (suc m) zero .0 z≤n z≤n = P.cong suc (P.sym (+-right-identity m))
+∸-assoc (suc m) (suc n) zero (s≤s m≥n) z≤n
+  rewrite +-right-identity (m ∸ n) = P.refl
+∸-assoc (suc m) (suc n) (suc o) (s≤s m≥n) (s≤s n≥o)
+  rewrite +-suc (m ∸ n) o | ∸-assoc m n o m≥n n≥o | ∸-suc m (n ∸ o) {!!} = {!!} -- ∸-suc {!!} {!!} {!!} -- {!∸-assoc (suc m) n o!}
 
 ---
 
