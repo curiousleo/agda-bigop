@@ -26,6 +26,8 @@ syntax ⨁-syntax (λ x → e) v = ⨁[ x ← v ] e
 
 open import Algebra.FunctionProperties _≈_
 
+open import Data.Empty using (⊥-elim)
+
 open import Relation.Binary.EqReasoning setoid
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
@@ -94,3 +96,49 @@ fold-cong : ∀ {n} f g (xs : Subset n) → (∀ i → i ∈ xs → f i ≈ g i)
 fold-cong f g []             eq = refl
 fold-cong f g (inside  ∷ xs) eq = ∙-cong (eq zero here) (fold-cong (f ∘ suc) (g ∘ suc) xs (fold-cong-lemma f g inside xs eq))
 fold-cong f g (outside ∷ xs) eq = fold-cong (f ∘ suc) (g ∘ suc) xs (fold-cong-lemma f g outside xs eq)
+
+fold-distr : ∀ {n} f x (i : Fin n) → fold′ (λ i → x ∙ f i) ⁅ i ⁆ ≈ x ∙ fold′ f ⁅ i ⁆
+fold-distr {suc n} f x zero =
+  begin
+    (x ∙ f zero) ∙ fold′ ((λ i → x ∙ f i) ∘ suc) ⊥  ≈⟨ ∙-cong refl (fold-⊥ {n} _) ⟩
+    (x ∙ f zero) ∙ ε                                ≈⟨ assoc _ _ _ ⟩
+    x ∙ (f zero ∙ ε)                                ≈⟨ ∙-cong refl (∙-cong refl (sym (fold-⊥ {n} _))) ⟩
+    x ∙ (f zero ∙ fold′ (f ∘ suc) ⊥)
+  ∎
+fold-distr f x (suc i) = fold-distr (f ∘ suc) x i
+
+fold-empty : ∀ {n} f (xs : Subset n) → Empty xs → fold′ f xs ≈ ε
+fold-empty f [] empty = refl
+fold-empty f (inside  ∷ xs) empty = ⊥-elim (empty nonempty)
+  where
+    nonempty : Nonempty (inside ∷ xs)
+    nonempty = zero , here
+fold-empty f (outside ∷ xs) empty = fold-empty (f ∘ suc) xs (empty′ xs empty)
+  where
+    empty′ : ∀ {n} (xs : Subset n) → Empty (outside ∷ xs) → Empty xs
+    empty′ []             empty (x , ())
+    empty′ (inside  ∷ xs) empty nonempty  = ⊥-elim (empty (suc zero , there here))
+    empty′ (outside ∷ xs) empty (i , elm) = ⊥-elim (empty (suc i , there  elm))
+
+postulate
+  fold-distr′ : ∀ {n} (idp : Idempotent _∙_) f x (xs : Subset n) → Nonempty xs →
+                fold′ (λ i → x ∙ f i) xs ≈ x ∙ fold′ f xs
+{-
+fold-distr′ idp f x [] (_ , ())
+fold-distr′ idp f x (inside ∷ xs) (zero , here) = {!!}
+fold-distr′ idp f x (inside ∷ xs) ((suc i) , there proj₂) = {!!}
+{-
+  begin
+    (x ∙ f zero) ∙ fold′ ((λ i → x ∙ f i) ∘ suc) xs
+      ≈⟨ assoc _ _ _ ⟩
+    x ∙ (f zero ∙ fold′ ((λ i → x ∙ f i) ∘ suc) xs)
+      ≈⟨ ∙-cong refl (comm _ _) ⟩
+    x ∙ (fold′ ((λ i → x ∙ f i) ∘ suc) xs ∙ f zero)
+      ≈⟨ ∙-cong refl (∙-cong (fold-distr′ idp (f ∘ suc) x xs {!!}) {!!}) ⟩
+    x ∙ (x ∙ fold′ (f ∘ suc) xs ∙ f zero)
+      ≈⟨ {!!} ⟩
+    x ∙ (f zero ∙ fold′ (f ∘ suc) xs)
+  ∎
+-}
+fold-distr′ idp f x (outside ∷ xs) nonempty = {!!}
+-}
