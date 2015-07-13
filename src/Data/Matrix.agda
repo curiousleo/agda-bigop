@@ -103,3 +103,10 @@ private
 
       from : Pointwise _~_ A B → VP.Pointwise (VP.Pointwise _~_) A B
       from eq = VP.ext (λ r → VP.ext (eq r))
+
+------------------------------------------------------------------------
+-- Diagonal creates a diagonal
+
+diagonal-diag : ∀ {a n} {A : Set a} {0# : A} {1# : A} → (i : Fin n) → diagonal 0# 1# i i ≡ 1#
+diagonal-diag zero    = P.refl
+diagonal-diag (suc i) = diagonal-diag i
