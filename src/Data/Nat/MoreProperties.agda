@@ -53,6 +53,11 @@ sn∸n≡1 : ∀ n → suc n ∸ n ≡ 1
 sn∸n≡1 zero    = refl
 sn∸n≡1 (suc n) = sn∸n≡1 n
 
+sm∸n : ∀ m n → n ≤ m → suc m ∸ n ≡ suc (m ∸ n)
+sm∸n zero    .zero   z≤n       = refl
+sm∸n (suc m) zero    n≤m       = refl
+sm∸n (suc m) (suc n) (s≤s n≤m) = sm∸n m n n≤m
+
 ∸-assoc : ∀ m n o → n ≤ m → o ≤ n → m ∸ (n ∸ o) ≡ (m ∸ n) + o
 ∸-assoc zero    .zero   .zero   z≤n       z≤n       = refl
 ∸-assoc (suc m) zero    .zero   z≤n       z≤n       = cong suc (+-comm zero m)
@@ -66,11 +71,6 @@ sn∸n≡1 (suc n) = sn∸n≡1 n
   □
   where
     open ≡-Reasoning using () renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _□)
-
-    sm∸n : ∀ m n → n ≤ m → suc m ∸ n ≡ suc (m ∸ n)
-    sm∸n zero    .zero   z≤n       = refl
-    sm∸n (suc m) zero    n≤m       = refl
-    sm∸n (suc m) (suc n) (s≤s n≤m) = sm∸n m n n≤m
 
     ∸-≤-steps : ∀ m n o → m ≤ n → m ∸ o ≤ n
     ∸-≤-steps zero    n       o       m≤n rewrite 0∸n≡0 o = z≤n
