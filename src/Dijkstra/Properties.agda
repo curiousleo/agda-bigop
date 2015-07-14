@@ -38,8 +38,8 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open UsingAdj i adj
 
-  RLS : {t : Fin (suc n)} → (ctd : ⌛ t) → ∀ j → j ∈ visited ctd → Set _
-  RLS ctd j _ = let r = estimate ctd in
+  RLS : {t : Fin (suc n)} → (ctd : ⌛ t) → Pred (Fin (suc n)) _
+  RLS ctd j = let r = estimate ctd in
     r j ≈ I[ i , j ] + (⨁[ q ← visited ctd ] (r j + r q * A[ q , j ]))
 
   init‿A≈I+A : (i j : Fin (suc n)) → A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
@@ -59,7 +59,7 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ]         + A[ i , j ]
     ∎
 
-  correct-init : ∀ j → {j∈visited : j ∈ visited start} → RLS start j j∈visited
+  correct-init : ∀ j → RLS start j
   correct-init j = trans (init‿A≈I+A i j) (+-cong refl lemma)
     where
       lemma =
@@ -88,7 +88,7 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-preserved ctd {j} j∈visited = Sub.∈∪ j (visited ctd) ⁅ head (queue ctd) ⁆ j∈visited
     where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
 
-  correct-step : {t : Fin n} (ctd : ⌛ (suc t)) → ∀ j → (j∈visited : j ∈ visited ctd) → RLS ctd j j∈visited → RLS (tick ctd) j (visited-preserved ctd j∈visited)
+  correct-step : {t : Fin n} (ctd : ⌛ (suc t)) → ∀ j → (j∈visited : j ∈ visited ctd) → RLS ctd j → RLS (tick ctd) j
   correct-step ctd j j∈visited rls = let open EqR setoid in
     begin
       r j + r q * A[ q , j ]
