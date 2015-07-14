@@ -124,9 +124,9 @@ size-suc {suc n} zero (outside ∷ xs) i∉xs =
 size-suc (suc i) (inside  ∷ xs) si∉x∷xs = cong suc (size-suc i xs (si∉x∷xs ∘ there))
 size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ there)
 
-∁-∈ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i ∉ (∁ xs)
-∁-∈ zero (.inside ∷ xs) here ()
-∁-∈ (suc i) (x ∷ xs) (there i∈xs) (there i∈∁xs) = ∁-∈ i xs i∈xs i∈∁xs
+∁-∈ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∈ xs → i ∉ (∁ xs)
+∁-∈ {i = zero}  {.inside ∷ xs} here ()
+∁-∈ {i = suc i} {x       ∷ xs} (there i∈xs) (there i∈∁xs) = ∁-∈ i∈xs i∈∁xs
 
 ∁-∈′ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∉ xs → i ∈ (∁ xs)
 ∁-∈′ zero    (inside  ∷ xs) i∉xs = ⊥-elim (i∉xs here)
@@ -139,12 +139,37 @@ private
   ∈-cong here         = here
   ∈-cong (there i∈xs) = there (∈-cong i∈xs)
 
-  toVec-∈-lemma : {n : ℕ} (i : Fin n) (xs : Vec Bool n) → i ∈ xs → Data.Fin.suc i V.∈ V.map suc (toVec xs)
-  toVec-∈-lemma zero    (.inside ∷ xs) here         = here
-  toVec-∈-lemma (suc i) (inside  ∷ xs) (there i∈xs) = ∈-cong (there (toVec-∈-lemma i xs i∈xs))
-  toVec-∈-lemma (suc i) (outside ∷ xs) (there i∈xs) = ∈-cong (toVec-∈-lemma i xs i∈xs)
+  toVec-∈-lemma¹ : {n : ℕ} (i : Fin n) (xs : Vec Bool n) → i ∈ xs → Data.Fin.suc i V.∈ V.map suc (toVec xs)
+  toVec-∈-lemma¹ zero    (.inside ∷ xs) here         = here
+  toVec-∈-lemma¹ (suc i) (inside  ∷ xs) (there i∈xs) = ∈-cong (there (toVec-∈-lemma¹ i xs i∈xs))
+  toVec-∈-lemma¹ (suc i) (outside ∷ xs) (there i∈xs) = ∈-cong (toVec-∈-lemma¹ i xs i∈xs)
 
-toVec-∈ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i V.∈ (toVec xs)
-toVec-∈ zero    (.inside ∷ xs) here         = here
-toVec-∈ (suc i) (inside  ∷ xs) (there i∈xs) = there (toVec-∈-lemma i xs i∈xs)
-toVec-∈ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma i xs i∈xs
+toVec-∈¹ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i V.∈ (toVec xs)
+toVec-∈¹ zero    (.inside ∷ xs) here         = here
+toVec-∈¹ (suc i) (inside  ∷ xs) (there i∈xs) = there (toVec-∈-lemma¹ i xs i∈xs)
+toVec-∈¹ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma¹ i xs i∈xs
+
+
+{-
+private
+
+  toVec-∈-lemma² : {n : ℕ} (i : Fin n) (xs : Vec Bool n) → Data.Fin.suc i V.∈ V.map suc (toVec xs) → i V.∈ toVec xs
+  toVec-∈-lemma² () [] si∈sxs
+  toVec-∈-lemma² zero (inside ∷ xs) si∈sxs = here
+  toVec-∈-lemma² zero (outside ∷ xs) si∈sxs = {!!}
+  toVec-∈-lemma² (suc i) (inside ∷ xs) si∈sxs = there {!!}
+  toVec-∈-lemma² (suc i) (outside ∷ xs) si∈sxs = {!si∈sxs!}
+-}
+
+postulate
+  toVec-∉¹ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∉ xs → ¬ i V.∈ (toVec xs)
+--  toVec-∈² : {m n : ℕ} {i : Fin n} {xs : Subset n} → i V.∈ (toVec xs) → i ∈ xs
+
+{-
+toVec-∈² : {m n : ℕ} (i : Fin n) (xs : Subset n) → i V.∈ (toVec xs) → i ∈ xs
+toVec-∈² {n = zero} () [] i∈xs
+toVec-∈² {n = suc n} zero (inside ∷ xs) i∈xs = here
+toVec-∈² {n = suc n} zero (outside ∷ xs) i∈xs = {!!}
+toVec-∈² {n = suc n} (suc i) (inside ∷ xs) i∈xs = there (toVec-∈² {n} i xs (toVec-∈-lemma² i xs {!i∈xs!}))
+toVec-∈² {n = suc n} (suc i) (outside ∷ xs) i∈xs = there (toVec-∈² {n} i xs (toVec-∈-lemma² i xs i∈xs))
+-}

@@ -16,7 +16,7 @@ open import Data.Nat.Properties.Simple
 open import Data.Product
 open import Data.Sum
 open import Data.Unit
-  hiding (_≤_; _≤?_; total)
+  hiding (_≤_; _≤?_; total; _≟_)
 import Data.Vec as V
 open V
   using (Vec; foldr)
@@ -166,7 +166,11 @@ toVec (x ∷ xs ⟨ prf ⟩) = x ∷′ toVec xs
 sort : ∀ {m} → Vec Carrier m → Vec Carrier m
 sort = toVec ∘ fromVec
 
-fromVec-∈ : ∀ {m} x (xs : Vec Carrier m) → x V.∈ xs → x ∈ (fromVec xs)
-fromVec-∈ x []′        ()
-fromVec-∈ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
-fromVec-∈ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈ x xs x∈xs)
+fromVec-∈¹ : ∀ {m} x (xs : Vec Carrier m) → x V.∈ xs → x ∈ (fromVec xs)
+fromVec-∈¹ x []′        ()
+fromVec-∈¹ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
+fromVec-∈¹ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈¹ x xs x∈xs)
+
+postulate
+  -- fromVec-∈² : ∀ {m} {x} {xs : Vec Carrier m} → x ∈ (fromVec xs) → x V.∈ xs
+  fromVec-∉¹ : ∀ {m} {x} {xs : Vec Carrier m} → ¬ x V.∈ xs → ¬ x ∈ (fromVec xs)
