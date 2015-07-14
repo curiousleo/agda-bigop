@@ -51,9 +51,13 @@ I = matrix ▦[ diag ]
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
 
-iter : ∀ {a} (A : ℕ → Set a) (f : {n : ℕ} → A (suc n) → A n) {n : ℕ} → A n → A zero
-iter A f {zero}  x = x
-iter A f {suc n} x = f (iter (A ∘ suc) f x)
+iter : ∀ {n a} (m : Fin (suc n)) (A : ℕ → Set a) (f : {n : ℕ} → A (suc n) → A n) → A n → A (n ℕ-ℕ m)
+iter {zero}  zero     A f x = x
+iter {zero}  (suc ()) A f x
+iter {suc n} zero     A f x = x
+iter {suc n} (suc m)  A f x = f {n ℕ-ℕ m} (iter m (A ∘ suc) f x)
+-- iter A f {zero}  x = x
+-- iter A f {suc n} x = f (iter (A ∘ suc) f x)
 
 ---
 
