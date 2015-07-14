@@ -12,6 +12,7 @@ open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Countdown
 open import Data.Fin.Properties using (_≟_; to-from; inject₁-lemma; bounded)
 open import Data.Fin.Subset
+import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (proj₁; proj₂)
@@ -37,9 +38,9 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open UsingAdj i adj
 
-  RLS : {t : Fin (suc n)} → Pred (⌛ t) _
-  RLS ctd = let r = estimate ctd in
-    ∀ j → r j ≈ I[ i , j ] + (⨁[ q ← visited ctd ] (r j + r q * A[ q , j ]))
+  RLS : {t : Fin (suc n)} → (ctd : ⌛ t) → ∀ j → j ∈ visited ctd → Set _
+  RLS ctd j _ = let r = estimate ctd in
+    r j ≈ I[ i , j ] + (⨁[ q ← visited ctd ] (r j + r q * A[ q , j ]))
 
   init‿A≈I+A : (i j : Fin (suc n)) → A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
   init‿A≈I+A i j with i ≟ j
@@ -58,7 +59,7 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ]         + A[ i , j ]
     ∎
 
-  correct-init : RLS start
+  correct-init : ∀ j → {j∈visited : j ∈ visited start} → RLS start j j∈visited
   correct-init j = trans (init‿A≈I+A i j) (+-cong refl lemma)
     where
       lemma =
@@ -79,17 +80,25 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           open EqR setoid
           r = estimate start
 
-  correct-step : {t : Fin n} (ctd : ⌛ (suc t)) → RLS ctd → RLS (tick ctd)
-  correct-step ctd rls j = let open EqR setoid in -- need to split on j ∈? visited state
+  visited-nonempty : ∀ {t} (ctd : ⌛ t) → Nonempty (visited ctd)
+  visited-nonempty start      = Sub.⁅i⁆-nonempty i
+  visited-nonempty (tick ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
+
+  visited-preserved : {t : Fin n} (ctd : ⌛ (suc t)) → ∀ {j} → j ∈ visited ctd → j ∈ visited (tick ctd)
+  visited-preserved ctd {j} j∈visited = Sub.∈∪ j (visited ctd) ⁅ head (queue ctd) ⁆ j∈visited
+    where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
+
+  correct-step : {t : Fin n} (ctd : ⌛ (suc t)) → ∀ j → (j∈visited : j ∈ visited ctd) → RLS ctd j j∈visited → RLS (tick ctd) j (visited-preserved ctd j∈visited)
+  correct-step ctd j j∈visited rls = let open EqR setoid in
     begin
       r j + r q * A[ q , j ]
-        ≈⟨ +-cong (rls j) (*-cong eq refl) ⟩
+        ≈⟨ +-cong rls (*-cong eq refl) ⟩
       (I[ i , j ] + (⨁[ q ← qs ] (r j + r q * A[ q , j ]))) + r′ q * A[ q , j ]
-        ≈⟨ +-cong (+-cong refl (fold-cong _ _ qs (λ q q∈qs → +-cong (eq′ j {!!}) (*-cong (eq′ q q∈qs) refl)))) refl ⟩
+        ≈⟨ +-cong (+-cong refl (fold-cong _ _ qs (λ q q∈qs → +-cong (eq′ j j∈visited) (*-cong (eq′ q q∈qs) refl)))) refl ⟩
       (I[ i , j ] + (⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ]))) + r′ q * A[ q , j ]
         ≈⟨ +-assoc _ _ _ ⟩
       I[ i , j ] + ((⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ])) + r′ q * A[ q , j ])
-        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ j) qs {!!}) refl) ⟩
+        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ j) qs (visited-nonempty ctd)) refl) ⟩
       I[ i , j ] + ((r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ]))) + r′ q * A[ q , j ]))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
       I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + r′ q * A[ q , j ]))
@@ -97,7 +106,7 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + (⨁[ q ← ⁅ q ⁆ ] (r′ q * A[ q , j ]))))
         ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q ⁆))) ⟩
       I[ i , j ] + (r′ j + (⨁[ q ← qs′ ] (r′ q * A[ q , j ])))
-        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ j) qs′ {!!})) ⟩
+        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ j) qs′ (visited-nonempty (tick ctd)))) ⟩
       I[ i , j ] + (⨁[ q ← qs′ ] (r′ j + r′ q * A[ q , j ]))
     ∎
     where
@@ -109,7 +118,7 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       qs′ = visited ctd ∪ ⁅ q ⁆
 
       eq : r q ≈ r′ q
-      eq = {!!}
+      eq = {!q!}
 
       eq′ : ∀ j → j ∈ visited ctd → r j ≈ r′ j
       eq′ j j∈queue = {!!}
