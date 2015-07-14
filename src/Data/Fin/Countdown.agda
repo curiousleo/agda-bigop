@@ -7,7 +7,7 @@ open import Data.Nat.MoreProperties
 
 data ⌛ {from} : (Fin (suc from)) → Set where
   start : ⌛ (fromℕ from)
-  tick  : (m : Fin from) (ctd : ⌛ (suc m)) → ⌛ (inject₁ m)
+  tick  : {m : Fin from} (ctd : ⌛ (suc m)) → ⌛ (inject₁ m)
 
 ⌛-≤ : ∀ {from rem} (ctd : ⌛ {from} rem) → toℕ rem ≤ from
 ⌛-≤ ctd = suc-inj (bounded _)
