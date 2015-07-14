@@ -98,13 +98,18 @@ toList⁅i⁆ {suc n} (suc i) rewrite toList⁅i⁆ i = refl
 ∈∪ zero    (outside ∷ xs) ys       ()
 ∈∪ (suc i) (x ∷ xs)       (y ∷ ys) (there i∈xs) = there (∈∪ i xs ys i∈xs)
 
-∪-nonempty : {n : ℕ} (xs ys : Subset n) → Nonempty xs → Nonempty (xs ∪ ys)
-∪-nonempty []             ys       (i , ())
-∪-nonempty (inside  ∷ xs) (y ∷ ys) (i , i∈xs)           = zero , here
-∪-nonempty (outside ∷ xs) (x ∷ ys) (zero , ())
-∪-nonempty (outside ∷ xs) (x ∷ ys) (suc i , there i∈xs) =
-  let i , i∈xs = ∪-nonempty xs ys (i , i∈xs)
+∪-nonempty¹ : {n : ℕ} (xs ys : Subset n) → Nonempty xs → Nonempty (xs ∪ ys)
+∪-nonempty¹ []             ys       (i , ())
+∪-nonempty¹ (inside  ∷ xs) (y ∷ ys) (i , i∈xs)           = zero , here
+∪-nonempty¹ (outside ∷ xs) (x ∷ ys) (zero , ())
+∪-nonempty¹ (outside ∷ xs) (x ∷ ys) (suc i , there i∈xs) =
+  let i , i∈xs = ∪-nonempty¹ xs ys (i , i∈xs)
   in suc i , there i∈xs
+
+∪-nonempty² : {n : ℕ} (xs ys : Subset n) → Nonempty ys → Nonempty (xs ∪ ys)
+∪-nonempty² {n} xs ys nonempty-ys = subst Nonempty (∪-comm ys xs) (∪-nonempty¹ ys xs nonempty-ys)
+  where
+    open Properties n
 
 _∈?_ : ∀ {n} (i : Fin n) (xs : Subset n) → Dec (i ∈ xs)
 zero ∈? (inside  ∷ xs) = yes here
