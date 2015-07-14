@@ -154,6 +154,9 @@ toVec-∈¹ zero    (.inside ∷ xs) here         = here
 toVec-∈¹ (suc i) (inside  ∷ xs) (there i∈xs) = there (toVec-∈-lemma¹ i xs i∈xs)
 toVec-∈¹ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma¹ i xs i∈xs
 
+i∈⁅i⁆ : {n : ℕ} (i : Fin n) → i ∈ ⁅ i ⁆
+i∈⁅i⁆ zero = here
+i∈⁅i⁆ (suc i) = there (i∈⁅i⁆ i)
 
 {-
 private
