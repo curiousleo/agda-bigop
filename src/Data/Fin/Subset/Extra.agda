@@ -138,6 +138,14 @@ size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ t
 ∁-∈′ zero    (outside ∷ xs) i∉xs = here
 ∁-∈′ (suc i) (x ∷ xs)       i∉xs = there (∁-∈′ i xs (i∉xs ∘ there))
 
+∪-∈ : {n : ℕ} (i : Fin n) (xs ys : Subset n) → i ∈ xs ∪ ys → i ∈ xs ⊎ i ∈ ys
+∪-∈ zero (inside  ∷ xs) (y ∷ ys) here = inj₁ here
+∪-∈ zero (outside ∷ xs) (inside ∷ ys) here = inj₂ here
+∪-∈ zero (outside ∷ xs) (outside ∷ ys) ()
+∪-∈ (suc i) (x ∷ xs) (y ∷ ys) (there i∈) with ∪-∈ i xs ys i∈
+∪-∈ (suc i) (x ∷ xs) (y ∷ ys) (there i∈) | inj₁ i∈xs = inj₁ (there i∈xs)
+∪-∈ (suc i) (x ∷ xs) (y ∷ ys) (there i∈) | inj₂ i∈ys = inj₂ (there i∈ys)
+
 private
 
   ∈-cong : {m n : ℕ} {i : Fin n} {xs : Vec (Fin n) m} → i V.∈ xs → Data.Fin.suc i V.∈ V.map suc xs
@@ -157,6 +165,16 @@ toVec-∈¹ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma¹ i xs i�
 i∈⁅i⁆ : {n : ℕ} (i : Fin n) → i ∈ ⁅ i ⁆
 i∈⁅i⁆ zero = here
 i∈⁅i⁆ (suc i) = there (i∈⁅i⁆ i)
+
+i∉⊥ : {n : ℕ} (i : Fin n) → i ∉ ⊥
+i∉⊥ zero ()
+i∉⊥ (suc i) (there i∈⊥) = i∉⊥ i i∈⊥
+
+i∈⁅i⁆′ : {n : ℕ} (i j : Fin n) → j ∈ ⁅ i ⁆ → j ≡ i
+i∈⁅i⁆′ zero zero j∈⁅i⁆ = refl
+i∈⁅i⁆′ zero (suc j) (there j∈⁅i⁆) = ⊥-elim (i∉⊥ j j∈⁅i⁆)
+i∈⁅i⁆′ (suc i) zero ()
+i∈⁅i⁆′ (suc i) (suc j) (there j∈⁅i⁆) = cong suc (i∈⁅i⁆′ i j j∈⁅i⁆)
 
 {-
 private
