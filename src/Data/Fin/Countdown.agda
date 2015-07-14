@@ -11,7 +11,3 @@ data ⌛ {from} : (Fin (suc from)) → Set where
 
 ⌛-≤ : ∀ {from rem} (ctd : ⌛ {from} rem) → toℕ rem ≤ from
 ⌛-≤ ctd = suc-inj (bounded _)
-
-data ⌛′ {from} : ℕ → Set where
-  start : ⌛′ from
-  tick  : (r : ℕ) (ctd : ⌛′ {from} (suc r)) → ⌛′ r
