@@ -56,6 +56,10 @@ I = matrix ▦[ diag ]
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
 
+iter : ∀ {a} (A : ℕ → Set a) (f : {n : ℕ} → A (suc n) → A n) {n : ℕ} → A n → A zero
+iter A f {zero}  x = x
+iter A f {suc n} x = f (iter (A ∘ suc) f x)
+
 ---
 
 module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
@@ -151,7 +155,6 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           q∉queue′ : ¬ q S.∈ (queue′ ctd)
           q∉queue′ = S.fromVec-∉¹ (Sub.toVec-∉¹ (Sub.∁-∈ q∈vs))
 
-
           q∉queue : ¬ q S.∈ (queue ctd)
           q∉queue = q′→q ctd (λ qs → ¬ q S.∈ qs) q∉queue′
 
@@ -162,6 +165,49 @@ module _ {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       -- ⟶ q ∉ Sub.toVec (∁ (visited ctd))   by Sub.toVec-∉¹
       -- ⟶ q ∉ fromVec (Sub.toVec (∁ (visited ctd)))   by fromVec-∉¹
       -- ⟶ q ∉ P.subst SortedVec {! eq !} (fromVec (Sub.toVec (∁ (visited ctd))))
+
+  RLS : {t : Fin (suc n)} → Pred (⌛ t) _
+  RLS ctd = let r = estimate ctd in
+    ∀ j → r j ≈ I[ i , j ] + (⨁[ q ← visited ctd ] (r j + r q * A[ q , j ]))
+
+  init‿A≈I+A : (i j : Fin (suc n)) → A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
+  init‿A≈I+A i j with i ≟ j
+  ... | yes i≡j rewrite i≡j = let open EqR setoid in
+    begin
+      A[ j , j ]               ≡⟨ Adj.diag adj j ⟩
+      1#                       ≈⟨ sym (+-idempotent _) ⟩
+      1#         + 1#          ≡⟨ P.sym (P.cong₂ _+_ (Adj.diag I j) (Adj.diag adj j)) ⟩
+      I[ j , j ] + A[ j , j ]
+    ∎
+  ... | no ¬i≡j = let open EqR setoid in
+    begin
+      A[ i , j ]                       ≈⟨ sym (proj₁ +-identity _) ⟩
+      0#                 + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i j ¬i≡j)) P.refl ⟩
+      diagonal 0# 1# i j + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i j)) P.refl ⟩
+      I[ i , j ]         + A[ i , j ]
+    ∎
+
+  correct-init : RLS start
+  correct-init j = trans (init‿A≈I+A i j) (+-cong refl lemma)
+    where
+      lemma =
+        begin
+          A[ i , j ]
+            ≈⟨ sym (+-idempotent _) ⟩
+          A[ i , j ] + A[ i , j ]
+            ≈⟨ +-cong refl (sym (*-identityˡ _)) ⟩
+          A[ i , j ] + 1# * A[ i , j ]
+            ≈⟨ +-cong refl (*-cong (sym (reflexive (Adj.diag adj i))) refl) ⟩
+          A[ i , j ] + A[ i , i ] * A[ i , j ]
+            ≡⟨⟩
+          r j + r i * A[ i , j ]
+            ≈⟨ sym (fold-⁅i⁆ _ i) ⟩
+          ⨁[ q ← ⁅ i ⁆ ] (r j + r q * A[ q , j ])
+        ∎
+        where
+          open EqR setoid
+          r = estimate start
+
 
 {-
 
