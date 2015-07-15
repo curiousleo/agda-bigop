@@ -13,9 +13,12 @@ open import Data.Fin.Properties using (_≟_; to-from; inject₁-lemma; bounded)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
-open import Data.Nat using (ℕ; zero; suc; _<_; z≤n; s≤s)
+open import Data.Nat
+  using (ℕ; zero; suc; _<_; z≤n; s≤s)
+  renaming (_+_ to _N+_)
 open import Data.Nat.MoreProperties
 open import Data.Nat.Properties using (≤-step)
+open import Data.Nat.Properties.Simple using (+-suc)
 open import Data.Product using (proj₁; proj₂; _,_; ∃; ∃₂)
 open import Data.Sum
 import Data.Vec as V
@@ -102,6 +105,10 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
               estimate (suc ctd) {s≤s lt} (head (queue ctd)) ≈ estimate ctd (head (queue ctd))
   q-minimum ctd = +-absorbs-* _ _
 
+  i-estimate : (ctd : ℕ) {lt : ctd < suc n} → estimate ctd {lt} i ≈ 1#
+  i-estimate zero      = reflexive (Adj.diag adj i)
+  i-estimate (suc ctd) = trans (+-cong (i-estimate ctd) refl) (proj₁ +-zero _)
+
   visited-queue : (ctd : ℕ) {lt : ctd < suc n} →
                   ∀ j → j ∈ visited ctd {lt} → j ≡ i ⊎ ∃₂ λ k k<n → j ≡ Sorted.head _ (queue k {k<n})
   visited-queue zero      {lt} j j∈visited = inj₁ (Sub.i∈⁅i⁆′ i j j∈visited)
@@ -109,14 +116,51 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   ... | inj₁ j∈vs  = visited-queue ctd j j∈vs
   ... | inj₂ j∈⁅q⁆ = inj₂ (ctd , (suc-inj lt , Sub.i∈⁅i⁆′ (Sorted.head _ (queue ctd)) j j∈⁅q⁆))
 
-  start-minimum : ∀ j → j ≡ i → estimate (suc zero) {{!suc zero < suc n!}} j ≈ estimate zero {s≤s z≤n} j
-  start-minimum j j≡i rewrite j≡i | Adj.diag adj i = proj₁ +-zero _
+  start-minimum : (ctd : ℕ) {lt : ctd < n} →
+                  ∀ j → j ≡ i → estimate (suc ctd) {s≤s lt} j ≈ estimate ctd {≤-step lt} j
+  start-minimum ctd {lt} j j≡i rewrite j≡i | Adj.diag adj i = trans (i-estimate (suc ctd)) (sym (i-estimate ctd))
 
-  visited-minimum : (ctd : ℕ) {lt : ctd < suc n} →
-                    ∀ j → j ∈ visited ctd {lt} → estimate (suc ctd) j ≈ estimate ctd j
-  visited-minimum ctd {lt} j j∈visited with visited-queue ctd {lt} j j∈visited
-  ... | inj₁ j≡i               = {!start-minimum j j≡i!}
-  ... | inj₂ (k , (k<n , j≡q)) = {!q-minimum !}
+  correct-q : (ctd : ℕ) {lt : ctd < n} → RLS ctd {≤-step lt} (Sorted.head _ (queue ctd {lt}))
+  correct-q zero {lt} with i ≟ Sorted.head _ (queue zero)
+  ... | yes i≡q =
+    begin
+      A[ i , q ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (P.sym i≡q) ⟩
+      A[ i , i ]      ≡⟨ Adj.diag adj i ⟩
+      1#              ≈⟨ sym (proj₁ +-zero _) ⟩
+      1#         + _  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
+      I[ i , i ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (P.refl {x = i}) i≡q) P.refl ⟩
+      I[ i , q ] + _
+    ∎
+    where
+      open EqR setoid
+      q = Sorted.head _ (queue zero {lt})
+  ... | no ¬i≡q =
+    begin
+                            A[ i , q ]                                 ≈⟨ sym (+-idempotent _) ⟩
+                            A[ i , q ] + A[ i , q ]                    ≈⟨ sym (proj₁ +-identity _) ⟩
+      0#                 + (A[ i , q ] + A[ i , q ])                   ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i q ¬i≡q)) P.refl ⟩
+      diagonal 0# 1# i q + (A[ i , q ] + A[ i , q ])                   ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i q)) P.refl ⟩
+      I[ i , q ]         + (A[ i , q ] +              A[ i , q ])      ≈⟨ +-cong refl (+-cong refl (sym (*-identityˡ _))) ⟩
+      I[ i , q ]         + (r q        + 1#         * A[ i , q ])      ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ P.refl (P.cong₂ _*_ (P.sym (Adj.diag adj i)) P.refl)) ⟩
+      I[ i , q ]         + (r q        + A[ i , i ] * A[ i , q ])      ≈⟨ +-cong refl (sym (fold-⁅i⁆ _ i)) ⟩
+      I[ i , q ]         + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))
+    ∎
+    where
+      open EqR setoid
+      r = estimate zero {s≤s z≤n}
+      q = Sorted.head _ (queue zero)
+  correct-q (suc ctd) = {!!}
+  {- let open EqR setoid in
+    begin
+      r q
+        ≈⟨ {!!} ⟩
+      I[ i , q ] + (⨁[ k ← visited ctd ] (r q + r k * A[ k , q ]))
+    ∎
+    where
+      r = estimate ctd {≤-step lt}
+      q = Sorted.head _ (queue ctd {lt})
+      qs = visited ctd
+-}
 
   correct-step : (ctd : ℕ) {lt : ctd < n} → ∀ j → j ∈ visited ctd {≤-step lt} → RLS ctd j → RLS (suc ctd) {s≤s lt} j
   correct-step ctd j j∈visited rls = let open EqR setoid in
