@@ -149,19 +149,37 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       open EqR setoid
       r = estimate zero {s≤s z≤n}
       q = Sorted.head _ (queue zero)
-  correct-q (suc ctd) = {!!}
-  {- let open EqR setoid in
+  correct-q (suc ctd) {lt} =
     begin
-      r q
-        ≈⟨ {!!} ⟩
-      I[ i , q ] + (⨁[ k ← visited ctd ] (r q + r k * A[ k , q ]))
+      r q′ + r q * A[ q , q′ ]
+        ≈⟨ {!q-minimum ctd {suc-inj (≤-step lt)}!} ⟩
+      (I[ i , q′ ] + (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]
+        ≈⟨ +-assoc _ _ _ ⟩
+      I[ i , q′ ] + ((⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ])
+        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ q′) qs (visited-nonempty ctd)) refl) ⟩
+      I[ i , q′ ] + ((r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]))
+        ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
+      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ]))
+        ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q′)))) ⟩
+      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ]))))
+        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆))) ⟩
+      I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
+        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ q′) qs′ (visited-nonempty (suc ctd)))) ⟩
+      I[ i , q′ ] + (⨁[ k ← qs′ ] (r′ q′ + r′ k * A[ k , q′ ]))
     ∎
     where
-      r = estimate ctd {≤-step lt}
-      q = Sorted.head _ (queue ctd {lt})
-      qs = visited ctd
--}
+      q  = Sorted.head _ (queue ctd)
+      q′ = Sorted.head _ (queue (suc ctd) {lt})
+      r  = estimate ctd {≤-step (suc-inj (≤-step lt))}
+      r′ = estimate (suc ctd) {≤-step lt}
+      open EqR setoid
+      qs  = visited ctd
+      qs′ = visited (suc ctd)
 
+      lemma₀ : estimate (suc ctd) (Sorted.head _ (queue ctd)) ≈ estimate ctd (Sorted.head _ (queue ctd))
+      lemma₀ = q-minimum ctd {suc-inj (≤-step lt)}
+
+{-
   correct-step : (ctd : ℕ) {lt : ctd < n} → ∀ j → j ∈ visited ctd {≤-step lt} → RLS ctd j → RLS (suc ctd) {s≤s lt} j
   correct-step ctd j j∈visited rls = let open EqR setoid in
     begin
@@ -190,3 +208,12 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       q = head (queue ctd)
       qs = visited ctd
       qs′ = visited ctd ∪ ⁅ q ⁆
+-}
+
+{-
+  visited-minimum : (ctd : ℕ) {lt : ctd < n} →
+                    ∀ j → j ∈ visited ctd {≤-step lt} → estimate (suc ctd) {s≤s lt} j ≈ estimate ctd {≤-step lt} j
+  visited-minimum ctd {lt} j j∈visited with visited-queue ctd {≤-step lt} j j∈visited
+  ... | inj₁ j≡i               = start-minimum ctd j j≡i
+  ... | inj₂ (k , (k<n , j≡q)) = trans (reflexive (P.cong (estimate (suc ctd)) j≡q)) {!q-minimum ctd {k<n}!}
+-}
