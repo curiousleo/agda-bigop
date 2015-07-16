@@ -126,6 +126,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   start≢head : (ctd : ℕ) {lt : suc ctd N≤ n} → i ≢ Sorted.head _ (queue ctd {lt})
   start≢head ctd {lt} eq = head∉visited ctd (P.subst (λ x → x ∈ (visited ctd)) eq (start-visited ctd))
 
+{-
   correct-q : (ctd : ℕ) {lt : suc ctd N≤ n} → RLS ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt}))
 
   correct-q zero {lt} with i ≟ Sorted.head _ (queue zero)
@@ -166,11 +167,17 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       r q′ + (I[ i , q ] + (⨁[ k ← qs ] (r q + r k * A[ k , q ]))) * A[ q , q′ ]
         ≡⟨ {!!} ⟩
       r q′ + (⨁[ k ← qs ] (r q + r k * A[ k , q ])) * A[ q , q′ ]
+        ≈⟨ {!!} ⟩
+      r q′ + (r q + (⨁[ k ← qs ] (r k * A[ k , q ]))) * A[ q , q′ ]
         ≈⟨ {!+-selective!} ⟩
-      (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ]
-        ≈⟨ +-cong (fold-distr′ +-idempotent _ (r′ q′) qs (visited-nonempty ctd)) refl ⟩
-      (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ])
+      (r q′ + r q * A[ q , q′ ]) + (⨁[ k ← qs ] ((r k + r q * A[ q , k ]) * A[ k , q′ ]))
+        ≡⟨⟩
+      r′ q′ + (⨁[ k ← qs ] (r′ k * A[ k , q′ ]))
+        ≈⟨ +-cong (sym (+-absorbs-* _ _)) refl ⟩
+      (r′ q′ + r′ q′ * A[ q′ , q′ ]) + (⨁[ k ← qs ] (r′ k * A[ k , q′ ]))
         ≈⟨ +-assoc _ _ _ ⟩
+      r′ q′ + (r′ q′ * A[ q′ , q′ ] + (⨁[ k ← qs ] (r′ k * A[ k , q′ ])))
+        ≈⟨ +-cong refl (+-comm _ _) ⟩
       r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ])
         ≈⟨ +-cong refl (+-cong refl (sym (fold-⁅i⁆ (λ k → r′ k * A[ k , q′ ]) q′))) ⟩
       r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ])))
@@ -198,40 +205,77 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
       qs′-eq : qs′ ≡ qs ∪ ⁅ q′ ⁆
       qs′-eq = {!P.refl!}
-
+-}
 --      lemma₀ : estimate (suc ctd) (Sorted.head _ (queue ctd)) ≈ estimate ctd (Sorted.head _ (queue ctd))
 --      lemma₀ = q-minimum ctd {suc-inj (≤-step lt)}
 
-{-
-  correct-step : (ctd : ℕ) {lt : ctd < n} → ∀ j → j ∈ visited ctd {≤-step lt} → RLS ctd j → RLS (suc ctd) {s≤s lt} j
-  correct-step ctd j j∈visited rls = let open EqR setoid in
-    begin
-      r j + r q * A[ q , j ]
-        ≈⟨ +-cong rls (*-cong {!!} refl) ⟩
-      (I[ i , j ] + (⨁[ q ← qs ] (r j + r q * A[ q , j ]))) + r′ q * A[ q , j ]
-        ≈⟨ +-cong (+-cong refl (fold-cong _ _ qs (λ q q∈qs → +-cong {!estimate-preserved ctd j∈visited!} (*-cong {!estimate-preserved ctd q∈qs!} refl)))) refl ⟩
-      (I[ i , j ] + (⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ]))) + r′ q * A[ q , j ]
-        ≈⟨ +-assoc _ _ _ ⟩
-      I[ i , j ] + ((⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ])) + r′ q * A[ q , j ])
-        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ j) qs (visited-nonempty ctd)) refl) ⟩
-      I[ i , j ] + ((r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ]))) + r′ q * A[ q , j ]))
-        ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + r′ q * A[ q , j ]))
-        ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q)))) ⟩
-      I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + (⨁[ q ← ⁅ q ⁆ ] (r′ q * A[ q , j ]))))
-        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q ⁆))) ⟩
-      I[ i , j ] + (r′ j + (⨁[ q ← qs′ ] (r′ q * A[ q , j ])))
-        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ j) qs′ (visited-nonempty (suc ctd)))) ⟩
-      I[ i , j ] + (⨁[ q ← qs′ ] (r′ j + r′ q * A[ q , j ]))
-    ∎
-    where
-      open Sorted (estimateOrder $ V.tabulate $ estimate ctd) hiding (_∈_)
-      r = estimate ctd
-      r′ = estimate (suc ctd)
-      q = head (queue ctd)
-      qs = visited ctd
-      qs′ = visited ctd ∪ ⁅ q ⁆
+  mutual
+
+    estimate-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
+                         estimate ctd {≤-step′ lt} j ≈ estimate (suc ctd) {lt} j
+
+    estimate-preserved zero {lt} j j∈visited = {!!}
+
+    estimate-preserved (suc ctd) {lt} j j∈visited = {!!} {- trans (correct-step ctd j j∈visited) (sym eq)
+      where
+        open EqR setoid
+        r = estimate ctd
+        r′ = estimate (suc ctd)
+
+        eq =
+          begin
+            r j + r k * A[ k , j ]
+              ≈⟨ {!correct-step (suc ctd) j ?!} ⟩
+            I[ i , j ] + (⨁[ k ← visited (suc ctd) ] (r′ j + r′ k * A[ k , j ]))
+              ≈⟨ {!!} ⟩
+            I[ i , j ] + (⨁[ k ← visited ctd ] (r j + r k * A[ k , j ]))
+          ∎
 -}
+
+    correct-step : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → j ∈ visited ctd {lt} → RLS ctd {lt} j
+
+    correct-step zero j j∈visited = {!!} {-
+      begin
+        A[ i , q ]                                               ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (P.sym i≡q) ⟩
+        A[ i , i ]                                               ≡⟨ Adj.diag adj i ⟩
+        1#                                                       ≈⟨ sym (proj₁ +-zero _) ⟩
+        1#         + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
+        I[ i , i ] + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (P.refl {x = i}) i≡q) P.refl ⟩
+        I[ i , q ] + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))
+      ∎
+      where
+        open EqR setoid
+        q = Sorted.head _ (queue zero {lt})
+        r = estimate zero {z≤n} -}
+
+    correct-step (suc ctd) j j∈visited = let open EqR setoid in
+      begin
+        r j + r q * A[ q , j ]
+          ≈⟨ +-cong (correct-step ctd j {!!}) (*-cong (sym (q-minimum ctd)) refl) ⟩
+        (I[ i , j ] + (⨁[ q ← qs ] (r j + r q * A[ q , j ]))) + r′ q * A[ q , j ]
+          ≈⟨ +-cong (+-cong refl (fold-cong _ _ qs (λ q q∈qs → +-cong (estimate-preserved ctd j {!!}) (*-cong ? refl)))) refl ⟩
+        (I[ i , j ] + (⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ]))) + r′ q * A[ q , j ]
+          ≈⟨ +-assoc _ _ _ ⟩
+        I[ i , j ] + ((⨁[ q ← qs ] (r′ j + r′ q * A[ q , j ])) + r′ q * A[ q , j ])
+          ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ j) qs (visited-nonempty ctd)) refl) ⟩
+        I[ i , j ] + ((r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ]))) + r′ q * A[ q , j ]))
+          ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
+        I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + r′ q * A[ q , j ]))
+          ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q)))) ⟩
+        I[ i , j ] + (r′ j + ((⨁[ q ← qs ] (r′ q * A[ q , j ])) + (⨁[ q ← ⁅ q ⁆ ] (r′ q * A[ q , j ]))))
+          ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q ⁆))) ⟩
+        I[ i , j ] + (r′ j + (⨁[ q ← qs′ ] (r′ q * A[ q , j ])))
+          ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ j) qs′ (visited-nonempty (suc ctd)))) ⟩
+        I[ i , j ] + (⨁[ q ← qs′ ] (r′ j + r′ q * A[ q , j ]))
+      ∎
+      where
+        open Sorted (estimateOrder $ V.tabulate $ estimate ctd) hiding (_∈_)
+        r = estimate ctd
+        r′ = estimate (suc ctd)
+        q = head (queue ctd)
+        qs = visited ctd
+        qs′ = visited ctd ∪ ⁅ q ⁆
+
 {-
   visited-minimum : (ctd : ℕ) {lt : ctd < n} →
                     ∀ j → j ∈ visited ctd {≤-step lt} → estimate (suc ctd) {s≤s lt} j ≈ estimate ctd {≤-step lt} j
