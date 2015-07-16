@@ -31,7 +31,7 @@ import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
 
-open import Function using (_$_; _∘_)
+open import Function using (_$_; _∘_; flip)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
@@ -156,16 +156,18 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     begin
       r q′ + r q * A[ q , q′ ]
         ≈⟨ {!!} ⟩
-      (I[ i , q′ ] + (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]
+      (I[ i , q′ ] + (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ]
         ≈⟨ +-assoc _ _ _ ⟩
-      I[ i , q′ ] + ((⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ])
+      I[ i , q′ ] + ((⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ])
         ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ q′) qs (visited-nonempty ctd)) refl) ⟩
-      I[ i , q′ ] + ((r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]))
+      I[ i , q′ ] + ((r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ]))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ]))
-        ≈⟨ {!+-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q′))))!} ⟩
+      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ]))
+        ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ (λ k → r′ k * A[ k , q′ ]) q′)))) ⟩
       I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ]))))
-        ≈⟨ {!+-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆)))!} ⟩
+        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆))) ⟩
+      I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ])))
+        ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ P.refl (P.cong (⨁-syntax _) (P.sym qs′-eq))) ⟩
       I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
         ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ q′) qs′ (visited-nonempty (suc ctd)))) ⟩
       I[ i , q′ ] + (⨁[ k ← qs′ ] (r′ q′ + r′ k * A[ k , q′ ]))
@@ -178,6 +180,9 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       open EqR setoid
       qs  = visited ctd {≤-step′ (≤-step′ lt)}
       qs′ = visited (suc ctd)
+
+      qs′-eq : qs′ ≡ qs ∪ ⁅ q′ ⁆
+      qs′-eq = {!P.refl!}
 
 --      lemma₀ : estimate (suc ctd) (Sorted.head _ (queue ctd)) ≈ estimate ctd (Sorted.head _ (queue ctd))
 --      lemma₀ = q-minimum ctd {suc-inj (≤-step lt)}
