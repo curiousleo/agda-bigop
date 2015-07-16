@@ -79,3 +79,7 @@ sm∸n (suc m) (suc n) (s≤s n≤m) = sm∸n m n n≤m
 
 ≤-step′ : ∀ {m n} → suc m ≤ n → m ≤ n
 ≤-step′ (s≤s leq) = ≤-step leq
+
+≤-irrelevant : ∀ {m n} (leq : m ≤ n) (leq′ : m ≤ n) → leq ≡ leq′
+≤-irrelevant z≤n       z≤n        = refl
+≤-irrelevant (s≤s leq) (s≤s leq′) = cong s≤s (≤-irrelevant leq leq′)
