@@ -14,8 +14,8 @@ open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat
-  using (ℕ; zero; suc; _<_; z≤n; s≤s)
-  renaming (_+_ to _N+_)
+  using (ℕ; zero; suc; z≤n; s≤s)
+  renaming (_+_ to _N+_; _≤_ to _N≤_)
 open import Data.Nat.MoreProperties
 open import Data.Nat.Properties using (≤-step)
 open import Data.Nat.Properties.Simple using (+-suc)
@@ -43,7 +43,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open Algorithm-UsingAdj i adj
 
-  RLS : (ctd : ℕ) {lt : ctd < suc n} → Pred (Fin (suc n)) _
+  RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   RLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ q ← visited ctd {lt} ] (r j + r q * A[ q , j ]))
 
@@ -64,7 +64,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ]         + A[ i , j ]
     ∎
 
-  correct-init : ∀ j → RLS zero {s≤s z≤n} j
+  correct-init : ∀ j → RLS zero {z≤n} j
   correct-init j = trans (init‿A≈I+A i j) (+-cong refl lemma)
     where
       lemma =
@@ -83,63 +83,65 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         ∎
         where
           open EqR setoid
-          r = estimate zero {s≤s z≤n}
+          r = estimate zero {z≤n}
 
-  visited-nonempty : (ctd : ℕ) {lt : ctd < suc n} → Nonempty (visited ctd {lt})
+  visited-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (visited ctd {lt})
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
   visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
 
-  visited-preserved : (ctd : ℕ) {lt : ctd < n} → ∀ {j} → j ∈ visited ctd → j ∈ visited (suc ctd) {s≤s lt}
+  visited-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited ctd → j ∈ visited (suc ctd) {lt}
   visited-preserved ctd {lt} {j} j∈visited = Sub.∈∪ j (visited ctd) ⁅ head (queue ctd) ⁆ j∈visited
     where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
 
-  start-visited : ∀ j → j ∈ visited zero {s≤s z≤n} → j ≡ i
+  start-visited : ∀ j → j ∈ visited zero {z≤n} → j ≡ i
   start-visited j j∈visited = Sub.i∈⁅i⁆′ i j j∈visited
 
-  estimate-decreases : (ctd : ℕ) {lt : ctd < n} →
-                       ∀ j → estimate (suc ctd) {s≤s lt} j ≤ estimate ctd j
+  estimate-decreases : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → estimate (suc ctd) {lt} j ≤ estimate ctd j
   estimate-decreases ctd {lt} j = _ , refl
 
-  q-minimum : (ctd : ℕ) {lt : ctd < n} →
+  q-minimum : (ctd : ℕ) {lt : suc ctd N≤ n} →
               let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
-              estimate (suc ctd) {s≤s lt} (head (queue ctd)) ≈ estimate ctd (head (queue ctd))
+              estimate (suc ctd) {lt} (head (queue ctd)) ≈ estimate ctd (head (queue ctd {lt}))
   q-minimum ctd = +-absorbs-* _ _
 
-  i-estimate : (ctd : ℕ) {lt : ctd < suc n} → estimate ctd {lt} i ≈ 1#
+  i-estimate : (ctd : ℕ) {lt : ctd N≤ n} → estimate ctd {lt} i ≈ 1#
   i-estimate zero      = reflexive (Adj.diag adj i)
   i-estimate (suc ctd) = trans (+-cong (i-estimate ctd) refl) (proj₁ +-zero _)
 
-  visited-queue : (ctd : ℕ) {lt : ctd < suc n} →
+  visited-queue : (ctd : ℕ) {lt : ctd N≤ n} →
                   ∀ j → j ∈ visited ctd {lt} → j ≡ i ⊎ ∃₂ λ k k<n → j ≡ Sorted.head _ (queue k {k<n})
   visited-queue zero      {lt} j j∈visited = inj₁ (Sub.i∈⁅i⁆′ i j j∈visited)
   visited-queue (suc ctd) {lt} j j∈visited with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈visited
   ... | inj₁ j∈vs  = visited-queue ctd j j∈vs
-  ... | inj₂ j∈⁅q⁆ = inj₂ (ctd , (suc-inj lt , Sub.i∈⁅i⁆′ (Sorted.head _ (queue ctd)) j j∈⁅q⁆))
+  ... | inj₂ j∈⁅q⁆ = inj₂ (ctd , (lt , Sub.i∈⁅i⁆′ (Sorted.head _ (queue ctd)) j j∈⁅q⁆))
 
-  start-minimum : (ctd : ℕ) {lt : ctd < n} →
-                  ∀ j → j ≡ i → estimate (suc ctd) {s≤s lt} j ≈ estimate ctd {≤-step lt} j
+  start-minimum : (ctd : ℕ) {lt : suc ctd N≤ n} →
+                  ∀ j → j ≡ i → estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
   start-minimum ctd {lt} j j≡i rewrite j≡i | Adj.diag adj i = trans (i-estimate (suc ctd)) (sym (i-estimate ctd))
 
-  correct-q : (ctd : ℕ) {lt : ctd < n} → RLS ctd {≤-step lt} (Sorted.head _ (queue ctd {lt}))
+  correct-q : (ctd : ℕ) {lt : suc ctd N≤ n} → RLS ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt}))
+
   correct-q zero {lt} with i ≟ Sorted.head _ (queue zero)
   ... | yes i≡q =
     begin
-      A[ i , q ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (P.sym i≡q) ⟩
-      A[ i , i ]      ≡⟨ Adj.diag adj i ⟩
-      1#              ≈⟨ sym (proj₁ +-zero _) ⟩
-      1#         + _  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
-      I[ i , i ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (P.refl {x = i}) i≡q) P.refl ⟩
-      I[ i , q ] + _
+      A[ i , q ]                                               ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (P.sym i≡q) ⟩
+      A[ i , i ]                                               ≡⟨ Adj.diag adj i ⟩
+      1#                                                       ≈⟨ sym (proj₁ +-zero _) ⟩
+      1#         + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I i)) P.refl ⟩
+      I[ i , i ] + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (P.refl {x = i}) i≡q) P.refl ⟩
+      I[ i , q ] + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))
     ∎
     where
       open EqR setoid
       q = Sorted.head _ (queue zero {lt})
+      r = estimate zero {z≤n}
+
   ... | no ¬i≡q =
     begin
                             A[ i , q ]                                 ≈⟨ sym (+-idempotent _) ⟩
-                            A[ i , q ] + A[ i , q ]                    ≈⟨ sym (proj₁ +-identity _) ⟩
-      0#                 + (A[ i , q ] + A[ i , q ])                   ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i q ¬i≡q)) P.refl ⟩
-      diagonal 0# 1# i q + (A[ i , q ] + A[ i , q ])                   ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i q)) P.refl ⟩
+                            A[ i , q ] +              A[ i , q ]       ≈⟨ sym (proj₁ +-identity _) ⟩
+      0#                 + (A[ i , q ] +              A[ i , q ])      ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i q ¬i≡q)) P.refl ⟩
+      diagonal 0# 1# i q + (A[ i , q ] +              A[ i , q ])      ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i q)) P.refl ⟩
       I[ i , q ]         + (A[ i , q ] +              A[ i , q ])      ≈⟨ +-cong refl (+-cong refl (sym (*-identityˡ _))) ⟩
       I[ i , q ]         + (r q        + 1#         * A[ i , q ])      ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ P.refl (P.cong₂ _*_ (P.sym (Adj.diag adj i)) P.refl)) ⟩
       I[ i , q ]         + (r q        + A[ i , i ] * A[ i , q ])      ≈⟨ +-cong refl (sym (fold-⁅i⁆ _ i)) ⟩
@@ -147,12 +149,13 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     ∎
     where
       open EqR setoid
-      r = estimate zero {s≤s z≤n}
+      r = estimate zero {z≤n}
       q = Sorted.head _ (queue zero)
+
   correct-q (suc ctd) {lt} =
     begin
       r q′ + r q * A[ q , q′ ]
-        ≈⟨ {!q-minimum ctd {suc-inj (≤-step lt)}!} ⟩
+        ≈⟨ {!!} ⟩
       (I[ i , q′ ] + (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]
         ≈⟨ +-assoc _ _ _ ⟩
       I[ i , q′ ] + ((⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ])
@@ -160,9 +163,9 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , q′ ] + ((r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q ]))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
       I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q ]))
-        ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q′)))) ⟩
+        ≈⟨ {!+-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ _ q′))))!} ⟩
       I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ]))))
-        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆))) ⟩
+        ≈⟨ {!+-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆)))!} ⟩
       I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
         ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ q′) qs′ (visited-nonempty (suc ctd)))) ⟩
       I[ i , q′ ] + (⨁[ k ← qs′ ] (r′ q′ + r′ k * A[ k , q′ ]))
@@ -170,14 +173,14 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     where
       q  = Sorted.head _ (queue ctd)
       q′ = Sorted.head _ (queue (suc ctd) {lt})
-      r  = estimate ctd {≤-step (suc-inj (≤-step lt))}
-      r′ = estimate (suc ctd) {≤-step lt}
+      r  = estimate ctd
+      r′ = estimate (suc ctd) {≤-step′ lt}
       open EqR setoid
-      qs  = visited ctd
+      qs  = visited ctd {≤-step′ (≤-step′ lt)}
       qs′ = visited (suc ctd)
 
-      lemma₀ : estimate (suc ctd) (Sorted.head _ (queue ctd)) ≈ estimate ctd (Sorted.head _ (queue ctd))
-      lemma₀ = q-minimum ctd {suc-inj (≤-step lt)}
+--      lemma₀ : estimate (suc ctd) (Sorted.head _ (queue ctd)) ≈ estimate ctd (Sorted.head _ (queue ctd))
+--      lemma₀ = q-minimum ctd {suc-inj (≤-step lt)}
 
 {-
   correct-step : (ctd : ℕ) {lt : ctd < n} → ∀ j → j ∈ visited ctd {≤-step lt} → RLS ctd j → RLS (suc ctd) {s≤s lt} j

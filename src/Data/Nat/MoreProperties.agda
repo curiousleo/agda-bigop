@@ -76,3 +76,6 @@ sm∸n (suc m) (suc n) (s≤s n≤m) = sm∸n m n n≤m
     ∸-≤-steps zero    n       o       m≤n rewrite 0∸n≡0 o = z≤n
     ∸-≤-steps (suc m) n       zero    m≤n = m≤n
     ∸-≤-steps (suc m) (suc n) (suc o) (s≤s m≤n) = ≤-step (∸-≤-steps m n o m≤n)
+
+≤-step′ : ∀ {m n} → suc m ≤ n → m ≤ n
+≤-step′ (s≤s leq) = ≤-step leq
