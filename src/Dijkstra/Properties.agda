@@ -29,7 +29,7 @@ open import Relation.Unary using (Pred)
 open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
-open P using (_≡_)
+open P using (_≡_; _≢_)
 
 open import Function using (_$_; _∘_; flip)
 
@@ -93,8 +93,12 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-preserved ctd {lt} {j} j∈visited = Sub.∈∪ j (visited ctd) ⁅ head (queue ctd) ⁆ j∈visited
     where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
 
-  start-visited : ∀ j → j ∈ visited zero {z≤n} → j ≡ i
-  start-visited j j∈visited = Sub.i∈⁅i⁆′ i j j∈visited
+  start-visited : (ctd : ℕ) {lt : ctd N≤ n} → i ∈ visited ctd {lt}
+  start-visited zero      {lt} = Sub.i∈⁅i⁆ i
+  start-visited (suc ctd) {lt} = Sub.∪-∈′ i _ _ (start-visited ctd)
+
+  start-visited′ : ∀ j → j ∈ visited zero {z≤n} → j ≡ i
+  start-visited′ j j∈visited = Sub.i∈⁅i⁆′ i j j∈visited
 
   estimate-decreases : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → estimate (suc ctd) {lt} j ≤ estimate ctd j
   estimate-decreases ctd {lt} j = _ , refl
@@ -118,6 +122,9 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   start-minimum : (ctd : ℕ) {lt : suc ctd N≤ n} →
                   ∀ j → j ≡ i → estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
   start-minimum ctd {lt} j j≡i rewrite j≡i | Adj.diag adj i = trans (i-estimate (suc ctd)) (sym (i-estimate ctd))
+
+  start≢head : (ctd : ℕ) {lt : suc ctd N≤ n} → i ≢ Sorted.head _ (queue ctd {lt})
+  start≢head ctd {lt} eq = head∉visited ctd (P.subst (λ x → x ∈ (visited ctd)) eq (start-visited ctd))
 
   correct-q : (ctd : ℕ) {lt : suc ctd N≤ n} → RLS ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt}))
 
@@ -155,19 +162,27 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   correct-q (suc ctd) {lt} =
     begin
       r q′ + r q * A[ q , q′ ]
-        ≈⟨ {!!} ⟩
-      (I[ i , q′ ] + (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ]
+        ≈⟨ +-cong refl (*-cong (correct-q ctd) refl) ⟩
+      r q′ + (I[ i , q ] + (⨁[ k ← qs ] (r q + r k * A[ k , q ]))) * A[ q , q′ ]
+        ≡⟨ {!!} ⟩
+      r q′ + (⨁[ k ← qs ] (r q + r k * A[ k , q ])) * A[ q , q′ ]
+        ≈⟨ {!+-selective!} ⟩
+      (⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ]
+        ≈⟨ +-cong (fold-distr′ +-idempotent _ (r′ q′) qs (visited-nonempty ctd)) refl ⟩
+      (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ])
         ≈⟨ +-assoc _ _ _ ⟩
-      I[ i , q′ ] + ((⨁[ k ← qs ] (r′ q′ + r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ])
-        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent _ (r′ q′) qs (visited-nonempty ctd)) refl) ⟩
-      I[ i , q′ ] + ((r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ]))) + r′ q′ * A[ q′ , q′ ]))
-        ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ]))
-        ≈⟨ +-cong refl (+-cong refl (+-cong refl (sym (fold-⁅i⁆ (λ k → r′ k * A[ k , q′ ]) q′)))) ⟩
-      I[ i , q′ ] + (r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ]))))
-        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆))) ⟩
-      I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ])))
-        ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ P.refl (P.cong (⨁-syntax _) (P.sym qs′-eq))) ⟩
+      r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + r′ q′ * A[ q′ , q′ ])
+        ≈⟨ +-cong refl (+-cong refl (sym (fold-⁅i⁆ (λ k → r′ k * A[ k , q′ ]) q′))) ⟩
+      r′ q′ + ((⨁[ k ← qs ] (r′ k * A[ k , q′ ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ])))
+        ≈⟨ +-cong refl (sym (fold-∪ +-idempotent _ (visited ctd) ⁅ q′ ⁆)) ⟩
+      r′ q′ + (⨁[ k ← qs ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , q′ ]))
+        ≡⟨ P.cong₂ _+_ P.refl (P.cong (⨁-syntax _) (P.sym qs′-eq)) ⟩
+      r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ]))
+        ≈⟨ sym (proj₁ +-identity _) ⟩
+      0# + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
+        ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i q′ (start≢head (suc ctd) {lt}))) P.refl ⟩
+      diagonal 0# 1# i q′ + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
+        ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i q′)) P.refl ⟩
       I[ i , q′ ] + (r′ q′ + (⨁[ k ← qs′ ] (r′ k * A[ k , q′ ])))
         ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent _ (r′ q′) qs′ (visited-nonempty (suc ctd)))) ⟩
       I[ i , q′ ] + (⨁[ k ← qs′ ] (r′ q′ + r′ k * A[ k , q′ ]))
@@ -217,7 +232,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       qs = visited ctd
       qs′ = visited ctd ∪ ⁅ q ⁆
 -}
-
 {-
   visited-minimum : (ctd : ℕ) {lt : ctd < n} →
                     ∀ j → j ∈ visited ctd {≤-step lt} → estimate (suc ctd) {s≤s lt} j ≈ estimate ctd {≤-step lt} j

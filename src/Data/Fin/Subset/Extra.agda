@@ -146,6 +146,10 @@ size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ t
 ∪-∈ (suc i) (x ∷ xs) (y ∷ ys) (there i∈) | inj₁ i∈xs = inj₁ (there i∈xs)
 ∪-∈ (suc i) (x ∷ xs) (y ∷ ys) (there i∈) | inj₂ i∈ys = inj₂ (there i∈ys)
 
+∪-∈′ : {n : ℕ} (i : Fin n) (xs ys : Subset n) → i ∈ xs → i ∈ xs ∪ ys
+∪-∈′ zero    (.inside ∷ xs) (y ∷ ys) here         = here
+∪-∈′ (suc i) (x ∷ xs)       (y ∷ ys) (there i∈xs) = there (∪-∈′ i xs ys i∈xs)
+
 private
 
   ∈-cong : {m n : ℕ} {i : Fin n} {xs : Vec (Fin n) m} → i V.∈ xs → Data.Fin.suc i V.∈ V.map suc xs

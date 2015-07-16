@@ -68,7 +68,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       where
         open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
         q = head (queue ctd {ctd≤n})
-        r = estimate ctd {suc-inj (≤-step ctd≤n)}
+        r = estimate ctd {≤-step′ ctd≤n}
 
     visited : (ctd : ℕ) {lt : ctd ≤ n} → Subset (suc n)
     visited zero              = ⁅ i ⁆
