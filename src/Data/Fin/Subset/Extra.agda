@@ -125,7 +125,7 @@ size-suc : ∀ {n} (i : Fin n) (xs : Subset n) → i ∉ xs → size (⁅ i ⁆ 
 size-suc () [] i∉xs
 size-suc zero (inside ∷ xs) i∉xs = ⊥-elim (i∉xs here)
 size-suc {suc n} zero (outside ∷ xs) i∉xs =
-  let open Properties n in cong (suc ∘ size) (proj₁ ∪-identity _)
+  let open Properties n in cong (λ x → suc (size x)) (proj₁ ∪-identity xs)
 size-suc (suc i) (inside  ∷ xs) si∉x∷xs = cong suc (size-suc i xs (si∉x∷xs ∘ there))
 size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ there)
 
