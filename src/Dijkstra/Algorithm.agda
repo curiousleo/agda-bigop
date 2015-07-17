@@ -135,11 +135,11 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       where
         module S = Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
 
-        q∉queue′ : ¬ q S.∈ (queue′ ctd)
+        q∉queue′ : ¬ (q S.∈ (queue′ ctd))
         q∉queue′ = S.fromVec-∉¹ (Sub.toVec-∉¹ (Sub.∁-∈ q∈vs))
 
-        q∉queue : ¬ q S.∈ (queue ctd {lt})
-        q∉queue = q′→q ctd {lt} (λ qs → ¬ q S.∈ qs) q∉queue′
+        q∉queue : ¬ (q S.∈ (queue ctd {lt}))
+        q∉queue = q′→q ctd {lt} (λ qs → ¬ (q S.∈ qs)) q∉queue′
 
         postulate
           q∉q∷qs : ¬ (q S.∈ (q S.∷ qs ⟨ q≼qs ⟩))
