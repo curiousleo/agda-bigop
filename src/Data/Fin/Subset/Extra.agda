@@ -60,12 +60,12 @@ size-lemma []              = refl
 size-lemma (inside  ∷ sub) = cong suc (size-lemma sub)
 size-lemma (outside ∷ sub) = size-lemma sub
 
+size⊥≡0 : ∀ {n} → size {n} ⊥ ≡ 0
+size⊥≡0 {zero}  = refl
+size⊥≡0 {suc n} = size⊥≡0 {n}
+
 size⁅i⁆≡1 : ∀ {n} (i : Fin n) → size ⁅ i ⁆ ≡ 1
 size⁅i⁆≡1 {suc n} zero = cong suc (size⊥≡0 {n})
-  where
-    size⊥≡0 : ∀ {n} → size {n} ⊥ ≡ 0
-    size⊥≡0 {zero}  = refl
-    size⊥≡0 {suc n} = size⊥≡0 {n}
 size⁅i⁆≡1 (suc i) = size⁅i⁆≡1 i
 
 size≤n : {n : ℕ} → (sub : Subset n) → size sub ≤ n
