@@ -23,15 +23,15 @@ open import Relation.Binary.SetoidReasoning
 _choose_ : ℕ → ℕ → ℕ
 _     choose 0     = 1
 0     choose suc k = 0
-suc n choose suc k = n choose k + n choose (suc k)
+suc n choose suc k = (n choose k) + (n choose (suc k))
 
-choose-+ : ∀ m n → n choose ((suc m) + n) ≡ 0
+choose-+ : ∀ m n → (n choose ((suc m) + n)) ≡ 0
 choose-+ m zero    = P.refl
 choose-+ m (suc n) =
   begin⟨ P.setoid ℕ ⟩
-    suc n choose (suc m + suc n)
+    (suc n choose (suc m + suc n))
       ≡⟨ P.cong (_choose_ (suc n)) (+-suc (suc m) n) ⟩
-    suc n choose (suc (suc (m + n)))
+    (suc n choose (suc (suc (m + n))))
       ≡⟨ P.refl ⟩
     (n choose suc (m + n)) + (n choose (suc (suc (m + n))))
       ≡⟨ +-cong (choose-+ m n) (choose-+ (suc m) n) ⟩
@@ -40,7 +40,7 @@ choose-+ m (suc n) =
     0
   ∎
   where
-    choose-cong : ∀ m → ∀ {o p} → o ≡ p → m choose o ≡ m choose p
+    choose-cong : ∀ m → ∀ {o p} → o ≡ p → (m choose o) ≡ (m choose p)
     choose-cong m P.refl = P.refl
 
     +-cong : ∀ {m₁ m₂ n₁ n₂} → m₁ ≡ m₂ → n₁ ≡ n₂ → m₁ + n₁ ≡ m₂ + n₂
