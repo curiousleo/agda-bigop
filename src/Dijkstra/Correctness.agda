@@ -84,34 +84,34 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       r′ j
         ≡⟨⟩
       r j + r q′ * A[ q′ , j ]
-        ≈⟨ +-cong (correct ctd {≤-step′ lt} j) (sym (+-idempotent _)) ⟩
-      (I[ i , j ] + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r j + r k * A[ k , j ]))) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ])
+        ≈⟨ +-cong (correct ctd {≤-step′ lt} j {!!}) (sym (+-idempotent _)) ⟩
+      (I[ i , j ] + (⨁[ k ← vs ] (r j + r k * A[ k , j ]))) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ])
         ≈⟨ +-assoc _ _ _ ⟩
-      I[ i , j ] + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r j + r k * A[ k , j ])) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
-        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent f (r j) (visited ctd {≤-step′ (≤-step′ lt)}) {!visited-nonempty ctd!}) refl) ⟩
-      I[ i , j ] + ((r j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ]))) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
+      I[ i , j ] + ((⨁[ k ← vs ] (r j + r k * A[ k , j ])) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
+        ≈⟨ +-cong refl (+-cong (fold-distr′ +-idempotent f (r j) (vs) {!visited-nonempty ctd!}) refl) ⟩
+      I[ i , j ] + ((r j + (⨁[ k ← vs ] (r k * A[ k , j ]))) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
         ≈⟨ +-cong refl (+-cong (+-comm _ _) refl) ⟩
-      I[ i , j ] + (((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + r j) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
+      I[ i , j ] + (((⨁[ k ← vs ] (r k * A[ k , j ])) + r j) + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ]))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , j ] + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + (r j + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ])))
+      I[ i , j ] + ((⨁[ k ← vs ] (r k * A[ k , j ])) + (r j + (r q′ * A[ q′ , j ] + r q′ * A[ q′ , j ])))
         ≈⟨ +-cong refl (+-cong refl (sym (+-assoc _ _ _))) ⟩
-      I[ i , j ] + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + ((r j + r q′ * A[ q′ , j ]) + r q′ * A[ q′ , j ]))
+      I[ i , j ] + ((⨁[ k ← vs ] (r k * A[ k , j ])) + ((r j + r q′ * A[ q′ , j ]) + r q′ * A[ q′ , j ]))
         ≡⟨⟩
-      I[ i , j ] + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + (r′ j + r q′ * A[ q′ , j ]))
+      I[ i , j ] + ((⨁[ k ← vs ] (r k * A[ k , j ])) + (r′ j + r q′ * A[ q′ , j ]))
         ≈⟨ +-cong refl (sym (+-assoc _ _ _)) ⟩
-      I[ i , j ] + (((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + r′ j) + r q′ * A[ q′ , j ])
+      I[ i , j ] + (((⨁[ k ← vs ] (r k * A[ k , j ])) + r′ j) + r q′ * A[ q′ , j ])
         ≈⟨ {!!} ⟩
-      I[ i , j ] + (((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ])) + r′ j) + r′ q′ * A[ q′ , j ])
+      I[ i , j ] + (((⨁[ k ← vs ] (r′ k * A[ k , j ])) + r′ j) + r′ q′ * A[ q′ , j ])
         ≈⟨ +-cong refl (+-cong (+-comm _ _) (sym (fold-⁅i⁆ f′ q′))) ⟩
-      I[ i , j ] + ((r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ]))) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
+      I[ i , j ] + ((r′ j + (⨁[ k ← vs ] (r′ k * A[ k , j ]))) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , j ] + (r′ j + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ]))))
+      I[ i , j ] + (r′ j + ((⨁[ k ← vs ] (r′ k * A[ k , j ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ]))))
         ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent f′ (visited ctd) ⁅ q′ ⁆))) ⟩
-      I[ i , j ] + (r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
+      I[ i , j ] + (r′ j + (⨁[ k ← vs ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
         ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent f′ (r′ j) (visited ctd ∪ ⁅ q′ ⁆) {!visited-nonempty (suc ctd)!})) ⟩
-      I[ i , j ] + (⨁[ k ← visited ctd ∪ ⁅ q′ ⁆ ] (r′ j + r′ k * A[ k , j ]))
+      I[ i , j ] + (⨁[ k ← vs ∪ ⁅ q′ ⁆ ] (r′ j + r′ k * A[ k , j ]))
         ≈⟨ {!visited (suc ctd) {≤-step′ lt}!} ⟩
-      I[ i , j ] + (⨁[ k ← visited ctd ∪ ⁅ q ⁆ ] (r′ j + r′ k * A[ k , j ]))
+      I[ i , j ] + (⨁[ k ← vs ∪ ⁅ q ⁆ ] (r′ j + r′ k * A[ k , j ]))
         ≡⟨⟩
       I[ i , j ] + (⨁[ k ← visited (suc ctd) {≤-step′ lt} ] (r′ j + r′ k * A[ k , j ]))
     ∎
@@ -123,6 +123,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       q  = Sorted.head _ (queue ctd {≤-step′ lt})
       f  = λ k → r k * A[ k , j ]
       f′ = λ k → r′ k * A[ k , j ]
+      vs = visited ctd {≤-step′ (≤-step′ lt)}
   {-
   correct 0               {lt} j = {!!}
   correct 1               {lt} j = {!!}
