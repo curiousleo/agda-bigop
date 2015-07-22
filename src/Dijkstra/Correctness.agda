@@ -53,35 +53,13 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   RLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r j + r k * A[ k , j ]))
 
-  mutual
+  closer : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
+           estimate ctd {≤-step′ lt} j ≤ estimate ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt}))
+  closer zero      {lt} j j∈v = {!!} , {!!}
+  closer (suc ctd) {lt} j j∈v = {!!}
 
-    q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
-              let r = estimate ctd {≤-step′ lt}
-                  q = Sorted.head _ (queue ctd {lt})
-              in r q ≈ r j + r q * A[ q , j ]
-    q-lemma = {!!}
-
-    v-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
-                    let r  = estimate ctd {≤-step′ lt}
-                        r′ = estimate (suc ctd) {lt}
-                    in r′ j ≈ r j
-    v-lemma zero      {lt} j j∈v = {!estimate zero j!} -- j ≡ i then r j ≡ 1# ✓
-    v-lemma (suc ctd) {lt} j j∈v =
-      begin
-        r′ j + r′ q′ * A[ q′ , j ]
-          ≈⟨ +-cong (v-lemma ctd j {!!}) refl ⟩
-        r j + r′ q′ * A[ q′ , j ]
-          ≈⟨ {!!} ⟩
-        r j + r q * A[ q , j ]
-          ≡⟨⟩
-        r′ j
-      ∎
-      where
-        open EqR setoid
-        r  = estimate ctd {≤-step′ (≤-step′ lt)}
-        r′ = estimate (suc ctd) {≤-step′ lt}
-        q  = Sorted.head _ (queue ctd {≤-step′ lt})
-        q′ = Sorted.head _ (queue (suc ctd) {lt})
+  queue-head : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∉ visited ctd {≤-step′ lt} → estimate ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt})) ≤ estimate ctd {≤-step′ lt} j
+  queue-head ctd {lt} j j∉v = {!!}
 
   correct : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → pRLS ctd {lt} j
   correct zero      {lt} j = {!!}
@@ -106,14 +84,16 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + (r′ j + r q′ * A[ q′ , j ]))
         ≈⟨ +-cong refl (sym (+-assoc _ _ _)) ⟩
       I[ i , j ] + (((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + r′ j) + r q′ * A[ q′ , j ])
-        ≈⟨ +-cong refl (+-cong (+-comm _ _) (sym (fold-⁅i⁆ f q′))) ⟩
-      I[ i , j ] + ((r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ]))) + (⨁[ k ← ⁅ q′ ⁆ ] (r k * A[ k , j ])))
+        ≈⟨ {!!} ⟩
+      I[ i , j ] + (((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ])) + r′ j) + r′ q′ * A[ q′ , j ])
+        ≈⟨ +-cong refl (+-cong (+-comm _ _) (sym (fold-⁅i⁆ f′ q′))) ⟩
+      I[ i , j ] + ((r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ]))) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
-      I[ i , j ] + (r′ j + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r k * A[ k , j ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r k * A[ k , j ]))))
-        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent f (visited ctd) ⁅ q′ ⁆))) ⟩
-      I[ i , j ] + (r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ∪ ⁅ q′ ⁆ ] (r k * A[ k , j ])))
-        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent f (r′ j) (visited ctd ∪ ⁅ q′ ⁆) {!visited-nonempty (suc ctd)!})) ⟩
-      I[ i , j ] + (⨁[ k ← visited ctd ∪ ⁅ q′ ⁆ ] (r′ j + r k * A[ k , j ]))
+      I[ i , j ] + (r′ j + ((⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ] (r′ k * A[ k , j ])) + (⨁[ k ← ⁅ q′ ⁆ ] (r′ k * A[ k , j ]))))
+        ≈⟨ +-cong refl (+-cong refl (sym (fold-∪ +-idempotent f′ (visited ctd) ⁅ q′ ⁆))) ⟩
+      I[ i , j ] + (r′ j + (⨁[ k ← visited ctd {≤-step′ (≤-step′ lt)} ∪ ⁅ q′ ⁆ ] (r′ k * A[ k , j ])))
+        ≈⟨ +-cong refl (sym (fold-distr′ +-idempotent f′ (r′ j) (visited ctd ∪ ⁅ q′ ⁆) {!visited-nonempty (suc ctd)!})) ⟩
+      I[ i , j ] + (⨁[ k ← visited ctd ∪ ⁅ q′ ⁆ ] (r′ j + r′ k * A[ k , j ]))
         ≈⟨ {!visited (suc ctd) {≤-step′ lt}!} ⟩
       I[ i , j ] + (⨁[ k ← visited ctd ∪ ⁅ q ⁆ ] (r′ j + r′ k * A[ k , j ]))
         ≡⟨⟩
@@ -126,6 +106,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       q′ = Sorted.head _ (queue (suc ctd) {lt})
       q  = Sorted.head _ (queue ctd {≤-step′ lt})
       f  = λ k → r k * A[ k , j ]
+      f′ = λ k → r′ k * A[ k , j ]
   {-
   correct 0               {lt} j = {!!}
   correct 1               {lt} j = {!!}
