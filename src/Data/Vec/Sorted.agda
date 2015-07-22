@@ -173,4 +173,4 @@ fromVec-∈¹ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec
 
 postulate
   -- fromVec-∈² : ∀ {m} {x} {xs : Vec Carrier m} → x ∈ (fromVec xs) → x V.∈ xs
-  fromVec-∉¹ : ∀ {m} {x} {xs : Vec Carrier m} → ¬ x V.∈ xs → ¬ x ∈ (fromVec xs)
+  fromVec-∉¹ : ∀ {m} {x} {xs : Vec Carrier m} → ¬ x V.∈ xs → ¬ (x ∈ (fromVec xs))
