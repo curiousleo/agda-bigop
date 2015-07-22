@@ -64,14 +64,14 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   correct : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} → pRLS ctd {lt} j
   correct zero      {lt} j j∈vs =
     begin
-      r′ j                                                       ≡⟨⟩
-      A[ i , j ] + r q * A[ q , j ]                              ≡⟨ P.cong₂ _+_ (P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs)) P.refl ⟩
-      A[ i , i ] + r q * A[ q , j ]                              ≡⟨ P.cong₂ _+_ (Adj.diag adj i) P.refl ⟩
-      1#         + r q * A[ q , j ]                              ≈⟨ proj₁ +-zero _ ⟩
-      1#                                                         ≈⟨ sym (proj₁ +-zero _) ⟩
-      1#         + (⨁[ k ← ⁅ i ⁆ ] (r′ j + r′ k * A[ k , j ]))  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I j)) P.refl ⟩
-      I[ j , j ] + (⨁[ k ← ⁅ i ⁆ ] (r′ j + r′ k * A[ k , j ]))  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (Sub.i∈⁅i⁆′ i j j∈vs) (P.refl {x = j})) P.refl ⟩
-      I[ i , j ] + (⨁[ k ← ⁅ i ⁆ ] (r′ j + r′ k * A[ k , j ]))
+      r′ j            ≡⟨⟩
+      A[ i , j ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs)) P.refl ⟩
+      A[ i , i ] + _  ≡⟨ P.cong₂ _+_ (Adj.diag adj i) P.refl ⟩
+      1#         + _  ≈⟨ proj₁ +-zero _ ⟩
+      1#              ≈⟨ sym (proj₁ +-zero _) ⟩
+      1#         + _  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I j)) P.refl ⟩
+      I[ j , j ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (Sub.i∈⁅i⁆′ i j j∈vs) (P.refl {x = j})) P.refl ⟩
+      I[ i , j ] + _
     ∎
     where
       open EqR setoid
