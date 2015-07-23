@@ -16,7 +16,7 @@ import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat
   using (ℕ; zero; suc; z≤n; s≤s)
-  renaming (_+_ to _N+_; _≤_ to _N≤_)
+  renaming (_+_ to _N+_; _≤_ to _N≤_; decTotalOrder to ℕ-decTotalOrder)
 open import Data.Nat.MoreProperties
 open import Data.Nat.Properties using (≤-step)
 open import Data.Nat.Properties.Simple using (+-suc)
@@ -34,6 +34,7 @@ open P using (_≡_; _≢_)
 
 open import Function using (_$_; _∘_; flip)
 
+open DecTotalOrder ℕ-decTotalOrder using () renaming (refl to ≤-refl)
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
 open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
@@ -53,8 +54,8 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
   visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
 
-  correct : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → j ∈ visited ctd {lt} → pRLS ctd {lt} j
-  correct zero      {lt} j j∈vs =
+  pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → j ∈ visited ctd {lt} → pRLS ctd {lt} j
+  pcorrect zero      {lt} j j∈vs =
     begin
       r j             ≡⟨⟩
       A[ i , j ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs) ⟩
@@ -68,14 +69,14 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       open EqR setoid
       r = estimate zero {z≤n}
 
-  correct (suc ctd) {lt} j j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
+  pcorrect (suc ctd) {lt} j j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
 
   ... | inj₁ j∈vs =
     begin
       r′ j
         ≡⟨⟩
       r j + r q * A[ q , j ]
-        ≈⟨ +-cong (correct ctd {≤-step′ lt} j j∈vs) (sym (+-idempotent _)) ⟩
+        ≈⟨ +-cong (pcorrect ctd {≤-step′ lt} j j∈vs) (sym (+-idempotent _)) ⟩
       (I[ i , j ] + (⨁[ k ← vs ] (r j + r k * A[ k , j ]))) + (r q * A[ q , j ] + r q * A[ q , j ])
         ≈⟨ +-assoc _ _ _ ⟩
       I[ i , j ] + ((⨁[ k ← vs ] (r j + r k * A[ k , j ])) + (r q * A[ q , j ] + r q * A[ q , j ]))
@@ -91,7 +92,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + ((⨁[ k ← vs ] (r k * A[ k , j ])) + (r′ j + r q * A[ q , j ]))
         ≈⟨ +-cong refl (sym (+-assoc _ _ _)) ⟩
       I[ i , j ] + (((⨁[ k ← vs ] (r k * A[ k , j ])) + r′ j) + r q * A[ q , j ])
-        ≈⟨ +-cong refl (+-cong (+-cong (fold-cong f f′ vs (λ j j∈vs → {!!})) refl) (*-cong (sym (+-absorbs-* _ _)) refl)) ⟩
+        ≈⟨ +-cong refl (+-cong (+-cong (fold-cong f f′ vs (λ k k∈vs → {!!})) refl) (*-cong (sym (+-absorbs-* _ _)) refl)) ⟩
       I[ i , j ] + (((⨁[ k ← vs ] (r′ k * A[ k , j ])) + r′ j) + r′ q * A[ q , j ])
         ≈⟨ +-cong refl (+-cong (+-comm _ _) (sym (fold-⁅i⁆ f′ q))) ⟩
       I[ i , j ] + ((r′ j + (⨁[ k ← vs ] (r′ k * A[ k , j ]))) + (⨁[ k ← ⁅ q ⁆ ] (r′ k * A[ k , j ])))
@@ -140,6 +141,25 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   RLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r j + r k * A[ k , j ]))
 
+  correct : ∀ j → RLS n {≤-refl} j
+  correct j = pRLS→RLS (pcorrect n j j∈vs)
+    where
+      j∈vs : ∀ {j} → j ∈ visited n
+      j∈vs {j} = P.subst (λ xs → j ∈ xs) (P.sym (Sub.n→⊤ (visited n) (visited-lemma n))) (Sub.∈⊤ j)
+
+      pRLS→RLS : ∀ {j} → pRLS n {≤-refl} j → RLS n {≤-refl} j
+      pRLS→RLS {j} p =
+        begin
+          r j
+            ≈⟨ p ⟩
+          I[ i , j ] + (⨁[ k ← visited n {≤-refl} ] (r j + r k * A[ k , j ]))
+            ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ ⨁-syntax P.refl (Sub.n→⊤ (visited n) (visited-lemma n))) ⟩
+          I[ i , j ] + (⨁[ k ← ⊤ ] (r j + r k * A[ k , j ]))
+        ∎
+        where
+          open EqR setoid
+          r = estimate n {≤-refl}
+{-
   closer : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
            estimate ctd {≤-step′ lt} j ≤ estimate ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt}))
   closer zero      {lt} j j∈v = {!!} , {!!}
@@ -147,6 +167,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   queue-head : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∉ visited ctd {≤-step′ lt} → estimate ctd {≤-step′ lt} (Sorted.head _ (queue ctd {lt})) ≤ estimate ctd {≤-step′ lt} j
   queue-head ctd {lt} j j∉v = {!!}
+-}
 
   {-
   correct 0               {lt} j = {!!}
