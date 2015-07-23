@@ -13,7 +13,7 @@ open P using (_≡_)
 open P.≡-Reasoning
 import Relation.Binary.Vec.Pointwise as VP
 
-infix 5 _[_,_]
+infix 8 _[_,_]
 
 ------------------------------------------------------------------------
 -- The type of r × c matrices over carrier type A

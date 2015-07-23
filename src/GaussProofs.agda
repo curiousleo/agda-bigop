@@ -33,11 +33,11 @@ module GaussProofs where
     proof (suc n) =
       begin
         2 * (Σ[ i ← 0 to suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
-        2 * ((Σ[ i ← 0 to n ] i) + suc n)      ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 to n ] i) (suc n) ⟩
+        2 * ((Σ[ i ← 0 to n ] i) + suc n)    ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 to n ] i) (suc n) ⟩
         2 * (Σ[ i ← 0 to n ] i) + 2 * suc n  ≡⟨ P.cong₂ _+_ (proof n) P.refl ⟩
-        n * suc n + 2 * suc n               ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
-        2 * suc n + n * suc n               ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
-        (2 + n) * suc n                     ≡⟨ *-comm (2 + n) (suc n) ⟩
+        n * suc n + 2 * suc n                ≡⟨ +-comm (n * suc n) (2 * suc n) ⟩
+        2 * suc n + n * suc n                ≡⟨ P.sym (proj₂ distrib (suc n) 2 n) ⟩
+        (2 + n) * suc n                      ≡⟨ *-comm (2 + n) (suc n) ⟩
         suc n * (suc (suc n))
       ∎
       where
