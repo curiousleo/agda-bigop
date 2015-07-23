@@ -118,6 +118,12 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       r′ j
         ≡⟨⟩
       r j + r q * A[ q , j ]
+        ≡⟨ P.cong₂ _+_ (P.cong r (Sub.i∈⁅i⁆′ q j j∈⁅q⁆)) P.refl ⟩
+      r q + r q * A[ q , j ]
+        ≈⟨ +-absorbs-* _ _ ⟩
+      r q
+        ≡⟨ P.cong r (P.sym (Sub.i∈⁅i⁆′ q j j∈⁅q⁆)) ⟩
+      r j
         ≈⟨ {!!} ⟩
       I[ i , j ] + (⨁[ k ← visited (suc ctd) {lt} ] (r′ j + r′ k * A[ k , j ]))
     ∎
