@@ -2,7 +2,7 @@ module Data.Nat.Combinatorics.Combinatorics where
 
 open import Algebra
 
-open import Data.Nat as Nat
+open import Data.Nat.Base as Nat
   hiding (_*_)
 open import Data.Nat.Properties
   using (commutativeSemiring)
@@ -19,6 +19,8 @@ open import Relation.Binary.SetoidReasoning
 --
 -- Binomial coefficients
 --
+
+infix 8 _choose_
 
 _choose_ : ℕ → ℕ → ℕ
 _     choose 0     = 1
