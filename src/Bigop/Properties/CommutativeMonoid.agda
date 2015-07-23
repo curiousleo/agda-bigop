@@ -100,18 +100,18 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
   
   split-yes : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (i : I) (is : List I)
     (p : Decidable P) → P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
-                    ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
+                    ≈ fold f ((i ∷ is) ∥ p) ∙ fold f ((i ∷ is) ∥ ∁′ p)
   split-yes f i is p pi = begin
     f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
       ≈⟨ sym (assoc _ _ _) ⟩
     fold f (i ∷ (is ∥ p)) ∙ fold f (is ∥ ∁′ p)
       ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-yes i is p pi))
                          (P.cong (fold f) (head-∁-yes i is p pi)) ⟩
-    fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
+    fold f ((i ∷ is) ∥ p) ∙ fold f ((i ∷ is) ∥ ∁′ p) ∎
 
   split-no : ∀ {i ℓ} {I : Set i} {P : Pred I ℓ} → (f : I → Carrier) (i : I) (is : List I)
     (p : Decidable P) → ¬ P i → f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
-                     ≈ fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
+                     ≈ fold f ((i ∷ is) ∥ p) ∙ fold f ((i ∷ is) ∥ ∁′ p)
   split-no f i is p ¬pi = begin
     f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
         ≈⟨ ∙-cong refl (∙-comm _ _) ⟩
@@ -120,9 +120,9 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
     fold f (i ∷ (is ∥ ∁′ p)) ∙ fold f (is ∥ p)
          ≡⟨ P.sym $ P.cong₂ _∙_ (P.cong (fold f) (head-∁-no i is p ¬pi))
                                  (P.cong (fold f) (head-no i is p ¬pi)) ⟩
-    fold f (i ∷ is ∥ ∁′ p) ∙ fold f (i ∷ is ∥ p)
+    fold f ((i ∷ is) ∥ ∁′ p) ∙ fold f ((i ∷ is) ∥ p)
          ≈⟨ ∙-comm _ _ ⟩
-    fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p) ∎
+    fold f ((i ∷ is) ∥ p) ∙ fold f ((i ∷ is) ∥ ∁′ p) ∎
 
   -- A big operator's index list can be split using a decidable predicate
   -- ⨁[ i ← is ] f i ≈ (⨁[ i ← is ∥ p ] f i) ⊕ (⨁[ i ← is ∥ ∁′ p ] f i)
@@ -136,5 +136,5 @@ module RequiresCommutativeMonoid {c ℓ} (M : CommutativeMonoid c ℓ) where
         ≈⟨ ∙-cong refl (split-P f is p) ⟩
       f i ∙ (fold f (is ∥ p) ∙ fold f (is ∥ ∁′ p))
         ≈⌊ i ∈ p ⌋⟨ split-yes f i is p ⟩⟨ split-no f i is p ⟩
-      fold f (i ∷ is ∥ p) ∙ fold f (i ∷ is ∥ ∁′ p)
+      fold f ((i ∷ is) ∥ p) ∙ fold f ((i ∷ is) ∥ ∁′ p)
     ∎

@@ -13,6 +13,8 @@ open P using (_≡_)
 open P.≡-Reasoning
 import Relation.Binary.Vec.Pointwise as VP
 
+infix 8 _[_,_]
+
 ------------------------------------------------------------------------
 -- The type of r × c matrices over carrier type A
 
@@ -54,7 +56,7 @@ lookup∘tabulate {f = f} r c = begin
 
 Pointwise : ∀ {s t ℓ} {S : Set s} {T : Set t} (_∼_ : REL S T ℓ)
             {m n} → Matrix S m n → Matrix T m n → Set ℓ
-Pointwise _~_ A B = ∀ r c → A [ r , c ] ~ B [ r , c ]
+Pointwise _~_ A B = ∀ r c → (A [ r , c ]) ~ (B [ r , c ])
 
 ------------------------------------------------------------------------
 -- If _~_ is an equivalence then Pointwise _~_ is, too
@@ -88,7 +90,7 @@ private
       to : VP.Pointwise (VP.Pointwise _~_) A B → Pointwise _~_ A B
       to (VP.ext eq) = cong
         where
-          cong : ∀ r c → A [ r , c ] ~ B [ r , c ]
+          cong : ∀ r c → (A [ r , c ]) ~ (B [ r , c ])
           cong r c with eq r
           cong r c | VP.ext eq′ = eq′ c
 

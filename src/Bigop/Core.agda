@@ -27,8 +27,8 @@ module Fold {c ℓ} (M : Monoid c ℓ) where
   -- An equivalent definition would be
   --   fold f = foldr (λ x y → (f x) ∙ y) ε
 
-  infix 6 Σ-syntax ⋁-syntax ⨁-syntax
-  infix 5 Π-syntax ⋀-syntax ⨂-syntax
+  infixl 6 Σ-syntax ⋁-syntax ⨁-syntax
+  infixl 7 Π-syntax ⋀-syntax ⨂-syntax
 
   Σ-syntax = fold
   syntax Σ-syntax (λ x → e) v = Σ[ x ← v ] e
