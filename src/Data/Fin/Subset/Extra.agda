@@ -73,6 +73,25 @@ size≤n V.[] = z≤n
 size≤n (inside V.∷ sub) = s≤s (size≤n sub)
 size≤n (outside V.∷ sub) = ≤-step (size≤n sub)
 
+private
+
+  suc-inj : ∀ {i j} → ℕ.suc i ≡ suc j → i ≡ j
+  suc-inj refl = refl
+
+n→⊤ : {n : ℕ} → (sub : Subset n) → size sub ≡ n → sub ≡ ⊤
+n→⊤ []              eq = refl
+n→⊤ (inside  ∷ sub) eq = cong (_∷_ inside) (n→⊤ sub (suc-inj eq))
+n→⊤ {suc n} (outside ∷ sub) eq = ⊥-elim (≤-contr eq (size≤n sub))
+  where
+    ≤-contr : ∀ {i j} → i ≡ suc j → ¬ i ≤ j
+    ≤-contr {zero}  {j}     () leq
+    ≤-contr {suc i} {zero}  eq ()
+    ≤-contr {suc i} {suc j} eq (s≤s leq) = ≤-contr (suc-inj eq) leq
+
+∈⊤ : {n : ℕ} → ∀ i → i ∈ (⊤ {n})
+∈⊤ zero    = here
+∈⊤ (suc i) = there (∈⊤ i)
+
 ∁-size : {n : ℕ} → (sub : Subset n) → size (∁ sub) ≡ n ∸ size sub
 ∁-size V.[]                      = refl
 ∁-size {suc n} (inside  V.∷ sub) = ∁-size sub
