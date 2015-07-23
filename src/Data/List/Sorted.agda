@@ -9,7 +9,7 @@ open import Level
 
 open import Data.Empty using (⊥-elim)
 open import Data.List.Base
-open import Data.Nat.Base hiding (_⊔_; _≤_; _≤?_)
+open import Data.Nat.Base using (ℕ; zero; suc)
 open import Data.Product using (_×_; _,_)
 open import Data.Sum using (inj₁; inj₂)
 open import Data.Unit using (⊤; tt)

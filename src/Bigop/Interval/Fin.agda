@@ -26,9 +26,9 @@ range (suc from) to = tail (range from to)
     tail [] = []
     tail (x ∷ xs) = xs
 
-infix 6 _…<_ _…_
+infix 6 _…<_ _to_
 
 _…<_ = range
 
-_…_ : ℕ → (to : ℕ) → List (Fin (suc to))
-from … to = range from (suc to)
+_to_ : ℕ → (to : ℕ) → List (Fin (suc to))
+from to to = range from (suc to)
