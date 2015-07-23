@@ -157,7 +157,8 @@ insert-∈² x y (z ∷ zs ⟨ z≼zs ⟩) x∈xs with y ≤? z | ∷-∈ x z zs
 ++-∈ x (y ∷ xs ⟨ y≼ys ⟩) ys (inj₂ y₁) = insert-∈² x y (xs ++ ys) (++-∈ x xs ys (inj₂ y₁))
 
 fromVec : ∀ {m} → Vec Carrier m → SortedVec m
-fromVec = foldr SortedVec insert []
+fromVec []′       = []
+fromVec (x ∷′ xs) = insert x (fromVec xs)
 
 toVec : ∀ {m} → SortedVec m → Vec Carrier m
 toVec []               = []′
@@ -171,6 +172,29 @@ fromVec-∈¹ x []′        ()
 fromVec-∈¹ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
 fromVec-∈¹ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈¹ x xs x∈xs)
 
-postulate
-  -- fromVec-∈² : ∀ {m} {x} {xs : Vec Carrier m} → x ∈ (fromVec xs) → x V.∈ xs
-  fromVec-∉¹ : ∀ {m} {x} {xs : Vec Carrier m} → ¬ x V.∈ xs → ¬ (x ∈ (fromVec xs))
+∈-insert-characterisation : ∀ {m} → ∀ x y → (xs : SortedVec m) → x ∈ insert y xs → x ≡ y ⊎ x ∈ xs
+∈-insert-characterisation x .x []                (here .[] .(lift tt))              = inj₁ refl
+∈-insert-characterisation x y  []                (there .y .[] .(lift tt) x∈insert) = inj₂ x∈insert
+∈-insert-characterisation x y  (z ∷ zs ⟨ z≼zs ⟩) x∈insert                           with y ≤? z
+∈-insert-characterisation y .y (z ∷ zs ⟨ z≼zs ⟩) (here .(z ∷ zs ⟨ z≼zs ⟩) .(y≤z , ≼-trans zs z≼zs y≤z)) | yes y≤z = inj₁ refl
+∈-insert-characterisation x y (z ∷ zs ⟨ z≼zs ⟩) (there .y .(z ∷ zs ⟨ z≼zs ⟩) .(y≤z , ≼-trans zs z≼zs y≤z) x∈insert) | yes y≤z = inj₂ x∈insert
+∈-insert-characterisation z y (.z ∷ zs ⟨ z≼zs ⟩) (here .(insert y zs) ._) | no ¬y≤z = inj₂ (here zs z≼zs)
+∈-insert-characterisation x y (z ∷ zs ⟨ z≼zs ⟩) (there .z .(insert y zs) ._ x∈insert) | no ¬y≤z with ∈-insert-characterisation x y zs x∈insert
+... | inj₁ x≡y  = inj₁ x≡y
+... | inj₂ x∈zs = inj₂ (there z zs z≼zs x∈zs)
+
+¬x∈y∷ys→¬x∈ys : ∀ {m x y} → (ys : Vec Carrier m) → ¬ x V.∈ y V.∷ ys → ¬ x V.∈ ys
+¬x∈y∷ys→¬x∈ys []′       ¬x∈y∷ys ()
+¬x∈y∷ys→¬x∈ys (y ∷′ ys) ¬x∈y∷ys V.here         = ¬x∈y∷ys (V.there V.here)
+¬x∈y∷ys→¬x∈ys (y ∷′ ys) ¬x∈y∷ys (V.there x∈ys) = ¬x∈y∷ys (V.there (V.there x∈ys))
+
+-- DPM: Weird problems with records and η-equality here when doing the "obvious" proof, get an error about not being
+-- able to solve heterogeneous constraint.  See issue 473 in the Agda bug tracker for a similar report:
+--
+--     https://code.google.com/p/agda/issues/detail?id=473
+--
+fromVec-∉¹ : ∀ {m} {x} {xs : Vec Carrier m} → ¬ x V.∈ xs → ¬ (x ∈ (fromVec xs))
+fromVec-∉¹ {m = zero}  {x′} {xs = []′}     ¬x∈xs ()
+fromVec-∉¹ {m = suc m} {x′} {xs = x ∷′ xs} ¬x∈xs x∈fromVec-xs with ∈-insert-characterisation x′ x (fromVec xs) x∈fromVec-xs
+... | inj₁ x′≡x  rewrite x′≡x = ¬x∈xs V.here
+... | inj₂ x′∈xs = fromVec-∉¹ (¬x∈y∷ys→¬x∈ys xs ¬x∈xs) x′∈xs
