@@ -1,4 +1,4 @@
-module Data.Nat.Combinatorics.Combinatorics where
+module Data.Nat.Combinatorics where
 
 open import Algebra
 

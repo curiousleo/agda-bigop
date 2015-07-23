@@ -17,7 +17,7 @@ open import Data.List
 open import Data.Nat.Base
   using (_∸_; zero; suc)
 
-open import Data.Nat.Combinatorics.Combinatorics
+open import Data.Nat.Combinatorics
 
 open import Data.Nat.Properties
   using (commutativeSemiring)
