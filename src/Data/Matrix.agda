@@ -14,6 +14,8 @@ open P using (_≡_; _≢_)
 open P.≡-Reasoning
 import Relation.Binary.Vec.Pointwise as VP
 
+infix 8 _[_,_]
+
 ------------------------------------------------------------------------
 -- The type of r × c matrices over carrier type A
 
