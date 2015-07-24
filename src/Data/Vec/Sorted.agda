@@ -172,7 +172,7 @@ fromVec-∈¹ x []′        ()
 fromVec-∈¹ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
 fromVec-∈¹ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈¹ x xs x∈xs)
 
-∈-insert-characterisation : ∀ {m} → ∀ x y → (xs : SortedVec m) → x ∈ insert y xs → x ≡ y ⊎ x ∈ xs
+∈-insert-characterisation : ∀ {m} → ∀ x y → (xs : SortedVec m) → x ∈ insert y xs → (x ≡ y) ⊎ (x ∈ xs)
 ∈-insert-characterisation x .x []                (here .[] .(lift tt))              = inj₁ refl
 ∈-insert-characterisation x y  []                (there .y .[] .(lift tt) x∈insert) = inj₂ x∈insert
 ∈-insert-characterisation x y  (z ∷ zs ⟨ z≼zs ⟩) x∈insert                           with y ≤? z
