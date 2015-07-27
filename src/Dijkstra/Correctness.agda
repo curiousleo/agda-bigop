@@ -40,6 +40,7 @@ open RequiresDijkstraAlgebra alg
 open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open import Bigop.SubsetCore +-commutativeMonoid
+open EqR setoid
 
 module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
@@ -54,29 +55,70 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
   visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
 
-  pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → j ∈ visited ctd {lt} → pRLS ctd {lt} j
-  pcorrect zero      {lt} j j∈vs =
+  ≤-lemma : (ctd : ℕ) {lt : ctd N≤ n} (vs : Subset (suc n)) → ∀ j {k} → k ∈ vs →
+            let r = estimate ctd {lt} in
+            r k ≤ r j → ⨁[ k ← vs ] (r k * A[ k , j ]) ≤ r j
+  ≤-lemma ctd {lt} vs j {k} k∈vs leq = {!!}
+
+  head-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} →
+               let q  = Sorted.head _ (queue ctd {lt})
+                   vs = visited ctd {≤-step′ lt}
+                   r  = estimate ctd {≤-step′ lt} in
+               (∀ j → j ∈ vs → r j ≤ r q) × (∀ j → j ∉ vs → r q ≤ r j)
+  head-lemma ctd {lt} = {!!}
+
+  estimate-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
+                   pRLS ctd {≤-step′ lt} j →
+                   estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
+  estimate-lemma ctd {lt} j j∈vs p =
+    begin
+      r j + r q * A[ q , j ]
+        ≈⟨ +-cong p refl ⟩
+      (I[ i , j ] + (⨁[ k ← vs ] (r j + r k * A[ k , j ]))) + r q * A[ q , j ]
+        ≈⟨ {!!} ⟩
+      r j
+    ∎
+    where
+      r = estimate ctd {≤-step′ lt}
+      q  = Sorted.head _ (queue ctd {lt})
+      vs = visited ctd {≤-step′ lt}
+
+  pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → pRLS ctd {lt} j
+  pcorrect zero      {lt} j with i ≟ j
+  ... | yes i≡j =
     begin
       r j             ≡⟨⟩
-      A[ i , j ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs) ⟩
+      A[ i , j ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) j≡i ⟩
       A[ i , i ]      ≡⟨ Adj.diag adj i ⟩
       1#              ≈⟨ sym (proj₁ +-zero _) ⟩
       1#         + _  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I j)) P.refl ⟩
-      I[ j , j ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] (Sub.i∈⁅i⁆′ i j j∈vs) (P.refl {x = j})) P.refl ⟩
+      I[ j , j ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] j≡i (P.refl {x = j})) P.refl ⟩
       I[ i , j ] + _
     ∎
     where
-      open EqR setoid
+      r = estimate zero {z≤n}
+      j≡i = P.sym i≡j
+
+  ... | no ¬i≡j =
+    begin
+      A[ i , j ]                       ≈⟨ sym (proj₁ +-identity _) ⟩
+      0#                 + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i j ¬i≡j)) P.refl ⟩
+      diagonal 0# 1# i j + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i j)) P.refl ⟩
+      I[ i , j ]         + A[ i , j ]  ≈⟨ +-cong refl (sym (+-idempotent _)) ⟩
+      I[ i , j ]         + (r j + A[ i , j ]) ≈⟨ +-cong refl (+-cong refl (sym (*-identityˡ _))) ⟩
+      I[ i , j ]         + (r j + 1# * A[ i , j ]) ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _+_ P.refl (P.cong₂ _*_ (P.sym (Adj.diag adj i)) P.refl)) ⟩
+      I[ i , j ]         + (r j + r i * A[ i , j ]) ≈⟨ +-cong refl (sym (fold-⁅i⁆ (λ k → r j + r k * A[ k , j ]) i)) ⟩
+      I[ i , j ]         + (⨁[ k ← ⁅ i ⁆ ] (r j + r k * A[ k , j ]))
+    ∎
+    where
       r = estimate zero {z≤n}
 
-  pcorrect (suc ctd) {lt} j j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
-
-  ... | inj₁ j∈vs =
+  pcorrect (suc ctd) {lt} j =
     begin
       r′ j
         ≡⟨⟩
       r j + r q * A[ q , j ]
-        ≈⟨ +-cong (pcorrect ctd {≤-step′ lt} j j∈vs) (sym (+-idempotent _)) ⟩
+        ≈⟨ +-cong (pcorrect ctd {≤-step′ lt} j) (sym (+-idempotent _)) ⟩
       (I[ i , j ] + (⨁[ k ← vs ] (r j + r k * A[ k , j ]))) + (r q * A[ q , j ] + r q * A[ q , j ])
         ≈⟨ +-assoc _ _ _ ⟩
       I[ i , j ] + ((⨁[ k ← vs ] (r j + r k * A[ k , j ])) + (r q * A[ q , j ] + r q * A[ q , j ]))
@@ -92,7 +134,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + ((⨁[ k ← vs ] (r k * A[ k , j ])) + (r′ j + r q * A[ q , j ]))
         ≈⟨ +-cong refl (sym (+-assoc _ _ _)) ⟩
       I[ i , j ] + (((⨁[ k ← vs ] (r k * A[ k , j ])) + r′ j) + r q * A[ q , j ])
-        ≈⟨ +-cong refl (+-cong (+-cong (fold-cong f f′ vs (λ k k∈vs → {!!})) refl) (*-cong (sym (+-absorbs-* _ _)) refl)) ⟩
+        ≈⟨ +-cong refl (+-cong (+-cong (fold-cong f f′ vs (λ k k∈vs → lemma k k∈vs)) refl) (*-cong (sym (+-absorbs-* _ _)) refl)) ⟩
       I[ i , j ] + (((⨁[ k ← vs ] (r′ k * A[ k , j ])) + r′ j) + r′ q * A[ q , j ])
         ≈⟨ +-cong refl (+-cong (+-comm _ _) (sym (fold-⁅i⁆ f′ q))) ⟩
       I[ i , j ] + ((r′ j + (⨁[ k ← vs ] (r′ k * A[ k , j ]))) + (⨁[ k ← ⁅ q ⁆ ] (r′ k * A[ k , j ])))
@@ -106,47 +148,23 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + (⨁[ k ← visited (suc ctd) {lt} ] (r′ j + r′ k * A[ k , j ]))
     ∎
     where
-      open EqR setoid
       r′ = estimate (suc ctd) {lt}
       r  = estimate ctd {≤-step′ lt}
       q  = Sorted.head _ (queue ctd {lt})
       f  = λ k → r k * A[ k , j ]
       f′ = λ k → r′ k * A[ k , j ]
       vs = visited ctd {≤-step′ lt}
+      lemma : ∀ k → k ∈ vs → f k ≈ f′ k
+      lemma k k∈vs = {!!}
 
-  ... | inj₂ j∈⁅q⁆ =
-    begin
-      r′ j
-        ≡⟨⟩
-      r j + r q * A[ q , j ]
-        ≡⟨ P.cong₂ _+_ (P.cong r (Sub.i∈⁅i⁆′ q j j∈⁅q⁆)) P.refl ⟩
-      r q + r q * A[ q , j ]
-        ≈⟨ +-absorbs-* _ _ ⟩
-      r q
-        ≡⟨ P.cong r (P.sym (Sub.i∈⁅i⁆′ q j j∈⁅q⁆)) ⟩
-      r j
-        ≈⟨ {!!} ⟩
-      I[ i , j ] + (⨁[ k ← visited (suc ctd) {lt} ] (r′ j + r′ k * A[ k , j ]))
-    ∎
-    where
-      open EqR setoid
-      r′ = estimate (suc ctd) {lt}
-      r  = estimate ctd {≤-step′ lt}
-      q  = Sorted.head _ (queue ctd {lt})
-      f  = λ k → r k * A[ k , j ]
-      f′ = λ k → r′ k * A[ k , j ]
-      vs = visited ctd {≤-step′ lt}
 
   RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   RLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r j + r k * A[ k , j ]))
 
   correct : ∀ j → RLS n {≤-refl} j
-  correct j = pRLS→RLS (pcorrect n j j∈vs)
+  correct j = pRLS→RLS (pcorrect n j)
     where
-      j∈vs : ∀ {j} → j ∈ visited n
-      j∈vs {j} = P.subst (λ xs → j ∈ xs) (P.sym (Sub.n→⊤ (visited n) (visited-lemma n))) (Sub.∈⊤ j)
-
       pRLS→RLS : ∀ {j} → pRLS n {≤-refl} j → RLS n {≤-refl} j
       pRLS→RLS {j} p =
         begin
