@@ -20,7 +20,7 @@ open import Data.Nat
 open import Data.Nat.MoreProperties
 open import Data.Nat.Properties using (≤-step)
 open import Data.Nat.Properties.Simple using (+-suc)
-open import Data.Product using (proj₁; proj₂; _,_; ∃; ∃₂)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Sum
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
@@ -50,6 +50,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   pRLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   pRLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ k ← visited ctd {lt} ] (r j + r k * A[ k , j ]))
+    -- I[ i , j ] + ⨁[ k ← visited ctd ] (r k * A[ k , j ]) ≤ r j
 
   visited-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (visited ctd {lt})
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
@@ -175,7 +176,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           I[ i , j ] + (⨁[ k ← ⊤ ] (r j + r k * A[ k , j ]))
         ∎
         where
-          open EqR setoid
           r = estimate n {≤-refl}
 {-
   closer : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
@@ -196,8 +196,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         ≈⟨ {!!} ⟩
       {!!}
     ∎
-    where
-      open EqR setoid
 -}
   {-
     begin
@@ -220,7 +218,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + (⨁[ k ← visited (suc (suc ctd)) ] (r′ j + r′ k * A[ k , j ]))
     ∎
     where
-      open EqR setoid
       r′ = estimate (suc (suc (suc ctd)))
       r  = estimate (suc (suc ctd))
       q  = Sorted.head _ (queue (suc ctd))
@@ -228,14 +225,14 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 {-
   init‿A≈I+A : (i j : Fin (suc n)) → A[ i , j ] ≈ I[ i , j ] + A[ i , j ]
   init‿A≈I+A i j with i ≟ j
-  ... | yes i≡j rewrite i≡j = let open EqR setoid in
+  ... | yes i≡j rewrite i≡j =
     begin
       A[ j , j ]               ≡⟨ Adj.diag adj j ⟩
       1#                       ≈⟨ sym (+-idempotent _) ⟩
       1#         + 1#          ≡⟨ P.sym (P.cong₂ _+_ (Adj.diag I j) (Adj.diag adj j)) ⟩
       I[ j , j ] + A[ j , j ]
     ∎
-  ... | no ¬i≡j = let open EqR setoid in
+  ... | no ¬i≡j =
     begin
       A[ i , j ]                       ≈⟨ sym (proj₁ +-identity _) ⟩
       0#                 + A[ i , j ]  ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i j ¬i≡j)) P.refl ⟩
@@ -261,7 +258,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           ⨁[ q ← ⁅ i ⁆ ] (r j + r q * A[ q , j ])
         ∎
         where
-          open EqR setoid
           r = estimate zero {z≤n}
 -}
 {-
@@ -278,7 +274,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , q ] + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))
     ∎
     where
-      open EqR setoid
       q = Sorted.head _ (queue zero {lt})
       r = estimate zero {z≤n}
 
@@ -294,7 +289,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , q ]         + (⨁[ k ← ⁅ i ⁆ ] (r q + r k * A[ k , q ]))
     ∎
     where
-      open EqR setoid
       r = estimate zero {z≤n}
       q = Sorted.head _ (queue zero)
 
@@ -337,7 +331,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       q′ = Sorted.head _ (queue (suc ctd) {lt})
       r  = estimate ctd
       r′ = estimate (suc ctd) {≤-step′ lt}
-      open EqR setoid
       qs  = visited ctd {≤-step′ (≤-step′ lt)}
       qs′ = visited (suc ctd)
 
@@ -360,7 +353,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         r′ = estimate (suc ctd)
         r = estimate ctd
         {-
-        open EqR setoid
         -- r′ = estimate (suc (suc ctd))
 
         eq : r j + r q * A[ q , j ] ≈ r j
@@ -389,7 +381,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         I[ i , j ] + (⨁[ k ← ⁅ i ⁆ ] (r j + r k * A[ k , j ]))
       ∎
       where
-        open EqR setoid
         r = estimate zero {z≤n}
 
     correct-step (suc ctd) {lt} j j∈visited′ with visited-preserved′ ctd j∈visited′
@@ -424,12 +415,11 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         I[ i , j ] + (⨁[ k ← visited (suc ctd) ] (r′ j + r′ k * A[ k , j ]))
       ∎
       where
-        open EqR setoid
         q = Sorted.head _ (queue ctd)
         r = estimate ctd
         r′ = estimate (suc ctd)
         
-    ... | inj₂ j∈visited = let open EqR setoid in
+    ... | inj₂ j∈visited =
       begin
         r j + r q * A[ q , j ]
           ≈⟨ +-cong (correct-step ctd j j∈visited) (*-cong (sym (q-minimum ctd)) refl) ⟩
