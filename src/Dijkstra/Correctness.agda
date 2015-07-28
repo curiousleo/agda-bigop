@@ -56,27 +56,20 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
   visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
 
-  ≤-lemma : (ctd : ℕ) {lt : ctd N≤ n} (vs : Subset (suc n)) → ∀ j {k} → k ∈ vs →
-            let r = estimate ctd {lt} in
-            r k ≤ r j → ⨁[ k ← vs ] (r k * A[ k , j ]) ≤ r j
-  ≤-lemma ctd {lt} vs j {k} k∈vs leq = {!!}
-
-  head-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} →
-               let q  = Sorted.head _ (queue ctd {lt})
-                   vs = visited ctd {≤-step′ lt}
-                   r  = estimate ctd {≤-step′ lt} in
-               (∀ j → j ∈ vs → r j ≤ r q) × (∀ j → j ∉ vs → r q ≤ r j)
-  head-lemma ctd {lt} = {!!}
+  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
+            let q = Sorted.head _ (queue ctd {lt})
+                r = estimate ctd {≤-step′ lt}
+            in r j + r q ≈ r j
+  q-lemma ctd {lt} j j∈vs = {!!}
 
   estimate-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
-                   pRLS ctd {≤-step′ lt} j →
                    estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
-  estimate-lemma ctd {lt} j j∈vs p =
+  estimate-lemma ctd {lt} j j∈vs =
     begin
-      r j + r q * A[ q , j ]
-        ≈⟨ +-cong p refl ⟩
-      (I[ i , j ] + (⨁[ k ← vs ] (r j + r k * A[ k , j ]))) + r q * A[ q , j ]
-        ≈⟨ {!!} ⟩
+      r j +  r q * A[ q , j ]          ≈⟨ +-cong (sym (q-lemma ctd {lt} j j∈vs)) refl ⟩
+     (r j +  r q) + r q * A[ q , j ]   ≈⟨ +-assoc _ _ _ ⟩
+      r j + (r q  + r q * A[ q , j ])  ≈⟨ +-cong refl (+-absorbs-* _ _) ⟩
+      r j +  r q                       ≈⟨ q-lemma ctd {lt} j j∈vs ⟩
       r j
     ∎
     where
