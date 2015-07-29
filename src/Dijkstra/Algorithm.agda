@@ -121,12 +121,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
              let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
              ∀ {p} (P : ∀ {n} → SortedVec n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
 
-{-
-      q′→q ctd P Pq′ = {!!}
-        where
-          open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
--}
-
     head∉visited : (ctd : ℕ) {lt : suc ctd ≤ n} →
                    let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
                    head (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}

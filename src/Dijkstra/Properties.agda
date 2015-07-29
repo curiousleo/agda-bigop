@@ -49,32 +49,15 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   postulate
 
-    q∉visited : (ctd : ℕ) {lt : suc ctd N≤ n} →
-                Sorted.head _ (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}
-
+    -- This is equivalent to saying that the head of the queue is its r-smallest element
     q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
               let r = estimate ctd {≤-step′ lt}
                   q = Sorted.head _ (queue ctd {lt}) in
               r k + r q ≈ r q
 
-    not-visited : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited (suc ctd) {lt} →
-                  k ∉ visited ctd {≤-step′ lt}
-
-{-
-  q∉visited : (ctd : ℕ) {lt : suc ctd N≤ n} →
-              Sorted.head _ (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}
-  q∉visited ctd {lt} = {!!}
-
-  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
-            let r = estimate ctd {≤-step′ lt}
-                q = Sorted.head _ (queue ctd {lt}) in
-            r k + r q ≈ r q
-  q-lemma ctd {lt} k k∉vs = {!!}
-
   not-visited : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited (suc ctd) {lt} →
                 k ∉ visited ctd {≤-step′ lt}
-  not-visited ctd k k∉vs = {!!}
--}
+  not-visited ctd {lt} k k∉vs′ k∈vs = k∉vs′ (Sub.∪-∈′ k _ _ k∈vs)
 
   pcorrect-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j k →
             let vs = visited ctd {≤-step′ lt}
@@ -111,13 +94,13 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       r q * A[ q , j ] + ((r j + r k) + r q * A[ q , k ])
         ≈⟨ +-cong refl (+-cong (pcorrect-lemma ctd {≤-step′ lt} j k j∈vs (not-visited ctd k k∉vs′)) refl) ⟩
       r q * A[ q , j ] + (r j + r q * A[ q , k ])
-        ≈⟨ +-cong refl (+-cong (sym (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (q∉visited ctd))) refl) ⟩
+        ≈⟨ +-cong refl (+-cong (sym (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (head∉visited ctd))) refl) ⟩
       r q * A[ q , j ] + ((r j + r q) + r q * A[ q , k ])
         ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
       r q * A[ q , j ] + (r j + (r q + r q * A[ q , k ]))
         ≈⟨ +-cong refl (+-cong refl (+-absorbs-* _ _)) ⟩
       r q * A[ q , j ] + (r j + r q)
-        ≈⟨ +-cong refl (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (q∉visited ctd)) ⟩
+        ≈⟨ +-cong refl (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (head∉visited ctd)) ⟩
       r q * A[ q , j ] + r j
         ≈⟨ +-comm _ _ ⟩
       r j + r q * A[ q , j ]
@@ -169,13 +152,13 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       r′ k
         ≡⟨⟩
       r k + r q * A[ q , k ]
-        ≈⟨ +-cong (sym (pcorrect-lemma ctd {lt} k q k∈vs (q∉visited ctd))) refl ⟩
+        ≈⟨ +-cong (sym (pcorrect-lemma ctd {lt} k q k∈vs (head∉visited ctd))) refl ⟩
       (r k + r q) + r q * A[ q , k ]
         ≈⟨ +-assoc _ _ _ ⟩
       r k + (r q + r q * A[ q , k ])
         ≈⟨ +-cong refl (+-absorbs-* _ _) ⟩
       r k + r q
-        ≈⟨ pcorrect-lemma ctd {lt} k q k∈vs (q∉visited ctd) ⟩
+        ≈⟨ pcorrect-lemma ctd {lt} k q k∈vs (head∉visited ctd) ⟩
       r k
     ∎
     where
