@@ -221,26 +221,23 @@ empty→⊥ (outside ∷ sub) empty = cong (_∷_ outside) (empty→⊥ sub empt
     empty-sub : ¬ Nonempty sub
     empty-sub (i , i∈sub) = empty (suc i , there i∈sub)
 
-{-
 private
+  toVec-∉¹-lemma₁ : ∀ {m n} (i : Fin m) (xs : Vec (Fin m) n) → Fin.suc i V.∈ V.map suc xs → i V.∈ xs
+  toVec-∉¹-lemma₁ i [] ()
+  toVec-∉¹-lemma₁ i (.i ∷ xs) here = here
+  toVec-∉¹-lemma₁ i (x ∷ xs) (there si∈sxs) = there (toVec-∉¹-lemma₁ i xs si∈sxs)
 
-  toVec-∈-lemma² : {n : ℕ} (i : Fin n) (xs : Vec Bool n) → Data.Fin.suc i V.∈ V.map suc (toVec xs) → i V.∈ toVec xs
-  toVec-∈-lemma² () [] si∈sxs
-  toVec-∈-lemma² zero (inside ∷ xs) si∈sxs = here
-  toVec-∈-lemma² zero (outside ∷ xs) si∈sxs = {!!}
-  toVec-∈-lemma² (suc i) (inside ∷ xs) si∈sxs = there {!!}
-  toVec-∈-lemma² (suc i) (outside ∷ xs) si∈sxs = {!si∈sxs!}
--}
+  toVec-∉¹-lemma₂ : ∀ {n} (i : Fin n) {x} (xs : Subset n) → suc i ∉ x ∷ xs → i ∉ xs
+  toVec-∉¹-lemma₂ i [] si∉x∷xs ()
+  toVec-∉¹-lemma₂ i (x ∷ xs) si∉x∷xs i∈x∷xs = si∉x∷xs (there i∈x∷xs)
 
-postulate
-  toVec-∉¹ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∉ xs → ¬ i V.∈ (toVec xs)
---  toVec-∈² : {m n : ℕ} {i : Fin n} {xs : Subset n} → i V.∈ (toVec xs) → i ∈ xs
-
-{-
-toVec-∈² : {m n : ℕ} (i : Fin n) (xs : Subset n) → i V.∈ (toVec xs) → i ∈ xs
-toVec-∈² {n = zero} () [] i∈xs
-toVec-∈² {n = suc n} zero (inside ∷ xs) i∈xs = here
-toVec-∈² {n = suc n} zero (outside ∷ xs) i∈xs = {!!}
-toVec-∈² {n = suc n} (suc i) (inside ∷ xs) i∈xs = there (toVec-∈² {n} i xs (toVec-∈-lemma² i xs {!i∈xs!}))
-toVec-∈² {n = suc n} (suc i) (outside ∷ xs) i∈xs = there (toVec-∈² {n} i xs (toVec-∈-lemma² i xs i∈xs))
--}
+toVec-∉¹ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∉ xs → ¬ i V.∈ (toVec xs)
+toVec-∉¹            {xs = []}      i∉xs ()
+toVec-∉¹ {i = zero} {inside  ∷ xs} i∉xs i∈toVec-xs = i∉xs here
+toVec-∉¹ {i = zero} {outside ∷ xs} i∉xs i∈toVec-xs = zero∉map-suc (toVec xs) i∈toVec-xs
+  where
+    zero∉map-suc : ∀ {m n} (xs : Vec (Fin m) n) → ¬ zero V.∈ V.map Fin.suc xs
+    zero∉map-suc [] ()
+    zero∉map-suc (x ∷ xs) (there z∈s) = zero∉map-suc xs z∈s
+toVec-∉¹ {i = suc i} {inside  ∷ xs} i∉xs (there i∈toVec-xs) = toVec-∉¹ (toVec-∉¹-lemma₂ i xs i∉xs) (toVec-∉¹-lemma₁ i (toVec xs) i∈toVec-xs)
+toVec-∉¹ {i = suc i} {outside ∷ xs} i∉xs i∈toVec-xs = toVec-∉¹ (toVec-∉¹-lemma₂ i xs i∉xs) (toVec-∉¹-lemma₁ i (toVec xs) i∈toVec-xs)
