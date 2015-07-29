@@ -30,75 +30,155 @@ open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_; _≢_)
+open P.≡-Reasoning
+  using ()
+  renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
 open import Function using (_$_; _∘_; flip)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
-open RequiresDijkstraAlgebra alg
-open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
-open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
-open import Bigop.SubsetCore +-commutativeMonoid
+-- open RequiresDijkstraAlgebra alg
+-- open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
+-- open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
+-- open import Bigop.SubsetCore +-commutativeMonoid
+open EqR setoid
 
 module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open Algorithm-UsingAdj i adj
 
-  visited-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (visited ctd {lt})
-  visited-nonempty zero      = Sub.⁅i⁆-nonempty i
-  visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
+  postulate
 
-  visited-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited ctd → j ∈ visited (suc ctd) {lt}
-  visited-preserved ctd {lt} {j} j∈visited = Sub.∈∪ j (visited ctd) ⁅ head (queue ctd) ⁆ j∈visited
-    where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
+    q∉visited : (ctd : ℕ) {lt : suc ctd N≤ n} →
+                Sorted.head _ (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}
 
-  visited-preserved′ : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ visited ctd
-  visited-preserved′ ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
-  ... | inj₁ j∈visited = inj₂ j∈visited
-  ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
+    q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
+              let r = estimate ctd {≤-step′ lt}
+                  q = Sorted.head _ (queue ctd {lt}) in
+              r k + r q ≈ r q
 
-  start-visited : (ctd : ℕ) {lt : ctd N≤ n} → i ∈ visited ctd {lt}
-  start-visited zero      {lt} = Sub.i∈⁅i⁆ i
-  start-visited (suc ctd) {lt} = Sub.∪-∈′ i _ _ (start-visited ctd)
+    not-visited : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited (suc ctd) {lt} →
+                  k ∉ visited ctd {≤-step′ lt}
 
-  start-visited′ : ∀ j → j ∈ visited zero {z≤n} → j ≡ i
-  start-visited′ j j∈visited = Sub.i∈⁅i⁆′ i j j∈visited
+{-
+  q∉visited : (ctd : ℕ) {lt : suc ctd N≤ n} →
+              Sorted.head _ (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}
+  q∉visited ctd {lt} = {!!}
 
-  estimate-decreases : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → estimate (suc ctd) {lt} j ≤ estimate ctd j
-  estimate-decreases ctd {lt} j = _ , refl
+  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
+            let r = estimate ctd {≤-step′ lt}
+                q = Sorted.head _ (queue ctd {lt}) in
+            r k + r q ≈ r q
+  q-lemma ctd {lt} k k∉vs = {!!}
 
-  q-minimum : (ctd : ℕ) {lt : suc ctd N≤ n} →
-              let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
-              estimate (suc ctd) {lt} (head (queue ctd)) ≈ estimate ctd (head (queue ctd {lt}))
-  q-minimum ctd = +-absorbs-* _ _
+  not-visited : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited (suc ctd) {lt} →
+                k ∉ visited ctd {≤-step′ lt}
+  not-visited ctd k k∉vs = {!!}
+-}
 
-  q-minimum′ : (ctd : ℕ) {lt : suc ctd N≤ n} →
-               ∀ {j} → j ≡ Sorted.head _ (queue ctd {lt}) → estimate ctd j ≈ estimate (suc ctd) j
-  q-minimum′ ctd {lt} {j} j≡q =
+  pcorrect-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j k →
+            let vs = visited ctd {≤-step′ lt}
+                r = estimate ctd {≤-step′ lt} in
+            j ∈ vs → k ∉ vs → r j + r k ≈ r j
+  pcorrect-lemma zero j k j∈vs k∉vs =
     begin
-      r j                     ≡⟨ P.cong r j≡q ⟩
-      r q                     ≈⟨ sym (+-absorbs-* _ _) ⟩
-      r q + r q * A[ q , j ]  ≡⟨ P.cong₂ _+_ (P.sym (P.cong r j≡q)) P.refl ⟩
-      r j + r q * A[ q , j ]
+      A[ i , j ] + _  ≡⟨ P.cong₂ _+_ lemma P.refl ⟩
+      1#         + _  ≈⟨ proj₁ +-zero _ ⟩
+      1#              ≡⟨ P.sym lemma ⟩
+      A[ i , j ]
     ∎
     where
-      open EqR setoid
-      r  = estimate ctd
-      q = Sorted.head _ (queue ctd)
+      lemma : A[ i , j ] ≡ 1#
+      lemma =
+        start
+          A[ i , j ]  ≣⟨ P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs) ⟩
+          A[ i , i ]  ≣⟨ Adj.diag adj i ⟩
+          1#
+        ■
 
-  i-estimate : (ctd : ℕ) {lt : ctd N≤ n} → estimate ctd {lt} i ≈ 1#
-  i-estimate zero      = reflexive (Adj.diag adj i)
-  i-estimate (suc ctd) = trans (+-cong (i-estimate ctd) refl) (proj₁ +-zero _)
+  pcorrect-lemma (suc ctd) {lt} j k j∈vs′ k∉vs′ with Sub.∪-∈ {suc n} j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
 
-  visited-queue : (ctd : ℕ) {lt : ctd N≤ n} →
-                  ∀ j → j ∈ visited ctd {lt} → j ≡ i ⊎ ∃₂ λ k k<n → j ≡ Sorted.head _ (queue k {k<n})
-  visited-queue zero      {lt} j j∈visited = inj₁ (Sub.i∈⁅i⁆′ i j j∈visited)
-  visited-queue (suc ctd) {lt} j j∈visited with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈visited
-  ... | inj₁ j∈vs  = visited-queue ctd j j∈vs
-  ... | inj₂ j∈⁅q⁆ = inj₂ (ctd , (lt , Sub.i∈⁅i⁆′ (Sorted.head _ (queue ctd)) j j∈⁅q⁆))
+  ... | inj₁ j∈vs =
+    begin
+      r′ j + r′ k
+        ≡⟨⟩
+      (r j + r q * A[ q , j ]) + (r k + r q * A[ q , k ])
+        ≈⟨ +-cong (+-comm _ _) refl ⟩
+      (r q * A[ q , j ] + r j) + (r k + r q * A[ q , k ])
+        ≈⟨ +-assoc _ _ _ ⟩
+      r q * A[ q , j ] + (r j + (r k + r q * A[ q , k ]))
+        ≈⟨ +-cong refl (sym (+-assoc _ _ _)) ⟩
+      r q * A[ q , j ] + ((r j + r k) + r q * A[ q , k ])
+        ≈⟨ +-cong refl (+-cong (pcorrect-lemma ctd {≤-step′ lt} j k j∈vs (not-visited ctd k k∉vs′)) refl) ⟩
+      r q * A[ q , j ] + (r j + r q * A[ q , k ])
+        ≈⟨ +-cong refl (+-cong (sym (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (q∉visited ctd))) refl) ⟩
+      r q * A[ q , j ] + ((r j + r q) + r q * A[ q , k ])
+        ≈⟨ +-cong refl (+-assoc _ _ _) ⟩
+      r q * A[ q , j ] + (r j + (r q + r q * A[ q , k ]))
+        ≈⟨ +-cong refl (+-cong refl (+-absorbs-* _ _)) ⟩
+      r q * A[ q , j ] + (r j + r q)
+        ≈⟨ +-cong refl (pcorrect-lemma ctd {≤-step′ lt} j q j∈vs (q∉visited ctd)) ⟩
+      r q * A[ q , j ] + r j
+        ≈⟨ +-comm _ _ ⟩
+      r j + r q * A[ q , j ]
+        ≡⟨⟩
+      r′ j
+    ∎
+    where
+      r  = estimate ctd {≤-step′ (≤-step′ lt)}
+      r′ = estimate (suc ctd) {≤-step′ lt}
+      q  = Sorted.head _ (queue ctd {≤-step′ lt})
 
-  start-minimum : (ctd : ℕ) {lt : suc ctd N≤ n} →
-                  ∀ j → j ≡ i → estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
-  start-minimum ctd {lt} j j≡i rewrite j≡i | Adj.diag adj i = trans (i-estimate (suc ctd)) (sym (i-estimate ctd))
+  ... | inj₂ j∈⁅q⁆ =
+    begin
+      r′ j + r′ k
+        ≡⟨⟩
+      (r j + r q * A[ q , j ]) + (r k + r q * A[ q , k ])
+        ≡⟨ P.cong₂ _+_ (P.cong₂ _+_ (P.cong r j≡q) P.refl) P.refl ⟩
+      (r q + r q * A[ q , j ]) + (r k + r q * A[ q , k ])
+        ≈⟨ +-cong (+-absorbs-* _ _) refl ⟩
+      r q + (r k + r q * A[ q , k ])
+        ≈⟨ sym (+-assoc _ _ _) ⟩
+      (r q + r k) + r q * A[ q , k ]
+        ≈⟨ +-cong (+-comm _ _) refl ⟩
+      (r k + r q) + r q * A[ q , k ]
+        ≈⟨ +-assoc _ _ _ ⟩
+      r k + (r q + r q * A[ q , k ])
+        ≈⟨ +-cong refl (+-absorbs-* _ _) ⟩
+      r k + r q
+        ≈⟨ q-lemma ctd {≤-step′ lt} k (not-visited ctd k k∉vs′) ⟩
+      r q
+        ≈⟨ sym (+-absorbs-* _ _) ⟩
+      r q + r q * A[ q , j ]
+        ≡⟨ P.cong₂ _+_ (P.cong r (P.sym j≡q)) P.refl ⟩
+      r j + r q * A[ q , j ]
+        ≡⟨⟩
+      r′ j
+    ∎
+    where
+      r  = estimate ctd {≤-step′ (≤-step′ lt)}
+      r′ = estimate (suc ctd) {≤-step′ lt}
+      q  = Sorted.head _ (queue ctd {≤-step′ lt})
+      j≡q : j ≡ q
+      j≡q = Sub.i∈⁅i⁆′ {suc n} q j j∈⁅q⁆
 
-  start≢head : (ctd : ℕ) {lt : suc ctd N≤ n} → i ≢ Sorted.head _ (queue ctd {lt})
-  start≢head ctd {lt} eq = head∉visited ctd (P.subst (λ x → x ∈ (visited ctd)) eq (start-visited ctd))
+  estimate-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∈ visited ctd {≤-step′ lt} →
+                   estimate (suc ctd) {lt} k ≈ estimate ctd {≤-step′ lt} k
+  estimate-lemma ctd {lt} k k∈vs =
+    begin
+      r′ k
+        ≡⟨⟩
+      r k + r q * A[ q , k ]
+        ≈⟨ +-cong (sym (pcorrect-lemma ctd {lt} k q k∈vs (q∉visited ctd))) refl ⟩
+      (r k + r q) + r q * A[ q , k ]
+        ≈⟨ +-assoc _ _ _ ⟩
+      r k + (r q + r q * A[ q , k ])
+        ≈⟨ +-cong refl (+-absorbs-* _ _) ⟩
+      r k + r q
+        ≈⟨ pcorrect-lemma ctd {lt} k q k∈vs (q∉visited ctd) ⟩
+      r k
+    ∎
+    where
+      r  = estimate ctd {≤-step′ lt}
+      r′ = estimate (suc ctd) {lt}
+      q  = Sorted.head _ (queue ctd {lt})

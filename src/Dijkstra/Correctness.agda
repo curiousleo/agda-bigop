@@ -7,7 +7,7 @@ module Dijkstra.Correctness
 open import Dijkstra.Algebra.Properties
 open import Dijkstra.Algorithm alg renaming (module UsingAdj to Algorithm-UsingAdj)
 open import Dijkstra.Adjacency alg
--- open import Dijkstra.Properties alg renaming (module UsingAdj to Properties-UsingAdj)
+open import Dijkstra.Properties alg renaming (module UsingAdj to Properties-UsingAdj)
 
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Properties using (_≟_; to-from; inject₁-lemma; bounded)
@@ -31,6 +31,9 @@ open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.EqReasoning as EqR
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_; _≢_)
+open P.≡-Reasoning
+  using ()
+  renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
 open import Function using (_$_; _∘_; flip)
 
@@ -45,7 +48,7 @@ open EqR setoid
 module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open Algorithm-UsingAdj {n} i adj
---  open Properties-UsingAdj {n} i adj
+  open Properties-UsingAdj {n} i adj
 
   pRLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   pRLS ctd {lt} j = let r = estimate ctd {lt} in
@@ -56,26 +59,11 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   visited-nonempty zero      = Sub.⁅i⁆-nonempty i
   visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
 
-  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
-            let q = Sorted.head _ (queue ctd {lt})
-                r = estimate ctd {≤-step′ lt}
-            in r j + r q ≈ r j
-  q-lemma ctd {lt} j j∈vs = {!!}
 
-  estimate-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j → j ∈ visited ctd {≤-step′ lt} →
-                   estimate (suc ctd) {lt} j ≈ estimate ctd {≤-step′ lt} j
-  estimate-lemma ctd {lt} j j∈vs =
-    begin
-      r j +  r q * A[ q , j ]          ≈⟨ +-cong (sym (q-lemma ctd {lt} j j∈vs)) refl ⟩
-     (r j +  r q) + r q * A[ q , j ]   ≈⟨ +-assoc _ _ _ ⟩
-      r j + (r q  + r q * A[ q , j ])  ≈⟨ +-cong refl (+-absorbs-* _ _) ⟩
-      r j +  r q                       ≈⟨ q-lemma ctd {lt} j j∈vs ⟩
-      r j
-    ∎
-    where
-      r = estimate ctd {≤-step′ lt}
-      q  = Sorted.head _ (queue ctd {lt})
-      vs = visited ctd {≤-step′ lt}
+  visited-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ visited ctd
+  visited-preserved ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
+  ... | inj₁ j∈visited = inj₂ j∈visited
+  ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
 
   pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → pRLS ctd {lt} j
   pcorrect zero      {lt} j with i ≟ j
@@ -149,7 +137,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       f′ = λ k → r′ k * A[ k , j ]
       vs = visited ctd {≤-step′ lt}
       lemma : ∀ k → k ∈ vs → f k ≈ f′ k
-      lemma k k∈vs = {!!}
+      lemma k k∈vs = *-cong (sym (estimate-lemma ctd k k∈vs)) refl
 
 
   RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
