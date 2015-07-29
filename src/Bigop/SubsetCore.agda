@@ -6,11 +6,14 @@ module Bigop.SubsetCore
 
 open import Data.Fin hiding (fold; fold′)
 open import Data.Fin.Subset
+open import Data.Fin.Subset.Extra using (empty→⊥) renaming (nonempty to nonempty-dec)
 open import Data.Nat hiding (fold)
 open import Data.Product hiding (map; zip)
 open import Data.Vec hiding (_∈_)
 
 open import Function using (_∘_; id)
+
+open import Relation.Nullary using (yes; no)
 
 open CommutativeMonoid cmon
 
@@ -120,25 +123,39 @@ fold-empty f (outside ∷ xs) empty = fold-empty (f ∘ suc) xs (empty′ xs emp
     empty′ (inside  ∷ xs) empty nonempty  = ⊥-elim (empty (suc zero , there here))
     empty′ (outside ∷ xs) empty (i , elm) = ⊥-elim (empty (suc i , there  elm))
 
-postulate
-  fold-distr′ : ∀ {n} (idp : Idempotent _∙_) f x (xs : Subset n) → Nonempty xs →
-                fold′ (λ i → x ∙ f i) xs ≈ x ∙ fold′ f xs
-{-
+fold-distr′ : ∀ {n} (idp : Idempotent _∙_) f x (xs : Subset n) → Nonempty xs →
+              fold′ (λ i → x ∙ f i) xs ≈ x ∙ fold′ f xs
 fold-distr′ idp f x [] (_ , ())
-fold-distr′ idp f x (inside ∷ xs) (zero , here) = {!!}
-fold-distr′ idp f x (inside ∷ xs) ((suc i) , there proj₂) = {!!}
-{-
+fold-distr′ idp f x (inside ∷ xs) (zero , here) with nonempty-dec xs
+... | yes nonempty-xs =
   begin
-    (x ∙ f zero) ∙ fold′ ((λ i → x ∙ f i) ∘ suc) xs
-      ≈⟨ assoc _ _ _ ⟩
-    x ∙ (f zero ∙ fold′ ((λ i → x ∙ f i) ∘ suc) xs)
-      ≈⟨ ∙-cong refl (comm _ _) ⟩
-    x ∙ (fold′ ((λ i → x ∙ f i) ∘ suc) xs ∙ f zero)
-      ≈⟨ ∙-cong refl (∙-cong (fold-distr′ idp (f ∘ suc) x xs {!!}) {!!}) ⟩
-    x ∙ (x ∙ fold′ (f ∘ suc) xs ∙ f zero)
-      ≈⟨ {!!} ⟩
+    (x ∙ f zero) ∙ fold′ (λ i → x ∙ f (suc i)) xs  ≈⟨ ∙-cong (comm _ _) refl ⟩
+    (f zero ∙ x) ∙ fold′ (λ i → x ∙ f (suc i)) xs  ≈⟨ assoc _ _ _ ⟩
+    f zero ∙ (x ∙ fold′ (λ i → x ∙ f (suc i)) xs)  ≈⟨ ∙-cong refl (∙-cong refl (fold-distr′ idp (f ∘ suc) x xs nonempty-xs)) ⟩
+    f zero ∙ (x ∙ (x ∙ fold′ (f ∘ suc ) xs))       ≈⟨ ∙-cong refl (sym (assoc _ _ _)) ⟩
+    f zero ∙ ((x ∙ x) ∙ fold′ (f ∘ suc ) xs)       ≈⟨ ∙-cong refl (∙-cong (idp _) refl) ⟩
+    f zero ∙ (x ∙ fold′ (f ∘ suc ) xs)             ≈⟨ sym (assoc _ _ _) ⟩
+    (f zero ∙ x) ∙ fold′ (f ∘ suc ) xs             ≈⟨ ∙-cong (comm _ _) refl ⟩
+    (x ∙ f zero) ∙ fold′ (f ∘ suc ) xs             ≈⟨ assoc _ _ _ ⟩
     x ∙ (f zero ∙ fold′ (f ∘ suc) xs)
   ∎
--}
-fold-distr′ idp f x (outside ∷ xs) nonempty = {!!}
--}
+... | no ¬nonempty-xs =
+  begin
+    (x ∙ f zero) ∙ fold′ (λ i → x ∙ f (suc i)) xs  ≈⟨ assoc _ _ _ ⟩
+    x ∙ (f zero ∙ fold′ (λ i → x ∙ f (suc i)) xs)  ≈⟨ ∙-cong refl (∙-cong refl (fold-empty (λ i → x ∙ f (suc i)) xs ¬nonempty-xs)) ⟩
+    x ∙ (f zero ∙ ε)                               ≈⟨ sym (∙-cong refl (∙-cong refl (fold-empty (f ∘ suc) xs ¬nonempty-xs))) ⟩
+    x ∙ (f zero ∙ fold′ (λ i → f (suc i)) xs)
+  ∎
+fold-distr′ idp f x (inside ∷ xs) (suc i , there i∈xs) =
+  begin
+    (x ∙ f zero) ∙ fold′ (λ i → x ∙ f (suc i)) xs  ≈⟨ ∙-cong (comm _ _) refl ⟩
+    (f zero ∙ x) ∙ fold′ (λ i → x ∙ f (suc i)) xs  ≈⟨ assoc _ _ _ ⟩
+    f zero ∙ (x ∙ fold′ (λ i → x ∙ f (suc i)) xs)  ≈⟨ ∙-cong refl (∙-cong refl (fold-distr′ idp (f ∘ suc) x xs (i , i∈xs))) ⟩
+    f zero ∙ (x ∙ (x ∙ fold′ (f ∘ suc ) xs))       ≈⟨ ∙-cong refl (sym (assoc _ _ _)) ⟩
+    f zero ∙ ((x ∙ x) ∙ fold′ (f ∘ suc ) xs)       ≈⟨ ∙-cong refl (∙-cong (idp _) refl) ⟩
+    f zero ∙ (x ∙ fold′ (f ∘ suc ) xs)             ≈⟨ sym (assoc _ _ _) ⟩
+    (f zero ∙ x) ∙ fold′ (f ∘ suc ) xs             ≈⟨ ∙-cong (comm _ _) refl ⟩
+    (x ∙ f zero) ∙ fold′ (f ∘ suc ) xs             ≈⟨ assoc _ _ _ ⟩
+    x ∙ (f zero ∙ fold′ (f ∘ suc) xs)
+  ∎
+fold-distr′ idp f x (outside ∷ xs) (suc i , there i∈xs) = fold-distr′ idp (f ∘ suc) x xs (i , i∈xs)
