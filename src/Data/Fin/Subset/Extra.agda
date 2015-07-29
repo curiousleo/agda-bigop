@@ -199,6 +199,28 @@ i∈⁅i⁆′ zero (suc j) (there j∈⁅i⁆) = ⊥-elim (i∉⊥ j j∈⁅i�
 i∈⁅i⁆′ (suc i) zero ()
 i∈⁅i⁆′ (suc i) (suc j) (there j∈⁅i⁆) = cong suc (i∈⁅i⁆′ i j j∈⁅i⁆)
 
+nonempty : {n : ℕ} → (sub : Subset n) → Dec (Nonempty sub)
+nonempty [] = no (λ nonempty-[] → contradiction nonempty-[])
+  where
+    contradiction : ¬ Nonempty []
+    contradiction (_ , ())
+nonempty (inside ∷ xs) = yes (zero , here)
+nonempty (outside ∷ xs) with nonempty xs
+... | yes (i , i∈xs) = yes (suc i , there i∈xs)
+... | no ¬nonempty-xs = no (contradiction ¬nonempty-xs)
+  where
+    contradiction : ¬ Nonempty xs → ¬ Nonempty (outside ∷ xs)
+    contradiction ¬nonempty-xs (zero , ())
+    contradiction ¬nonempty-xs (suc i , there i∈xs) = ¬nonempty-xs (i , i∈xs)
+
+empty→⊥ : {n : ℕ} → (sub : Subset n) → ¬ Nonempty sub → sub ≡ ⊥ {n}
+empty→⊥ [] empty = refl
+empty→⊥ (inside ∷ sub) empty = ⊥-elim (empty (zero , here))
+empty→⊥ (outside ∷ sub) empty = cong (_∷_ outside) (empty→⊥ sub empty-sub)
+  where
+    empty-sub : ¬ Nonempty sub
+    empty-sub (i , i∈sub) = empty (suc i , there i∈sub)
+
 {-
 private
 
