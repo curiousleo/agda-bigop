@@ -10,22 +10,21 @@ open import Dijkstra.Adjacency alg
 open import Dijkstra.Properties alg renaming (module UsingAdj to Properties-UsingAdj)
 
 open import Data.Fin using (Fin; zero; suc)
-open import Data.Fin.Properties using (_≟_; to-from; inject₁-lemma; bounded)
+open import Data.Fin.Properties using (_≟_)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat
-  using (ℕ; zero; suc; z≤n; s≤s)
-  renaming (_+_ to _N+_; _≤_ to _N≤_; decTotalOrder to ℕ-decTotalOrder)
-open import Data.Nat.MoreProperties
+  using (ℕ; zero; suc; z≤n)
+  renaming (_≤_ to _N≤_; decTotalOrder to ℕ-decTotalOrder)
+open import Data.Nat.MoreProperties using (≤-step′)
 open import Data.Nat.Properties using (≤-step)
-open import Data.Nat.Properties.Simple using (+-suc)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Data.Sum
+open import Data.Product using (proj₁)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
 
-open import Relation.Nullary
+open import Relation.Nullary using (¬_; yes; no)
 open import Relation.Unary using (Pred)
 open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.EqReasoning as EqR
@@ -34,8 +33,6 @@ open P using (_≡_; _≢_)
 open P.≡-Reasoning
   using ()
   renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
-
-open import Function using (_$_; _∘_; flip)
 
 open DecTotalOrder ℕ-decTotalOrder using () renaming (refl to ≤-refl)
 open DijkstraAlgebra alg renaming (Carrier to Weight)
