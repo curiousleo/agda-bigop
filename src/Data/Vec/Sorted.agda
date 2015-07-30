@@ -167,10 +167,10 @@ toVec (x ∷ xs ⟨ prf ⟩) = x ∷′ toVec xs
 sort : ∀ {m} → Vec Carrier m → Vec Carrier m
 sort = toVec ∘ fromVec
 
-fromVec-∈¹ : ∀ {m} x (xs : Vec Carrier m) → x V.∈ xs → x ∈ (fromVec xs)
-fromVec-∈¹ x []′        ()
-fromVec-∈¹ x (.x ∷′ xs) V.here         = insert-∈¹ x (fromVec xs)
-fromVec-∈¹ x (x′ ∷′ xs) (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈¹ x xs x∈xs)
+fromVec-∈¹ : ∀ {m} {x} {xs : Vec Carrier m} → x V.∈ xs → x ∈ (fromVec xs)
+fromVec-∈¹         {xs = []′}      ()
+fromVec-∈¹         {xs = x ∷′ xs}  V.here         = insert-∈¹ x (fromVec xs)
+fromVec-∈¹ {x = x} {xs = x′ ∷′ xs} (V.there x∈xs) = insert-∈² x x′ (fromVec xs) (fromVec-∈¹ x∈xs)
 
 ∈-insert-characterisation : ∀ {m} → ∀ x y → (xs : SortedVec m) → x ∈ insert y xs → (x ≡ y) ⊎ (x ∈ xs)
 ∈-insert-characterisation x .x []                (here .[] .(lift tt))              = inj₁ refl
@@ -198,3 +198,9 @@ fromVec-∉¹ {m = zero}  {x′} {xs = []′}     ¬x∈xs ()
 fromVec-∉¹ {m = suc m} {x′} {xs = x ∷′ xs} ¬x∈xs x∈fromVec-xs with ∈-insert-characterisation x′ x (fromVec xs) x∈fromVec-xs
 ... | inj₁ x′≡x  rewrite x′≡x = ¬x∈xs V.here
 ... | inj₂ x′∈xs = fromVec-∉¹ (¬x∈y∷ys→¬x∈ys xs ¬x∈xs) x′∈xs
+
+head-≤ : ∀ {m} {x} {xs : SortedVec (ℕ.suc m)} → x ∈ xs → head xs ≤ x
+head-≤ (here    []             y≼ys) = ≤-refl
+head-≤ (here    (y ∷ ys ⟨ _ ⟩) _   ) = ≤-refl
+head-≤ (there z []             _         ()    )
+head-≤ (there z (y ∷ ys ⟨ _ ⟩) (z≤y , _) x∈y∷ys) = ≤-trans z≤y (head-≤ x∈y∷ys)

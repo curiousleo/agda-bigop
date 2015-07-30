@@ -22,7 +22,12 @@ open import Data.Nat.Properties.Simple using (+-suc)
 open import Data.Product using (proj₁; proj₂; _,_; ∃; ∃₂)
 open import Data.Sum
 import Data.Vec as V
+import Data.Vec.Properties as VP
 import Data.Vec.Sorted as Sorted
+
+open import Function.Equivalence using (module Equivalence)
+open import Function.Equality using (module Π)
+open Π using (_⟨$⟩_)
 
 open import Relation.Nullary
 open import Relation.Unary using (Pred)
@@ -37,9 +42,9 @@ open P.≡-Reasoning
 open import Function using (_$_; _∘_; flip)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
--- open RequiresDijkstraAlgebra alg
--- open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
--- open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
+open RequiresDijkstraAlgebra alg
+open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
+open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 -- open import Bigop.SubsetCore +-commutativeMonoid
 open EqR setoid
 
@@ -47,13 +52,36 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open Algorithm-UsingAdj i adj
 
-  postulate
+  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
+            let r = estimate ctd {≤-step′ lt}
+                q = Sorted.head _ (queue ctd {lt}) in
+            r k + r q ≈ r q
+  q-lemma ctd {lt} k k∉vs = rq⊴ᴸrk⟶rk+rq≈rq ⟨$⟩ ≤-lemma (S.head-≤ (∈-lemma k∉vs))
+    where
+      r = estimate ctd {≤-step′ lt}
 
-    -- This is equivalent to saying that the head of the queue is its r-smallest element
-    q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
-              let r = estimate ctd {≤-step′ lt}
-                  q = Sorted.head _ (queue ctd {lt}) in
-              r k + r q ≈ r q
+      module S = Sorted (estimateOrder (V.tabulate r))
+      open DecTotalOrder (estimateOrder (V.tabulate r))
+        using () renaming (_≤_ to _≤ᵉ_)
+
+      q = S.head (queue ctd {lt})
+
+      ∈-lemma : ∀ {k} → k ∉ visited ctd {≤-step′ lt} → k S.∈ queue ctd {lt}
+      ∈-lemma {k} k∉vs = q′→q ctd {lt} (λ qs → k S.∈ qs) (∈-lemma′ k∉vs)
+        where
+          ∈-lemma′ : ∀ {k} → k ∉ visited ctd {≤-step′ lt} → k S.∈ queue′ ctd {≤-step′ lt}
+          ∈-lemma′ k∉vs = S.fromVec-∈¹ (Sub.toVec-∈¹ (Sub.∁-∈′ k∉vs))
+
+      ≤-lemma : ∀ {a b} → a ≤ᵉ b → r a ≤ r b
+      ≤-lemma {a} {b} (x , eq) = x ,
+        (begin
+          r a                            ≡⟨ P.sym (VP.lookup∘tabulate r a) ⟩
+          V.lookup a (V.tabulate r)      ≈⟨ eq ⟩
+          V.lookup b (V.tabulate r) + x  ≡⟨ P.cong₂ _+_ (VP.lookup∘tabulate r b) P.refl ⟩
+          r b + x
+        ∎)
+
+      open Equivalence (equivalentᴸ (r q) (r k)) renaming (from to rq⊴ᴸrk⟶rk+rq≈rq)
 
   not-visited : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited (suc ctd) {lt} →
                 k ∉ visited ctd {≤-step′ lt}

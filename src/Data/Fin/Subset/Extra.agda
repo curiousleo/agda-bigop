@@ -152,10 +152,10 @@ size-suc (suc i) (outside ∷ xs) si∉x∷xs = size-suc i xs (si∉x∷xs ∘ t
 ∁-∈ {i = zero}  {.inside ∷ xs} here ()
 ∁-∈ {i = suc i} {x       ∷ xs} (there i∈xs) (there i∈∁xs) = ∁-∈ i∈xs i∈∁xs
 
-∁-∈′ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∉ xs → i ∈ (∁ xs)
-∁-∈′ zero    (inside  ∷ xs) i∉xs = ⊥-elim (i∉xs here)
-∁-∈′ zero    (outside ∷ xs) i∉xs = here
-∁-∈′ (suc i) (x ∷ xs)       i∉xs = there (∁-∈′ i xs (i∉xs ∘ there))
+∁-∈′ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∉ xs → i ∈ (∁ xs)
+∁-∈′ {i = zero}  {inside  ∷ xs} i∉xs = ⊥-elim (i∉xs here)
+∁-∈′ {i = zero}  {outside ∷ xs} i∉xs = here
+∁-∈′ {i = suc i} {x ∷ xs}       i∉xs = there (∁-∈′ (i∉xs ∘ there))
 
 ∪-∈ : {n : ℕ} (i : Fin n) (xs ys : Subset n) → i ∈ xs ∪ ys → i ∈ xs ⊎ i ∈ ys
 ∪-∈ zero (inside  ∷ xs) (y ∷ ys) here = inj₁ here
@@ -180,10 +180,10 @@ private
   toVec-∈-lemma¹ (suc i) (inside  ∷ xs) (there i∈xs) = ∈-cong (there (toVec-∈-lemma¹ i xs i∈xs))
   toVec-∈-lemma¹ (suc i) (outside ∷ xs) (there i∈xs) = ∈-cong (toVec-∈-lemma¹ i xs i∈xs)
 
-toVec-∈¹ : {n : ℕ} (i : Fin n) (xs : Subset n) → i ∈ xs → i V.∈ (toVec xs)
-toVec-∈¹ zero    (.inside ∷ xs) here         = here
-toVec-∈¹ (suc i) (inside  ∷ xs) (there i∈xs) = there (toVec-∈-lemma¹ i xs i∈xs)
-toVec-∈¹ (suc i) (outside ∷ xs) (there i∈xs) = toVec-∈-lemma¹ i xs i∈xs
+toVec-∈¹ : {n : ℕ} {i : Fin n} {xs : Subset n} → i ∈ xs → i V.∈ (toVec xs)
+toVec-∈¹ {i = zero}  {.inside ∷ xs} here         = here
+toVec-∈¹ {i = suc i} {inside  ∷ xs} (there i∈xs) = there (toVec-∈-lemma¹ i xs i∈xs)
+toVec-∈¹ {i = suc i} {outside ∷ xs} (there i∈xs) = toVec-∈-lemma¹ i xs i∈xs
 
 i∈⁅i⁆ : {n : ℕ} (i : Fin n) → i ∈ ⁅ i ⁆
 i∈⁅i⁆ zero = here
