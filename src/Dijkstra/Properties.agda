@@ -8,23 +8,22 @@ open import Dijkstra.Algebra.Properties
 open import Dijkstra.Algorithm alg renaming (module UsingAdj to Algorithm-UsingAdj)
 open import Dijkstra.Adjacency alg
 
-open import Data.Fin using (Fin; zero; suc)
-open import Data.Fin.Properties using (_≟_; to-from; inject₁-lemma; bounded)
+open import Data.Fin using (Fin)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat
-  using (ℕ; zero; suc; z≤n; s≤s)
-  renaming (_+_ to _N+_; _≤_ to _N≤_)
-open import Data.Nat.MoreProperties
+  using (ℕ; zero; suc)
+  renaming (_≤_ to _N≤_)
+open import Data.Nat.MoreProperties using (≤-step′)
 open import Data.Nat.Properties using (≤-step)
-open import Data.Nat.Properties.Simple using (+-suc)
-open import Data.Product using (proj₁; proj₂; _,_; ∃; ∃₂)
-open import Data.Sum
+open import Data.Product using (_,_; proj₁)
+open import Data.Sum using (inj₁; inj₂)
 import Data.Vec as V
 import Data.Vec.Properties as VP
 import Data.Vec.Sorted as Sorted
 
+open import Function using (_$_; _∘_; flip)
 open import Function.Equivalence using (module Equivalence)
 open import Function.Equality using (module Π)
 open Π using (_⟨$⟩_)
@@ -39,13 +38,10 @@ open P.≡-Reasoning
   using ()
   renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
-open import Function using (_$_; _∘_; flip)
-
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
-open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
+open DecTotalOrder decTotalOrderᴸ using (_≤_)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
--- open import Bigop.SubsetCore +-commutativeMonoid
 open EqR setoid
 
 module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
