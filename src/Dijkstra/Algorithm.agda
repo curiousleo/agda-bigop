@@ -115,7 +115,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     q′→q : (ctd : ℕ) {lt : suc ctd ≤ n} →
       let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
       ∀ {p} (P : ∀ {n} → SortedVec n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
-    q′→q ctd {lt} P Pqueue = super-subst (queue′ ctd) (queue ctd {lt}) P {!!} {!!} Pqueue
+    q′→q ctd {lt} P Pqueue = super-subst (queue′ ctd) (queue ctd {lt}) P (≡-to-≅ size′) {!!} Pqueue
       where
         open import Relation.Binary.HeterogeneousEquality as H
         open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
@@ -123,6 +123,12 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         super-subst : ∀ {m n p} → (xs : SortedVec m) → (ys : SortedVec n) → (P : ∀ {n} → SortedVec n → Set p) →
           m H.≅ n → xs H.≅ ys → P xs → P ys
         super-subst xs .xs P₁ H.refl H.refl Pxs = Pxs
+
+        ∸-rearrangement : ∀ m n → suc n ≤ m → suc (m ∸ suc n) ≡ m ∸ n
+        ∸-rearrangement m n n<m = {!!}
+
+        size′ : (Sub.size $ ∁ $ visited ctd) ≡ suc (n ∸ suc ctd)
+        size′ = P.trans (size-lemma ctd) (P.sym $ ∸-rearrangement n ctd lt)
 
     head∉visited : (ctd : ℕ) {lt : suc ctd ≤ n} →
                    let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
