@@ -134,10 +134,13 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     head∉visited : (ctd : ℕ) {lt : suc ctd ≤ n} →
                    let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
                    head (queue ctd {lt}) ∉ visited ctd {≤-step′ lt}
-    head∉visited ctd {lt} q∈vs with queue ctd {lt}
-    head∉visited ctd {lt} q∈vs | q Sorted.∷ qs ⟨ q≼qs ⟩ = q∉q∷qs (S.here qs q≼qs)
+    head∉visited ctd {lt} q∈vs = q∉q∷qs (S.here qs q≼qs)
       where
         module S = Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
+
+        q = S.head (queue ctd {lt})
+        qs = S.tail (queue ctd {lt})
+        q≼qs = S.≼-proof (queue ctd {lt})
 
         q∉queue′ : ¬ (q S.∈ (queue′ ctd))
         q∉queue′ = S.fromVec-∉¹ (Sub.toVec-∉¹ (Sub.∁-∈ q∈vs))
@@ -145,11 +148,5 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         q∉queue : ¬ (q S.∈ (queue ctd {lt}))
         q∉queue = q′→q ctd {lt} (λ qs → ¬ (q S.∈ qs)) q∉queue′
 
-        postulate
-          q∉q∷qs : ¬ (q S.∈ (q S.∷ qs ⟨ q≼qs ⟩))
-       -- q∉q∷qs = P.subst (λ qs → ¬ q S.∈ qs) {!P.refl!} q∉queue
-      -- q ∈ visited ctd
-      -- ⟶ q ∉ ∁ (visited ctd)   by Sub.∁-∈
-      -- ⟶ q ∉ Sub.toVec (∁ (visited ctd))   by Sub.toVec-∉¹
-      -- ⟶ q ∉ fromVec (Sub.toVec (∁ (visited ctd)))   by fromVec-∉¹
-      -- ⟶ q ∉ P.subst SortedVec {! eq !} (fromVec (Sub.toVec (∁ (visited ctd))))
+        q∉q∷qs : ¬ (q S.∈ (q S.∷ qs ⟨ q≼qs ⟩))
+        q∉q∷qs = P.subst (λ qs → ¬ q S.∈ qs) S.assemble q∉queue

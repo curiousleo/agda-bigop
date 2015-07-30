@@ -204,3 +204,9 @@ head-≤ (here    []             y≼ys) = ≤-refl
 head-≤ (here    (y ∷ ys ⟨ _ ⟩) _   ) = ≤-refl
 head-≤ (there z []             _         ()    )
 head-≤ (there z (y ∷ ys ⟨ _ ⟩) (z≤y , _) x∈y∷ys) = ≤-trans z≤y (head-≤ x∈y∷ys)
+
+≼-proof : ∀ {n} (xs : SortedVec (ℕ.suc n)) → head xs ≼ tail xs
+≼-proof (x ∷ xs ⟨ prf ⟩) = prf
+
+assemble : ∀ {n} {xs : SortedVec (ℕ.suc n)} → xs ≡ head xs ∷ tail xs ⟨ ≼-proof xs ⟩
+assemble {xs = x ∷ xs ⟨ x≼xs ⟩} = refl
