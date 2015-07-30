@@ -7,14 +7,12 @@ module Dijkstra.Algorithm
 open import Dijkstra.Adjacency alg
 open import Dijkstra.Algebra.Properties
 
-open import Data.Empty using (⊥-elim)
-open import Data.Fin hiding (_≤_; _+_)
+open import Data.Fin using (Fin; zero; suc)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
-open import Data.Nat hiding (_+_; _*_)
-open import Data.Nat.MoreProperties
+open import Data.Nat using (ℕ; zero; suc; _∸_; _≤_)
+open import Data.Nat.MoreProperties using (≤-step′; sm∸n)
 open import Data.Nat.Properties using (≤-step)
-open import Data.List.Base
 open import Data.Matrix
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
@@ -26,12 +24,10 @@ open import Relation.Unary using (Pred)
 open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
-import Relation.Binary.EqReasoning as EqR
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
-open RequiresDijkstraAlgebra alg
+open RequiresDijkstraAlgebra alg using (decTotalOrderᴸ)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
-open import Bigop.SubsetCore +-commutativeMonoid
 
 open DecTotalOrder Data.Nat.decTotalOrder
   using ()
