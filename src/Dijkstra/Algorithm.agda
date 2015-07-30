@@ -112,23 +112,24 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     queue ctd {ctd<n} = P.subst SortedVec (P.trans (size-lemma ctd) (sm∸n n (suc ctd) ctd<n)) (queue′ ctd)
       where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
 
+
     q′→q : (ctd : ℕ) {lt : suc ctd ≤ n} →
       let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
       ∀ {p} (P : ∀ {n} → SortedVec n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
-    q′→q ctd {lt} P Pqueue = super-subst (queue′ ctd) (queue ctd {lt}) P (≡-to-≅ size′) {!!} Pqueue
+    q′→q ctd {lt} P Pqueue = super-subst P (≡-to-≅ index-lemma) (H.sym H-lemma) Pqueue
       where
         open import Relation.Binary.HeterogeneousEquality as H
         open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
 
-        super-subst : ∀ {m n p} → (xs : SortedVec m) → (ys : SortedVec n) → (P : ∀ {n} → SortedVec n → Set p) →
+        super-subst : ∀ {m n p} → {xs : SortedVec m} → {ys : SortedVec n} → (P : ∀ {n} → SortedVec n → Set p) →
           m H.≅ n → xs H.≅ ys → P xs → P ys
-        super-subst xs .xs P₁ H.refl H.refl Pxs = Pxs
+        super-subst P H.refl H.refl Pxs = Pxs
 
-        ∸-rearrangement : ∀ m n → suc n ≤ m → suc (m ∸ suc n) ≡ m ∸ n
-        ∸-rearrangement m n n<m = {!!}
+        index-lemma : Sub.size (∁ (visited ctd {≤-step′ lt})) ≡ suc (n ∸ suc ctd)
+        index-lemma = P.trans (size-lemma ctd) (sm∸n n (suc ctd) lt)
 
-        size′ : (Sub.size $ ∁ $ visited ctd) ≡ suc (n ∸ suc ctd)
-        size′ = P.trans (size-lemma ctd) (P.sym $ ∸-rearrangement n ctd lt)
+        H-lemma : queue ctd ≅ queue′ ctd
+        H-lemma = ≡-subst-removable SortedVec index-lemma (queue′ ctd)
 
     head∉visited : (ctd : ℕ) {lt : suc ctd ≤ n} →
                    let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
