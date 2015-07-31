@@ -16,7 +16,7 @@ import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
 open import Data.Nat
   using (ℕ; zero; suc; z≤n)
-  renaming (_≤_ to _N≤_; decTotalOrder to ℕ-decTotalOrder)
+  renaming (_≤_ to _N≤_)
 open import Data.Nat.MoreProperties using (≤-step′)
 open import Data.Nat.Properties using (≤-step)
 open import Data.Product using (proj₁)
@@ -34,10 +34,10 @@ open P.≡-Reasoning
   using ()
   renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
-open DecTotalOrder ℕ-decTotalOrder using () renaming (refl to ≤-refl)
+open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl)
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
-open DecTotalOrder decTotalOrderᴸ using (_≤?_; _≤_) renaming (refl to ⊴ᴸ-refl)
+open DecTotalOrder decTotalOrderᴸ using (_≤_)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open import Bigop.SubsetCore +-commutativeMonoid
 open EqR setoid

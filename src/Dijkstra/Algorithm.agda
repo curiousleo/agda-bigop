@@ -55,7 +55,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   mutual
 
     order : (ctd : ℕ) {lt : ctd ≤ n} → DecTotalOrder _ _ _
-    order ctd {lt} = estimateOrder $ V.tabulate $ estimate ctd {lt}
+    order ctd {lt} = estimateOrder $ estimate ctd {lt}
 
     estimate : (ctd : ℕ) {lt : ctd ≤ n} → Fin (suc n) → Weight
     estimate zero              j = A[ i , j ]
@@ -70,27 +70,21 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       seen ctd {≤-step′ ctd≤n} ∪
       ⁅ Sorted.head (order ctd {≤-step′ ctd≤n}) (queue ctd {ctd≤n}) ⁆
 
-    queue′ : (ctd : ℕ) {lt : ctd ≤ n} →
-             let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {lt}) in
-             SortedVec (Sub.size $ ∁ $ seen ctd {lt})
-    queue′ ctd = fromVec $ Sub.toVec $ ∁ $ seen ctd
-      where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
+    queue′ : (ctd : ℕ) {lt : ctd ≤ n} → Sorted.SortedVec _ (Sub.size $ ∁ $ seen ctd {lt})
+    queue′ ctd {lt} = Sorted.fromVec (order ctd {lt}) $ Sub.toVec $ ∁ $ seen ctd
 
-    queue : (ctd : ℕ) {lt : suc ctd ≤ n} →
-            let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
-            SortedVec (suc (n ∸ (suc ctd)))
+    queue : (ctd : ℕ) {lt : suc ctd ≤ n} → Sorted.SortedVec _ (suc (n ∸ (suc ctd)))
     queue ctd {ctd<n} = P.subst (Sorted.SortedVec (order ctd {≤-step′ ctd<n})) (queue-size ctd {ctd<n}) (queue′ ctd)
 
-    queue⇒queue′ : (ctd : ℕ) {lt : suc ctd ≤ n} →
-      let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
-      ∀ {p} (P : ∀ {n} → SortedVec n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
+    queue⇒queue′ : (ctd : ℕ) {lt : suc ctd ≤ n} → ∀ {p} (P : ∀ {n} →
+                   Sorted.SortedVec _ n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
     queue⇒queue′ ctd {lt} P Pqueue = super-subst P (≡-to-≅ (queue-size ctd {lt})) (H.sym H-lemma) Pqueue
       where
         open import Relation.Binary.HeterogeneousEquality as H
-        open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
+        open Sorted (order ctd {≤-step′ lt})
 
         super-subst : ∀ {m n p} → {xs : SortedVec m} → {ys : SortedVec n} → (P : ∀ {n} → SortedVec n → Set p) →
-          m H.≅ n → xs H.≅ ys → P xs → P ys
+                      m H.≅ n → xs H.≅ ys → P xs → P ys
         super-subst P H.refl H.refl Pxs = Pxs
 
         H-lemma : queue ctd ≅ queue′ ctd
@@ -121,12 +115,10 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       where
         open P.≡-Reasoning
 
-    q∉seen : (ctd : ℕ) {lt : suc ctd ≤ n} →
-                   let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
-                   head (queue ctd {lt}) ∉ seen ctd {≤-step′ lt}
+    q∉seen : (ctd : ℕ) {lt : suc ctd ≤ n} → Sorted.head _ (queue ctd {lt}) ∉ seen ctd {≤-step′ lt}
     q∉seen ctd {lt} q∈vs = q∉q∷qs (S.here qs q≼qs)
       where
-        module S = Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
+        module S = Sorted (order ctd {≤-step′ lt})
 
         q = S.head (queue ctd {lt})
         qs = S.tail (queue ctd {lt})

@@ -16,7 +16,7 @@ open import Relation.Nullary
 
 open DecTotalOrder ord renaming (Carrier to Weight)
 
-estimateOrder : ∀ {n} (est : Vec Weight n) → DecTotalOrder _ _ _
+estimateOrder : ∀ {n} (est : Fin n → Weight) → DecTotalOrder _ _ _
 estimateOrder {n} est =
   record
     { Carrier         = Fin n
@@ -38,17 +38,17 @@ estimateOrder {n} est =
                )
 
     _≈ᵉ_ _≤ᵉ_ : Rel (Fin n) _
-    _≈ᵉ_ = _≈_ on flip lookup est
-    _≤ᵉ_ = _≤_ on flip lookup est
+    _≈ᵉ_ = _≈_ on est
+    _≤ᵉ_ = _≤_ on est
 
     _≈ᵉ?_ : Decidable _≈ᵉ_
-    a ≈ᵉ? b = lookup a est ≟ lookup b est
+    a ≈ᵉ? b = est a ≟ est b
 
     _≤ᵉ?_ : Decidable _≤ᵉ_
-    a ≤ᵉ? b = lookup a est ≤? lookup b est
+    a ≤ᵉ? b = est a ≤? est b
 
     totalᵉ : Total _≤ᵉ_
-    totalᵉ a b with total (lookup a est) (lookup b est)
+    totalᵉ a b with total (est a) (est b)
     ... | inj₁ estᵃ≤estᵇ = inj₁ estᵃ≤estᵇ
     ... | inj₂ estᵇ≤estᵃ = inj₂ estᵇ≤estᵃ
 

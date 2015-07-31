@@ -55,18 +55,18 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   seen-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ seen (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ seen ctd
   seen-preserved ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (seen ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
   ... | inj₁ j∈seen = inj₂ j∈seen
-  ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
+  ... | inj₂ j∈⁅q⁆  = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
 
   q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen ctd {≤-step′ lt} →
             let r = estimate ctd {≤-step′ lt}
                 q = Sorted.head _ (queue ctd {lt}) in
             r k + r q ≈ r q
-  q-lemma ctd {lt} k k∉vs = rq⊴ᴸrk⟶rk+rq≈rq ⟨$⟩ ≤-lemma (S.head-≤ (∈-lemma k∉vs))
+  q-lemma ctd {lt} k k∉vs = rq⊴ᴸrk⟶rk+rq≈rq ⟨$⟩ S.head-≤ (∈-lemma k∉vs)
     where
       r = estimate ctd {≤-step′ lt}
 
-      module S = Sorted (estimateOrder (V.tabulate r))
-      open DecTotalOrder (estimateOrder (V.tabulate r))
+      module S = Sorted (estimateOrder r)
+      open DecTotalOrder (estimateOrder r)
         using () renaming (_≤_ to _≤ᵉ_)
 
       q = S.head (queue ctd {lt})
@@ -77,25 +77,16 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           ∈-lemma′ : ∀ {k} → k ∉ seen ctd {≤-step′ lt} → k S.∈ queue′ ctd {≤-step′ lt}
           ∈-lemma′ k∉vs = S.fromVec-∈¹ (Sub.toVec-∈¹ (Sub.∁-∈′ k∉vs))
 
-      ≤-lemma : ∀ {a b} → a ≤ᵉ b → r a ≤ r b
-      ≤-lemma {a} {b} (x , eq) = x ,
-        (begin
-          r a                            ≡⟨ P.sym (VP.lookup∘tabulate r a) ⟩
-          V.lookup a (V.tabulate r)      ≈⟨ eq ⟩
-          V.lookup b (V.tabulate r) + x  ≡⟨ P.cong₂ _+_ (VP.lookup∘tabulate r b) P.refl ⟩
-          r b + x
-        ∎)
-
       open Equivalence (equivalentᴸ (r q) (r k)) renaming (from to rq⊴ᴸrk⟶rk+rq≈rq)
 
   not-seen : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen (suc ctd) {lt} →
-                k ∉ seen ctd {≤-step′ lt}
+             k ∉ seen ctd {≤-step′ lt}
   not-seen ctd {lt} k k∉vs′ k∈vs = k∉vs′ (Sub.∪-∈′ k _ _ k∈vs)
 
   pcorrect-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j k →
-            let vs = seen ctd {≤-step′ lt}
-                r = estimate ctd {≤-step′ lt} in
-            j ∈ vs → k ∉ vs → r j + r k ≈ r j
+                   let vs = seen ctd {≤-step′ lt}
+                       r = estimate ctd {≤-step′ lt} in
+                   j ∈ vs → k ∉ vs → r j + r k ≈ r j
   pcorrect-lemma zero j k j∈vs k∉vs =
     begin
       A[ i , j ] + _  ≈⟨ +-cong lemma refl ⟩
