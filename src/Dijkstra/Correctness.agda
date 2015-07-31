@@ -10,7 +10,7 @@ open import Dijkstra.Adjacency alg
 open import Dijkstra.Properties alg renaming (module UsingAdj to Properties-UsingAdj)
 
 open import Data.Fin using (Fin; zero; suc)
-open import Data.Fin.Properties using (_≟_)
+open import Data.Fin.Properties as FP using (_≟_)
 open import Data.Fin.Subset
 import Data.Fin.Subset.Extra as Sub
 open import Data.Matrix
@@ -63,7 +63,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
 
   pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → pRLS ctd {lt} j
-  pcorrect zero      {lt} j with i ≟ j
+  pcorrect zero      {lt} j with i FP.≟ j
   ... | yes i≡j =
     begin
       r j             ≡⟨⟩

@@ -19,7 +19,7 @@ record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
   field
     Carrier           : Set c
     _≈_               : Rel Carrier ℓ
-    _≈?_              : Decidable _≈_
+    _≟_              : Decidable _≈_
     _+_               : Op₂ Carrier
     _*_               : Op₂ Carrier
     0#                : Carrier
@@ -34,7 +34,7 @@ record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
       { Carrier          = Carrier
       ; _≈_              = _≈_
       ; isDecEquivalence =
-          record { isEquivalence = isEquivalence ; _≟_ = _≈?_ }
+          record { isEquivalence = isEquivalence ; _≟_ = _≟_ }
       }
 
   +-commutativeMonoid : CommutativeMonoid _ _
