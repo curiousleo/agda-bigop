@@ -94,7 +94,7 @@ tail (x ∷ xs ⟨ prf ⟩) = xs
 -- decomposition is equal to "xs".  This is a technical device needed to work around problems with η
 -- equality and records in Agda which sometimes prevents us from case splitting on a SortedVec when working
 -- in a context that has fixed a TotalOrder:
-destruct : ∀ {n} {xs : SortedVec (ℕ.suc n)} → xs ≡ head xs ∷ tail xs ⟨ ≼-proof xs ⟩
+destruct : ∀ {n} {xs : SortedVec (ℕ.suc n)} → xs ≡ (head xs ∷ tail xs ⟨ ≼-proof xs ⟩)
 destruct {xs = x ∷ xs ⟨ x≼xs ⟩} = refl
 
 mutual
