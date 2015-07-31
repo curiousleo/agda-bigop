@@ -18,7 +18,7 @@ open import Data.Nat
 open import Data.Nat.MoreProperties using (≤-step′)
 open import Data.Nat.Properties using (≤-step)
 open import Data.Product using (_,_; proj₁)
-open import Data.Sum using (inj₁; inj₂)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 import Data.Vec as V
 import Data.Vec.Properties as VP
 import Data.Vec.Sorted as Sorted
@@ -47,6 +47,15 @@ open EqR setoid
 module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   open Algorithm-UsingAdj i adj
+
+  visited-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (visited ctd {lt})
+  visited-nonempty zero      = Sub.⁅i⁆-nonempty i
+  visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
+
+  visited-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ visited ctd
+  visited-preserved ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
+  ... | inj₁ j∈visited = inj₂ j∈visited
+  ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
 
   q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ visited ctd {≤-step′ lt} →
             let r = estimate ctd {≤-step′ lt}

@@ -20,7 +20,7 @@ open import Data.Nat
 open import Data.Nat.MoreProperties using (≤-step′)
 open import Data.Nat.Properties using (≤-step)
 open import Data.Product using (proj₁)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Sum using (inj₁; inj₂)
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
 
@@ -51,14 +51,9 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
   pRLS ctd {lt} j = let r = estimate ctd {lt} in
     r j ≈ I[ i , j ] + (⨁[ k ← visited ctd {lt} ] (r k * A[ k , j ]))
 
-  visited-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (visited ctd {lt})
-  visited-nonempty zero      = Sub.⁅i⁆-nonempty i
-  visited-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (visited-nonempty ctd)
-
-  visited-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ visited (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ visited ctd
-  visited-preserved ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
-  ... | inj₁ j∈visited = inj₂ j∈visited
-  ... | inj₂ j∈⁅q⁆     = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
+  RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
+  RLS ctd {lt} j = let r = estimate ctd {lt} in
+    r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r k * A[ k , j ]))
 
   pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → pRLS ctd {lt} j
   pcorrect zero      {lt} j with i FP.≟ j
@@ -116,11 +111,6 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       vs = visited ctd {≤-step′ lt}
       lemma : ∀ k → k ∈ vs → f k ≈ f′ k
       lemma k k∈vs = *-cong (sym (estimate-lemma ctd k k∈vs)) refl
-
-
-  RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
-  RLS ctd {lt} j = let r = estimate ctd {lt} in
-    r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r k * A[ k , j ]))
 
   correct : ∀ j → RLS n {≤-refl} j
   correct j = pRLS→RLS (pcorrect n j)
