@@ -21,6 +21,7 @@ open import Function using (_$_)
 
 open import Relation.Nullary using (¬_)
 open import Relation.Unary using (Pred)
+open import Relation.Binary using (DecTotalOrder)
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
 
@@ -53,44 +54,43 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   mutual
 
+    order : (ctd : ℕ) {lt : ctd ≤ n} → DecTotalOrder _ _ _
+    order ctd {lt} = estimateOrder $ V.tabulate $ estimate ctd {lt}
+
     estimate : (ctd : ℕ) {lt : ctd ≤ n} → Fin (suc n) → Weight
     estimate zero              j = A[ i , j ]
     estimate (suc ctd) {ctd≤n} j = r j + r q * A[ q , j ]
       where
-        open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
-        q = head (queue ctd {ctd≤n})
+        q = Sorted.head (order ctd {≤-step′ ctd≤n}) (queue ctd {ctd≤n})
         r = estimate ctd {≤-step′ ctd≤n}
 
     visited : (ctd : ℕ) {lt : ctd ≤ n} → Subset (suc n)
     visited zero              = ⁅ i ⁆
-    visited (suc ctd) {ctd≤n} = visited ctd {≤-step′ ctd≤n} ∪ ⁅ head (queue ctd {ctd≤n}) ⁆
-      where
-        open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
+    visited (suc ctd) {ctd≤n} =
+      visited ctd {≤-step′ ctd≤n} ∪
+      ⁅ Sorted.head (order ctd {≤-step′ ctd≤n}) (queue ctd {ctd≤n}) ⁆
 
     visited-lemma : (ctd : ℕ) {lt : ctd ≤ n} → Sub.size (visited ctd {lt}) ≡ suc ctd
     visited-lemma zero           = Sub.size⁅i⁆≡1 i
     visited-lemma (suc ctd) {lt} =
       begin
-        Sub.size (visited ctd ∪ ⁅ q ⁆)
-          ≡⟨ P.cong Sub.size (∪-comm (visited ctd) ⁅ q ⁆) ⟩
-        Sub.size (⁅ q ⁆ ∪ visited ctd)
-          ≡⟨ Sub.size-suc q (visited ctd) (head∉visited ctd) ⟩
-        suc (Sub.size (visited ctd))
-          ≡⟨ P.cong suc (visited-lemma ctd) ⟩
+        Sub.size (visited ctd ∪ ⁅ q ⁆)  ≡⟨ P.cong Sub.size (∪-comm (visited ctd) ⁅ q ⁆) ⟩
+        Sub.size (⁅ q ⁆ ∪ visited ctd)  ≡⟨ Sub.size-suc q (visited ctd) (head∉visited ctd) ⟩
+        suc (Sub.size (visited ctd))    ≡⟨ P.cong suc (visited-lemma ctd) ⟩
         suc (suc ctd)
       ∎
       where
-        open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
         open P.≡-Reasoning
         open Sub.Properties (suc n)
-        q = head (queue ctd {lt})
+        q = Sorted.head (order ctd {≤-step′ lt}) (queue ctd {lt})
 
-    size-lemma : (ctd : ℕ) {lt : ctd ≤ n} → Sub.size (∁ (visited ctd {lt})) ≡ n ∸ ctd
-    size-lemma ctd =
+    size-lemma : (ctd : ℕ) {lt : suc ctd ≤ n} → Sub.size (∁ (visited ctd {≤-step′ lt})) ≡ suc (n ∸ suc ctd)
+    size-lemma ctd {lt} =
       begin
         Sub.size (∁ (visited ctd))      ≡⟨ Sub.∁-size (visited ctd) ⟩
         suc n ∸ Sub.size (visited ctd)  ≡⟨ P.cong₂ _∸_ P.refl (visited-lemma ctd) ⟩
-        suc n ∸ suc ctd
+        suc n ∸ suc ctd                 ≡⟨ sm∸n n (suc ctd) lt ⟩
+        suc (n ∸ suc ctd)
       ∎
       where
         open P.≡-Reasoning
@@ -104,14 +104,12 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     queue : (ctd : ℕ) {lt : suc ctd ≤ n} →
             let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
             SortedVec (suc (n ∸ (suc ctd)))
-    queue ctd {ctd<n} = P.subst SortedVec (P.trans (size-lemma ctd) (sm∸n n (suc ctd) ctd<n)) (queue′ ctd)
-      where open Sorted (estimateOrder $ V.tabulate $ estimate ctd)
-
+    queue ctd {ctd<n} = P.subst (Sorted.SortedVec (order ctd {≤-step′ ctd<n})) (size-lemma ctd {ctd<n}) (queue′ ctd)
 
     q′→q : (ctd : ℕ) {lt : suc ctd ≤ n} →
       let open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt}) in
       ∀ {p} (P : ∀ {n} → SortedVec n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
-    q′→q ctd {lt} P Pqueue = super-subst P (≡-to-≅ index-lemma) (H.sym H-lemma) Pqueue
+    q′→q ctd {lt} P Pqueue = super-subst P (≡-to-≅ (size-lemma ctd {lt})) (H.sym H-lemma) Pqueue
       where
         open import Relation.Binary.HeterogeneousEquality as H
         open Sorted (estimateOrder $ V.tabulate $ estimate ctd {≤-step′ lt})
@@ -120,11 +118,8 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
           m H.≅ n → xs H.≅ ys → P xs → P ys
         super-subst P H.refl H.refl Pxs = Pxs
 
-        index-lemma : Sub.size (∁ (visited ctd {≤-step′ lt})) ≡ suc (n ∸ suc ctd)
-        index-lemma = P.trans (size-lemma ctd) (sm∸n n (suc ctd) lt)
-
         H-lemma : queue ctd ≅ queue′ ctd
-        H-lemma = ≡-subst-removable SortedVec index-lemma (queue′ ctd)
+        H-lemma = ≡-subst-removable SortedVec (size-lemma ctd {lt}) (queue′ ctd)
 
     head∉visited : (ctd : ℕ) {lt : suc ctd ≤ n} →
                    let open Sorted (estimateOrder $ V.tabulate $ estimate ctd) in
