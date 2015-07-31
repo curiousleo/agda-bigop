@@ -17,21 +17,16 @@ open import Data.Matrix
 import Data.Vec as V
 import Data.Vec.Sorted as Sorted
 
-open import Function using (_$_; _∘_)
+open import Function using (_$_)
 
 open import Relation.Nullary using (¬_)
 open import Relation.Unary using (Pred)
-open import Relation.Binary using (module DecTotalOrder)
 import Relation.Binary.PropositionalEquality as P
 open P using (_≡_)
 
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg using (decTotalOrderᴸ)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
-
-open DecTotalOrder Data.Nat.decTotalOrder
-  using ()
-  renaming (refl to ≤-refl; trans to ≤-trans)
 
 I : ∀ {n} → Adj n
 I = matrix ▦[ diag ]
