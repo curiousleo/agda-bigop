@@ -26,7 +26,6 @@ rightCanonicalOrder _≈_ _∙_ a b = ∃ λ c → b ≈ (a ∙ c)
 leftCanonicalOrder : ∀ {a ℓ} {A : Set a} → Rel A ℓ → Op₂ A → Rel A _
 leftCanonicalOrder _≈_ _∙_ a b = ∃ λ c → a ≈ (b ∙ c)
 
-
 module RequiresCommutativeMonoid
        {c ℓ} (cmon : CommutativeMonoid c ℓ) where
 
@@ -410,12 +409,12 @@ module RequiresDijkstraAlgebra
   isDecTotalOrderᴸ =
     record {
       isTotalOrder = isTotalOrderᴸ +-selective
-      ; _≟_        = _≈?_
+      ; _≟_        = _≟_
       ; _≤?_       = _⊴ᴸ?_
       }
     where
       _⊴ᴸ?_ : Decidable _⊴ᴸ_
-      a ⊴ᴸ? b with (b + a) ≈? a
+      a ⊴ᴸ? b with (b + a) ≟ a
       ... | yes b+a≈a = yes (a , sym b+a≈a)
       ... | no ¬b+a≈a = no (¬b+a≈a⟶¬a⊴ᴸb ⟨$⟩ ¬b+a≈a)
         where
