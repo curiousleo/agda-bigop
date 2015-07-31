@@ -61,9 +61,9 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
     begin
       r j             ≡⟨⟩
       A[ i , j ]      ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) j≡i ⟩
-      A[ i , i ]      ≡⟨ Adj.diag adj i ⟩
+      A[ i , i ]      ≈⟨ Adj.diag adj i ⟩
       1#              ≈⟨ sym (proj₁ +-zero _) ⟩
-      1#         + _  ≡⟨ P.cong₂ _+_ (P.sym (Adj.diag I j)) P.refl ⟩
+      1#         + _  ≈⟨ +-cong (sym (Adj.diag I j)) refl ⟩
       I[ j , j ] + _  ≡⟨ P.cong₂ _+_ (P.cong₂ I[_,_] j≡i (P.refl {x = j})) P.refl ⟩
       I[ i , j ] + _
     ∎
@@ -77,7 +77,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       0#                 + A[ i , j ]        ≡⟨ P.cong₂ _+_ (P.sym (diagonal-nondiag i j ¬i≡j)) P.refl ⟩
       diagonal 0# 1# i j + A[ i , j ]        ≡⟨ P.cong₂ _+_ (P.sym (lookup∘tabulate {f = diagonal 0# 1#} i j)) P.refl ⟩
       I[ i , j ]         + A[ i , j ]        ≈⟨ +-cong refl (sym (*-identityˡ _)) ⟩
-      I[ i , j ]         + 1# * A[ i , j ]   ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ _*_ (P.sym (Adj.diag adj i)) P.refl) ⟩
+      I[ i , j ]         + 1# * A[ i , j ]   ≈⟨ +-cong refl (*-cong (sym (Adj.diag adj i)) refl) ⟩
       I[ i , j ]         + r i * A[ i , j ]  ≈⟨ +-cong refl (sym (fold-⁅i⁆ (λ k → r k * A[ k , j ]) i)) ⟩
       I[ i , j ]         + (⨁[ k ← ⁅ i ⁆ ] (r k * A[ k , j ]))
     ∎

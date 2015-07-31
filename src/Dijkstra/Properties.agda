@@ -98,19 +98,19 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
             j ∈ vs → k ∉ vs → r j + r k ≈ r j
   pcorrect-lemma zero j k j∈vs k∉vs =
     begin
-      A[ i , j ] + _  ≡⟨ P.cong₂ _+_ lemma P.refl ⟩
+      A[ i , j ] + _  ≈⟨ +-cong lemma refl ⟩
       1#         + _  ≈⟨ proj₁ +-zero _ ⟩
-      1#              ≡⟨ P.sym lemma ⟩
+      1#              ≈⟨ sym lemma ⟩
       A[ i , j ]
     ∎
     where
-      lemma : A[ i , j ] ≡ 1#
+      lemma : A[ i , j ] ≈ 1#
       lemma =
-        start
-          A[ i , j ]  ≣⟨ P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs) ⟩
-          A[ i , i ]  ≣⟨ Adj.diag adj i ⟩
+        begin
+          A[ i , j ]  ≡⟨ P.cong₂ A[_,_] (P.refl {x = i}) (Sub.i∈⁅i⁆′ i j j∈vs) ⟩
+          A[ i , i ]  ≈⟨ Adj.diag adj i ⟩
           1#
-        ■
+        ∎
 
   pcorrect-lemma (suc ctd) {lt} j k j∈vs′ k∉vs′ with Sub.∪-∈ {suc n} j (visited ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
 

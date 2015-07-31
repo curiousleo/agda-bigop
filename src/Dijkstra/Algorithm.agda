@@ -35,8 +35,8 @@ I = matrix ▦[ diag ]
     matrix : Matrix Weight _ _
     matrix = tabulate (diagonal 0# 1#)
 
-    diag : ∀ i → (matrix [ i , i ]) ≡ 1#
-    diag i = P.trans (lookup∘tabulate i i) (diagonal-diag i)
+    diag : ∀ i → (matrix [ i , i ]) ≈ 1#
+    diag i = reflexive $ P.trans (lookup∘tabulate i i) (diagonal-diag i)
 
 I[_,_] : ∀ {size} → Fin size → Fin size → Weight
 I[ i , j ] = Adj.matrix I [ i , j ]
