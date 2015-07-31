@@ -49,7 +49,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
 
   pRLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   pRLS ctd {lt} j = let r = estimate ctd {lt} in
-    r j ≈ I[ i , j ] + (⨁[ k ← visited ctd {lt} ] (r k * A[ k , j ]))
+    r j ≈ I[ i , j ] + (⨁[ k ← seen ctd {lt} ] (r k * A[ k , j ]))
 
   RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
   RLS ctd {lt} j = let r = estimate ctd {lt} in
@@ -97,10 +97,10 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       I[ i , j ] + ((⨁[ k ← vs ] (r′ k * A[ k , j ])) + r′ q * A[ q , j ])
         ≈⟨ +-cong refl (+-cong refl (sym (fold-⁅i⁆ f′ q))) ⟩
       I[ i , j ] + ((⨁[ k ← vs ] (r′ k * A[ k , j ])) + (⨁[ k ← ⁅ q ⁆ ] (r′ k * A[ k , j ])))
-        ≈⟨ +-cong refl (sym (fold-∪ +-idempotent f′ (visited ctd) ⁅ q ⁆)) ⟩
+        ≈⟨ +-cong refl (sym (fold-∪ +-idempotent f′ (seen ctd) ⁅ q ⁆)) ⟩
       I[ i , j ] + (⨁[ k ← vs ∪ ⁅ q ⁆ ] (r′ k * A[ k , j ]))
         ≡⟨⟩
-      I[ i , j ] + (⨁[ k ← visited (suc ctd) {lt} ] (r′ k * A[ k , j ]))
+      I[ i , j ] + (⨁[ k ← seen (suc ctd) {lt} ] (r′ k * A[ k , j ]))
     ∎
     where
       r′ = estimate (suc ctd) {lt}
@@ -108,7 +108,7 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
       q  = Sorted.head _ (queue ctd {lt})
       f  = λ k → r k * A[ k , j ]
       f′ = λ k → r′ k * A[ k , j ]
-      vs = visited ctd {≤-step′ lt}
+      vs = seen ctd {≤-step′ lt}
       lemma : ∀ k → k ∈ vs → f k ≈ f′ k
       lemma k k∈vs = *-cong (sym (estimate-lemma ctd k k∈vs)) refl
 
@@ -120,8 +120,8 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         begin
           r j
             ≈⟨ p ⟩
-          I[ i , j ] + (⨁[ k ← visited n {≤-refl} ] (r k * A[ k , j ]))
-            ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ ⨁-syntax P.refl (Sub.n→⊤ (visited n) (visited-lemma n))) ⟩
+          I[ i , j ] + (⨁[ k ← seen n {≤-refl} ] (r k * A[ k , j ]))
+            ≡⟨ P.cong₂ _+_ P.refl (P.cong₂ ⨁-syntax P.refl (Sub.n→⊤ (seen n) (seen-size n))) ⟩
           I[ i , j ] + (⨁[ k ← ⊤ ] (r k * A[ k , j ]))
         ∎
         where
