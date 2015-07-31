@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Dijkstra correctness proof
+--
+-- Properties of Dijkstra's algorithm
+------------------------------------------------------------------------
+
 open import Dijkstra.Algebra
 open import Dijkstra.Adjacency
 
@@ -40,47 +46,64 @@ open P.≡-Reasoning
   using ()
   renaming (begin_ to start_; _≡⟨_⟩_ to _≣⟨_⟩_; _∎ to _■)
 
+-- Bring the algebra's operators, constants and properties into scope
 open DijkstraAlgebra alg renaming (Carrier to Weight)
 open RequiresDijkstraAlgebra alg
+
+-- This decidable total order is used to sort vertices by their
+-- current estimate
 open DecTotalOrder decTotalOrderᴸ using (_≤_)
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
+
+-- Setoid reasoning for the DijkstraAlgebra setoid
 open EqR setoid
 
+-- The set of visited vertices is never empty
 seen-nonempty : (ctd : ℕ) {lt : ctd N≤ n} → Nonempty (seen ctd {lt})
 seen-nonempty zero      = Sub.⁅i⁆-nonempty i
 seen-nonempty (suc ctd) = Sub.∪-nonempty¹ _ _ (seen-nonempty ctd)
 
+-- Any vertex contained in the set of vertices visited in step (suc ctd)
+-- was either the head of the queue in step ctd or already in the set of
+-- visited vertices in step ctd
 seen-preserved : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ {j} → j ∈ seen (suc ctd) {lt} → j ≡ Sorted.head _ (queue ctd) ⊎ j ∈ seen ctd
 seen-preserved ctd {lt} {j} j∈vs′ with Sub.∪-∈ j (seen ctd) ⁅ Sorted.head _ (queue ctd) ⁆ j∈vs′
 ... | inj₁ j∈seen = inj₂ j∈seen
 ... | inj₂ j∈⁅q⁆  = inj₁ (Sub.i∈⁅i⁆′ _ _ j∈⁅q⁆)
 
-q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen ctd {≤-step′ lt} →
-          let r = estimate ctd {≤-step′ lt}
-              q = Sorted.head _ (queue ctd {lt}) in
-          r k + r q ≈ r q
-q-lemma ctd {lt} k k∉vs = rq⊴ᴸrk⟶rk+rq≈rq ⟨$⟩ S.head-≤ (∈-lemma k∉vs)
-  where
-    r = estimate ctd {≤-step′ lt}
+private
 
-    module S = Sorted (estimateOrder r)
-    open DecTotalOrder (estimateOrder r)
-      using () renaming (_≤_ to _≤ᵉ_)
+  -- The head of the queue has the smallest estimated distance of any vertex
+  -- that has not been visited so far
+  q-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen ctd {≤-step′ lt} →
+            let r = estimate ctd {≤-step′ lt}
+                q = Sorted.head _ (queue ctd {lt}) in
+            r k + r q ≈ r q
+  q-lemma ctd {lt} k k∉vs = rq⊴ᴸrk⟶rk+rq≈rq ⟨$⟩ S.head-≤ (∈-lemma k∉vs)
+    where
+      r = estimate ctd {≤-step′ lt}
 
-    q = S.head (queue ctd {lt})
+      module S = Sorted (estimateOrder r)
+      open DecTotalOrder (estimateOrder r)
+        using () renaming (_≤_ to _≤ᵉ_)
 
-    ∈-lemma : ∀ {k} → k ∉ seen ctd {≤-step′ lt} → k S.∈ queue ctd {lt}
-    ∈-lemma {k} k∉vs = queue⇒queue′ ctd {lt} (λ qs → k S.∈ qs) (∈-lemma′ k∉vs)
-      where
-        ∈-lemma′ : ∀ {k} → k ∉ seen ctd {≤-step′ lt} → k S.∈ queue′ ctd {≤-step′ lt}
-        ∈-lemma′ k∉vs = S.fromVec-∈¹ (Sub.toVec-∈¹ (Sub.∁-∈′ k∉vs))
+      q = S.head (queue ctd {lt})
 
-    open Equivalence (equivalentᴸ (r q) (r k)) renaming (from to rq⊴ᴸrk⟶rk+rq≈rq)
+      ∈-lemma : ∀ {k} → k ∉ seen ctd {≤-step′ lt} → k S.∈ queue ctd {lt}
+      ∈-lemma {k} k∉vs = queue⇒queue′ ctd {lt} (λ qs → k S.∈ qs) (∈-lemma′ k∉vs)
+        where
+          ∈-lemma′ : ∀ {k} → k ∉ seen ctd {≤-step′ lt} → k S.∈ queue′ ctd {≤-step′ lt}
+          ∈-lemma′ k∉vs = S.fromVec-∈¹ (Sub.toVec-∈¹ (Sub.∁-∈′ k∉vs))
 
-not-seen : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen (suc ctd) {lt} →
-           k ∉ seen ctd {≤-step′ lt}
-not-seen ctd {lt} k k∉vs′ k∈vs = k∉vs′ (Sub.∪-∈′ k _ _ k∈vs)
+      open Equivalence (equivalentᴸ (r q) (r k)) renaming (from to rq⊴ᴸrk⟶rk+rq≈rq)
 
+  -- If a vertex has not been visited in step (suc ctd) then it has not
+  -- been visited in step ctd
+  not-seen : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∉ seen (suc ctd) {lt} →
+             k ∉ seen ctd {≤-step′ lt}
+  not-seen ctd {lt} k k∉vs′ k∈vs = k∉vs′ (Sub.∪-∈′ k _ _ k∈vs)
+
+-- Once a node has been visited its estimate is optimal
 pcorrect-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ j k →
                  let vs = seen ctd {≤-step′ lt}
                      r = estimate ctd {≤-step′ lt} in
@@ -167,6 +190,7 @@ pcorrect-lemma (suc ctd) {lt} j k j∈vs′ k∉vs′ with Sub.∪-∈ {suc n} j
     j≡q : j ≡ q
     j≡q = Sub.i∈⁅i⁆′ {suc n} q j j∈⁅q⁆
 
+-- The distance estimate of a vertex stays the same once it has been visited
 estimate-lemma : (ctd : ℕ) {lt : suc ctd N≤ n} → ∀ k → k ∈ seen ctd {≤-step′ lt} →
                  estimate (suc ctd) {lt} k ≈ estimate ctd {≤-step′ lt} k
 estimate-lemma ctd {lt} k k∈vs =
