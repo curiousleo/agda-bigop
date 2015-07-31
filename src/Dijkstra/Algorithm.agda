@@ -41,14 +41,17 @@ open RequiresDijkstraAlgebra alg using (decTotalOrderᴸ)
 -- current estimate
 open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 
+-- Shorthand for adjacency matrix lookup
 A[_,_] : Fin (suc n) → Fin (suc n) → Weight
 A[ i , j ] = Adj.matrix adj [ i , j ]
 
 mutual
 
+  -- Compares vertices by their current estimates
   order : (ctd : ℕ) {lt : ctd ≤ n} → DecTotalOrder _ _ _
   order ctd {lt} = estimateOrder $ estimate ctd {lt}
 
+  -- Computes the estimated distance of j from i (the start vertex)
   estimate : (ctd : ℕ) {lt : ctd ≤ n} → Fin (suc n) → Weight
   estimate zero              j = A[ i , j ]
   estimate (suc ctd) {ctd≤n} j = r j + r q * A[ q , j ]
@@ -56,18 +59,24 @@ mutual
       q = Sorted.head (order ctd {≤-step′ ctd≤n}) (queue ctd {ctd≤n})
       r = estimate ctd {≤-step′ ctd≤n}
 
+  -- The set of visited vertices
   seen : (ctd : ℕ) {lt : ctd ≤ n} → Subset (suc n)
   seen zero              = ⁅ i ⁆
   seen (suc ctd) {ctd≤n} =
     seen ctd {≤-step′ ctd≤n} ∪
     ⁅ Sorted.head (order ctd {≤-step′ ctd≤n}) (queue ctd {ctd≤n}) ⁆
 
+  -- The priority queue of yet unseen vertices. Its head has the lowest
+  -- current distance estimate from the start vertex of all unseen vertices
   queue′ : (ctd : ℕ) {lt : ctd ≤ n} → Sorted.SortedVec _ (Sub.size $ ∁ $ seen ctd {lt})
   queue′ ctd {lt} = Sorted.fromVec (order ctd {lt}) $ Sub.toVec $ ∁ $ seen ctd
 
+  -- Same queue, only the length index is rewritten to make it obvious that
+  -- the queue contains at least one element (i.e. we can take the head)
   queue : (ctd : ℕ) {lt : suc ctd ≤ n} → Sorted.SortedVec _ (suc (n ∸ (suc ctd)))
   queue ctd {ctd<n} = P.subst (Sorted.SortedVec (order ctd {≤-step′ ctd<n})) (queue-size ctd {ctd<n}) (queue′ ctd)
 
+  -- Any property of (queue ctd) is a property of (queue′ ctd)
   queue⇒queue′ : (ctd : ℕ) {lt : suc ctd ≤ n} → ∀ {p} (P : ∀ {n} →
                  Sorted.SortedVec _ n → Set p) → P (queue′ ctd) → P (queue ctd {lt})
   queue⇒queue′ ctd {lt} P Pqueue = super-subst P (≡-to-≅ (queue-size ctd {lt})) (H.sym H-lemma) Pqueue
@@ -82,6 +91,7 @@ mutual
       H-lemma : queue ctd ≅ queue′ ctd
       H-lemma = ≡-subst-removable SortedVec (queue-size ctd {lt}) (queue′ ctd)
 
+  -- In step ctd, (suc ctd) vertices have been visited
   seen-size : (ctd : ℕ) {lt : ctd ≤ n} → Sub.size (seen ctd {lt}) ≡ suc ctd
   seen-size zero           = Sub.size⁅i⁆≡1 i
   seen-size (suc ctd) {lt} =
@@ -96,17 +106,19 @@ mutual
       open Sub.Properties (suc n)
       q = Sorted.head (order ctd {≤-step′ lt}) (queue ctd {lt})
 
+  -- In step ctd, the size of the queue is (n ∸ ctd)
   queue-size : (ctd : ℕ) {lt : suc ctd ≤ n} → Sub.size (∁ (seen ctd {≤-step′ lt})) ≡ suc (n ∸ suc ctd)
   queue-size ctd {lt} =
     begin
       Sub.size (∁ (seen ctd))      ≡⟨ Sub.∁-size (seen ctd) ⟩
       suc n ∸ Sub.size (seen ctd)  ≡⟨ P.cong₂ _∸_ P.refl (seen-size ctd) ⟩
-      suc n ∸ suc ctd                 ≡⟨ sm∸n n (suc ctd) lt ⟩
+      suc n ∸ suc ctd              ≡⟨ sm∸n n (suc ctd) lt ⟩
       suc (n ∸ suc ctd)
     ∎
     where
       open P.≡-Reasoning
 
+  -- The head of the queue has not yet been visited
   q∉seen : (ctd : ℕ) {lt : suc ctd ≤ n} → Sorted.head _ (queue ctd {lt}) ∉ seen ctd {≤-step′ lt}
   q∉seen ctd {lt} q∈vs = q∉q∷qs (S.here qs q≼qs)
     where
