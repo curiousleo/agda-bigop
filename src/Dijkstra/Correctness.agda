@@ -1,3 +1,10 @@
+------------------------------------------------------------------------
+-- Dijkstra correctness proof
+--
+-- This file contains the proof that the abstract version of Dijkstra's
+-- algorithm computes the right-local solution of one matrix row
+------------------------------------------------------------------------
+
 open import Dijkstra.Algebra
 import Dijkstra.Adjacency as Adj
 
@@ -45,14 +52,19 @@ open import Dijkstra.EstimateOrder decTotalOrderᴸ using (estimateOrder)
 open import Bigop.SubsetCore +-commutativeMonoid
 open EqR setoid
 
+-- Partial right-local solution. This definition is suited for an
+-- inductive proof (step by step)
 pRLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
 pRLS ctd {lt} j = let r = estimate ctd {lt} in
   r j ≈ I[ i , j ] + (⨁[ k ← seen ctd {lt} ] (r k * A[ k , j ]))
 
+-- Right-local solution. The aim is to prove that this holds for ctd = n
 RLS : (ctd : ℕ) {lt : ctd N≤ n} → Pred (Fin (suc n)) _
 RLS ctd {lt} j = let r = estimate ctd {lt} in
   r j ≈ I[ i , j ] + (⨁[ k ← ⊤ ] (r k * A[ k , j ]))
 
+-- Inductive proof that Dijkstra's algorithm computes the partial
+-- right-local solution
 pcorrect : (ctd : ℕ) {lt : ctd N≤ n} → ∀ j → pRLS ctd {lt} j
 pcorrect zero      {lt} j with i FP.≟ j
 ... | yes i≡j =
@@ -110,6 +122,7 @@ pcorrect (suc ctd) {lt} j =
     lemma : ∀ k → k ∈ vs → f k ≈ f′ k
     lemma k k∈vs = *-cong (sym (estimate-lemma ctd k k∈vs)) refl
 
+-- Dijkstra's algorithm computes the right-local solution
 correct : ∀ j → RLS n {≤-refl} j
 correct j = pRLS→RLS (pcorrect n j)
   where
