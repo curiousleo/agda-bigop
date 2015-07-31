@@ -139,4 +139,4 @@ module UsingAdj {n} (i : Fin (suc n)) (adj : Adj (suc n)) where
         q∉queue = q′→q ctd {lt} (λ qs → ¬ (q S.∈ qs)) q∉queue′
 
         q∉q∷qs : ¬ (q S.∈ (q S.∷ qs ⟨ q≼qs ⟩))
-        q∉q∷qs = P.subst (λ qs → ¬ q S.∈ qs) S.destruct q∉queue
+        q∉q∷qs = P.subst (λ qs → ¬ (q S.∈ qs)) S.destruct q∉queue
