@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Dijkstra correctness proof
+--
+-- Properties of Dijkstra algebras
+------------------------------------------------------------------------
+
 module Dijkstra.Algebra.Properties where
 
 open import Data.Empty

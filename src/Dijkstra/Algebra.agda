@@ -1,15 +1,45 @@
+------------------------------------------------------------------------
+-- Dijkstra correctness proof
+--
+-- Dijkstra algebra definition
+------------------------------------------------------------------------
+
 module Dijkstra.Algebra where
 
-open import Dijkstra.Algebra.Structures
-
 open import Algebra public
-open import Algebra.FunctionProperties
-  using (Op₂)
 open import Algebra.Structures
+open import Algebra.FunctionProperties as FunctionProperties
+  using (Op₁; Op₂)
+import Algebra.MoreFunctionProperties as MoreFunctionProperties
+
 open import Data.Product
 open import Function
 open import Level
 open import Relation.Binary
+
+record IsDijkstraAlgebra {a ℓ} {A : Set a} (≈ : Rel A ℓ)
+                         (+ * : Op₂ A) (0# 1# : A) : Set (a ⊔ ℓ) where
+  open FunctionProperties ≈
+  open MoreFunctionProperties ≈
+  field
+    +-isCommutativeMonoid : IsCommutativeMonoid ≈ + 0#
+    +-selective           : Selective +
+    +-zero                : Zero 1# +
+
+    *-identityˡ           : LeftIdentity 1# *
+    *-cong                : * Preserves₂ ≈ ⟶ ≈ ⟶ ≈
+
+    +-absorbs-*           : + Absorbs *
+
+  open IsCommutativeMonoid +-isCommutativeMonoid public
+         hiding (identityˡ)
+         renaming ( assoc       to +-assoc
+                  ; ∙-cong      to +-cong
+                  ; isSemigroup to +-isSemigroup
+                  ; identity    to +-identity
+                  ; isMonoid    to +-isMonoid
+                  ; comm        to +-comm
+                  )
 
 
 record DijkstraAlgebra c ℓ : Set (suc (c ⊔ ℓ)) where
