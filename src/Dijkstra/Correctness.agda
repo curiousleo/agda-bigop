@@ -2,7 +2,8 @@
 -- Dijkstra correctness proof
 --
 -- This file contains the proof that the abstract version of Dijkstra's
--- algorithm computes the right-local solution of one matrix row
+-- algorithm from Dijkstra.Algorithm computes the right-local solution
+-- of one matrix row
 ------------------------------------------------------------------------
 
 open import Dijkstra.Algebra
@@ -122,7 +123,8 @@ pcorrect (suc ctd) {lt} j =
     lemma : ∀ k → k ∈ vs → f k ≈ f′ k
     lemma k k∈vs = *-cong (sym (estimate-lemma ctd k k∈vs)) refl
 
--- Dijkstra's algorithm computes the right-local solution
+-- Dijkstra's algorithm computes the right-local solution. This follows
+-- directly from the inductive partial correctness proof above (pcorrect).
 correct : ∀ j → RLS n {≤-refl} j
 correct j = pRLS→RLS (pcorrect n j)
   where
