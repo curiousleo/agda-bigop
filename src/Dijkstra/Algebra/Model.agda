@@ -1,3 +1,9 @@
+------------------------------------------------------------------------
+-- Dijkstra correctness proof
+--
+-- A model Dijkstra algebra
+------------------------------------------------------------------------
+
 module Dijkstra.Algebra.Model where
 
 open import Dijkstra.Algebra
@@ -13,7 +19,7 @@ open import Relation.Binary.PropositionalEquality
   record
   { Carrier = ℕ∞
   ; _≈_ = _≡_
-  ; _≈?_ = _≟∞_
+  ; _≟_ = _≟∞_
   ; _+_ = _⊓_
   ; _*_ = _+_
   ; 0# = ∞
