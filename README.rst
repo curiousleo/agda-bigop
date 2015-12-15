@@ -75,27 +75,27 @@ Usage
 
 ::
 
-module Test where
+  module Test where
   
-  open import Algebra
+    open import Algebra
 
-  open import Relation.Binary.PropositionalEquality using (_≡_)
-  import Relation.Binary.PropositionalEquality as P
-  open P.≡-Reasoning
+    open import Relation.Binary.PropositionalEquality using (_≡_)
+    import Relation.Binary.PropositionalEquality as P
+    open P.≡-Reasoning
 
-  open import Data.Nat using (suc)
-  open import Data.Nat.Properties using (commutativeSemiring)
-  open import Data.Product using (proj₁; proj₂)
-  open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
+    open import Data.Nat using (suc)
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Product using (proj₁; proj₂)
+    open CommutativeSemiring commutativeSemiring renaming (Carrier to ℕ)
 
-  open import Bigop
-  open import Bigop.Interval.Nat
-  open Fold +-monoid using (Σ-syntax)
-  open Props.Interval.Nat
+    open import Bigop
+    open import Bigop.Interval.Nat
+    open Fold +-monoid using (Σ-syntax)
+    open Props.Interval.Nat
 
-  proof : ∀ n → 2 * (Σ[ i ← 0 to n ] i) ≡ n * (suc n)
-  proof 0 = P.refl
-  proof (suc n) =
+    proof : ∀ n → 2 * (Σ[ i ← 0 to n ] i) ≡ n * (suc n)
+    proof 0 = P.refl
+    proof (suc n) =
       begin
         2 * (Σ[ i ← 0 to suc n ] i)          ≡⟨ P.cong (_*_ 2) lemma ⟩
         2 * ((Σ[ i ← 0 to n ] i) + suc n)    ≡⟨ proj₁ distrib 2 (Σ[ i ← 0 to n ] i) (suc n) ⟩
